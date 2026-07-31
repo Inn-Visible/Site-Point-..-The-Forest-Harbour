@@ -10,47 +10,65 @@
         .container { max-width: 800px; margin: 0 auto; }
         h1 { color: #8ab4f8; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .section { background: #0f0f0f; border: 1px solid #222; padding: 25px; margin-bottom: 20px; border-radius: 4px; }
-        h2 { color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        ul { list-style: none; }
-        li { padding: 8px 0; padding-left: 20px; position: relative; color: #999; }
-        li::before { content: "→"; position: absolute; left: 0; color: #8ab4f8; }
         .back { display: inline-block; margin-top: 30px; color: #8ab4f8; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
         .back:hover { background: #8ab4f8; color: #050505; }
+
+        /* UNIVERSAL BLOCKS */
+        .content-block { background: #0f0f0f; border: 1px solid #222; border-radius: 6px; margin-bottom: 25px; overflow: hidden; }
+        .block-header { padding: 15px 20px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px; background: #0a0a0a; }
+        .block-header h3 { margin: 0; font-size: 1rem; color: #fff; }
+        .block-icon { font-size: 1.2rem; }
+        .block-body { padding: 20px; }
+        .block-image { width: 100%; border-radius: 4px; margin-bottom: 10px; border: 1px solid #333; }
+        .caption { font-size: 0.8rem; color: #666; font-style: italic; }
+        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; }
+        .block-button { display: inline-block; padding: 8px 16px; background: #222; color: #fff; text-decoration: none; border-radius: 4px; margin-top: 10px; }
+        .block-button:hover { background: #444; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 10px; text-align: left; border-bottom: 1px solid #222; }
+        .data-table th { color: #888; font-weight: normal; }
+
+        /* EIGEN VIBE: Clean, Archival, Blue */
+        .theme-eigen .content-block { border-left: 3px solid #8ab4f8; }
+        .theme-eigen .block-header { border-bottom-color: #8ab4f8; }
+        .theme-eigen .block-button { background: #8ab4f8; color: #050505; font-weight: bold; }
+        .theme-eigen .block-button:hover { background: #fff; }
     </style>
 </head>
-<body>
+<body class="theme-eigen">
     <div class="container">
         <h1>01. Eigen Dynamics</h1>
         <p class="subtitle">The Mind / Research / Library</p>
-        <div class="section">
-            <h2>The Library</h2>
-            <ul>
-                <li>Books to Read</li>
-                <li>Books Have Read</li>
-                <li>Book Notes & Lists</li>
-                <li>Spellbook & Mania Trackers</li>
-                <li>Mentions from Other People</li>
-            </ul>
+        
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">📝</span><h3>System Literacy Notes</h3></div>
+            <div class="block-body">
+                <p>Initial thoughts on restructuring the digital archive. The goal is to keep raw data accessible but visually separated from active projects.</p>
+                <p class="meta-text">- Logged on [Date] | Tag: #architecture</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>System Literacy Hub</h2>
-            <ul>
-                <li>Tech Scribblz (Code/Notes)</li>
-                <li>Edu Website Bookmarks</li>
-                <li>Cyber Security Google Cert</li>
-                <li>App Webdev: Sorti (Archive)</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">📊</span><h3>Book Tracking Ledger</h3></div>
+            <div class="block-body">
+                <table class="data-table">
+                    <thead><tr><th>Title</th><th>Status</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>The 48 Laws of Power</td><td>Reading</td><td>Chapter 4</td></tr>
+                        <tr><td>Digital Minimalism</td><td>Completed</td><td>Core philosophy applied</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="section">
-            <h2>Research Streams</h2>
-            <ul>
-                <li>#unravellingz (Quantum diagrams, science visuals)</li>
-                <li>#gpt-shenanigans (AI experiments)</li>
-                <li>#apoc-prepr (Apocalypse prep theory)</li>
-                <li>Philosophy quotes, mental health metaphors</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">🔗</span><h3>External Resource</h3></div>
+            <div class="block-body">
+                <p>Cyber Security Google Certificate portal and study guides.</p>
+                <a href="#" class="block-button">Access Resource →</a>
+            </div>
         </div>
+
         <a href="index.html" class="back">← Return to Core</a>
     </div>
 </body>
