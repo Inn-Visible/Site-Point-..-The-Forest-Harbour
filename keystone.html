@@ -8,48 +8,64 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #8ab4f8; margin-bottom: 10px; font-size: 1.8rem; }
+        h1 { color: #d4af37; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .section { background: #0f0f0f; border: 1px solid #222; padding: 25px; margin-bottom: 20px; border-radius: 4px; }
-        h2 { color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        ul { list-style: none; }
-        li { padding: 8px 0; padding-left: 20px; position: relative; color: #999; }
-        li::before { content: "→"; position: absolute; left: 0; color: #8ab4f8; }
-        .back { display: inline-block; margin-top: 30px; color: #8ab4f8; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #8ab4f8; color: #050505; }
+        .back { display: inline-block; margin-top: 30px; color: #d4af37; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
+        .back:hover { background: #d4af37; color: #050505; }
+
+        .content-block { background: #0a0a0a; border-radius: 0; margin-bottom: 25px; border: 1px solid #222; }
+        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #000; }
+        .block-header h3 { margin: 0; color: #fff; font-weight: normal; letter-spacing: 1px; }
+        .block-icon { font-size: 1.2rem; }
+        .block-body { padding: 20px; }
+        .block-image { width: 100%; border-radius: 0; margin-bottom: 10px; border: 1px solid #333; }
+        .caption { font-size: 0.8rem; color: #666; }
+        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; }
+        .block-button { display: inline-block; padding: 8px 16px; background: #d4af37; color: #000; text-decoration: none; border-radius: 0; margin-top: 10px; font-weight: bold; letter-spacing: 1px; }
+        .block-button:hover { background: #fff; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #222; }
+        .data-table th { color: #d4af37; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+
+        /* KEYSTONE VIBE: Professional, Secure, Gold Accent */
+        .theme-keystone .content-block { border-top: 3px solid #d4af37; }
+        .theme-keystone .block-header { border-bottom: 1px solid #d4af37; }
     </style>
 </head>
-<body>
+<body class="theme-keystone">
     <div class="container">
         <h1>04. Keystone Solutions</h1>
         <p class="subtitle">The Application / Execution / Finance</p>
-        <div class="section">
-            <h2>Finance & Cashflow</h2>
-            <ul>
-                <li>Stock market tracking</li>
-                <li>50-30-20 rule (Needs/Growth/Savings)</li>
-                <li>Short-term drops / Long-term root</li>
-                <li>Govt assistance tracking</li>
-            </ul>
+        
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">💼</span><h3>Finance & Cashflow</h3></div>
+            <div class="block-body">
+                <p>Tracking the 50-30-20 rule (Needs/Growth/Savings). Monitoring short-term drops and long-term roots.</p>
+                <p class="meta-text">- Status: Active | Tag: #finance</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>Services & Workshop</h2>
-            <ul>
-                <li>Good Catch (Acquisitions)</li>
-                <li>Integrative Locksmithing & Cooperations</li>
-                <li>Resumes & professional dev</li>
-                <li>Step-by-step sovereignty guides</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">📊</span><h3>Services Ledger</h3></div>
+            <div class="block-body">
+                <table class="data-table">
+                    <thead><tr><th>Service</th><th>Status</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>Good Catch (Acquisitions)</td><td>Pending</td><td>Defining scope</td></tr>
+                        <tr><td>Integrative Locksmithing</td><td>Active</td><td>Co-op frameworks</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="section">
-            <h2>Mental Alignment</h2>
-            <ul>
-                <li>Therapy resources</li>
-                <li>Workout info</li>
-                <li>Shadow work</li>
-                <li>Self-regulation tools</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">🔗</span><h3>Mental Alignment Resources</h3></div>
+            <div class="block-body">
+                <p>Therapy resources, shadow work prompts, and self-regulation tools.</p>
+                <a href="#" class="block-button">Access Tools →</a>
+            </div>
         </div>
+
         <a href="index.html" class="back">← Return to Core</a>
     </div>
 </body>
