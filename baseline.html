@@ -8,46 +8,59 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #8ab4f8; margin-bottom: 10px; font-size: 1.8rem; }
+        h1 { color: #c084fc; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .section { background: #0f0f0f; border: 1px solid #222; padding: 25px; margin-bottom: 20px; border-radius: 4px; }
-        h2 { color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        ul { list-style: none; }
-        li { padding: 8px 0; padding-left: 20px; position: relative; color: #999; }
-        li::before { content: "→"; position: absolute; left: 0; color: #8ab4f8; }
-        .back { display: inline-block; margin-top: 30px; color: #8ab4f8; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #8ab4f8; color: #050505; }
+        .back { display: inline-block; margin-top: 30px; color: #c084fc; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
+        .back:hover { background: #c084fc; color: #050505; }
+
+        .content-block { background: #111; border: none; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .block-header { padding: 15px 20px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px; background: linear-gradient(90deg, #1a1a1a, #111); border-radius: 8px 8px 0 0; }
+        .block-header h3 { margin: 0; color: #fff; }
+        .block-icon { font-size: 1.2rem; }
+        .block-body { padding: 20px; }
+        .block-image { width: 100%; border-radius: 6px; margin-bottom: 10px; border: 1px solid #333; }
+        .caption { font-size: 0.8rem; color: #888; font-style: italic; }
+        .meta-text { font-size: 0.75rem; color: #666; margin-top: 10px; }
+        .block-button { display: inline-block; padding: 8px 16px; background: linear-gradient(45deg, #c084fc, #818cf8); color: #fff; text-decoration: none; border-radius: 20px; margin-top: 10px; font-weight: bold; }
+        .block-button:hover { filter: brightness(1.2); }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
+        .data-table th { color: #c084fc; }
+
+        /* BASELINE VIBE: Dynamic, Media House, Neon */
+        .theme-baseline .content-block { border: 1px solid #222; }
+        .theme-baseline .content-block:hover { border-color: #c084fc; box-shadow: 0 0 15px rgba(192, 132, 252, 0.2); }
     </style>
 </head>
-<body>
+<body class="theme-baseline">
     <div class="container">
         <h1>03. Baseline Evolutions</h1>
         <p class="subtitle">The Culture / Expression / Studio</p>
-        <div class="section">
-            <h2>The Studio [Matter of Fact]</h2>
-            <ul>
-                <li>Music production & repertoire</li>
-                <li>Music vids & playlists</li>
-                <li>Audio projects & entertainment</li>
-            </ul>
+        
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">🎵</span><h3>Matter of Fact Repertoire</h3></div>
+            <div class="block-body">
+                <p>Current music production logs, playlist curation, and audio project notes.</p>
+                <p class="meta-text">- Status: Active | Tag: #studio</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>Gaming Culture</h2>
-            <ul>
-                <li>Project Zomboid, Starbound, TBOI</li>
-                <li>Hotline Miami, Bioshock, Dead Space</li>
-                <li>Raw improv recordings</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">🎮</span><h3>Gaming Culture Archive</h3></div>
+            <div class="block-body">
+                <img src="https://via.placeholder.com/800x400/111/c084fc?text=Game+Screenshot" alt="Game" class="block-image">
+                <p class="caption">Raw improv recordings and session highlights.</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>Media & Art</h2>
-            <ul>
-                <li>#memes, #whimsy, #cats</li>
-                <li>#tattoos, #art-is-art</li>
-                <li>#fashion-and-inspo</li>
-                <li>Visual art, videos, cultural commentary</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">🔗</span><h3>Media Links</h3></div>
+            <div class="block-body">
+                <p>Visual art, videos, and cultural commentary resources.</p>
+                <a href="#" class="block-button">View Gallery →</a>
+            </div>
         </div>
+
         <a href="index.html" class="back">← Return to Core</a>
     </div>
 </body>
