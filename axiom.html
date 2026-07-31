@@ -8,48 +8,63 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #8ab4f8; margin-bottom: 10px; font-size: 1.8rem; }
+        h1 { color: #94a3b8; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .section { background: #0f0f0f; border: 1px solid #222; padding: 25px; margin-bottom: 20px; border-radius: 4px; }
-        h2 { color: #fff; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        ul { list-style: none; }
-        li { padding: 8px 0; padding-left: 20px; position: relative; color: #999; }
-        li::before { content: "→"; position: absolute; left: 0; color: #8ab4f8; }
-        .back { display: inline-block; margin-top: 30px; color: #8ab4f8; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #8ab4f8; color: #050505; }
+        .back { display: inline-block; margin-top: 30px; color: #94a3b8; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
+        .back:hover { background: #94a3b8; color: #050505; }
+
+        .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
+        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
+        .block-header h3 { margin: 0; color: #cbd5e1; }
+        .block-icon { font-size: 1.2rem; }
+        .block-body { padding: 20px; }
+        .block-image { width: 100%; border-radius: 0; margin-bottom: 10px; border: 1px solid #333; filter: grayscale(80%); }
+        .caption { font-size: 0.8rem; color: #666; font-family: monospace; }
+        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
+        .block-button { display: inline-block; padding: 8px 16px; background: transparent; border: 1px solid #94a3b8; color: #94a3b8; text-decoration: none; margin-top: 10px; font-size: 0.85rem; text-transform: uppercase; }
+        .block-button:hover { background: #94a3b8; color: #050505; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: monospace; }
+        .data-table th, .data-table td { padding: 10px; text-align: left; border: 1px solid #333; }
+        .data-table th { color: #94a3b8; }
+
+        /* AXIOM VIBE: Industrial, Technical, Slate */
+        .theme-axiom .content-block:hover { border-style: solid; border-color: #94a3b8; }
     </style>
 </head>
-<body>
+<body class="theme-axiom">
     <div class="container">
         <h1>02. Axiom Industries</h1>
         <p class="subtitle">The Matter / Hardware / Physical</p>
-        <div class="section">
-            <h2>Obsidian Ledger</h2>
-            <ul>
-                <li>Physical cold storage setup</li>
-                <li>Hardware modifications</li>
-                <li>Server setups & tech builds</li>
-                <li>Tech teardown photos</li>
-            </ul>
+        
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">⚙️</span><h3>Obsidian Ledger Specs</h3></div>
+            <div class="block-body">
+                <p>Physical cold storage setup notes. Hardware modifications and server build logs.</p>
+                <p class="meta-text">- Status: In Progress | Tag: #hardware</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>Infrastructure</h2>
-            <ul>
-                <li>Power electronics notes</li>
-                <li>Security guard notes</li>
-                <li>System audits</li>
-                <li>TM legal prerequisites</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">📷</span><h3>Tech Teardown Archive</h3></div>
+            <div class="block-body">
+                <img src="https://via.placeholder.com/800x400/111/94a3b8?text=Teardown+Photo" alt="Teardown" class="block-image">
+                <p class="caption">FIG 1.1: Internal routing of the primary node.</p>
+            </div>
         </div>
-        <div class="section">
-            <h2>Physical Projects</h2>
-            <ul>
-                <li>Aquaponics (Plant/Fish system)</li>
-                <li>Bass learning (instrument)</li>
-                <li>ASL signing book</li>
-                <li>Industrialism (sewing/fashion/calligraphy)</li>
-            </ul>
+
+        <div class="content-block">
+            <div class="block-header"><span class="block-icon">📊</span><h3>Physical Projects Ledger</h3></div>
+            <div class="block-body">
+                <table class="data-table">
+                    <thead><tr><th>Project</th><th>Phase</th><th>Next Action</th></tr></thead>
+                    <tbody>
+                        <tr><td>Aquaponics</td><td>Setup</td><td>Source pump</td></tr>
+                        <tr><td>Bass Learning</td><td>Active</td><td>Practice scales</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
         <a href="index.html" class="back">← Return to Core</a>
     </div>
 </body>
