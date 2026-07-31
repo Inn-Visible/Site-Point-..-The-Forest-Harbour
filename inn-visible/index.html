@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inn.Visible | The Core</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #050505;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { max-width: 800px; width: 100%; text-align: center; }
+        .logo-container { width: 200px; height: 200px; margin: 0 auto 30px; }
+        .tetrahedron-logo { width: 100%; height: auto; filter: drop-shadow(0 0 20px rgba(138, 180, 248, 0.6)); animation: pulse 4s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        h1 { font-size: 2rem; margin-bottom: 10px; color: #fff; letter-spacing: 2px; }
+        .tagline { color: #666; font-style: italic; margin-bottom: 30px; }
+        .philosophy { max-width: 500px; margin: 0 auto 40px; font-size: 0.9rem; line-height: 1.8; }
+        .vertex-nav { position: relative; width: 300px; height: 300px; margin: 40px auto; }
+        .vertex-point { position: absolute; width: 50px; height: 50px; border: 2px solid #8ab4f8; border-radius: 50%; background: #0f0f0f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #8ab4f8; transition: all 0.3s ease; }
+        .vertex-point:hover { background: #8ab4f8; color: #050505; box-shadow: 0 0 20px rgba(138, 180, 248, 0.6); transform: scale(1.1); }
+        .vertex-point.top { top: 0; left: 50%; transform: translateX(-50%); }
+        .vertex-point.right { top: 50%; right: 0; transform: translateY(-50%); }
+        .vertex-point.bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+        .vertex-point.left { top: 50%; left: 0; transform: translateY(-50%); }
+        .hint { font-size: 0.75rem; color: #666; margin: 20px 0; }
+        footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; font-size: 0.8rem; }
+        footer a { color: #8ab4f8; text-decoration: none; margin: 0 10px; }
+        footer a:hover { color: #fff; text-decoration: underline; }
+        .footer-phrase { margin-top: 15px; font-size: 0.7rem; color: #666; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <svg class="tetrahedron-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path d="M 100 10 L 170 130 L 100 190 L 30 130 Z" fill="none" stroke="#8ab4f8" stroke-width="2" filter="url(#glow)"/>
+                <line x1="100" y1="10" x2="100" y2="190" stroke="#8ab4f8" stroke-width="1.5" filter="url(#glow)"/>
+                <line x1="30" y1="130" x2="170" y2="130" stroke="#8ab4f8" stroke-width="1.5" filter="url(#glow)"/>
+                <circle cx="100" cy="100" r="4" fill="#8ab4f8" filter="url(#glow)"/>
+                <circle cx="100" cy="10" r="3" fill="#8ab4f8"/>
+                <circle cx="170" cy="130" r="3" fill="#8ab4f8"/>
+                <circle cx="100" cy="190" r="3" fill="#8ab4f8"/>
+                <circle cx="30" cy="130" r="3" fill="#8ab4f8"/>
+            </svg>
+        </div>
+        <h1>Inn.Visible</h1>
+        <p class="tagline">"Welcome to the hive .. I'm Quillinn ;3"</p>
+        <div class="philosophy">
+            <p>Quiet excavations. Foggy nights. Unscripted wanderings through digital ruins.</p>
+            <br>
+            <p><strong>Skeleton architecture first. Then grow.</strong></p>
+        </div>
+        <div class="vertex-nav">
+            <div class="vertex-point top" onclick="location.href='eigen.html'">01</div>
+            <div class="vertex-point right" onclick="location.href='axiom.html'">02</div>
+            <div class="vertex-point bottom" onclick="location.href='keystone.html'">03</div>
+            <div class="vertex-point left" onclick="location.href='baseline.html'">04</div>
+        </div>
+        <p class="hint">Click each vertex to explore</p>
+        <footer>
+            <div>
+                <a href="eigen.html">EIGEN</a> | 
+                <a href="axiom.html">AXIOM</a> | 
+                <a href="baseline.html">BASELINE</a> | 
+                <a href="keystone.html">KEYSTONE</a>
+            </div>
+            <p class="footer-phrase">"Know Thyself | Do No Harm | Hold the Truth"</p>
+        </footer>
+    </div>
+</body>
+</html>
