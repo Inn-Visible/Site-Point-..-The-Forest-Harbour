@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: portal-gate -->
+<!-- build: starry-night -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -61,7 +61,11 @@ gate.onsubmit = e => {
   }
 };
 
-/* ---- hourglass loader: end above, nether below, overworld at the keys ---- */
+/* ---- hourglass loader: starry night ----
+   SPIN CHEAT-SHEET (the truth, at last):
+   - the two dir signs are independent knobs.
+   - OPPOSITE signs = reverse polarities. SAME signs = same direction.
+   - the vertex-flip does NOT affect spin direction. ever. */
 const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
 let W=0,H=0;
 function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
@@ -108,7 +112,7 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
     else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
     ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
   });
-  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#f5f0ff';ctx.shadowColor=glow;ctx.shadowBlur=10;
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10; // star-gold vertices
     ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
 }
 
@@ -118,11 +122,11 @@ function frame(now){
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(45,25,60,.18)');bg.addColorStop(1,'rgba(0,0,0,0)'); // void mist
+  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)'); // indigo night mist
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  const size=Math.max(36, Math.min(W*.30,H*.20)), gap=H*.03;
-  drawTetra(W/2, H/2-size-gap/2, size, t, +1, 0,   '#79f2a6','#1fae66', false); // top: THE END (spin reversed)
-  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#c95bd8','#8a2ba0', true ); // bottom: NETHER (flip inverts apparent spin)
+  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10; // separated, breathing
+  drawTetra(W/2, H/2-size-gap/2, size, t, +1, 0,   '#d3e0f2','#8aa8d4', false); // top: starlight silver
+  drawTetra(W/2, H/2+size+gap/2, size, t, -1, 2.1, '#7f9fd4','#41609c', true ); // bottom: deep night blue
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
