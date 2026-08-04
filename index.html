@@ -52,7 +52,7 @@ gate.onsubmit = e => {
   e.preventDefault();
   const c = code.value.trim().toUpperCase();
   if (PASSKEYS.includes(c)) {
-    localStorage.setItem('hive_access', String(Date.now() + 30*864e5)); // 1 month
+    localStorage.setItem('hive_access', String(Date.now() + 30*864e5));
     if (uid.value.trim()) localStorage.setItem('hive_user', uid.value.trim());
     location.href = 'core.html';
   } else {
@@ -60,7 +60,7 @@ gate.onsubmit = e => {
   }
 };
 
-/* ---- hourglass loader: slower, gentler, zero-proof ---- */
+/* ---- hourglass loader: the lava lamp ---- */
 const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
 let W=0,H=0;
 function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
@@ -79,7 +79,7 @@ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 
 function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
-  const SPEED=0.35;                       // slowed for motion sickness
+  const SPEED=0.35;
   const spin=t*SPEED*dir;                 // top: -1 (CCW) .. bottom: +1 (CW)
   const tilt=-0.42, wob=0.05*Math.sin(t*0.6+phase);
   const cs=Math.cos(spin),sn=Math.sin(spin),cx_=Math.cos(tilt),sx_=Math.sin(tilt),
@@ -113,7 +113,7 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
 
 const start=performance.now();
 function frame(now){
-  if(W<10||H<10) resize();                // zero-guard: never collapse again
+  if(W<10||H<10) resize();
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
