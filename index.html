@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: moon-oxblood -->
+<!-- build: portal-gate -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,10 +19,10 @@
   .login .head{letter-spacing:.2em;color:#cfcfcf;margin-bottom:12px}
   .login input{width:100%;background:#0d0d0d;border:1px solid #333;border-radius:4px;
        color:#e8e8e8;font:inherit;letter-spacing:.08em;padding:10px 12px;margin-bottom:10px;outline:none}
-  .login input:focus{border-color:#7b6cff;box-shadow:0 0 12px rgba(123,108,255,.35)}
+  .login input:focus{border-color:#4a90d9;box-shadow:0 0 12px rgba(74,144,217,.4)} /* overworld blue */
   .login button{background:none;border:1px solid #333;border-radius:4px;color:#8ab4ff;
        font:inherit;letter-spacing:.15em;padding:8px 14px;cursor:pointer;margin-bottom:14px}
-  .login button:hover{border-color:#7b6cff;color:#c7b9ff}
+  .login button:hover{border-color:#8ab4ff;color:#bcd6ff;box-shadow:0 0 12px rgba(138,180,255,.35)}
   .err{color:#ff7b7b;min-height:16px;font-size:12px;letter-spacing:.1em;margin-bottom:6px}
   .links{color:#8a8a8a;letter-spacing:.08em;display:flex;flex-direction:column;gap:6px}
   .links a{color:#8ab4ff;text-decoration:none}
@@ -61,7 +61,7 @@ gate.onsubmit = e => {
   }
 };
 
-/* ---- hourglass loader: the lava lamp (spin UNTOUCHED) ---- */
+/* ---- hourglass loader: end above, nether below, overworld at the keys ---- */
 const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
 let W=0,H=0;
 function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
@@ -81,7 +81,7 @@ const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 
 function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
   const SPEED=0.35;
-  const spin=t*SPEED*dir;                 // top: -1 (CCW) .. bottom: +1 (CW)
+  const spin=t*SPEED*dir;
   const tilt=-0.42, wob=0.05*Math.sin(t*0.6+phase);
   const cs=Math.cos(spin),sn=Math.sin(spin),cx_=Math.cos(tilt),sx_=Math.sin(tilt),
         cw=Math.cos(wob),sw=Math.sin(wob);
@@ -108,7 +108,7 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
     else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
     ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
   });
-  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#f0e8ea';ctx.shadowColor=glow;ctx.shadowBlur=10;
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#f5f0ff';ctx.shadowColor=glow;ctx.shadowBlur=10;
     ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
 }
 
@@ -118,11 +118,11 @@ function frame(now){
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(70,45,70,.16)');bg.addColorStop(1,'rgba(0,0,0,0)'); // plum mist
+  bg.addColorStop(0,'rgba(45,25,60,.18)');bg.addColorStop(1,'rgba(0,0,0,0)'); // void mist
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   const size=Math.max(36, Math.min(W*.30,H*.20)), gap=H*.03;
-  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#cdc6da','#948bb0', false); // top: moon-fog
-  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#a8505e','#712f3a', true ); // bottom: oxblood candle
+  drawTetra(W/2, H/2-size-gap/2, size, t, +1, 0,   '#79f2a6','#1fae66', false); // top: THE END (spin reversed)
+  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#c95bd8','#8a2ba0', true ); // bottom: NETHER (flip inverts apparent spin)
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
