@@ -1,0 +1,67 @@
+:root {
+  --bg: #080808;
+  --fg: #d4d4d4;
+  --accent: #ffb000;
+  --dim: #333333;
+  --font: 'Courier New', Courier, monospace;
+}
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  min-height: 100vh; overflow: hidden;
+}
+.terminal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--dim);
+  font-size: 0.75rem; letter-spacing: 3px; color: var(--dim);
+}
+.blink { animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.container {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+h1 {
+  font-size: 1.2rem; font-weight: normal;
+  letter-spacing: 6px; margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+.subtitle {
+  color: var(--dim); font-size: 0.8rem;
+  margin-bottom: 3rem; letter-spacing: 1px;
+}
+svg { width: 100%; max-width: 800px; height: auto; }
+.node-circle {
+  fill: var(--bg); stroke: var(--fg); stroke-width: 1.5;
+  transition: all 0.3s ease;
+}
+.node-group:hover .node-circle {
+  fill: var(--fg); stroke: var(--accent); stroke-width: 3;
+}
+.node-text {
+  fill: var(--fg); font-family: var(--font); font-size: 13px;
+  text-anchor: middle; dominant-baseline: middle;
+  pointer-events: none; letter-spacing: 2px;
+}
+.node-label {
+  fill: #666; font-family: var(--font); font-size: 10px;
+  text-anchor: middle; pointer-events: none;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.edge-line {
+  stroke: var(--dim); stroke-width: 1;
+  stroke-dasharray: 4;
+  animation: dash 30s linear infinite;
+}
+@keyframes dash { to { stroke-dashoffset: -200; } }
+footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--dim);
+  font-size: 0.7rem; color: var(--dim);
+  text-align: center; letter-spacing: 2px;
+}

@@ -1,0 +1,121 @@
+:root {
+  --bg: #080808;
+  --fg: #d4d4d4;
+  --accent: #00ff41;
+  --dim: #333333;
+  --font: 'Courier New', Courier, monospace;
+}
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  min-height: 100vh; overflow: hidden;
+}
+.terminal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--dim);
+  font-size: 0.75rem; letter-spacing: 3px; color: var(--dim);
+}
+.blink { animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.container {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+h1 {
+  font-size: 1.2rem; font-weight: normal;
+  letter-spacing: 6px; margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+.subtitle {
+  color: var(--dim); font-size: 0.8rem;
+  margin-bottom: 3rem; letter-spacing: 1px;
+}
+svg { width: 100%; max-width: 800px; height: auto; }
+.node-circle {
+  fill: var(--bg); stroke: var(--fg); stroke-width: 1.5;
+  transition: all 0.3s ease;
+}
+.node-group:hover .node-circle {
+  fill: var(--fg); stroke: var(--accent); stroke-width: 3;
+}
+.node-text {
+  fill: var(--fg); font-family: var(--font); font-size: 16px;
+  text-anchor: middle; dominant-baseline: middle;
+  pointer-events: none; letter-spacing: 2px;
+}
+.node-label {
+  fill: #666; font-family: var(--font); font-size: 10px;
+  text-anchor: middle; pointer-events: none;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.edge-line {
+  stroke: var(--dim); stroke-width: 1;
+  stroke-dasharray: 4;
+  animation: dash 30s linear infinite;
+}
+@keyframes dash { to { stroke-dashoffset: -200; } }
+footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--dim);
+  font-size: 0.7rem; color: var(--dim);
+  text-align: center; letter-spacing: 2px;
+}
+footer a {
+  color: var(--accent); text-decoration: none;
+  letter-spacing: 2px;
+}
+footer a:hover { text-decoration: underline; }
+
+/* ---- in-house card view ---- */
+.card-view {
+  position: fixed; inset: 0;
+  background: rgba(8,8,8,0.96);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem; z-index: 10;
+}
+.card-view.hidden { display: none; }
+.card-frame {
+  width: 100%; max-width: 720px; max-height: 84vh;
+  border: 1px solid var(--dim);
+  display: flex; flex-direction: column;
+  background: var(--bg);
+}
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--dim);
+}
+.card-title { color: var(--accent); letter-spacing: 3px; font-size: 0.85rem; }
+.card-close {
+  background: none; border: 1px solid var(--dim);
+  color: var(--fg); font-family: var(--font);
+  font-size: 0.7rem; letter-spacing: 2px;
+  padding: 0.4rem 0.7rem; cursor: pointer;
+}
+.card-close:hover { border-color: var(--accent); color: var(--accent); }
+.card-body {
+  padding: 1.5rem 1.75rem; overflow-y: auto;
+  font-size: 0.85rem; line-height: 1.7;
+  letter-spacing: 0.5px; color: var(--fg);
+}
+.card-body h2 {
+  font-size: 0.9rem; letter-spacing: 3px; font-weight: normal;
+  margin: 1.5rem 0 0.5rem; text-transform: uppercase;
+}
+.card-body h2:first-child { margin-top: 0; }
+.card-body p.tag { color: #888; font-style: italic; }
+.card-body ul, .card-body ol { padding-left: 1.25rem; margin: 0.5rem 0; }
+.card-body li { margin: 0.25rem 0; }
+.card-body a { color: var(--accent); text-decoration: none; }
+.card-body a:hover { text-decoration: underline; }
+.card-body code { color: var(--accent); }
+.card-body .feeds {
+  margin-top: 1.5rem; padding-top: 0.75rem;
+  border-top: 1px dashed var(--dim);
+  color: #666; font-size: 0.72rem; letter-spacing: 2px;
+}
