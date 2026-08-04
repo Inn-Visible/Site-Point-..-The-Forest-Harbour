@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: starry-night -->
+<!-- build: starry-orb -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -61,11 +61,11 @@ gate.onsubmit = e => {
   }
 };
 
-/* ---- hourglass loader: starry night ----
-   SPIN CHEAT-SHEET (the truth, at last):
-   - the two dir signs are independent knobs.
-   - OPPOSITE signs = reverse polarities. SAME signs = same direction.
-   - the vertex-flip does NOT affect spin direction. ever. */
+/* ---- starry night + the pink orb ----
+   SPIN CHEAT-SHEET: opposite signs = reverse polarities; same signs = same direction.
+   TOP_DIR / BOT_DIR are the single source of truth — flares derive their
+   counter-spin from these, so flipping a tetra flips its flares too. */
+const TOP_DIR = +1, BOT_DIR = -1;
 const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
 let W=0,H=0;
 function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
@@ -112,8 +112,50 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
     else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
     ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
   });
-  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10; // star-gold vertices
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10;
     ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
+}
+
+/* ---- the pink orb: floating, flaring, randomized central spin ---- */
+const orbDir   = (Math.random()<0.5?-1:1);          // rerolled every load
+const orbSpeed = 1 + Math.random()*1.2;             // rerolled every load
+const flares=[]; for(let i=0;i<26;i++) flares.push({
+  a:Math.random()*6.283, rad:6+Math.random()*5,
+  life:Math.random()*70, max:70+Math.random()*50,
+  sp:0.4+Math.random()*0.8, w:0.02+Math.random()*0.03
+});
+function drawOrb(t){
+  const cx=W/2 + Math.sin(t*0.6+1)*3;
+  const cy=H/2 + Math.sin(t*0.9)*4;                 // floating bob
+  for(const f of flares){
+    const dir = (cy + Math.sin(f.a)*f.rad) < H/2 ? -TOP_DIR : -BOT_DIR; // counter-spin per side
+    const ta=f.a - dir*f.w*8, tr=Math.max(2,f.rad - f.sp*2.5);
+    const x1=cx+Math.cos(ta)*tr,     y1=cy+Math.sin(ta)*tr*0.9;
+    const x2=cx+Math.cos(f.a)*f.rad, y2=cy+Math.sin(f.a)*f.rad*0.9;
+    const al=Math.max(0, 1-f.life/f.max)*0.8;
+    ctx.save();
+    ctx.strokeStyle='#ffcf6e'; ctx.globalAlpha=al; ctx.lineWidth=1.4;
+    ctx.shadowColor='#ffcf6e'; ctx.shadowBlur=6;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+    f.a += dir*f.w*2; f.rad += f.sp*0.45; f.life++;
+    if(f.life>f.max || f.rad>H*0.09){ f.a=Math.random()*6.283; f.rad=6+Math.random()*5; f.life=0; }
+  }
+  ctx.save();                                        // pink glow + core
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,26);
+  g.addColorStop(0,'rgba(255,170,205,.9)');
+  g.addColorStop(.25,'rgba(255,123,176,.5)');
+  g.addColorStop(1,'rgba(255,123,176,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,26,0,6.283); ctx.fill();
+  ctx.shadowColor='#ff4f96'; ctx.shadowBlur=14; ctx.fillStyle='#ffd7e8';
+  ctx.beginPath(); ctx.arc(cx,cy,4.5,0,6.283); ctx.fill();
+  ctx.restore();
+  for(let k=0;k<3;k++){                              // central randomized spin sparks
+    const sa=t*orbSpeed*orbDir + k*2.094;
+    ctx.save(); ctx.fillStyle='#ffedb0'; ctx.shadowColor='#ffcf6e'; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(cx+Math.cos(sa)*9, cy+Math.sin(sa)*9, 1.4, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
 }
 
 const start=performance.now();
@@ -122,11 +164,12 @@ function frame(now){
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)'); // indigo night mist
+  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10; // separated, breathing
-  drawTetra(W/2, H/2-size-gap/2, size, t, +1, 0,   '#d3e0f2','#8aa8d4', false); // top: starlight silver
-  drawTetra(W/2, H/2+size+gap/2, size, t, -1, 2.1, '#7f9fd4','#41609c', true ); // bottom: deep night blue
+  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10;
+  drawTetra(W/2, H/2-size-gap/2, size, t, TOP_DIR, 0,   '#d3e0f2','#8aa8d4', false); // starlight silver
+  drawTetra(W/2, H/2+size+gap/2, size, t, BOT_DIR, 2.1,'#7f9fd4','#41609c', true ); // deep night blue
+  drawOrb(t);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
