@@ -1,8 +1,8 @@
 const nodes = [
-  { id: 'EIGEN',    label: 'RESEARCH',    x: 400, y: 150, url: 'index.html' },
-  { id: 'AXIOM',    label: 'APPLICATION', x: 620, y: 300, url: '#' },
-  { id: 'BASELINE', label: 'CREATIVE',    x: 400, y: 450, url: '#' },
-  { id: 'KEYSTONE', label: 'FINANCE',     x: 180, y: 300, url: '#' }
+  { id: 'EIGEN',    label: 'RESEARCH',    x: 400, y: 150, url: 'https://innvisible.org/eigen.html' },
+  { id: 'AXIOM',    label: 'APPLICATION', x: 620, y: 300, url: 'https://innvisible.org/axiom.html' },
+  { id: 'BASELINE', label: 'CREATIVE',    x: 400, y: 460, url: 'https://innvisible.org/baseline.html' },
+  { id: 'KEYSTONE', label: 'FINANCE',     x: 180, y: 300, url: 'https://innvisible.org/keystone.html' }
 ];
 
 const links = [[0,1],[1,2],[2,3],[3,0],[0,2],[1,3]];
