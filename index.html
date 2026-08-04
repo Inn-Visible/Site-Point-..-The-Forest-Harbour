@@ -12,7 +12,7 @@
   header{padding:26px 0 6px;text-align:center}
   header h1{font-size:18px;letter-spacing:.4em;color:#e8e8e8;font-weight:normal}
   header .sub{font-size:11px;letter-spacing:.3em;color:#7a7a7a;margin-top:8px}
-  #loader{flex:1;width:100%;min-height:260px;display:block}
+  #loader{width:100%;height:46vh;min-height:260px;display:block}
   .status{font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin:4px 0 16px}
   .login{width:min(680px,88%);padding-bottom:36px;font-size:13px}
   .login .head{letter-spacing:.2em;color:#cfcfcf;margin-bottom:12px}
@@ -60,12 +60,14 @@ gate.onsubmit = e => {
   }
 };
 
-/* ---- hourglass loader: slower, gentler ---- */
+/* ---- hourglass loader: slower, gentler, zero-proof ---- */
 const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
 let W=0,H=0;
 function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
   canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);}
-addEventListener('resize',resize);resize();
+addEventListener('resize',resize);
+addEventListener('load',resize);
+resize();
 
 const r=Math.sqrt(8)/3;
 const V=[[0,-1,0],[r,1/3,0],[-r/2,1/3,r*.8660254],[-r/2,1/3,-r*.8660254]];
@@ -111,7 +113,18 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
 
 const start=performance.now();
 function frame(now){
+  if(W<10||H<10) resize();                // zero-guard: never collapse again
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(55,55,105,.16)');bg
+  bg.addColorStop(0,'rgba(55,55,105,.16)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const size=Math.max(36, Math.min(W*.30,H*.20)), gap=H*.03;
+  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#7fe3c9','#20c9a6', false); // top: CCW
+  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#8f9dff','#6a5cff', true ); // bottom: CW
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
