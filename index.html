@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: fog-candle -->
+<!-- build: moon-oxblood -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -108,7 +108,7 @@ function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
     else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
     ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
   });
-  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#eef';ctx.shadowColor=glow;ctx.shadowBlur=10;
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#f0e8ea';ctx.shadowColor=glow;ctx.shadowBlur=10;
     ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
 }
 
@@ -118,11 +118,11 @@ function frame(now){
   const t=(now-start)/1000;
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(55,55,105,.16)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  bg.addColorStop(0,'rgba(70,45,70,.16)');bg.addColorStop(1,'rgba(0,0,0,0)'); // plum mist
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   const size=Math.max(36, Math.min(W*.30,H*.20)), gap=H*.03;
-  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#b9c8c6','#849895', false); // top: fog
-  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#e3b264','#a97b2f', true ); // bottom: candle
+  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#cdc6da','#948bb0', false); // top: moon-fog
+  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#a8505e','#712f3a', true ); // bottom: oxblood candle
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
