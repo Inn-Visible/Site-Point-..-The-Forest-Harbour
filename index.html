@@ -120,8 +120,8 @@ function frame(now){
   bg.addColorStop(0,'rgba(55,55,105,.16)');bg.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   const size=Math.max(36, Math.min(W*.30,H*.20)), gap=H*.03;
-  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#b8c9d6','#8aa4b8', false); // top: fog-steel
-  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#ff9a62','#e2662c', true ); // bottom: hearth-ember
+  drawTetra(W/2, H/2-size-gap/2, size, t, -1, 0,   '#b9c8c6','#849895', false); // top: fog
+  drawTetra(W/2, H/2+size+gap/2, size, t, +1, 2.1, '#e3b264','#a97b2f', true ); // bottom: candle
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
