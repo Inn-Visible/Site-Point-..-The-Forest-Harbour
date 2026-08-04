@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- build: night-gate -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,27 +9,29 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #c77dff; margin-bottom: 10px; font-size: 1.8rem; }
+        h1 { color: #d3e0f2; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .back { display: inline-block; margin-top: 30px; color: #c77dff; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #c77dff; color: #050505; }
+        .back { display: inline-block; margin-top: 30px; color: #7f9fd4; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
+        .back:hover { background: #7f9fd4; color: #050505; }
         .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
+        .content-block:hover { border-style: solid; border-color: #8aa8d4; }
+        .passkey-block { border-color: #ff7bb0; }
+        .passkey-block:hover { border-color: #ff9ecb; }
         .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
         .block-header h3 { margin: 0; color: #cbd5e1; }
         .block-icon { font-size: 1.2rem; }
         .block-body { padding: 20px; }
         .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
-        .block-button { display: inline-block; padding: 8px 16px; background: #c77dff; border: 1px solid #c77dff; color: #050505; text-decoration: none; margin-top: 10px; font-size: 0.85rem; }
-        .block-button:hover { background: transparent; color: #c77dff; }
-        .theme-donations .content-block:hover { border-style: solid; border-color: #c77dff; }
+        .block-button { display: inline-block; padding: 8px 16px; background: #ffcf6e; border: 1px solid #ffcf6e; color: #050505; text-decoration: none; margin-top: 10px; font-size: 0.85rem; }
+        .block-button:hover { background: transparent; color: #ffcf6e; }
     </style>
 </head>
-<body class="theme-donations">
+<body>
     <div class="container">
         <h1>Passkeys & Donations</h1>
         <p class="subtitle">The Gate / Fuel / Support</p>
 
-        <div class="content-block">
+        <div class="content-block passkey-block">
             <div class="block-header"><span class="block-icon">🎟</span><h3>1-Month Passkey</h3></div>
             <div class="block-body">
                 <p>Thirty days of full hive access — the core plus all four pillars. After purchase, your code is entered at the door.</p>
