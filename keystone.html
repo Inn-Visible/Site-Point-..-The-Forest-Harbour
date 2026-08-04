@@ -3,70 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keystone Solutions | Inn.Visible</title>
+    <title>Keystone Works | Inn.Visible</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #d4af37; margin-bottom: 10px; font-size: 1.8rem; }
+        h1 { color: #c77dff; margin-bottom: 10px; font-size: 1.8rem; }
         .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .back { display: inline-block; margin-top: 30px; color: #d4af37; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #d4af37; color: #050505; }
-
-        .content-block { background: #0a0a0a; border-radius: 0; margin-bottom: 25px; border: 1px solid #222; }
-        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #000; }
-        .block-header h3 { margin: 0; color: #fff; font-weight: normal; letter-spacing: 1px; }
+        .back { display: inline-block; margin-top: 30px; color: #c77dff; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
+        .back:hover { background: #c77dff; color: #050505; }
+        .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
+        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
+        .block-header h3 { margin: 0; color: #cbd5e1; }
         .block-icon { font-size: 1.2rem; }
         .block-body { padding: 20px; }
-        .block-image { width: 100%; border-radius: 0; margin-bottom: 10px; border: 1px solid #333; }
-        .caption { font-size: 0.8rem; color: #666; }
-        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; }
-        .block-button { display: inline-block; padding: 8px 16px; background: #d4af37; color: #000; text-decoration: none; border-radius: 0; margin-top: 10px; font-weight: bold; letter-spacing: 1px; }
-        .block-button:hover { background: #fff; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .data-table th, .data-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #222; }
-        .data-table th { color: #d4af37; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
-
-        /* KEYSTONE VIBE: Professional, Secure, Gold Accent */
-        .theme-keystone .content-block { border-top: 3px solid #d4af37; }
-        .theme-keystone .block-header { border-bottom: 1px solid #d4af37; }
+        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: monospace; }
+        .data-table th, .data-table td { padding: 10px; text-align: left; border: 1px solid #333; }
+        .data-table th { color: #c77dff; }
+        .theme-keystone .content-block:hover { border-style: solid; border-color: #c77dff; }
     </style>
 </head>
 <body class="theme-keystone">
+    <script>
+      /* hive safeguard — no valid passkey? back to the door */
+      (function(){var a=localStorage.getItem('hive_access');
+        if(!a||+a<Date.now()){location.replace('index.html');}})();
+    </script>
     <div class="container">
-        <h1>04. Keystone Solutions</h1>
-        <p class="subtitle">The Application / Execution / Finance</p>
-        
+        <h1>04. Keystone Works</h1>
+        <p class="subtitle">The Craft / Signal / Output</p>
+
         <div class="content-block">
-            <div class="block-header"><span class="block-icon">💼</span><h3>Finance & Cashflow</h3></div>
+            <div class="block-header"><span class="block-icon">🎙</span><h3>Signal & Noise</h3></div>
             <div class="block-body">
-                <p>Tracking the 50-30-20 rule (Needs/Growth/Savings). Monitoring short-term drops and long-term roots.</p>
-                <p class="meta-text">- Status: Active | Tag: #finance</p>
+                <p>Recording notes, mixdowns, and the honey_smudge vault. One publishable thing per week — the hive eats momentum.</p>
+                <p class="meta-text">- Status: In Forge | Tag: #output</p>
             </div>
         </div>
 
         <div class="content-block">
-            <div class="block-header"><span class="block-icon">📊</span><h3>Services Ledger</h3></div>
+            <div class="block-header"><span class="block-icon">📦</span><h3>Shipped / In Forge</h3></div>
             <div class="block-body">
                 <table class="data-table">
-                    <thead><tr><th>Service</th><th>Status</th><th>Notes</th></tr></thead>
+                    <thead><tr><th>Project</th><th>Phase</th><th>Next</th></tr></thead>
                     <tbody>
-                        <tr><td>Good Catch (Acquisitions)</td><td>Pending</td><td>Defining scope</td></tr>
-                        <tr><td>Integrative Locksmithing</td><td>Active</td><td>Co-op frameworks</td></tr>
+                        <tr><td>Inn.Visible</td><td>Skeleton</td><td>Wire the login</td></tr>
+                        <tr><td>Zine vol.1</td><td>Draft</td><td>Outline</td></tr>
+                        <tr><td>Beat pack</td><td>Idea</td><td>Name it</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="content-block">
-            <div class="block-header"><span class="block-icon">🔗</span><h3>Mental Alignment Resources</h3></div>
+            <div class="block-header"><span class="block-icon">🔑</span><h3>Keystone Habits</h3></div>
             <div class="block-body">
-                <p>Therapy resources, shadow work prompts, and self-regulation tools.</p>
-                <a href="#" class="block-button">Access Tools →</a>
+                <p>Ship small, log everything, protect the quiet hours. The keystone holds the arch.</p>
             </div>
         </div>
 
-        <a href="index.html" class="back">← Return to Core</a>
+        <a href="core.html" class="back">← Return to Core</a>
     </div>
 </body>
 </html>
