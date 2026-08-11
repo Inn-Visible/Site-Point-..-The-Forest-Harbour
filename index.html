@@ -82,10 +82,16 @@
 </footer>
 
 <script>
+// the gate remembers the key: once unlocked, old pages that point
+// at index.html bounce straight through into the house.
+if(localStorage.getItem('hive') === '1'){
+  location.replace('core.html');
+}
 function unlock(){
   const u = document.getElementById('uid').value.trim();
   const p = document.getElementById('pass').value.trim();
   if(u === 'HIVE-0000-0000' && p === 'HIVE-0000-0000'){
+    localStorage.setItem('hive','1');
     location.href = 'core.html';
   }else{
     document.getElementById('lstat').textContent = 'the lock does not turn';
