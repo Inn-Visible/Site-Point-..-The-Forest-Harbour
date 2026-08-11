@@ -1,127 +1,189 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inn.Visible | Hive Entrance</title>
 <style>
-  :root{
-    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
-    --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --silver:#d8dde3;
-    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
-    --serif:Georgia,"Times New Roman",serif;
-  }
-  *{box-sizing:border-box;margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
-    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
-               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
-  main{max-width:760px;margin:0 auto;padding:56px 24px 40px;text-align:center}
-  .qrbox{display:inline-block;background:#f4f6f8;padding:14px;border-radius:10px;
-    box-shadow:0 0 24px rgba(216,232,244,.35)}
-  .qrbox img{width:150px;height:150px;display:block;image-rendering:pixelated}
-  .house{margin-top:22px;font-size:16px;letter-spacing:.5em}
-  .tag{margin-top:10px;color:var(--dim);font-size:11px;letter-spacing:.2em}
-  .ruins{margin-top:26px;color:var(--dim);font-size:12px;letter-spacing:.2em}
-  .tet{margin:30px auto 6px;display:block}
-  .login{margin:34px auto 0;border:1px solid var(--line);background:var(--panel);
-    padding:22px;max-width:420px;text-align:left}
-  .login .h{color:var(--dim);font-size:12px;letter-spacing:.2em;margin-bottom:14px}
-  .login input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
-    font-family:var(--mono);font-size:12px;padding:10px;margin-bottom:10px}
-  .login input:focus{outline:none;border-color:var(--gold)}
-  .btn{background:none;border:1px solid var(--gold);color:var(--gold);
-    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
-    cursor:pointer;margin-top:6px;text-decoration:none;display:inline-block}
-  .btn:hover{background:var(--gold);color:#0a0d12}
-  .lstat{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
-  .keys{margin-top:22px;color:var(--dim);font-size:12px;line-height:2}
-  .keys a{color:var(--blue);text-decoration:none}
-  footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
-    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:#050505;color:#d4d4d4;font-family:'Courier New',Courier,monospace;
+       display:flex;flex-direction:column;align-items:center}
+  header{padding:26px 0 6px;text-align:center}
+  header h1{font-size:18px;letter-spacing:.4em;color:#e8e8e8;font-weight:normal}
+  header .sub{font-size:11px;letter-spacing:.3em;color:#7a7a7a;margin-top:8px}
+  
+  .qrbox{display:inline-block;background:#f4f6f8;padding:10px;border-radius:8px;
+    box-shadow:0 0 24px rgba(216,232,244,.25);margin-bottom:10px}
+  .qrbox img{width:110px;height:110px;display:block;image-rendering:pixelated}
+
+  #loader{width:100%;height:46vh;min-height:260px;display:block}
+  .status{font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin:4px 0 16px}
+  .login{width:min(680px,88%);padding-bottom:36px;font-size:13px}
+  .login .head{letter-spacing:.2em;color:#cfcfcf;margin-bottom:12px}
+  .login input{width:100%;background:#0d0d0d;border:1px solid #333;border-radius:4px;
+       color:#e8e8e8;font:inherit;letter-spacing:.08em;padding:10px 12px;margin-bottom:10px;outline:none}
+  .login input:focus{border-color:#4a90d9;box-shadow:0 0 12px rgba(74,144,217,.4)}
+  .login button{background:none;border:1px solid #333;border-radius:4px;color:#8ab4ff;
+       font:inherit;letter-spacing:.15em;padding:8px 14px;cursor:pointer;margin-bottom:14px}
+  .login button:hover{border-color:#8ab4ff;color:#bcd6ff;box-shadow:0 0 12px rgba(138,180,255,.35)}
+  .err{color:#ff7b7b;min-height:16px;font-size:12px;letter-spacing:.1em;margin-bottom:6px}
+  .links{color:#8a8a8a;letter-spacing:.08em;display:flex;flex-direction:column;gap:6px}
+  .links a{color:#8ab4ff;text-decoration:none}
+  .links a:hover{text-shadow:0 0 8px rgba(138,180,255,.7)}
+  
+  footer{margin-top:auto;border-top:1px solid #222;padding:24px 16px;text-align:center;
+    color:#666;font-size:11px;letter-spacing:.12em;width:100%}
 </style>
 </head>
 <body>
 
-<main>
-  <div class="qrbox"><img src="qr-code.png" alt="house qr"></div>
-  <div class="house">I N N . V I S I B L E</div>
-  <div class="tag">[ hive entrance ]</div>
+<header><h1>Inn.Visible</h1><div class="sub">[ hive entrance ]</div></header>
 
- <style>
-  .spinA{animation:spinA 18s linear infinite;transform-origin:112px 66px}
-  .spinB{animation:spinB 22s linear infinite;transform-origin:118px 199px}
-  .pulse{animation:pulse 2.4s ease-in-out infinite}
-  @keyframes spinA{to{transform:rotate(360deg)}}
-  @keyframes spinB{to{transform:rotate(-360deg)}}
-  @keyframes pulse{50%{opacity:.35}}
-</style>
-<svg class="tet" width="220" height="260" viewBox="0 0 220 260" fill="none" stroke-linejoin="round">
-  <g class="spinA">
-    <polygon points="120,14 168,64 118,128 62,58" stroke="#d8dde3" stroke-width="2"/>
-    <line x1="120" y1="14" x2="118" y2="128" stroke="#d8dde3" stroke-width="1" stroke-dasharray="4 5"/>
-    <line x1="62" y1="58" x2="168" y2="64" stroke="#d8dde3" stroke-width="1" stroke-dasharray="4 5"/>
-  </g>
-  <circle cx="112" cy="138" r="5" fill="#c8452c" class="pulse"/>
-  <circle cx="112" cy="138" r="10" stroke="#c8452c" stroke-width="1" opacity=".5" class="pulse"/>
-  <g class="spinB">
-    <polygon points="118,146 172,196 122,252 60,200" stroke="#3f7fc1" stroke-width="2"/>
-    <line x1="118" y1="146" x2="122" y2="252" stroke="#3f7fc1" stroke-width="1" stroke-dasharray="4 5"/>
-    <line x1="60" y1="200" x2="172" y2="196" stroke="#3f7fc1" stroke-width="1" stroke-dasharray="4 5"/>
-  </g>
-</svg>
+<div class="qrbox"><img src="qr-code.png" alt="house qr"></div>
 
-  <div class="ruins">[ through digital ruins .. ]</div>
+<canvas id="loader"></canvas>
+<div class="status">[ through digital ruins .. ]</div>
 
-  <div class="login">
-    <div class="h">[ login ]</div>
-    <input id="uid" placeholder="user id:" autocomplete="username">
-    <input id="pass" type="password" placeholder="passcode:" autocomplete="current-password"
-      onkeydown="if(event.key==='Enter')unlock()">
-    <button class="btn" onclick="unlock()">[ unlock ]</button>
-    <div class="lstat" id="lstat"></div>
+<form class="login" id="gate">
+  <div class="head">[ login ]</div>
+  <input id="uid" placeholder="user id:" autocomplete="username" spellcheck="false">
+  <input id="code" type="password" placeholder="passcode:" autocomplete="off" spellcheck="false">
+  <div class="err" id="err"></div>
+  <button type="submit">[ unlock ]</button>
+  <div class="links">
+    <span>passkey purchases — <a href="donations.html">{...}</a></span>
+    <span>employee application bypass // <a href="#">—</a> //</span>
   </div>
+</form>
 
-  <div class="keys">
-    passkey purchases — <a href="donations.html">{...}</a><br>
-    employee application bypass // — //
-  </div>
-</main>
-
-<footer>
-  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”
-</footer>
+<footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”</footer>
 
 <script>
-const KEY='hive_access', SES='hive_session', SPAN=30*60*1000;
-function alive(){
-  const a = localStorage.getItem(KEY);
-  return sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
-}
-function refresh(){
-  localStorage.setItem(KEY, String(Date.now()+SPAN));
-  sessionStorage.setItem(SES,'1');
-}
+/* ---- THE MODERN LOCK ---- */
+const KEY = 'hive_access', SES = 'hive_session';
+const access = localStorage.getItem(KEY);
 const wantsGate = location.search.indexOf('gate') !== -1;
-if(!wantsGate && alive()){ location.replace('core.html'); }
-if(wantsGate && alive()){
-  const d = document.createElement('div');
-  d.className = 'keys';
-  d.innerHTML = '<a class="btn" href="core.html">the door is open — enter the house ↗</a>';
-  document.querySelector('main').appendChild(d);
+
+if (access && +access > Date.now()) {
+  sessionStorage.setItem(SES, '1'); 
+  if (!wantsGate) location.replace('core.html');
 }
-function unlock(){
-  const u = document.getElementById('uid').value.trim();
-  const p = document.getElementById('pass').value.trim();
-  if(u === 'HIVE-0000-0000' && p === 'HIVE-0000-0000'){
-    refresh();
+
+gate.onsubmit = e => {
+  e.preventDefault();
+  const u = uid.value.trim();
+  const c = code.value.trim().toUpperCase();
+  
+  if (u === 'HIVE-0000-0000' && c === 'HIVE-0000-0000') {
+    localStorage.setItem('hive_access', String(Date.now() + 30*864e5)); // 30 days
+    sessionStorage.setItem('hive_session', '1');
+    localStorage.setItem('hive_user', u);
     location.href = 'core.html';
-  }else{
-    document.getElementById('lstat').textContent = 'the lock does not turn';
+  } else {
+    err.textContent = 'invalid passkey .. the door stays shut';
+  }
+};
+
+/* ---- THE HOURGLASS & ORB (Aug 4 Original) ---- */
+const TOP_DIR = +1, BOT_DIR = -1;
+const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
+let W=0,H=0;
+function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
+  canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);}
+addEventListener('resize',resize);
+addEventListener('load',resize);
+resize();
+
+const r=Math.sqrt(8)/3;
+const V=[[0,-1,0],[r,1/3,0],[-r/2,1/3,r*.8660254],[-r/2,1/3,-r*.8660254]];
+const FACES=[[0,1,2],[0,2,3],[0,3,1],[1,2,3]];
+const EDGES=[[0,1],[0,2],[0,3],[1,2],[2,3],[3,1]];
+const edgeFaces=EDGES.map(([a,b])=>{const i=[];FACES.forEach((f,k)=>{if(f.includes(a)&&f.includes(b))i.push(k);});return i;});
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+
+function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
+  const SPEED=0.35;
+  const spin=t*SPEED*dir;
+  const tilt=-0.42, wob=0.05*Math.sin(t*0.6+phase);
+  const cs=Math.cos(spin),sn=Math.sin(spin),cx_=Math.cos(tilt),sx_=Math.sin(tilt),
+        cw=Math.cos(wob),sw=Math.sin(wob);
+  const P=V.map(v=>{
+    let [x,y,z]=flip?[v[0],-v[1],v[2]]:v;
+    let X=x*cs+z*sn,Y=y,Z=-x*sn+z*cs;
+    let Y2=Y*cx_-Z*sx_,Z2=Y*sx_+Z*cx_;
+    return [X*cw-Y2*sw, X*sw+Y2*cw, Z2];
+  });
+  const f=4.2;
+  const proj=P.map(([x,y,z])=>{const p=f/(f-z);return [cx+x*size*p, cy-y*size*p];});
+  const cam=[0,0,f];
+  const vis=FACES.map(face=>{
+    const [a,b,c]=face.map(i=>P[i]);
+    let n=cross(sub(b,a),sub(c,a));
+    const cent=[(a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3,(a[2]+b[2]+c[2])/3];
+    if(dot(n,cent)<0)n=n.map(v=>-v);
+    return dot(n,sub(cent,cam))<0;
+  });
+  EDGES.forEach(([a,b],i)=>{
+    const hidden=!vis[edgeFaces[i][0]]&&!vis[edgeFaces[i][1]];
+    ctx.save();
+    if(hidden){ctx.setLineDash([6,7]);ctx.strokeStyle=stroke;ctx.globalAlpha=.3;ctx.lineWidth=1.3;}
+    else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
+    ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
+  });
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
+}
+
+const orbDir   = (Math.random()<0.5?-1:1);
+const orbSpeed = 0.6 + Math.random()*0.7;
+function drawOrb(t){
+  const cx=W/2 + Math.sin(t*0.5+1)*2;
+  const cy=H/2 + Math.sin(t*0.8)*3;
+  ctx.save();
+  const halo=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
+  halo.addColorStop(0,'rgba(217,139,166,.28)');
+  halo.addColorStop(1,'rgba(217,139,166,0)');
+  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(cx,cy,22,0,6.283); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.translate(cx,cy); ctx.rotate(t*0.25*orbDir);
+  ctx.strokeStyle='#ff7bb0'; ctx.globalAlpha=.75; ctx.lineWidth=1;
+  ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.arc(0,0,11,0,6.283); ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.shadowColor='#c9708d'; ctx.shadowBlur=10;
+  const core=ctx.createRadialGradient(cx-1,cy-1,0,cx,cy,5);
+  core.addColorStop(0,'#f3cdd8'); core.addColorStop(1,'#c9708d');
+  ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,4.5,0,6.283); ctx.fill();
+  ctx.restore();
+  for(let k=0;k<3;k++){
+    const sa=t*orbSpeed*orbDir + k*2.094;
+    ctx.save(); ctx.fillStyle='#ffedb0'; ctx.shadowColor='#ffcf6e'; ctx.shadowBlur=6;
+    ctx.globalAlpha=.9;
+    ctx.beginPath(); ctx.arc(cx+Math.cos(sa)*9, cy+Math.sin(sa)*9, 1.2, 0, 6.283); ctx.fill();
+    ctx.restore();
   }
 }
-</script>
 
+const start=performance.now();
+function frame(now){
+  if(W<10||H<10) resize();
+  const t=(now-start)/1000;
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
+  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10;
+  drawTetra(W/2, H/2-size-gap/2, size, t, TOP_DIR, 0,   '#d3e0f2','#8aa8d4', false);
+  drawTetra(W/2, H/2+size+gap/2, size, t, BOT_DIR, 2.1,'#7f9fd4','#41609c', true );
+  drawOrb(t);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
 </body>
 </html>
