@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!-- build: last-light -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inn.Visible | Hive Entrance</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:#050505;color:#d4d4d4;font-family:'Courier New',Courier,monospace;
+       display:flex;flex-direction:column;align-items:center}
+  header{padding:26px 0 6px;text-align:center}
+  header h1{font-size:18px;letter-spacing:.4em;color:#e8e8e8;font-weight:normal}
+  header .sub{font-size:11px;letter-spacing:.3em;color:#7a7a7a;margin-top:8px}
+  #loader{width:100%;height:46vh;min-height:260px;display:block}
+  .status{font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin:4px 0 16px}
+  .login{width:min(680px,88%);padding-bottom:36px;font-size:13px}
+  .login .head{letter-spacing:.2em;color:#cfcfcf;margin-bottom:12px}
+  .login input{width:100%;background:#0d0d0d;border:1px solid #333;border-radius:4px;
+       color:#e8e8e8;font:inherit;letter-spacing:.08em;padding:10px 12px;margin-bottom:10px;outline:none}
+  .login input:focus{border-color:#4a90d9;box-shadow:0 0 12px rgba(74,144,217,.4)} /* overworld blue */
+  .login button{background:none;border:1px solid #333;border-radius:4px;color:#8ab4ff;
+       font:inherit;letter-spacing:.15em;padding:8px 14px;cursor:pointer;margin-bottom:14px}
+  .login button:hover{border-color:#8ab4ff;color:#bcd6ff;box-shadow:0 0 12px rgba(138,180,255,.35)}
+  .err{color:#ff7b7b;min-height:16px;font-size:12px;letter-spacing:.1em;margin-bottom:6px}
+  .links{color:#8a8a8a;letter-spacing:.08em;display:flex;flex-direction:column;gap:6px}
+  .links a{color:#8ab4ff;text-decoration:none}
+  .links a:hover{text-shadow:0 0 8px rgba(138,180,255,.7)}
+</style>
+</head>
+<body>
+<header><h1>Inn.Visible</h1><div class="sub">[ hive entrance ]</div></header>
+<canvas id="loader"></canvas>
+<div class="status">[ through digital ruins .. ]</div>
+
+<form class="login" id="gate">
+  <div class="head">[ login ]</div>
+  <input id="uid" placeholder="user id:" autocomplete="username" spellcheck="false">
+  <input id="code" placeholder="passcode:" autocomplete="off" spellcheck="false">
+  <div class="err" id="err"></div>
+  <button type="submit">[ unlock ]</button>
+  <div class="links">
+    <span>passkey purchases — <a href="donations.html">{...}</a></span>
+    <span>employee application bypass // <a href="#">—</a> //</span> <!-- swap: mailto or form -->
+  </div>
+</form>
+
+<script>
+/* ---- safeguard: grant 30 days, open the core ---- */
+const PASSKEYS = ['HIVE-0000-0000']; // <-- swap in your real 1-month codes
+gate.onsubmit = e => {
+  e.preventDefault();
+  const c = code.value.trim().toUpperCase();
+  if (PASSKEYS.includes(c)) {
+    localStorage.setItem('hive_access', String(Date.now() + 30*864e5));
+    if (uid.value.trim()) localStorage.setItem('hive_user', uid.value.trim());
+    location.href = 'core.html';
+  } else {
+    err.textContent = 'invalid passkey .. the door stays shut';
+  }
+};
+
+/* ---- starry night + the last-light orb ----
+   SPIN CHEAT-SHEET: opposite signs = reverse polarities; same signs = same direction. */
+const TOP_DIR = +1, BOT_DIR = -1;
+const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
+let W=0,H=0;
+function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
+  canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);}
+addEventListener('resize',resize);
+addEventListener('load',resize);
+resize();
+
+const r=Math.sqrt(8)/3;
+const V=[[0,-1,0],[r,1/3,0],[-r/2,1/3,r*.8660254],[-r/2,1/3,-r*.8660254]];
+const FACES=[[0,1,2],[0,2,3],[0,3,1],[1,2,3]];
+const EDGES=[[0,1],[0,2],[0,3],[1,2],[2,3],[3,1]];
+const edgeFaces=EDGES.map(([a,b])=>{const i=[];FACES.forEach((f,k)=>{if(f.includes(a)&&f.includes(b))i.push(k);});return i;});
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+
+function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
+  const SPEED=0.35;
+  const spin=t*SPEED*dir;
+  const tilt=-0.42, wob=0.05*Math.sin(t*0.6+phase);
+  const cs=Math.cos(spin),sn=Math.sin(spin),cx_=Math.cos(tilt),sx_=Math.sin(tilt),
+        cw=Math.cos(wob),sw=Math.sin(wob);
+  const P=V.map(v=>{
+    let [x,y,z]=flip?[v[0],-v[1],v[2]]:v;
+    let X=x*cs+z*sn,Y=y,Z=-x*sn+z*cs;
+    let Y2=Y*cx_-Z*sx_,Z2=Y*sx_+Z*cx_;
+    return [X*cw-Y2*sw, X*sw+Y2*cw, Z2];
+  });
+  const f=4.2;
+  const proj=P.map(([x,y,z])=>{const p=f/(f-z);return [cx+x*size*p, cy-y*size*p];});
+  const cam=[0,0,f];
+  const vis=FACES.map(face=>{
+    const [a,b,c]=face.map(i=>P[i]);
+    let n=cross(sub(b,a),sub(c,a));
+    const cent=[(a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3,(a[2]+b[2]+c[2])/3];
+    if(dot(n,cent)<0)n=n.map(v=>-v);
+    return dot(n,sub(cent,cam))<0;
+  });
+  EDGES.forEach(([a,b],i)=>{
+    const hidden=!vis[edgeFaces[i][0]]&&!vis[edgeFaces[i][1]];
+    ctx.save();
+    if(hidden){ctx.setLineDash([6,7]);ctx.strokeStyle=stroke;ctx.globalAlpha=.3;ctx.lineWidth=1.3;}
+    else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
+    ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
+  });
+  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
+}
+
+/* ---- the orb: last-light edition ----
+   sleek, contained, resilient. no meteors.
+   dashed ring = the passkey block's border, orbiting slow.
+   electrons kept, calmer. spin rerolled each load. */
+const orbDir   = (Math.random()<0.5?-1:1);
+const orbSpeed = 0.6 + Math.random()*0.7;
+function drawOrb(t){
+  const cx=W/2 + Math.sin(t*0.5+1)*2;
+  const cy=H/2 + Math.sin(t*0.8)*3;
+  ctx.save();                                        // dusty halo, very low alpha
+  const halo=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
+  halo.addColorStop(0,'rgba(217,139,166,.28)');
+  halo.addColorStop(1,'rgba(217,139,166,0)');
+  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(cx,cy,22,0,6.283); ctx.fill();
+  ctx.restore();
+  ctx.save();                                        // dashed containment ring
+  ctx.translate(cx,cy); ctx.rotate(t*0.25*orbDir);
+  ctx.strokeStyle='#ff7bb0'; ctx.globalAlpha=.75; ctx.lineWidth=1;
+  ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.arc(0,0,11,0,6.283); ctx.stroke();
+  ctx.restore();
+  ctx.save();                                        // muted rose core, contained glow
+  ctx.shadowColor='#c9708d'; ctx.shadowBlur=10;
+  const core=ctx.createRadialGradient(cx-1,cy-1,0,cx,cy,5);
+  core.addColorStop(0,'#f3cdd8'); core.addColorStop(1,'#c9708d');
+  ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,4.5,0,6.283); ctx.fill();
+  ctx.restore();
+  for(let k=0;k<3;k++){                              // mini electron orbit, kept
+    const sa=t*orbSpeed*orbDir + k*2.094;
+    ctx.save(); ctx.fillStyle='#ffedb0'; ctx.shadowColor='#ffcf6e'; ctx.shadowBlur=6;
+    ctx.globalAlpha=.9;
+    ctx.beginPath(); ctx.arc(cx+Math.cos(sa)*9, cy+Math.sin(sa)*9, 1.2, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
+}
+
+const start=performance.now();
+function frame(now){
+  if(W<10||H<10) resize();
+  const t=(now-start)/1000;
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
+  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10;
+  drawTetra(W/2, H/2-size-gap/2, size, t, TOP_DIR, 0,   '#d3e0f2','#8aa8d4', false);
+  drawTetra(W/2, H/2+size+gap/2, size, t, BOT_DIR, 2.1,'#7f9fd4','#41609c', true );
+  drawOrb(t);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

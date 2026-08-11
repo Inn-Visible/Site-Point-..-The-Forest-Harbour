@@ -1,170 +1,301 @@
-<!DOCTYPE html>
-<!-- build: last-light -->
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inn.Visible | Hive Entrance</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inn.Visible — refuge in plain sight</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%}
-  body{background:#050505;color:#d4d4d4;font-family:'Courier New',Courier,monospace;
-       display:flex;flex-direction:column;align-items:center}
-  header{padding:26px 0 6px;text-align:center}
-  header h1{font-size:18px;letter-spacing:.4em;color:#e8e8e8;font-weight:normal}
-  header .sub{font-size:11px;letter-spacing:.3em;color:#7a7a7a;margin-top:8px}
-  #loader{width:100%;height:46vh;min-height:260px;display:block}
-  .status{font-size:12px;letter-spacing:.3em;color:#8a8a8a;margin:4px 0 16px}
-  .login{width:min(680px,88%);padding-bottom:36px;font-size:13px}
-  .login .head{letter-spacing:.2em;color:#cfcfcf;margin-bottom:12px}
-  .login input{width:100%;background:#0d0d0d;border:1px solid #333;border-radius:4px;
-       color:#e8e8e8;font:inherit;letter-spacing:.08em;padding:10px 12px;margin-bottom:10px;outline:none}
-  .login input:focus{border-color:#4a90d9;box-shadow:0 0 12px rgba(74,144,217,.4)} /* overworld blue */
-  .login button{background:none;border:1px solid #333;border-radius:4px;color:#8ab4ff;
-       font:inherit;letter-spacing:.15em;padding:8px 14px;cursor:pointer;margin-bottom:14px}
-  .login button:hover{border-color:#8ab4ff;color:#bcd6ff;box-shadow:0 0 12px rgba(138,180,255,.35)}
-  .err{color:#ff7b7b;min-height:16px;font-size:12px;letter-spacing:.1em;margin-bottom:6px}
-  .links{color:#8a8a8a;letter-spacing:.08em;display:flex;flex-direction:column;gap:6px}
-  .links a{color:#8ab4ff;text-decoration:none}
-  .links a:hover{text-shadow:0 0 8px rgba(138,180,255,.7)}
+  :root{
+    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
+    --green:#58a36a; --orange:#d98a3a; --silver:#d8dde3;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
+               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;gap:12px;align-items:center;font-size:18px;letter-spacing:.35em}
+  .obs{text-align:right;font-size:11px;color:var(--dim);letter-spacing:.15em;line-height:1.9}
+  .obs .up{color:var(--green)} .obs .dn{color:var(--red)}
+  main{max-width:1040px;margin:0 auto;padding:56px 24px 0;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.6vw,24px)}
+  .manifesto{margin-top:14px;color:var(--dim);font-size:13px;letter-spacing:.06em}
+  .cluster{position:relative;width:400px;height:400px;margin:40px auto 8px}
+  .spokes{position:absolute;inset:0;width:100%;height:100%}
+  .node{position:absolute;transform:translate(-50%,-50%);text-decoration:none;
+    display:flex;flex-direction:column;align-items:center;gap:8px}
+  .node svg{width:84px;height:84px;transition:filter .2s}
+  .node span{font-size:12px;letter-spacing:.2em;opacity:0;transition:opacity .2s}
+  .node:hover span{opacity:1}
+  .node:hover svg{filter:drop-shadow(0 0 9px currentColor)}
+  .node.top{left:50%;top:8%;color:var(--silver)}
+  .node.left{left:8%;top:50%;color:var(--green)}
+  .node.right{left:92%;top:50%;color:var(--blue)}
+  .node.bottom{left:50%;top:92%;color:var(--orange)}
+  .node.center{left:50%;top:50%;color:var(--red)}
+  .node.center svg{width:112px;height:112px}
+  .entry{min-height:18px;margin-top:2px;color:var(--dim);font-size:12px;letter-spacing:.1em}
+  .dock{margin:52px auto 0;border:1px solid var(--line);background:var(--panel);
+    padding:28px 22px;max-width:640px}
+  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
+  .plaque{display:inline-block;border:1px solid var(--line);background:var(--bg);
+    padding:9px 18px;color:var(--dim);font-size:12px;letter-spacing:.08em}
+  .plaque a{color:var(--blue);text-decoration:none}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
+    cursor:pointer;margin-top:14px;text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .row{margin-top:14px;font-size:13px;color:var(--dim)}
+  .row b{color:var(--ink)}
+  .sendrow{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .sendrow input{background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:9px 10px;width:200px}
+  .sendrow input:focus{outline:none;border-color:var(--gold)}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .status a{color:var(--blue)}
+  .econ{display:flex;gap:26px;justify-content:center;margin-top:16px;
+    font-size:12.5px;color:var(--dim);flex-wrap:wrap}
+  .econ b{color:var(--ink)}
+  .ladder{margin-top:18px;color:var(--dim);font-size:12px;letter-spacing:.06em}
+  .tchart{display:flex;gap:2px;justify-content:center;margin-top:8px}
+  .tchart div{width:46%;border:1px dashed var(--line);padding:12px 10px;
+    color:var(--dim);font-size:11.5px;letter-spacing:.08em;line-height:1.9}
+  .tchart .h{color:var(--ink);border:none;width:auto;padding:0 0 8px}
+  .flame{margin-top:14px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px}
+  .robot{margin-top:10px;color:var(--dim);font-size:11.5px}
+  .screensaver{position:relative;height:110px;overflow:hidden;margin-top:70px;
+    border-top:1px solid var(--line)}
+  .tri{position:absolute;top:30px;opacity:.22}
+  .tri.a{animation:driftA 70s linear infinite}
+  .tri.b{animation:driftB 95s linear infinite}
+  @keyframes driftA{from{left:-15%}to{left:110%}}
+  @keyframes driftB{from{left:110%}to{left:-15%}}
+  footer{border-top:1px solid var(--line);padding:26px 16px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  footer b{color:var(--ink)}
 </style>
 </head>
 <body>
-<header><h1>Inn.Visible</h1><div class="sub">[ hive entrance ]</div></header>
-<canvas id="loader"></canvas>
-<div class="status">[ through digital ruins .. ]</div>
 
-<form class="login" id="gate">
-  <div class="head">[ login ]</div>
-  <input id="uid" placeholder="user id:" autocomplete="username" spellcheck="false">
-  <input id="code" placeholder="passcode:" autocomplete="off" spellcheck="false">
-  <div class="err" id="err"></div>
-  <button type="submit">[ unlock ]</button>
-  <div class="links">
-    <span>passkey purchases — <a href="donations.html">{...}</a></span>
-    <span>employee application bypass // <a href="#">—</a> //</span> <!-- swap: mailto or form -->
+<header>
+  <div class="brand">
+    <svg width="30" height="20" viewBox="0 0 64 40" fill="none" stroke="#c8452c" stroke-width="3">
+      <polygon points="2,20 28,6 28,34"/><polygon points="36,6 62,20 36,34"/>
+    </svg>
+    INN.VISIBLE
   </div>
-</form>
+  <div class="obs">
+    <div>( + ) ⇄ ( − ) · <span id="clk">--:--</span></div>
+    <div id="mkt">obs · reading the tape…</div>
+  </div>
+</header>
+
+<main>
+  <p class="hook">Refuge in plain sight. System literacy as the vehicle for sovereignty.</p>
+  <p class="manifesto">we are building a complete ecosystem for digital and personal autonomy. choose your entry point.</p>
+
+  <div class="cluster">
+    <svg class="spokes" viewBox="0 0 400 400" fill="none" stroke="#223041" stroke-width="1.5">
+      <line x1="200" y1="200" x2="200" y2="32"/>
+      <line x1="200" y1="200" x2="32" y2="200"/>
+      <line x1="200" y1="200" x2="368" y2="200"/>
+      <line x1="200" y1="200" x2="200" y2="368"/>
+    </svg>
+    <a class="node top div" href="#" data-name="Axiom Industries — the supply chain">
+      <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
+      <span>AXIOM</span></a>
+    <a class="node left div" href="#" data-name="Eigen Dynamics — the library">
+      <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
+      <span>EIGEN</span></a>
+    <a class="node right div" href="#" data-name="Baseline Evolutions — socials & entertainment">
+      <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
+      <span>BASELINE</span></a>
+    <a class="node bottom" href="glyph.html" title="Keystone — books, accounting & the lantern currency">
+      <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
+      <span>KEYSTONE</span></a>
+    <a class="node center" href="#rota" title="rota(s) — the market of contracts">
+      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M32 30c2 0 2 3 0 3-4 0-4-6 0-6 6 0 6 9 0 9-8 0-8-12 0-12 10 0 10 15 0 15-12 0-12-18 0-18"/>
+      </svg>
+      <span>ROTA(S)</span></a>
+  </div>
+  <div class="entry" id="entry"></div>
+
+  <section class="dock" id="glyph">
+    <div class="fig">the lantern currency — the buffer under the market</div>
+    <div class="plaque">contract ·
+      <a href="https://sepolia.etherscan.io/token/0x8128ab50de624815045856aab904dc51a871e732"
+         target="_blank">0x8128…e732</a>
+      · sepolia · supply <span id="supply">21,000,000.000</span> · decimals 3
+    </div>
+    <div>
+      <a class="btn" href="glyph.html" style="margin-right:8px">the glyph page ↗</a>
+      <button class="btn" onclick="connect()">connect wallet</button>
+      <div id="wallet" style="display:none">
+        <div class="row"><span id="addr"></span> · <span id="lit"></span> · <b id="bal"></b> GLYPH</div>
+        <div class="sendrow">
+          <input id="to" placeholder="to · 0x…">
+          <input id="amt" placeholder="amount · glyphs">
+          <button class="btn" style="margin-top:0" onclick="send()">send</button>
+        </div>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+    <div class="econ">
+      <div><b id="txs">…</b> transfers</div>
+      <div>vault <b id="vault">…</b></div>
+      <div>till <b id="till">…</b></div>
+    </div>
+    <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
+  </section>
+
+  <section class="dock" id="rota">
+    <div class="fig">rota(s) — the market of contracts</div>
+    <div class="tchart">
+      <div><span class="h">( + ) inflow</span><br>buy ·········<br>sell ·······<br>fulfilled ····<br>turned-over ··</div>
+      <div><span class="h">( − ) outflow</span><br>— ·········<br>— ·······<br>— ········<br>— ·········</div>
+    </div>
+    <div class="status">the T-chart deck docks here in phase ② · settled in glyphs · buffered by the lantern</div>
+  </section>
+
+  <section class="dock" id="outflow">
+    <div class="fig">donations / founding</div>
+    <svg width="150" height="80" viewBox="0 0 150 80" fill="none" stroke="#c8452c" stroke-width="4" stroke-linejoin="round">
+      <polygon points="12,42 66,16 66,68"/><polygon points="84,16 138,42 84,68"/>
+      <circle cx="66" cy="8" r="3" fill="#c8452c"/><circle cx="84" cy="8" r="3" fill="#c8452c"/>
+      <circle cx="66" cy="76" r="3" fill="#c8452c"/><circle cx="84" cy="76" r="3" fill="#c8452c"/>
+    </svg>
+    <div class="flame">The central flame humbly flickers ..</div>
+    <div class="robot">( the robot dispenses one drop at first light — wiring arrives with the money door )</div>
+    <button class="btn" onclick="document.getElementById('status2').textContent='the cash-app link docks here — paste it to me when ready'">
+      support the hive — passthru &amp; donations</button>
+    <div id="status2" class="status"></div>
+  </section>
+
+  <div class="screensaver">
+    <svg class="tri a" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#3f7fc1" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+    <svg class="tri b" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#d9a83a" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+  </div>
+</main>
+
+<footer>
+  <b>OBSIDIAN LEDGER</b> | <b>EIGEN DYNAMICS</b> | <b>BASELINE EVOLUTIONS</b> | <b>KEYSTONE SOLUTIONS</b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”
+</footer>
 
 <script>
-/* ---- safeguard: grant 30 days, open the core ---- */
-const PASSKEYS = ['HIVE-0000-0000']; // <-- swap in your real 1-month codes
-gate.onsubmit = e => {
-  e.preventDefault();
-  const c = code.value.trim().toUpperCase();
-  if (PASSKEYS.includes(c)) {
-    localStorage.setItem('hive_access', String(Date.now() + 30*864e5));
-    if (uid.value.trim()) localStorage.setItem('hive_user', uid.value.trim());
-    location.href = 'core.html';
-  } else {
-    err.textContent = 'invalid passkey .. the door stays shut';
+const C = '0x8128ab50de624815045856aab904dc51a871e732';
+const FOUNDER = '0xf80cBE1278d3f388Fd955A7E0a99595528c9e1f4';
+const TILL = '0xD49Fe489D76c3EE1331891170d5edF235a95Af59';
+const TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const DEPLOY_BLOCK = '0xaee431';
+const RPCS = [
+  'https://ethereum-sepolia-rpc.publicnode.com',
+  'https://sepolia.gateway.tenderly.co',
+  'https://1rpc.io/sep',
+  'https://rpc.sepolia.org'
+];
+const $ = id => document.getElementById(id);
+
+async function rpc(method, params){
+  let lastErr;
+  for(const url of RPCS){
+    try{
+      const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+      const j = await r.json();
+      if(j.error) throw new Error(j.error.message);
+      return j.result;
+    }catch(e){ lastErr = e; }
   }
-};
-
-/* ---- starry night + the last-light orb ----
-   SPIN CHEAT-SHEET: opposite signs = reverse polarities; same signs = same direction. */
-const TOP_DIR = +1, BOT_DIR = -1;
-const canvas = document.getElementById('loader'), ctx = canvas.getContext('2d');
-let W=0,H=0;
-function resize(){const d=devicePixelRatio||1;W=canvas.clientWidth;H=canvas.clientHeight;
-  canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);}
-addEventListener('resize',resize);
-addEventListener('load',resize);
-resize();
-
-const r=Math.sqrt(8)/3;
-const V=[[0,-1,0],[r,1/3,0],[-r/2,1/3,r*.8660254],[-r/2,1/3,-r*.8660254]];
-const FACES=[[0,1,2],[0,2,3],[0,3,1],[1,2,3]];
-const EDGES=[[0,1],[0,2],[0,3],[1,2],[2,3],[3,1]];
-const edgeFaces=EDGES.map(([a,b])=>{const i=[];FACES.forEach((f,k)=>{if(f.includes(a)&&f.includes(b))i.push(k);});return i;});
-const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
-const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
-
-function drawTetra(cx,cy,size,t,dir,phase,stroke,glow,flip){
-  const SPEED=0.35;
-  const spin=t*SPEED*dir;
-  const tilt=-0.42, wob=0.05*Math.sin(t*0.6+phase);
-  const cs=Math.cos(spin),sn=Math.sin(spin),cx_=Math.cos(tilt),sx_=Math.sin(tilt),
-        cw=Math.cos(wob),sw=Math.sin(wob);
-  const P=V.map(v=>{
-    let [x,y,z]=flip?[v[0],-v[1],v[2]]:v;
-    let X=x*cs+z*sn,Y=y,Z=-x*sn+z*cs;
-    let Y2=Y*cx_-Z*sx_,Z2=Y*sx_+Z*cx_;
-    return [X*cw-Y2*sw, X*sw+Y2*cw, Z2];
-  });
-  const f=4.2;
-  const proj=P.map(([x,y,z])=>{const p=f/(f-z);return [cx+x*size*p, cy-y*size*p];});
-  const cam=[0,0,f];
-  const vis=FACES.map(face=>{
-    const [a,b,c]=face.map(i=>P[i]);
-    let n=cross(sub(b,a),sub(c,a));
-    const cent=[(a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3,(a[2]+b[2]+c[2])/3];
-    if(dot(n,cent)<0)n=n.map(v=>-v);
-    return dot(n,sub(cent,cam))<0;
-  });
-  EDGES.forEach(([a,b],i)=>{
-    const hidden=!vis[edgeFaces[i][0]]&&!vis[edgeFaces[i][1]];
-    ctx.save();
-    if(hidden){ctx.setLineDash([6,7]);ctx.strokeStyle=stroke;ctx.globalAlpha=.3;ctx.lineWidth=1.3;}
-    else{ctx.setLineDash([]);ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.shadowColor=glow;ctx.shadowBlur=16;}
-    ctx.beginPath();ctx.moveTo(...proj[a]);ctx.lineTo(...proj[b]);ctx.stroke();ctx.restore();
-  });
-  proj.forEach(([x,y])=>{ctx.save();ctx.fillStyle='#ffedb0';ctx.shadowColor=glow;ctx.shadowBlur=10;
-    ctx.beginPath();ctx.arc(x,y,2.2,0,Math.PI*2);ctx.fill();ctx.restore();});
+  throw lastErr;
 }
-
-/* ---- the orb: last-light edition ----
-   sleek, contained, resilient. no meteors.
-   dashed ring = the passkey block's border, orbiting slow.
-   electrons kept, calmer. spin rerolled each load. */
-const orbDir   = (Math.random()<0.5?-1:1);
-const orbSpeed = 0.6 + Math.random()*0.7;
-function drawOrb(t){
-  const cx=W/2 + Math.sin(t*0.5+1)*2;
-  const cy=H/2 + Math.sin(t*0.8)*3;
-  ctx.save();                                        // dusty halo, very low alpha
-  const halo=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
-  halo.addColorStop(0,'rgba(217,139,166,.28)');
-  halo.addColorStop(1,'rgba(217,139,166,0)');
-  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(cx,cy,22,0,6.283); ctx.fill();
-  ctx.restore();
-  ctx.save();                                        // dashed containment ring
-  ctx.translate(cx,cy); ctx.rotate(t*0.25*orbDir);
-  ctx.strokeStyle='#ff7bb0'; ctx.globalAlpha=.75; ctx.lineWidth=1;
-  ctx.setLineDash([3,4]);
-  ctx.beginPath(); ctx.arc(0,0,11,0,6.283); ctx.stroke();
-  ctx.restore();
-  ctx.save();                                        // muted rose core, contained glow
-  ctx.shadowColor='#c9708d'; ctx.shadowBlur=10;
-  const core=ctx.createRadialGradient(cx-1,cy-1,0,cx,cy,5);
-  core.addColorStop(0,'#f3cdd8'); core.addColorStop(1,'#c9708d');
-  ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,4.5,0,6.283); ctx.fill();
-  ctx.restore();
-  for(let k=0;k<3;k++){                              // mini electron orbit, kept
-    const sa=t*orbSpeed*orbDir + k*2.094;
-    ctx.save(); ctx.fillStyle='#ffedb0'; ctx.shadowColor='#ffcf6e'; ctx.shadowBlur=6;
-    ctx.globalAlpha=.9;
-    ctx.beginPath(); ctx.arc(cx+Math.cos(sa)*9, cy+Math.sin(sa)*9, 1.2, 0, 6.283); ctx.fill();
-    ctx.restore();
-  }
+const call = data => rpc('eth_call',[{to:C,data},'latest']);
+function fmt(raw){
+  const v = BigInt(raw);
+  return (v/1000n).toLocaleString('en-US') + '.' + (v%1000n).toString().padStart(3,'0');
 }
-
-const start=performance.now();
-function frame(now){
-  if(W<10||H<10) resize();
-  const t=(now-start)/1000;
-  ctx.clearRect(0,0,W,H);
-  const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.55);
-  bg.addColorStop(0,'rgba(25,35,70,.20)');bg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  const size=Math.max(34, Math.min(W*.28,H*.19)), gap=H*.10;
-  drawTetra(W/2, H/2-size-gap/2, size, t, TOP_DIR, 0,   '#d3e0f2','#8aa8d4', false);
-  drawTetra(W/2, H/2+size+gap/2, size, t, BOT_DIR, 2.1,'#7f9fd4','#41609c', true );
-  drawOrb(t);
-  requestAnimationFrame(frame);
+function toDrops(s){
+  const m = s.trim().match(/^(\d+)(?:\.(\d{1,3}))?$/);
+  if(!m) throw new Error('bad amount');
+  return BigInt(m[1])*1000n + BigInt((m[2]||'').padEnd(3,'0'));
 }
-requestAnimationFrame(frame);
+const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
+
+function tick(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  const day = d.getHours() >= 6 && d.getHours() < 18;
+  const mo = d.getMonth();
+  const season = (mo<=1||mo===11) ? 'winter' : mo<=4 ? 'spring' : mo<=7 ? 'summer' : 'autumn';
+  $('clk').textContent = hh+':'+mm+' '+(day?'\u2600':'\u263E')+' '+season;
+}
+tick(); setInterval(tick, 10000);
+fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+  .then(r=>r.json()).then(j=>{
+    const b = j.bitcoin.usd_24h_change, e = j.ethereum.usd_24h_change;
+    const f = x => (x>=0?'+':'')+x.toFixed(1)+'%';
+    $('mkt').innerHTML = 'obs · btc <span class="'+(b>=0?'up':'dn')+'">'+f(b)+'</span>'
+      + ' · eth <span class="'+(e>=0?'up':'dn')+'">'+f(e)+'</span>';
+  }).catch(()=>{ $('mkt').textContent = 'obs · markets quiet'; });
+
+(async () => {
+  try{ $('supply').textContent = fmt(await call('0x18160ddd')); }catch(e){}
+  try{ $('vault').textContent = fmt(await call('0x70a08231'+pad64(FOUNDER))); }catch(e){ $('vault').textContent = '—'; }
+  try{ $('till').textContent = fmt(await call('0x70a08231'+pad64(TILL))); }catch(e){ $('till').textContent = '—'; }
+  try{
+    const l = await rpc('eth_getLogs',[{address:C,topics:[TOPIC],fromBlock:DEPLOY_BLOCK,toBlock:'latest'}]);
+    $('txs').textContent = Math.max(0, l.length - 1);
+  }catch(e){ $('txs').textContent = '—'; }
+})();
+
+document.querySelectorAll('.node.div').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    $('entry').textContent = a.dataset.name + ' — docks in phase ③';
+  });
+});
+
+let me = null;
+async function connect(){
+  if(!window.ethereum){ $('status').textContent = 'no wallet in this browser — install metamask first'; return; }
+  try{
+    const [a] = await window.ethereum.request({method:'eth_requestAccounts'});
+    me = a;
+    $('addr').textContent = a.slice(0,6)+'…'+a.slice(-4);
+    const bal = await call('0x70a08231'+pad64(a));
+    $('bal').textContent = fmt(bal);
+    $('lit').textContent = BigInt(bal) > 0n ? 'the lantern is lit' : 'the lantern is unlit';
+    $('wallet').style.display = 'block';
+    $('status').textContent = 'connected · reading sepolia';
+  }catch(e){ $('status').textContent = 'connect cancelled'; }
+}
+async function send(){
+  if(!me){ connect(); return; }
+  const to = $('to').value.trim();
+  if(!/^0x[0-9a-fA-F]{40}$/.test(to)){ $('status').textContent = 'that "to" address doesn\u2019t look right'; return; }
+  let drops;
+  try{ drops = toDrops($('amt').value); }
+  catch(e){ $('status').textContent = 'amount like 1.5 (glyphs)'; return; }
+  try{
+    await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0xaa36a7'}]});
+  }catch(e){}
+  try{
+    const data = '0xa9059cbb'+pad64(to)+drops.toString(16).padStart(64,'0');
+    const h = await window.ethereum.request({method:'eth_sendTransaction',params:[{from:me,to:C,data}]});
+    $('status').innerHTML = 'sent — <a href="https://sepolia.etherscan.io/tx/'+h+'" target="_blank">watch it land</a>';
+  }catch(e){ $('status').textContent = 'send cancelled'; }
+}
 </script>
+
 </body>
 </html>
