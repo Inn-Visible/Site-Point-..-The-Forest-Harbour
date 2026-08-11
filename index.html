@@ -82,17 +82,28 @@
 </footer>
 
 <script>
-// the gate remembers the key. the old pages check for 'hive_access' with a future timestamp.
-const access = localStorage.getItem('hive_access');
-if(access && +access > Date.now()){
-  location.replace('core.html');
+const KEY='hive_access', SES='hive_session', SPAN=30*60*1000;
+function alive(){
+  const a = localStorage.getItem(KEY);
+  return sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+}
+function refresh(){
+  localStorage.setItem(KEY, String(Date.now()+SPAN));
+  sessionStorage.setItem(SES,'1');
+}
+const wantsGate = location.search.indexOf('gate') !== -1;
+if(!wantsGate && alive()){ location.replace('core.html'); }
+if(wantsGate && alive()){
+  const d = document.createElement('div');
+  d.className = 'keys';
+  d.innerHTML = '<a class="btn" href="core.html">the door is open — enter the house ↗</a>';
+  document.querySelector('main').appendChild(d);
 }
 function unlock(){
   const u = document.getElementById('uid').value.trim();
   const p = document.getElementById('pass').value.trim();
   if(u === 'HIVE-0000-0000' && p === 'HIVE-0000-0000'){
-    const oneYear = Date.now() + (1000 * 60 * 60 * 24 * 365);
-    localStorage.setItem('hive_access', oneYear);
+    refresh();
     location.href = 'core.html';
   }else{
     document.getElementById('lstat').textContent = 'the lock does not turn';
