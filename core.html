@@ -86,6 +86,20 @@
 </head>
 <body>
 
+<script>
+/* the house keeps the lock: strangers bounce to the gate; the key slides a 30-minute window */
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
+function lockdoor(){
+  localStorage.removeItem('hive_access');
+  sessionStorage.removeItem('hive_session');
+  location.href='index.html?gate';
+}
+</script>
 <div class="qr" id="qr">
   <img src="qr-code.png" alt="house qr">
   <div class="fig">the house key · scan or keep</div>
@@ -197,7 +211,7 @@
   <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
   <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
   An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
-  <a href="index.html">the hive entrance ↗</a> · <a href="donations.html">the old hearth ↗</a>
+ <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a> · <a href="donations.html">the old hearth ↗</a>
 </footer>
 
 <script>
