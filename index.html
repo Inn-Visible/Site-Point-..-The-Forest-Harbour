@@ -49,16 +49,28 @@
   <div class="house">I N N . V I S I B L E</div>
   <div class="tag">[ hive entrance ]</div>
 
-  <svg class="tet" width="220" height="260" viewBox="0 0 220 260" fill="none" stroke-linejoin="round">
+ <style>
+  .spinA{animation:spinA 18s linear infinite;transform-origin:112px 66px}
+  .spinB{animation:spinB 22s linear infinite;transform-origin:118px 199px}
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes spinA{to{transform:rotate(360deg)}}
+  @keyframes spinB{to{transform:rotate(-360deg)}}
+  @keyframes pulse{50%{opacity:.35}}
+</style>
+<svg class="tet" width="220" height="260" viewBox="0 0 220 260" fill="none" stroke-linejoin="round">
+  <g class="spinA">
     <polygon points="120,14 168,64 118,128 62,58" stroke="#d8dde3" stroke-width="2"/>
     <line x1="120" y1="14" x2="118" y2="128" stroke="#d8dde3" stroke-width="1" stroke-dasharray="4 5"/>
     <line x1="62" y1="58" x2="168" y2="64" stroke="#d8dde3" stroke-width="1" stroke-dasharray="4 5"/>
-    <circle cx="112" cy="138" r="5" fill="#c8452c"/>
-    <circle cx="112" cy="138" r="10" stroke="#c8452c" stroke-width="1" opacity=".5"/>
+  </g>
+  <circle cx="112" cy="138" r="5" fill="#c8452c" class="pulse"/>
+  <circle cx="112" cy="138" r="10" stroke="#c8452c" stroke-width="1" opacity=".5" class="pulse"/>
+  <g class="spinB">
     <polygon points="118,146 172,196 122,252 60,200" stroke="#3f7fc1" stroke-width="2"/>
     <line x1="118" y1="146" x2="122" y2="252" stroke="#3f7fc1" stroke-width="1" stroke-dasharray="4 5"/>
     <line x1="60" y1="200" x2="172" y2="196" stroke="#3f7fc1" stroke-width="1" stroke-dasharray="4 5"/>
-  </svg>
+  </g>
+</svg>
 
   <div class="ruins">[ through digital ruins .. ]</div>
 
