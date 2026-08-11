@@ -82,16 +82,17 @@
 </footer>
 
 <script>
-// the gate remembers the key: once unlocked, old pages that point
-// at index.html bounce straight through into the house.
-if(localStorage.getItem('hive') === '1'){
+// the gate remembers the key. the old pages check for 'hive_access' with a future timestamp.
+const access = localStorage.getItem('hive_access');
+if(access && +access > Date.now()){
   location.replace('core.html');
 }
 function unlock(){
   const u = document.getElementById('uid').value.trim();
   const p = document.getElementById('pass').value.trim();
   if(u === 'HIVE-0000-0000' && p === 'HIVE-0000-0000'){
-    localStorage.setItem('hive','1');
+    const oneYear = Date.now() + (1000 * 60 * 60 * 24 * 365);
+    localStorage.setItem('hive_access', oneYear);
     location.href = 'core.html';
   }else{
     document.getElementById('lstat').textContent = 'the lock does not turn';
