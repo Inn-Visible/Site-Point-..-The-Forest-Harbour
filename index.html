@@ -79,6 +79,8 @@
   footer{border-top:1px solid var(--line);padding:26px 16px;text-align:center;
     color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
   footer b{color:var(--ink)}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -107,18 +109,18 @@
       <line x1="200" y1="200" x2="368" y2="200"/>
       <line x1="200" y1="200" x2="200" y2="368"/>
     </svg>
-    <a class="node top div" href="#" data-name="Axiom Industries — the supply chain">
+    <a class="node top" href="axiom.html" title="Axiom Industries — the supply chain">
       <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
       <span>AXIOM</span></a>
-    <a class="node left div" href="#" data-name="Eigen Dynamics — the library">
+    <a class="node left" href="eigen.html" title="Eigen Dynamics — the library">
       <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
       <span>EIGEN</span></a>
-    <a class="node right div" href="#" data-name="Baseline Evolutions — socials & entertainment">
+    <a class="node right" href="baseline.html" title="Baseline Evolutions — socials & entertainment">
       <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
       <span>BASELINE</span></a>
     <a class="node bottom" href="glyph.html" title="Keystone — books, accounting & the lantern currency">
       <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="12" fill="#0e141b" stroke="currentColor" stroke-width="3.5"/></svg>
-      <span>KEYSTONE</span></a>
+      <span>KEYSTONE · GLYPH</span></a>
     <a class="node center" href="#rota" title="rota(s) — the market of contracts">
       <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
         <path d="M32 30c2 0 2 3 0 3-4 0-4-6 0-6 6 0 6 9 0 9-8 0-8-12 0-12 10 0 10 15 0 15-12 0-12-18 0-18"/>
@@ -187,8 +189,12 @@
 </main>
 
 <footer>
-  <b>OBSIDIAN LEDGER</b> | <b>EIGEN DYNAMICS</b> | <b>BASELINE EVOLUTIONS</b> | <b>KEYSTONE SOLUTIONS</b><br>
-  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”
+  <b><a href="axiom.html">OBSIDIAN LEDGER</a></b> |
+  <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
+  <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
+  <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="hive.html">the hive entrance ↗</a> · <a href="donations.html">the old hearth ↗</a>
 </footer>
 
 <script>
@@ -257,13 +263,6 @@ fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_cur
     $('txs').textContent = Math.max(0, l.length - 1);
   }catch(e){ $('txs').textContent = '—'; }
 })();
-
-document.querySelectorAll('.node.div').forEach(a=>{
-  a.addEventListener('click',e=>{
-    e.preventDefault();
-    $('entry').textContent = a.dataset.name + ' — docks in phase ③';
-  });
-});
 
 let me = null;
 async function connect(){
