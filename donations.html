@@ -81,8 +81,7 @@
 </footer>
 
 <script>
-/* door 2: the blueprint. thin cyan ink, centerlines, dims, callouts, title block.
-   the drawing is a portrait of the vertical reactor. on burn, the ink powers up. */
+/* the blueprint, professional edge: ink powers up, filament ignites, zero exhaust */
 const cv = document.getElementById('engine');
 const g2 = cv.getContext('2d');
 let W, H;
@@ -91,11 +90,6 @@ addEventListener('resize', fit); fit();
 
 let busy = false, dropY = null;
 let spoolAt = 0, burnAt = 0, burnUntil = 0;
-const E = [];
-function ember(ox,oy){
-  E.push({ x:ox+ (Math.random()-.5)*30, y:oy, vx:(Math.random()-.5)*.6, vy:-Math.random()*1.6-.6,
-    life:0, max:60+Math.random()*40 });
-}
 function tick(now){
   g2.clearRect(0,0,W,H);
   const cx = W/2, cy = H-230;
@@ -103,9 +97,10 @@ function tick(now){
   const burn  = now>burnAt && now<burnUntil;
   const decay = now>burnUntil && now<burnUntil+900;
   const g = burn?1 : spool?.55 : decay?.45 : .16 + .05*Math.sin(now*.002);
-  const A = .10 + .38*g;                 /* ink alpha */
-  const CY = c => 'rgba(127,214,232,'+c.toFixed(3)+')';
-  const GD = c => 'rgba(217,168,58,'+c.toFixed(3)+')';
+  const A = .10 + .38*g;
+  const CY = c => 'rgba(127,214,232,'+Math.min(1,c).toFixed(3)+')';
+  const GD = c => 'rgba(217,168,58,'+Math.min(1,c).toFixed(3)+')';
+  const WT = c => 'rgba(255,240,200,'+Math.min(1,c).toFixed(3)+')';
   g2.lineWidth = 1;
 
   /* framing ring + rotating dash */
@@ -116,7 +111,6 @@ function tick(now){
   g2.strokeStyle = CY(A);
   g2.beginPath(); g2.arc(cx,cy,158,0,7); g2.stroke();
   g2.restore();
-  /* dial ticks */
   for(let k=0;k<60;k++){
     const a=k*Math.PI/30, l=k%5===0?10:5;
     g2.strokeStyle = CY(A*.9);
@@ -126,44 +120,52 @@ function tick(now){
     g2.stroke();
   }
 
-  /* vertical centerline (dash-dot) */
+  /* centerline */
   g2.save();
   g2.setLineDash([12,4,2,4]); g2.lineDashOffset = burn? -now*.05 : 0;
   g2.strokeStyle = CY(A*.9);
   g2.beginPath(); g2.moveTo(cx,cy-190); g2.lineTo(cx,cy+190); g2.stroke();
   g2.restore();
 
-  /* containment rings (stacked ellipses) */
+  /* containment rings */
   for(const ry of [-96,-32,32,96]){
-    g2.strokeStyle = CY(A);
+    g2.strokeStyle = burn? CY(A+.45) : CY(A);
     g2.beginPath(); g2.ellipse(cx,cy+ry,96,16,0,0,7); g2.stroke();
-    g2.strokeStyle = CY(A*.6);
+    g2.strokeStyle = burn? GD(.3) : CY(A*.6);
     g2.beginPath(); g2.ellipse(cx,cy+ry,88,13,0,0,7); g2.stroke();
   }
 
-  /* plasma column capsule */
-  if(burn || spool){
-    const fg = g2.createLinearGradient(0,cy-70,0,cy+70);
-    fg.addColorStop(0,'rgba(255,196,80,'+(0.28*g).toFixed(3)+')');
-    fg.addColorStop(.5,'rgba(255,240,200,'+(0.34*g).toFixed(3)+')');
-    fg.addColorStop(1,'rgba(255,150,50,'+(0.28*g).toFixed(3)+')');
-    g2.fillStyle = fg;
-  } else g2.fillStyle = 'rgba(127,214,232,0.03)';
+  /* plasma column: no balloon fill — ink only */
+  g2.fillStyle = burn? 'rgba(255,196,80,0.05)' : 'rgba(127,214,232,0.03)';
   g2.beginPath();
   g2.moveTo(cx-22,cy-70); g2.lineTo(cx-22,cy+70);
   g2.arc(cx,cy+70,22,Math.PI,0,true);
   g2.lineTo(cx+22,cy-70);
   g2.arc(cx,cy-70,22,0,Math.PI,true);
   g2.closePath(); g2.fill();
-  g2.strokeStyle = CY(A*1.2); g2.stroke();
-  /* ribs */
-  g2.strokeStyle = CY(A*.7);
+  g2.strokeStyle = burn? GD(.75) : CY(A*1.2);
+  g2.lineWidth = burn?1.5:1; g2.stroke(); g2.lineWidth = 1;
+  g2.strokeStyle = burn? GD(.4) : CY(A*.7);
   for(let y=cy-64;y<cy+66;y+=6){ g2.beginPath(); g2.moveTo(cx-22,y); g2.lineTo(cx+22,y); g2.stroke(); }
+
+  /* the filament: ignition down the axis, no exhaust */
+  if(g > 0.3){
+    const fa = burn? .85 : .35*g;
+    g2.save();
+    g2.strokeStyle = WT(fa); g2.lineWidth = 2;
+    g2.shadowColor = 'rgba(255,196,80,1)'; g2.shadowBlur = 10*g;
+    g2.beginPath(); g2.moveTo(cx,cy-64); g2.lineTo(cx,cy+64); g2.stroke();
+    g2.lineWidth = 1; g2.shadowBlur = 6*g;
+    g2.strokeStyle = GD(fa*.5);
+    g2.beginPath(); g2.moveTo(cx-5,cy-58); g2.lineTo(cx-5,cy+58); g2.stroke();
+    g2.beginPath(); g2.moveTo(cx+5,cy-58); g2.lineTo(cx+5,cy+58); g2.stroke();
+    g2.restore();
+  }
 
   /* flanges + bolts + crosshairs */
   for(const s of [-1,1]){
     const fy = cy + s*96;
-    g2.strokeStyle = CY(A*1.1);
+    g2.strokeStyle = burn? GD(.6) : CY(A*1.1);
     g2.strokeRect(cx-60, fy-6, 120, 12);
     for(let k=0;k<10;k++){
       g2.beginPath(); g2.arc(cx-50+k*11.1, fy, 1.6, 0, 7); g2.stroke();
@@ -174,7 +176,7 @@ function tick(now){
     g2.restore();
   }
 
-  /* vent */
+  /* vent (labeled, sealed) */
   g2.strokeStyle = CY(A);
   g2.beginPath();
   g2.moveTo(cx-8,cy-102); g2.lineTo(cx-5,cy-124); g2.lineTo(cx+5,cy-124); g2.lineTo(cx+8,cy-102);
@@ -201,14 +203,14 @@ function tick(now){
   g2.textAlign='right';
   g2.fillText('FLANGE, BOLTED ×10', cx-112, cy-144);
   g2.beginPath(); g2.moveTo(cx-8,cy-120); g2.lineTo(cx-70,cy-160); g2.lineTo(cx-110,cy-160); g2.stroke();
-  g2.fillText('VENT', cx-72, cy-164);
+  g2.fillText('VENT, SEALED', cx-72, cy-164);
   g2.textAlign='left';
 
-  /* pulse ellipses on burn */
+  /* containment pulse ellipses (internal, not exhaust) */
   if(burn || decay){
     for(let k=0;k<3;k++){
       const t = ((now/12)+k*40) % 120;
-      const a = Math.max(0, .5 - t/240);
+      const a = Math.max(0, .35 - t/260);
       g2.strokeStyle = GD(a);
       g2.beginPath(); g2.ellipse(cx,cy, 30+t, 8+t*.3, 0, 0, 7); g2.stroke();
     }
@@ -224,19 +226,6 @@ function tick(now){
   g2.fillText('INN.VISIBLE — OUTFLOW-07', tx+10, ty+15);
   g2.fillText('THE RING · SCHEMATIC', tx+10, ty+39);
   g2.fillText('SCALE 1:∞ · DRAWN: THE FERRYMAN', tx+10, ty+63);
-
-  /* embers escaping the drawing */
-  if(burn && Math.random()<.5) ember(cx, cy-110);
-  g2.globalCompositeOperation='lighter';
-  for(let i=E.length-1;i>=0;i--){
-    const e=E[i]; e.life++;
-    e.x+=e.vx; e.y+=e.vy;
-    const t=e.life/e.max;
-    if(t>=1){ E.splice(i,1); continue; }
-    g2.fillStyle='rgba(255,196,100,'+((1-t)*0.8).toFixed(3)+')';
-    g2.beginPath(); g2.arc(e.x,e.y,1.3,0,7); g2.fill();
-  }
-  g2.globalCompositeOperation='source-over';
 
   /* the offering drop down the centerline */
   if(dropY !== null){
@@ -259,9 +248,9 @@ let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 const flavor = [
   'schematic idle. the drawing dreams of fire.',
   'a drop lands; the ink remembers.',
-  'containment: honor-system. always.',
+  'containment nominal. ink powered.',
   'sediment, not jackpot.',
-  'the ferryman drew this by hand. twice.',
+  'no exhaust. the ring keeps its heat.',
   'somewhere the real machine hums. this is its portrait.'
 ];
 const box=document.getElementById('totems'); const pips=[];
@@ -276,7 +265,7 @@ function render(){
 function onLand(){
   const s=document.getElementById('stat');
   if(drops%100===0) s.textContent='A LOOP CLOSES — sheet 2 of 1 drafted. the ledger turns.';
-  else if(drops%10===0) s.textContent='FIRST LIGHT — the schematic glows; a lamp joins the row.';
+  else if(drops%10===0) s.textContent='FIRST LIGHT — the filament holds; a lamp joins the row.';
   else s.textContent='>> powering the ink .. <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
 }
