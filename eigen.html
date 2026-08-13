@@ -82,11 +82,8 @@ function lockdoor(){
 
   <div class="spinebox">
     <svg id="spine" width="420" height="430" viewBox="0 0 420 430"></svg>
-
-
-    <div class="fig">fig. e1 — the eigen stack · 33 pages · turning</div><br>&nbsp;&nbsp;&nbsp;&nbsp;<a class="btn" href="eigenstack/index.html" style="margin-top:10px">open the eigenstack ↗</a>
-
-    
+    <div class="fig" id="spinefig">fig. e1 — the eigen stack · 33 pages · turning</div>
+    <a class="btn" href="eigenstack/index.html" style="margin-top:10px">open the eigenstack ↗</a>
   </div>
 
   <section class="dock">
@@ -136,6 +133,18 @@ function lockdoor(){
 const svg = document.getElementById('spine');
 const NS = 'http://www.w3.org/2000/svg';
 const yTop=18, gap=12, N=33;
+const figEl = document.getElementById('spinefig');
+const FIG0 = 'fig. e1 — the eigen stack · 33 pages · turning';
+/* the excavation map, from the discord photographs */
+const stacks = {
+  26:'stack 6 · infrastructure', 27:'stack 6 · infrastructure',
+  28:'stack 7 · infrastructure cont\u2019d',
+  29:'stack 8 · structural power', 30:'stack 8 · structural power', 31:'stack 8 · structural power',
+  32:'stack 9 · money / psychology', 33:'stack 9 · money / psychology'
+};
+function whisper(n){
+  return 'page ' + n + ' · ' + (stacks[n] ? stacks[n] : 'backnull · awaiting transcription');
+}
 function mk(x1,y1,x2,y2,stroke,w,op){
   const l=document.createElementNS(NS,'line');
   l.setAttribute('x1',x1); l.setAttribute('y1',y1);
@@ -161,6 +170,10 @@ for(const c of cols){
     for(let n=1;n<=N;n++){
       const l=mk(0,0,0,0,'#d8dde3',1.6,1);
       l.setAttribute('stroke-linecap','round');
+      l.style.cursor='pointer';
+      l.addEventListener('mouseenter',()=>{ l.setAttribute('stroke-width',3); figEl.textContent=whisper(n); });
+      l.addEventListener('mouseleave',()=>{ l.setAttribute('stroke-width',1.6); figEl.textContent=FIG0; });
+      l.addEventListener('click',()=>{ location.href='eigenstack/index.html#E4'; });
       c.lines.push(l);
     }
   }
