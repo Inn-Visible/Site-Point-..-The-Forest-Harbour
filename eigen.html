@@ -137,11 +137,13 @@ const yTop=18, gap=12, N=33;
 const figEl = document.getElementById('spinefig');
 const FIG0 = 'fig. e1 — the eigen stack · 33 pages · turning';
 const stacks = {
-  const stacks={1:'aside · the bifurcation',2:'system literacy, defined',3:'clarity statement',4:'practical part · OS',5:'practical part · languages',6:'hardware work',7:'control systems',8:'concrete learning stack',9:'orange bottleneck',10:'scratch note · EMC/RF',26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
-  28:'stack 7 · infrastructure cont\u2019d', 29:'stack 7 · fiction that teaches power',
-30:'stack 8 · structural power', 31:'stack 8 · structural power',
- 32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'
-};
+  const stacks={1:'aside · the bifurcation',2:'system literacy, defined',3:'clarity statement',
+  4:'practical part · OS',5:'practical part · languages',6:'hardware work',
+  7:'control systems',8:'concrete learning stack',9:'orange bottleneck',10:'scratch note · EMC/RF',
+  26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
+  28:'stack 7 · infrastructure cont\u2019d',29:'stack 7 · fiction that teaches power',
+  30:'stack 8 · structural power',31:'stack 8 · structural power',
+  32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'};
 function whisper(n){
   return 'page ' + n + ' · ' + (stacks[n] ? stacks[n] : 'backnull · awaiting transcription');
 }
