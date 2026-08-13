@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inn.Visible — outflow engine</title>
+<title>Inn.Visible — outflow schematic</title>
 <style>
   :root{
     --bg:#030407; --line:#223041;
@@ -56,12 +56,12 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· EX UMBRA, LUMEN · THE RING IDLES FOR NO ONE · IT BURNS FOR WITNESSES ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · SHEET 1 OF 1 · THE DRAWING BURNS FOR WITNESSES ·</p>
 
-  <div class="keep">keep the flame burning — rest a while, keeper. the ring remembers you.</div>
+  <div class="keep">keep the flame burning — rest a while, keeper. the ink remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">core warm. lattice cold. the ring dreams.</div>
+  <div class="status" id="stat">schematic idle. the drawing dreams of fire.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
@@ -81,190 +81,173 @@
 </footer>
 
 <script>
-/* the outflow ring: cyan lattice accelerator around a ribbed orange core; beams on burn */
+/* door 2: the blueprint. thin cyan ink, centerlines, dims, callouts, title block.
+   the drawing is a portrait of the vertical reactor. on burn, the ink powers up. */
 const cv = document.getElementById('engine');
 const g2 = cv.getContext('2d');
 let W, H;
 function fit(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
 addEventListener('resize', fit); fit();
 
-const P = [], S = [];
 let busy = false, dropY = null;
 let spoolAt = 0, burnAt = 0, burnUntil = 0;
-let ringA = 0, last = 0;
-function rnd(a,b){ return a + Math.random()*(b-a); }
-/* deterministic greebles around the ring */
-const GB = [];
-(function(){ let s=7; function r(){ s=(s*16807)%2147483647; return s/2147483647; }
-  for(let i=0;i<46;i++){ GB.push([r()*Math.PI*2, 150+(r()*30-15), 4+r()*11, 2+r()*5]); }
-})();
-function spawnShimmer(n,ox,oy,hot){
-  for(let i=0;i<n;i++)
-    P.push({ x:ox+rnd(-60,60), y:oy-rnd(0,6), vx:rnd(-.25,.25), vy:-rnd(.6,1.8)*(hot?2:1),
-      r:rnd(3,7)*(hot?1.3:1), life:0, max:rnd(30,60), hot:!!hot });
-  if(P.length>240) P.splice(0,P.length-240);
-}
-function spark(ox,oy,cyan){
-  S.push({ x:ox, y:oy+rnd(-10,10), vx:rnd(-.5,.5)+(cyan?0:0), vy:rnd(-.6,.6), life:0, max:rnd(24,50), c:!!cyan });
+const E = [];
+function ember(ox,oy){
+  E.push({ x:ox+ (Math.random()-.5)*30, y:oy, vx:(Math.random()-.5)*.6, vy:-Math.random()*1.6-.6,
+    life:0, max:60+Math.random()*40 });
 }
 function tick(now){
-  const dt = Math.min(.05,(now-last)/1000||.016); last = now;
   g2.clearRect(0,0,W,H);
-  const cx = W/2, cy = H-190;
+  const cx = W/2, cy = H-230;
   const spool = now>spoolAt && now<burnAt;
   const burn  = now>burnAt && now<burnUntil;
   const decay = now>burnUntil && now<burnUntil+900;
-  const amp = burn?2.4 : spool?1 : 0.1;
-  const ox = (Math.random()-.5)*amp, oy = (Math.random()-.5)*amp;
-  const cg = burn?1.4 : spool?0.95 : decay?0.85 : 0.5+0.08*Math.sin(now*0.002);
-  ringA += dt*(burn?0.5: spool?0.25:0.05);
+  const g = burn?1 : spool?.55 : decay?.45 : .16 + .05*Math.sin(now*.002);
+  const A = .10 + .38*g;                 /* ink alpha */
+  const CY = c => 'rgba(127,214,232,'+c.toFixed(3)+')';
+  const GD = c => 'rgba(217,168,58,'+c.toFixed(3)+')';
+  g2.lineWidth = 1;
 
-  /* leaked light: cold outside, hot inside */
-  g2.globalCompositeOperation='source-over';
-  let lg=g2.createRadialGradient(cx,cy,0,cx,cy,230);
-  lg.addColorStop(0,'rgba(200,90,25,'+(0.12*cg).toFixed(3)+')');
-  lg.addColorStop(.6,'rgba(40,90,120,'+(0.05).toFixed(3)+')');
-  lg.addColorStop(1,'rgba(40,90,120,0)');
-  g2.fillStyle=lg; g2.beginPath(); g2.arc(cx,cy,230,0,7); g2.fill();
-
-  g2.save(); g2.translate(ox,oy);
-
-  /* greeble panels */
-  g2.fillStyle='rgba(10,15,20,.9)';
-  for(const g of GB){
-    const x=cx+Math.cos(g[0])*g[1], y=cy+Math.sin(g[1<0?0:0])*0+Math.sin(g[0])*g[1];
-    g2.fillRect(x-g[2]/2, y-g[3]/2, g[2], g[3]);
-  }
-  /* lattice ring: circles + spokes + nodes, slow turn */
-  g2.strokeStyle='rgba(90,170,200,.20)'; g2.lineWidth=1;
-  for(const r of [150,132,114]){ g2.beginPath(); g2.arc(cx,cy,r,0,7); g2.stroke(); }
-  for(let k=0;k<36;k++){
-    const a=ringA+k*Math.PI/18;
+  /* framing ring + rotating dash */
+  g2.strokeStyle = CY(A*.8);
+  g2.beginPath(); g2.arc(cx,cy,168,0,7); g2.stroke();
+  g2.save();
+  g2.setLineDash([4,10]); g2.lineDashOffset = -now*.02*(burn?5:1);
+  g2.strokeStyle = CY(A);
+  g2.beginPath(); g2.arc(cx,cy,158,0,7); g2.stroke();
+  g2.restore();
+  /* dial ticks */
+  for(let k=0;k<60;k++){
+    const a=k*Math.PI/30, l=k%5===0?10:5;
+    g2.strokeStyle = CY(A*.9);
     g2.beginPath();
-    g2.moveTo(cx+Math.cos(a)*114, cy+Math.sin(a)*114);
-    g2.lineTo(cx+Math.cos(a)*150, cy+Math.sin(a)*150);
+    g2.moveTo(cx+Math.cos(a)*168, cy+Math.sin(a)*168);
+    g2.lineTo(cx+Math.cos(a)*(168-l), cy+Math.sin(a)*(168-l));
     g2.stroke();
-    if(k%3===0){
-      g2.fillStyle='rgba(127,214,232,.35)';
-      g2.beginPath(); g2.arc(cx+Math.cos(a)*132, cy+Math.sin(a)*132, 1.5,0,7); g2.fill();
-    }
-  }
-  g2.strokeStyle='rgba(127,214,232,'+(0.10+0.25*(burn?1:0)).toFixed(3)+')';
-  g2.lineWidth=2; g2.beginPath(); g2.arc(cx,cy,150,0,7); g2.stroke();
-
-  /* end flanges with bolts */
-  for(const s of [-1,1]){
-    const fx=cx+s*104;
-    g2.fillStyle='#07090c';
-    g2.beginPath(); g2.arc(fx,cy,40,0,7); g2.fill();
-    g2.strokeStyle='#1f2630'; g2.lineWidth=1.5;
-    for(const r of [40,33,26]){ g2.beginPath(); g2.arc(fx,cy,r,0,7); g2.stroke(); }
-    g2.fillStyle='#0a0c10';
-    for(let k=0;k<12;k++){
-      const a=k*Math.PI/6;
-      g2.beginPath(); g2.arc(fx+Math.cos(a)*36, cy+Math.sin(a)*36, 2,0,7); g2.fill();
-    }
-    g2.strokeStyle='rgba(255,140,50,'+(0.25*cg).toFixed(3)+')';
-    g2.beginPath(); g2.arc(fx,cy,22,0,7); g2.stroke();
-    const on=Math.floor(now/600)%2===0;
-    g2.fillStyle=(s<0?on:!on)?'rgba(200,69,44,.9)':'rgba(200,69,44,.25)';
-    g2.beginPath(); g2.arc(fx,cy+46,2.2,0,7); g2.fill();
   }
 
-  /* the ribbed core, fine this time */
-  const top = burn?'255,236,190':'255,154,60';
-  const mid = burn?'255,250,230':'255,210,120';
-  const bot = burn?'255,170,70':'200,90,30';
-  const coreG=g2.createLinearGradient(0,cy-22,0,cy+22);
-  coreG.addColorStop(0,'rgba('+top+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
-  coreG.addColorStop(.5,'rgba('+mid+','+Math.min(1,.55+.4*cg).toFixed(3)+')');
-  coreG.addColorStop(1,'rgba('+bot+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
-  g2.fillStyle=coreG;
-  g2.beginPath();
-  g2.moveTo(cx-60,cy-22); g2.lineTo(cx+60,cy-22);
-  g2.arc(cx+60,cy,22,-Math.PI/2,Math.PI/2);
-  g2.lineTo(cx-60,cy+22);
-  g2.arc(cx-60,cy,22,Math.PI/2,Math.PI*1.5);
-  g2.closePath(); g2.fill();
-  g2.fillStyle='rgba(60,20,8,.5)';
-  for(let x=cx-78;x<cx+80;x+=6) g2.fillRect(x,cy-22,2,44);
-  g2.strokeStyle='rgba(15,8,4,.85)'; g2.lineWidth=2;
-  for(const k of [-52,-26,0,26,52]){ g2.beginPath(); g2.ellipse(cx+k,cy,6,26,0,0,7); g2.stroke(); }
-  g2.strokeStyle='rgba(255,255,255,.14)'; g2.lineWidth=1.5;
-  g2.beginPath(); g2.moveTo(cx-72,cy-14); g2.lineTo(cx+72,cy-14); g2.stroke();
-
-  /* stencil */
-  g2.fillStyle='rgba(216,221,227,.22)';
-  g2.font='10px monospace'; g2.textAlign='center';
-  g2.fillText('OUTFLOW-07 · THE RING', cx, cy+178);
+  /* vertical centerline (dash-dot) */
+  g2.save();
+  g2.setLineDash([12,4,2,4]); g2.lineDashOffset = burn? -now*.05 : 0;
+  g2.strokeStyle = CY(A*.9);
+  g2.beginPath(); g2.moveTo(cx,cy-190); g2.lineTo(cx,cy+190); g2.stroke();
   g2.restore();
 
-  /* heat shimmer above the core */
-  spawnShimmer(burn?6: spool?4:2, cx, cy-26, burn);
-  g2.globalCompositeOperation='lighter';
-  for(let i=P.length-1;i>=0;i--){
-    const p=P[i]; p.life++;
-    p.x+=p.vx+Math.sin(p.life*0.08+p.y*0.02)*0.4; p.y+=p.vy; p.r*=0.966;
-    const t=p.life/p.max;
-    if(t>=1||p.r<0.7){ P.splice(i,1); continue; }
-    const col = p.hot ? (t<0.3?'255,240,200':'255,150,50') : (t<0.4?'255,170,70':'150,60,25');
-    const a=(1-t)*0.5;
-    const gr=g2.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
-    gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
-    gr.addColorStop(1,'rgba('+col+',0)');
-    g2.fillStyle=gr; g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+  /* containment rings (stacked ellipses) */
+  for(const ry of [-96,-32,32,96]){
+    g2.strokeStyle = CY(A);
+    g2.beginPath(); g2.ellipse(cx,cy+ry,96,16,0,0,7); g2.stroke();
+    g2.strokeStyle = CY(A*.6);
+    g2.beginPath(); g2.ellipse(cx,cy+ry,88,13,0,0,7); g2.stroke();
   }
 
-  /* cyan beams on burn */
+  /* plasma column capsule */
+  if(burn || spool){
+    const fg = g2.createLinearGradient(0,cy-70,0,cy+70);
+    fg.addColorStop(0,'rgba(255,196,80,'+(0.28*g).toFixed(3)+')');
+    fg.addColorStop(.5,'rgba(255,240,200,'+(0.34*g).toFixed(3)+')');
+    fg.addColorStop(1,'rgba(255,150,50,'+(0.28*g).toFixed(3)+')');
+    g2.fillStyle = fg;
+  } else g2.fillStyle = 'rgba(127,214,232,0.03)';
+  g2.beginPath();
+  g2.moveTo(cx-22,cy-70); g2.lineTo(cx-22,cy+70);
+  g2.arc(cx,cy+70,22,Math.PI,0,true);
+  g2.lineTo(cx+22,cy-70);
+  g2.arc(cx,cy-70,22,0,Math.PI,true);
+  g2.closePath(); g2.fill();
+  g2.strokeStyle = CY(A*1.2); g2.stroke();
+  /* ribs */
+  g2.strokeStyle = CY(A*.7);
+  for(let y=cy-64;y<cy+66;y+=6){ g2.beginPath(); g2.moveTo(cx-22,y); g2.lineTo(cx+22,y); g2.stroke(); }
+
+  /* flanges + bolts + crosshairs */
+  for(const s of [-1,1]){
+    const fy = cy + s*96;
+    g2.strokeStyle = CY(A*1.1);
+    g2.strokeRect(cx-60, fy-6, 120, 12);
+    for(let k=0;k<10;k++){
+      g2.beginPath(); g2.arc(cx-50+k*11.1, fy, 1.6, 0, 7); g2.stroke();
+    }
+    g2.save(); g2.setLineDash([6,4]);
+    g2.strokeStyle = CY(A*.7);
+    g2.beginPath(); g2.moveTo(cx-78,fy); g2.lineTo(cx+78,fy); g2.stroke();
+    g2.restore();
+  }
+
+  /* vent */
+  g2.strokeStyle = CY(A);
+  g2.beginPath();
+  g2.moveTo(cx-8,cy-102); g2.lineTo(cx-5,cy-124); g2.lineTo(cx+5,cy-124); g2.lineTo(cx+8,cy-102);
+  g2.stroke();
+
+  /* dims */
+  g2.strokeStyle = CY(A*.9);
+  g2.beginPath(); g2.moveTo(cx+40,cy-70); g2.lineTo(cx+118,cy-70); g2.stroke();
+  g2.beginPath(); g2.moveTo(cx+40,cy+70); g2.lineTo(cx+118,cy+70); g2.stroke();
+  g2.beginPath(); g2.moveTo(cx+112,cy-70); g2.lineTo(cx+112,cy+70); g2.stroke();
+  g2.fillStyle = CY(Math.min(.8,A*1.6));
+  g2.font = '9px monospace'; g2.textAlign='left';
+  g2.fillText('140u', cx+118, cy+3);
+  g2.beginPath(); g2.moveTo(cx-22,cy+120); g2.lineTo(cx+22,cy+120); g2.stroke();
+  g2.fillText('44u', cx+28, cy+123);
+
+  /* callouts */
+  g2.strokeStyle = CY(A);
+  g2.beginPath(); g2.moveTo(cx+16,cy-40); g2.lineTo(cx+84,cy-128); g2.lineTo(cx+128,cy-128); g2.stroke();
+  g2.fillText('PLASMA COLUMN — GLYPH', cx+88, cy-132);
+  g2.beginPath(); g2.moveTo(cx+90,cy+32); g2.lineTo(cx+128,cy+56); g2.lineTo(cx+150,cy+56); g2.stroke();
+  g2.fillText('CONTAINMENT RING ×4', cx+112, cy+52);
+  g2.beginPath(); g2.moveTo(cx-60,cy-96); g2.lineTo(cx-110,cy-140); g2.lineTo(cx-150,cy-140); g2.stroke();
+  g2.textAlign='right';
+  g2.fillText('FLANGE, BOLTED ×10', cx-112, cy-144);
+  g2.beginPath(); g2.moveTo(cx-8,cy-120); g2.lineTo(cx-70,cy-160); g2.lineTo(cx-110,cy-160); g2.stroke();
+  g2.fillText('VENT', cx-72, cy-164);
+  g2.textAlign='left';
+
+  /* pulse ellipses on burn */
   if(burn || decay){
-    const ba = burn?1:Math.max(0,1-(now-burnUntil)/900);
-    for(const s of [-1,1]){
-      const x0=cx+s*144, x1=cx+s*Math.max(W,H);
-      for(let k=0;k<3;k++){
-        const y=cy-8+k*8+Math.sin(now*0.02+k*2)*1.5;
-        const hgt=4+(2-k)*3;
-        const gr=g2.createLinearGradient(x0,y,x1,y);
-        gr.addColorStop(0,'rgba(200,245,255,'+(0.7*ba).toFixed(3)+')');
-        gr.addColorStop(.2,'rgba(127,214,232,'+(0.4*ba).toFixed(3)+')');
-        gr.addColorStop(1,'rgba(60,140,220,0)');
-        g2.fillStyle=gr;
-        g2.fillRect(Math.min(x0,x1), y-hgt/2, Math.abs(x1-x0), hgt);
-      }
-      g2.strokeStyle='rgba(240,252,255,'+(0.8*ba).toFixed(3)+')';
-      g2.lineWidth=1.5;
-      g2.beginPath(); g2.moveTo(x0,cy); g2.lineTo(x1,cy); g2.stroke();
-      for(let k=0;k<4;k++){
-        const dx=cx+s*(170+k*64), sz=9-k*1.5;
-        g2.save(); g2.translate(dx,cy); g2.rotate(Math.PI/4);
-        g2.fillStyle='rgba(210,240,255,'+(0.5*ba-k*0.09).toFixed(3)+')';
-        g2.shadowColor='rgba(127,214,232,1)'; g2.shadowBlur=14;
-        g2.fillRect(-sz/2,-sz/2,sz,sz);
-        g2.restore();
-      }
-      if(burn && Math.random()<0.6) spark(x0+ s*rnd(0,200), cy, true);
+    for(let k=0;k<3;k++){
+      const t = ((now/12)+k*40) % 120;
+      const a = Math.max(0, .5 - t/240);
+      g2.strokeStyle = GD(a);
+      g2.beginPath(); g2.ellipse(cx,cy, 30+t, 8+t*.3, 0, 0, 7); g2.stroke();
     }
   }
-  for(let i=S.length-1;i>=0;i--){
-    const s=S[i]; s.life++;
-    s.x+=s.vx; s.y+=s.vy;
-    const t=s.life/s.max;
-    if(t>=1){ S.splice(i,1); continue; }
-    g2.fillStyle = s.c ? 'rgba(160,230,250,'+((1-t)*0.9).toFixed(3)+')'
-                       : 'rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
-    g2.beginPath(); g2.arc(s.x,s.y,1.2,0,7); g2.fill();
-  }
 
-  /* the offering drop */
+  /* title block */
+  const tx = W-238, ty = H-96;
+  g2.strokeStyle = CY(Math.min(.5,A*1.4));
+  g2.strokeRect(tx,ty,214,72);
+  g2.beginPath(); g2.moveTo(tx,ty+24); g2.lineTo(tx+214,ty+24); g2.stroke();
+  g2.beginPath(); g2.moveTo(tx,ty+48); g2.lineTo(tx+214,ty+48); g2.stroke();
+  g2.fillStyle = CY(Math.min(.7,A*2));
+  g2.fillText('INN.VISIBLE — OUTFLOW-07', tx+10, ty+15);
+  g2.fillText('THE RING · SCHEMATIC', tx+10, ty+39);
+  g2.fillText('SCALE 1:∞ · DRAWN: THE FERRYMAN', tx+10, ty+63);
+
+  /* embers escaping the drawing */
+  if(burn && Math.random()<.5) ember(cx, cy-110);
+  g2.globalCompositeOperation='lighter';
+  for(let i=E.length-1;i>=0;i--){
+    const e=E[i]; e.life++;
+    e.x+=e.vx; e.y+=e.vy;
+    const t=e.life/e.max;
+    if(t>=1){ E.splice(i,1); continue; }
+    g2.fillStyle='rgba(255,196,100,'+((1-t)*0.8).toFixed(3)+')';
+    g2.beginPath(); g2.arc(e.x,e.y,1.3,0,7); g2.fill();
+  }
+  g2.globalCompositeOperation='source-over';
+
+  /* the offering drop down the centerline */
   if(dropY !== null){
     dropY += 11;
     g2.save();
-    g2.globalCompositeOperation='source-over';
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=8;
     g2.beginPath(); g2.arc(cx, dropY, 3.2, 0, 7); g2.fill();
     g2.restore();
-    if(dropY >= cy-26){
-      dropY=null; spoolAt=now; burnAt=now+480; burnUntil=now+480+1500;
-      spawnShimmer(30, cx, cy-26, true); onLand();
+    if(dropY >= cy-70){
+      dropY=null; spoolAt=now; burnAt=now+420; burnUntil=now+420+1500;
+      onLand();
     }
   }
   requestAnimationFrame(tick);
@@ -274,12 +257,12 @@ requestAnimationFrame(tick);
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 const flavor = [
-  'core warm. lattice cold. the ring dreams.',
-  'a drop lands; the core drinks.',
-  'the ring sings in cyan. keep burning.',
+  'schematic idle. the drawing dreams of fire.',
+  'a drop lands; the ink remembers.',
+  'containment: honor-system. always.',
   'sediment, not jackpot.',
-  'the manifold remembers you.',
-  'somewhere an accelerator idles for nobody. not this one.'
+  'the ferryman drew this by hand. twice.',
+  'somewhere the real machine hums. this is its portrait.'
 ];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
@@ -292,9 +275,9 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the ring turns the ledger page.';
-  else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a lamp joins the row.';
-  else s.textContent='>> spooling .. FULL BURN <<  ·  '+flavor[drops%flavor.length];
+  if(drops%100===0) s.textContent='A LOOP CLOSES — sheet 2 of 1 drafted. the ledger turns.';
+  else if(drops%10===0) s.textContent='FIRST LIGHT — the schematic glows; a lamp joins the row.';
+  else s.textContent='>> powering the ink .. <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
 }
 function whoosh(){
