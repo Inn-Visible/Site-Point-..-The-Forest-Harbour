@@ -60,21 +60,63 @@
 <main>
   <p class="hook">the backnull codex.</p>
   <p class="man">building electromechanical &amp; digital system literacy — in thirty-three pages.<br>
-  photographed 07/17 · day-3 transcription in progress · the stemming point.</p>
+  photographed 07/17 · day-3 transcription · pt 1/2 v1.1 · the stemming point.</p>
 
   <div class="legend">
-    <span class="ok">■ transcribed (crisp):</span> 27f·27b · 28f·29f · 30f·30b · 31f · 32f·32b · 33f·33b · closing &nbsp;·&nbsp;
-    <span class="wf">■ verify (strip):</span> 28b &nbsp;·&nbsp;
-    <span class="aw">■ awaiting:</span> 1–26 · 29b
+    <span class="ok">■ crisp:</span> 1f–3f · 4f·4b · 5f·5b · 6f·7f · 8f·8b · 9f·9b · 10f · 27f·27b · 28f·29f · 30f·30b · 31f · 32f·32b · 33f·33b · closing &nbsp;·&nbsp;
+    <span class="wf">■ verify:</span> 28b &nbsp;·&nbsp;
+    <span class="aw">■ awaiting:</span> 11–26 · 29b
   </div>
 
   <div class="part">PART I — THE BACKNULL INDEX · ONE LINE PER PAGE</div>
   <div class="rows" id="rows"></div>
 
-  <div class="part">PART II — THE STACKS · VERBATIM · MARGINS &amp; ARROWS KEPT</div>
+  <div class="part">PART II — VERBATIM · MARGINS &amp; ARROWS KEPT</div>
+
+  <section class="dock"><div class="fig">front matter · aside · definition · clarity — the manifesto</div>
+    <div class="faces">covered: <span class="ok">1f · 2f · 3f</span></div>
+    <ul>
+      <li><b>aside — what is growing:</b> smart homes · commercial facilities · building automation · electromechanical hybrids · field service + diagnostics.</li>
+      <li>the workforce isn’t disappearing → it’s bifurcating: low-skill replacement work ⇩ · [good / $$] high-skill diagnosis + integration work ⇧.</li>
+      <li>HR, AI, Indeed Hell, credential spam — all of that collapses when: work is situational · problems are physical · failure is observable · fixes are verifiable.</li>
+      <li class="m">side column: a broken HVAC controller doesn’t care about your résumé · a misconfigured PLC doesn’t ask for LinkedIn · a house with a broken system needs someone who can listen to it · that’s what gives it power.</li>
+      <li><b>system literacy, defined:</b> not what’s inside the interface → SYSTEM LIT. = knowing where the interface ends &amp; where reality pushes back.</li>
+      <li>interfaces are ‘capital-weighted’ [verify] · infrastructure is unrecognized · * i’m currently {interface-broker} + {infrastructure unconscious} · — “that’s the accurate map.”</li>
+      <li><b>clarity statement:</b> someone who can diagnose, repair &amp; integrate electromechanical systems in modern buildings — starting residentially, scaling commercially, with software as a tool, (not an identity). that is viable, growing, * is not obsolete.</li>
+      <li>the aim ⇒ building / system technician (electromechanical + digital) · [residential; commercial; industrial] · NB// not IT help desk · not solely electrician · not software engineer.</li>
+    </ul></section>
+
+  <section class="dock"><div class="fig">the practical part · what to learn — OS &amp; languages</div>
+    <div class="faces">covered: <span class="ok">4f · 4b · 5f · 5b</span></div>
+    <ul>
+      <li><b>1. operating systems (worth $$$):</b> tier 1 — non-negotiable: Linux (Ubuntu / Debian-based) — runs everything behind smart homes, routers, panels, servers. you don’t need kernel hacking (—yet—). you need: filesystem · services · logs · permissions · SSH. if you can install linux · read logs · restart services · edit config files → you’re already ahead of most techs.</li>
+      <li>tier 2 — optional but useful: Windows (diagnostics software, vendor tools). NB!! skip macOS unless you’re forced.</li>
+      <li><b>2. programming languages</b> — “this matters, but not how people sell it.” you do not want “software engineering language” ↳ you want <b>glue languages</b>.</li>
+      <li>tier 1 — [absolute priority] = Python · diagnostics · automation · scripts · raspberry pi · IoT tooling · reads in english · bridges hardware/software. what you need: read sensor data · parse logs · talk to APIs · control devices — not leetcode, not web apps. <span class="m">margin: “if you learn only one language: this is it.”</span></li>
+      <li>tier 2 — system-adjacent: Bash — not a ‘language’ so much as survival skill · inspect systems · chain commands · automate fixes. <span class="m">“you don’t ‘study’ bash — you absorb it.”</span></li>
+      <li>tier 3 — conditional: JavaScript (dashboards/web UIs) · C (deep embedded later). you can safely ignore: Java · C++ · Rust · Swift {for now...}.</li>
+    </ul></section>
+
+  <section class="dock"><div class="fig">hardware · the one concept · the concrete stack</div>
+    <div class="faces">covered: <span class="ok">6f · 7f · 8f · 8b</span></div>
+    <ul>
+      <li><b>3. hardware work — what’s actually viable:</b> a modern house is becoming: sensors · controllers · actuators · networks · power → that means [hybrid hardware], (not solder-microscopes all day). viable domains: power supplies · motors · relays · control boards · sensors (temp, motion, current) · networking hardware · interfaces (USB, serial, CAN, Ethernet). <span class="m">“you’re not replacing chips — you’re diagnosing why systems stop cooperating.”</span></li>
+      <li><b>4. the single most important concept:</b> [control systems] — the overlap of electricity · logic · feedback · safety. shows up as: thermostats · HVAC · elevators · washing machines · smart lighting · industrial panels. <span class="m">“this is where electricians stop &amp; millwrights continue.”</span></li>
+      <li><b>concrete learning stack (‘no fluff’):</b> phase I — foundation (you’re already here): open broken devices · identify components · guess failure points · read part numbers · look up datasheets. phase II — control + linux: raspberry pi · linux basics · python: read inputs ⇄ trigger outputs · (this turns ‘fixing’ into ‘understanding’).</li>
+      <li>phase III — smart building layer: Home Assistant · MQTT · Modbus (IMPORTANT) · basic networking (IP, ports) · at this point you can walk into a “smart home” &amp; not panic. phase IV — commercial crossover: PLC concepts · safety logic · documentation · fault tree · now you’re approaching millwright-lite territory.</li>
+    </ul></section>
+
+  <section class="dock"><div class="fig">orange bottleneck · anchoring · scratch note</div>
+    <div class="faces">covered: <span class="ok">9f · 9b · 10f</span> · anchoring placement [verify]</div>
+    <ul>
+      <li><b>your orange bottleneck (named plainly):</b> the bottleneck you drew isn’t philosophical — [you don’t know (yet) which abstractions are worth trusting]. so you’re doing the right thing: touching hardware · reading books selectively · shelving interfaces [verify] · refusing fake clarity. <span class="m">“that’s not confusion... that’s apprenticeship behavior.”</span></li>
+      <li><b>anchoring statement (reiterated):</b> “you’re trying to become: someone who can diagnose, repair &amp; integrate electromechanical systems in modern buildings ↳ starting residential w/ software as tools not as identity.”</li>
+      <li><b>[[scratch note]] — the RF horizon:</b> sensors &amp; anti-sensors [verify] · EMPs · Faraday shielding · anti-interface / interface detection · frequency hopping · error correction · spread spectrum · detect jams · switch freqs · increase power/routing · directed energy research · EMC · RF engineering · electromagnetics · hardware diagnostics · communication system design.</li>
+      <li>niche ideas: how wireless protocols resist interference · how shielding &amp; grounding works · how to design devices that survive harsh RF environments. <span class="m">“those are highly respected, high-skill areas to research.”</span></li>
+    </ul></section>
 
   <section class="dock"><div class="fig">stacks 1–5 · provisional titles [verify]</div>
-    <div class="faces">coverage: <span class="wf">discord strips only</span> · missing: <span class="aw">crisp pages 1–25</span></div>
+    <div class="faces">coverage: <span class="wf">discord strips only</span> · missing: <span class="aw">crisp pages 11–25</span></div>
     <ul>
       <li><b>stack 1 · control &amp; cybernetics</b> — feedback loops · control systems · complex adaptive systems</li>
       <li class="m">margin, transcribed: “this is where electronics + philosophy collapse.”</li>
@@ -117,7 +159,6 @@
         this one surprises people. it’s about shipping containers. why it matters: explains how logistics reshaped the world · shows how infrastructure quietly controls everything · makes clear how boring innovations create massive leverage.<br>
         <span class="m">margin: “if you understand containers, you understand globalization.”</span></li>
       <li><b>5. fiction that teaches power better than nonfiction</b><br>
-        some novels teach this better than textbooks.<br>
         Dune — power, control, systems, ecology · The Dispossessed — political structure · Neuromancer — systems, corporations, leverage · The Wire (TV) — probably the best depiction of real power ever made.<br>
         <span class="m">margin: “these show power in motion. (lens)”</span></li>
     </ul></section>
@@ -126,17 +167,15 @@
     <div class="faces">covered: <span class="ok">30f · 30b · 31f</span> · missing: <span class="aw">29b</span> · <span class="m">header margin: “(overlap w/ stack 6)”</span></div>
     <ul>
       <li><b>1. Seeing Like a State — James C. Scott</b><br>
-        this one is huge for what you’re thinking. it explains: how systems simplify people · why institutions behave the way they do · why legibility = control · why people outside systems get crushed.<br>
-        it explains why: platforms win · bureaucracies dominate · individuals feel powerless.<br>
+        this one is huge for what you’re thinking. it explains: how systems simplify people · why institutions behave the way they do · why legibility = control · why people outside systems get crushed. it explains why: platforms win · bureaucracies dominate · individuals feel powerless.<br>
         <span class="m">margin: “this will click hard for you...”</span></li>
       <li><b>2. “The Power Broker” — Robert Caro</b><br>
-        not about money. about control over infrastructure.<br>
-        core lesson: whoever controls the pipes controls the flow — roads. housing. transit. bureaucracy. money follows infrastructure.</li>
+        not about money. about control over infrastructure. core lesson: whoever controls the pipes controls the flow — roads. housing. transit. bureaucracy. money follows infrastructure.</li>
       <li><b>3. “Capitalist Realism” — Mark Fisher</b><br>
         short, brutal, accurate. explains: why it feels impossible to escape · why everything feels commodified · why burnout is systemic, not personal.<br>
         <span class="m">margin: “this one will validate a lot of your existent feelings.”</span></li>
       <li><b>4. “Bullshit Jobs” — David Graeber</b><br>
-        this one explains: why so much work feels pointless · why pay isn’t tied to value · why admin roles exist · why power sustains inefficiency.<br>
+        explains: why so much work feels pointless · why pay isn’t tied to value · why admin roles exist · why power sustains inefficiency.<br>
         <span class="m">margin: “it helps you understand where not to aim.”</span></li>
       <li><b>5. “The Tyranny of Merit” — Michael Sandel</b><br>
         explains why: effort ≠ reward · meritocracy is a myth · people internalize failure unfairly.<br>
@@ -149,11 +188,9 @@
       <li class="m">epigraph: “money flows through systems, not people. people only get paid when they sit at a point in that flow.”</li>
       <li><b>“The Power Broker” — Robert Caro</b> (not a money book on the surface — the ultimate one!)<br>
         it explains how: control over infrastructure = control over money · being “useful” is secondary to being positioned · institutions matter more than talent · the person who controls access wins.<br>
-        it’s about Robert Moses, not finance — but it’s the clearest explanation of how power &amp; money actually work in modern systems.<br>
         <span class="m">margin: “if you read only one book, make it this. ↑”</span></li>
       <li><b>Positive Money — “Where does money come from?”</b><br>
-        the clearest money-flow book (non-economy). short, factual, dry.<br>
-        it explains: how money is created · why labour is always downstream · why banks &amp; platforms extract value · why “hard work” doesn’t correlate to pay.<br>
+        the clearest money-flow book (non-economy). short, factual, dry. it explains: how money is created · why labour is always downstream · why banks &amp; platforms extract value · why “hard work” doesn’t correlate to pay.<br>
         <span class="m">margin: “this one will explain ‘why’ you feel trapped.”</span></li>
     </ul></section>
 
@@ -162,13 +199,9 @@
     <ul>
       <li class="m">“the most important historical lens”</li>
       <li><b>“The Gospel of Wealth” — Andrew Carnegie</b><br>
-        short essay, not a hype book.<br>
-        key insight: wealth comes from controlling production and distribution, not labour.<br>
-        carnegie didn’t glorify work. he glorified positioning.</li>
+        short essay, not a hype book. key insight: wealth comes from controlling production and distribution, not labour. carnegie didn’t glorify work. he glorified positioning.</li>
       <li><b>“Platform Capitalism” — Nick Srnicek</b><br>
-        the book that explains why Uber-style systems exist.<br>
-        this one explains: why everything became an app · why workers get squeezed · why platforms extract value · why autonomy is disappearing.<br>
-        it will validate a LOT of what’s been said.</li>
+        the book that explains why Uber-style systems exist. explains: why everything became an app · why workers get squeezed · why platforms extract value · why autonomy is disappearing. it will validate a LOT of what’s been said.</li>
       <li class="m">N.B!! money flows towards leverage, not effort.</li>
     </ul></section>
 
@@ -189,11 +222,24 @@
 </footer>
 
 <script>
-const stacks={26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
+const stacks={1:'aside · the bifurcation',2:'system literacy, defined',3:'clarity statement',
+  4:'practical part · OS',5:'practical part · languages',6:'hardware work',
+  7:'control systems',8:'concrete learning stack',9:'orange bottleneck',10:'scratch note · EMC/RF',
+  26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
   28:'stack 7 · infrastructure cont\u2019d',29:'stack 7 · fiction that teaches power',
   30:'stack 8 · structural power',31:'stack 8 · structural power',
   32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'};
 const content={
+  1:'aside · what is growing · the bifurcation · why this path dodges it · [transcribed]',
+  2:'system literacy = where the interface ends & reality pushes back · the accurate map · [transcribed]',
+  3:'clarity statement · building/system technician · NB// not IT help desk · [transcribed]',
+  4:'practical part · tier 1 linux · tier 2 windows · skip macOS · [transcribed]',
+  5:'glue languages · tier 1 python · tier 2 bash · tier 3 conditional · [transcribed]',
+  6:'hardware work · hybrid hardware · viable domains · diagnose why · [transcribed]',
+  7:'the one concept · control systems · electricians stop, millwrights continue · [transcribed]',
+  8:'concrete learning stack · phases I–IV · no fluff · [transcribed]',
+  9:'orange bottleneck · apprenticeship behavior · anchoring statement · [transcribed]',
+  10:'scratch note · EMC/RF · niche ideas · high-skill areas · [transcribed]',
   26:'[awaiting — send 26f · 26b]',
   27:'seeing like a state — scott · the power broker — caro · field guide — larkin · utopia of rules — graeber · platform capitalism — srnicek · [transcribed]',
   28:'art of strategy — dixit · 33 strategies — greene · debt — graeber · the box — levinson · [transcribed]',
