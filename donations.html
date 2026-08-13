@@ -8,7 +8,7 @@
   :root{
     --bg:#030407; --panel:#0e141b; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --orange:#d98a3a;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
     --serif:Georgia,"Times New Roman",serif;
   }
@@ -22,27 +22,10 @@
   main{max-width:760px;margin:0 auto;padding:40px 24px 60px;text-align:center}
   .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
   .rest{margin-top:10px;color:#5c6875;font-size:11px;letter-spacing:.24em}
-  .rig{margin:6px auto 0;
-    background:radial-gradient(ellipse at 50% 46%, #120806 0%, #030407 62%)}
-  .flame{animation:flick 1.8s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
-  @keyframes flick{from{transform:scaleY(.94)}to{transform:scaleY(1.05)}}
-  .bgf{opacity:.12}
-  #glow{animation:reson 5s ease-in-out infinite}
-  @keyframes reson{0%,100%{opacity:.5}50%{opacity:1}}
-  #fire{transform-box:fill-box;transform-origin:50% 100%}
-  #fire.whoosh{animation:whoosh 1.3s ease}
-  @keyframes whoosh{0%{transform:scale(1)}30%{transform:scale(1.22);
-    filter:drop-shadow(0 0 34px #7a2d16)}100%{transform:scale(1)}}
-  .ember{animation:rise 5s linear infinite;opacity:0}
-  @keyframes rise{0%{transform:translateY(0);opacity:0}12%{opacity:.8}100%{transform:translateY(-170px);opacity:0}}
-  .smoke{animation:smk 7s ease-in-out infinite alternate;opacity:.07}
-  @keyframes smk{from{transform:translateY(0)}to{transform:translateY(-14px)}}
-  #drip{opacity:0}
-  #drip.toss{animation:toss .8s ease-in}
-  @keyframes toss{0%{transform:translate(0,0);opacity:1}
-    60%{transform:translate(-60px,-100px);opacity:1}
-    100%{transform:translate(-110px,-112px);opacity:0}}
-  .keep{margin-top:4px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
+  .rig{margin:6px auto 0;background:radial-gradient(ellipse at 50% 55%, #120806 0%, #030407 62%)}
+  #fire{display:block;margin:0 auto -6px}
+  .base{display:block;margin:0 auto}
+  .keep{margin-top:10px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
   .tally{margin-top:12px;font-size:12px;color:var(--dim)}
   .tally b{color:var(--ink)}
   .btn{background:none;border:1px solid var(--gold);color:var(--gold);
@@ -71,61 +54,22 @@
   <p class="rest">· EX UMBRA, LUMEN · A REST ZONE · THE FLAME RESONATES WITH EVERY WITNESS ·</p>
 
   <div class="rig">
-    <svg width="420" height="420" viewBox="0 0 420 420" fill="none" stroke-linejoin="miter">
-      <defs>
-        <radialGradient id="g1" cx=".5" cy=".5" r=".5">
-          <stop offset="0" stop-color="#7a2d16" stop-opacity=".28"/>
-          <stop offset="1" stop-color="#7a2d16" stop-opacity="0"/>
-        </radialGradient>
-        <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
-      </defs>
-      <!-- void fires, unattended -->
-      <path class="flame bgf" style="animation-delay:-.4s" fill="#c8452c"
-        d="M52,392 L48,378 L52,382 L50,364 L56,376 L58,366 L62,384 L58,392 Z"/>
-      <path class="flame bgf" style="animation-delay:-1.2s" fill="#c8452c"
-        d="M368,388 L364,376 L368,380 L366,364 L372,374 L374,366 L377,382 L373,388 Z"/>
-      <!-- resonating glow -->
-      <ellipse id="glow" cx="210" cy="250" rx="130" ry="95" fill="url(#g1)"/>
-      <!-- smoke -->
-      <g class="smoke" stroke="#93a1b0" stroke-width="2" filter="url(#soft)">
-        <path d="M204,70 C196,52 212,44 204,26"/>
-        <path d="M220,76 C228,58 214,48 222,30"/>
-      </g>
-      <!-- the fire: wide chaotic mass, calm teardrop heart -->
-      <g id="fire">
-        <path class="flame" fill="#2a0d08" d="M150,300 L144,272 L152,278 L146,246 L156,254 L150,220 L160,230 L156,196 L166,206 L162,172 L172,184 L170,150 L180,164 L182,132 L190,148 L196,120 L202,140 L210,112 L216,138 L224,118 L228,146 L238,128 L240,158 L250,142 L250,172 L258,158 L256,192 L266,180 L262,214 L272,204 L266,240 L276,232 L268,266 L278,260 L270,300 Z"/>
-        <path class="flame" style="animation-delay:-.7s" fill="#6a1e10" d="M162,300 L158,272 L166,278 L160,244 L170,252 L166,216 L176,226 L172,192 L182,202 L180,168 L190,180 L192,150 L200,166 L206,140 L212,162 L220,146 L224,172 L232,158 L234,188 L242,176 L240,208 L250,198 L246,232 L254,224 L250,258 L258,252 L254,300 Z"/>
-        <path class="flame" style="animation-delay:-1.2s" fill="#a34a24" d="M176,300 L172,272 L180,278 L176,246 L186,254 L184,220 L192,230 L192,200 L200,212 L204,186 L210,204 L218,190 L220,214 L228,204 L228,234 L236,226 L234,260 L242,254 L240,300 Z"/>
-        <path class="flame" style="animation-delay:-.4s" fill="#d9a83a" opacity=".92"
-          d="M210,196 C200,220 194,232 194,254 C194,276 200,290 210,300 C220,290 226,276 226,254 C226,232 220,220 210,196 Z"/>
-        <path class="flame" style="animation-delay:-.4s" fill="#7a2d16"
-          d="M210,232 C205,244 202,250 202,262 C202,276 205,286 210,294 C215,286 218,276 218,262 C218,250 215,244 210,232 Z"/>
-      </g>
-      <!-- rising embers -->
-      <g fill="#d98a3a">
-        <circle class="ember" style="animation-delay:0s" cx="200" cy="280" r="1.6"/>
-        <circle class="ember" style="animation-delay:-1.4s" cx="222" cy="270" r="1.3"/>
-        <circle class="ember" style="animation-delay:-2.6s" cx="210" cy="250" r="1.8"/>
-        <circle class="ember" style="animation-delay:-3.5s" cx="190" cy="240" r="1.2"/>
-        <circle class="ember" style="animation-delay:-4.2s" cx="230" cy="240" r="1.4"/>
-        <circle class="ember" style="animation-delay:-2s" cx="205" cy="210" r="1.2"/>
-      </g>
-      <!-- the brazier -->
-      <path d="M148,300 L272,300 L268,314 L152,314 Z" fill="#050608" stroke="#1f2630" stroke-width="1.5"/>
-      <path d="M154,314 Q210,328 266,314 L258,344 Q210,352 162,344 Z" fill="#0a0d12" stroke="#223041" stroke-width="1.5"/>
+    <canvas id="fire" width="420" height="300"></canvas>
+    <svg class="base" width="420" height="120" viewBox="0 0 420 120" fill="none" stroke-linejoin="miter">
+      <path d="M148,4 L272,4 L268,18 L152,18 Z" fill="#050608" stroke="#1f2630" stroke-width="1.5"/>
+      <path d="M154,18 Q210,32 266,18 L258,48 Q210,56 162,48 Z" fill="#0a0d12" stroke="#223041" stroke-width="1.5"/>
       <g fill="#0a0d12" stroke="#223041" stroke-width="1.5">
-        <rect x="176" y="344" width="16" height="26"/><rect x="228" y="344" width="16" height="26"/>
-        <rect x="170" y="370" width="28" height="6"/><rect x="222" y="370" width="28" height="6"/>
+        <rect x="176" y="48" width="16" height="26"/><rect x="228" y="48" width="16" height="26"/>
+        <rect x="170" y="74" width="28" height="6"/><rect x="222" y="74" width="28" height="6"/>
       </g>
-      <!-- the robot, keeping watch -->
       <g fill="#0a0d12" stroke="#223041" stroke-width="1.5">
-        <rect x="312" y="352" width="18" height="14" rx="4"/>
-        <line x1="312" y1="358" x2="305" y2="353"/>
-        <line x1="316" y1="366" x2="316" y2="373"/><line x1="324" y1="366" x2="324" y2="373"/>
+        <rect x="312" y="56" width="18" height="14" rx="4"/>
+        <line x1="312" y1="62" x2="305" y2="57"/>
+        <line x1="316" y1="70" x2="316" y2="77"/><line x1="324" y1="70" x2="324" y2="77"/>
       </g>
-      <line x1="316" y1="358" x2="326" y2="358" stroke="#c8452c" stroke-width="1.6" opacity=".7"/>
-      <circle id="drip" cx="308" cy="352" r="3.5" fill="#d9a83a"/>
-      <!-- totem stones -->
+      <line x1="316" y1="62" x2="326" y2="62" stroke="#c8452c" stroke-width="1.6" opacity=".7"/>
+      <path class="bgf" fill="#c8452c" opacity=".12" d="M52,100 L48,86 L52,90 L50,72 L56,84 L58,74 L62,92 L58,100 Z"/>
+      <path class="bgf" fill="#c8452c" opacity=".12" d="M368,96 L364,84 L368,88 L366,72 L372,82 L374,74 L377,90 L373,96 Z"/>
       <g id="totems"></g>
     </svg>
   </div>
@@ -152,8 +96,65 @@
 </footer>
 
 <script>
+/* ---- simulated fire: additive light particles, turbulence waver ---- */
+const cv = document.getElementById('fire');
+const g2 = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const P = [], S = [];
+let flare = 0, dropY = null, busy = false;
+function rnd(a,b){ return a + Math.random()*(b-a); }
+function spawnFire(n,burst){
+  for(let i=0;i<n;i++){
+    P.push({ x:W/2 + rnd(-1,1)*(burst?70:34), y:H - rnd(0,10),
+      vx:rnd(-.5,.5) + (burst?rnd(-1,1):0), vy:-rnd(1.1,3.1)*(burst?1.5:1),
+      r:rnd(7,18)*(burst?1.25:1), life:0, max:rnd(50,95) });
+  }
+  if(P.length>260) P.splice(0, P.length-260);
+}
+function spawnSpark(){
+  S.push({ x:W/2+rnd(-30,30), y:H-rnd(0,14), vx:rnd(-.4,.4), vy:-rnd(2.2,3.6), life:0, max:rnd(40,80) });
+}
+function tick(){
+  g2.clearRect(0,0,W,H);
+  if(dropY !== null){
+    dropY += 7;
+    g2.globalCompositeOperation = 'source-over';
+    g2.fillStyle = '#f1d078';
+    g2.beginPath(); g2.arc(W/2, dropY, 3.2, 0, 7); g2.fill();
+    if(dropY >= H-8){ dropY = null; flare = 1; spawnFire(50,true); onLand(); }
+  }
+  flare *= 0.96;
+  spawnFire(2 + Math.round(flare*8), false);
+  if(Math.random() < 0.12 + flare*0.3) spawnSpark();
+  g2.globalCompositeOperation = 'lighter';
+  for(let i=P.length-1;i>=0;i--){
+    const p=P[i]; p.life++;
+    p.x += p.vx + Math.sin(p.life*0.08 + p.y*0.02)*0.5;
+    p.y += p.vy; p.r *= 0.968;
+    const t=p.life/p.max;
+    if(t>=1 || p.r<0.7){ P.splice(i,1); continue; }
+    const col = t<0.22 ? '255,216,130' : t<0.5 ? '236,142,52' : '158,44,22';
+    const a = (1-t)*0.5;
+    const gr = g2.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
+    gr.addColorStop(1,'rgba('+col+',0)');
+    g2.fillStyle = gr;
+    g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+  }
+  for(let i=S.length-1;i>=0;i--){
+    const s=S[i]; s.life++;
+    s.x += s.vx; s.y += s.vy;
+    const t=s.life/s.max;
+    if(t>=1){ S.splice(i,1); continue; }
+    g2.fillStyle = 'rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
+    g2.beginPath(); g2.arc(s.x,s.y,1.3,0,7); g2.fill();
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+/* ---- the ledger, unchanged ---- */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
-let busy = false;
 const flavor = [
   'the void listens. the flame answers.',
   'a drop lands; the fire eats well.',
@@ -165,8 +166,8 @@ const flavor = [
 ];
 const NS = 'http://www.w3.org/2000/svg';
 const tg = document.getElementById('totems');
-const spots = [[120,388,14],[160,396,12],[210,400,14],[262,396,12],[300,388,14],
-               [140,378,10],[280,378,10],[185,384,9],[235,384,9],[322,372,8]];
+const spots = [[120,96,14],[160,104,12],[210,108,14],[262,104,12],[300,96,14],
+               [140,86,10],[280,86,10],[185,92,9],[235,92,9],[322,80,8]];
 const totems = spots.map(s=>{
   const e = document.createElementNS(NS,'ellipse');
   e.setAttribute('cx',String(s[0])); e.setAttribute('cy',String(s[1]));
@@ -186,22 +187,19 @@ function render(){
   document.getElementById('tot').textContent = String(tot);
   document.getElementById('loops').textContent = String(Math.floor(drops / 100));
 }
+function onLand(){
+  const s = document.getElementById('stat');
+  if(drops % 100 === 0) s.textContent = 'A LOOP CLOSES — the fire resonates through the void; the ledger turns.';
+  else if(drops % 10 === 0) s.textContent = 'FIRST LIGHT — the whole flame whooshes; a stone takes its place in the circle.';
+  else s.textContent = flavor[drops % flavor.length];
+  render(); busy = false;
+}
 function whoosh(){
   if(busy) return;
   busy = true;
   drops++;
   localStorage.setItem('hive_drops', String(drops));
-  const drip = document.getElementById('drip');
-  const fire = document.getElementById('fire');
-  drip.classList.remove('toss'); void drip.getBoundingClientRect(); drip.classList.add('toss');
-  setTimeout(()=>{
-    fire.classList.remove('whoosh'); void fire.getBoundingClientRect(); fire.classList.add('whoosh');
-    const s = document.getElementById('stat');
-    if(drops % 100 === 0) s.textContent = 'A LOOP CLOSES — the fire resonates through the void; the ledger turns.';
-    else if(drops % 10 === 0) s.textContent = 'FIRST LIGHT — the whole flame whooshes; a stone takes its place in the circle.';
-    else s.textContent = flavor[drops % flavor.length];
-  }, 650);
-  setTimeout(()=>{ render(); busy = false; }, 1600);
+  dropY = -8;
 }
 render();
 </script>
