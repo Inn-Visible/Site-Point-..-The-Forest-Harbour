@@ -1,69 +1,182 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baseline Evolutions | Inn.Visible</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #7fe3c9; margin-bottom: 10px; font-size: 1.8rem; }
-        .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .back { display: inline-block; margin-top: 30px; color: #7fe3c9; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #7fe3c9; color: #050505; }
-        .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
-        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
-        .block-header h3 { margin: 0; color: #cbd5e1; }
-        .block-icon { font-size: 1.2rem; }
-        .block-body { padding: 20px; }
-        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: monospace; }
-        .data-table th, .data-table td { padding: 10px; text-align: left; border: 1px solid #333; }
-        .data-table th { color: #7fe3c9; }
-        .theme-baseline .content-block:hover { border-style: solid; border-color: #7fe3c9; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baseline Evolutions | Inn.Visible</title>
+<style>
+  :root{
+    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
+               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line)}
+  .brand{font-size:16px;letter-spacing:.35em;color:var(--blue)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:900px;margin:0 auto;padding:56px 24px 0;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
+  .manifesto{margin-top:12px;color:var(--dim);font-size:12.5px;letter-spacing:.06em}
+  .wall{max-width:640px;margin:44px auto 0;border:1px solid var(--line);
+    background:var(--panel);padding:26px 22px}
+  .string{display:flex;align-items:center;gap:16px;padding:15px 6px;cursor:pointer;
+    user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .string .inlay{color:#5c6875;font-size:11px;letter-spacing:.2em;width:20px;text-align:left}
+  .string .note{color:var(--blue);font-size:13px;width:16px;text-align:right}
+  .wire{flex:1;border-radius:3px;position:relative;
+    background:linear-gradient(90deg,transparent,#3f7fc1 10%,#9cc4e8 50%,#3f7fc1 90%,transparent)}
+  .string:nth-child(1) .wire{height:6px}
+  .string:nth-child(2) .wire{height:5px}
+  .string:nth-child(3) .wire{height:4px}
+  .string:nth-child(4) .wire{height:3px}
+  .wire.buzz{animation:buzz .7s linear;box-shadow:0 0 18px rgba(127,183,241,.75)}
+  @keyframes buzz{
+    0%,100%{transform:translateY(0)}15%{transform:translateY(3px)}30%{transform:translateY(-3px)}
+    45%{transform:translateY(2px)}60%{transform:translateY(-2px)}75%{transform:translateY(1px)}90%{transform:translateY(-1px)}}
+  .wallnote{margin-top:14px;color:var(--dim);font-size:11.5px;letter-spacing:.1em}
+  .dock{margin:44px auto 0;border:1px solid var(--line);background:var(--panel);
+    padding:26px 20px;max-width:700px}
+  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .cove{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.cove{grid-template-columns:1fr}}
+  .nook{border:1px dashed var(--line);background:var(--bg);padding:14px;text-align:left}
+  .nook b{display:block;color:var(--ink);font-size:12px;letter-spacing:.08em;margin-bottom:8px}
+  .nook span{color:var(--dim);font-size:11px;line-height:1.7}
+  .nook a{color:var(--blue);text-decoration:none;font-size:11px}
+  .nook a:hover{color:var(--ink)}
+  .screensaver{position:relative;height:100px;overflow:hidden;margin-top:64px;
+    border-top:1px solid var(--line)}
+  .tri{position:absolute;top:26px;opacity:.22}
+  .tri.a{animation:driftA 70s linear infinite}
+  .tri.b{animation:driftB 95s linear infinite}
+  @keyframes driftA{from{left:-15%}to{left:110%}}
+  @keyframes driftB{from{left:110%}to{left:-15%}}
+  footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  footer b{color:var(--ink)}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+</style>
 </head>
-<body class="theme-baseline">
-    <script>
-      /* hive safeguard — no valid passkey? back to the door */
-      (function(){var a=localStorage.getItem('hive_access');
-        if(!a||+a<Date.now()){location.replace('index.html');}})();
-    </script>
-    <div class="container">
-        <h1>03. Baseline Evolutions</h1>
-        <p class="subtitle">The Body / Health / Routine</p>
+<body>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🏃</span><h3>Movement Log</h3></div>
-            <div class="block-body">
-                <p>Pacing notes, mobility resets, and fog-night walk routes. The body is the first server.</p>
-                <p class="meta-text">- Status: Active | Tag: #body</p>
-            </div>
-        </div>
+<script>
+/* the house keeps the lock */
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
+function lockdoor(){
+  localStorage.removeItem('hive_access');
+  sessionStorage.removeItem('hive_session');
+  location.href='index.html?gate';
+}
+</script>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">😴</span><h3>Recovery Ledger</h3></div>
-            <div class="block-body">
-                <table class="data-table">
-                    <thead><tr><th>Metric</th><th>Baseline</th><th>Target</th></tr></thead>
-                    <tbody>
-                        <tr><td>Resting HR</td><td>62</td><td>58</td></tr>
-                        <tr><td>Sleep midpoint</td><td>01:40</td><td>00:30</td></tr>
-                        <tr><td>Screen sunset</td><td>23:30</td><td>22:30</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<header>
+  <div class="brand">BASELINE EVOLUTIONS</div>
+  <a class="back" href="core.html">core ↩</a>
+</header>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🧘</span><h3>Routine Blocks</h3></div>
-            <div class="block-body">
-                <p>Morning: light + water before feeds. Evening: bass or book, never both. Hibernation requires maintenance.</p>
-            </div>
-        </div>
+<main>
+  <p class="hook">culture / expression / the low end.</p>
+  <p class="manifesto">one voice, one synth, no presets. the house has a heartbeat, and it sits down low.</p>
 
-        <a href="core.html" class="back">← Return to Core</a>
+  <div class="wall">
+    <div class="string" data-f="41.2"><span class="inlay">01</span><div class="wire"></div><span class="note">E</span></div>
+    <div class="string" data-f="55"><span class="inlay">02</span><div class="wire"></div><span class="note">A</span></div>
+    <div class="string" data-f="73.42"><span class="inlay">03</span><div class="wire"></div><span class="note">D</span></div>
+    <div class="string" data-f="98"><span class="inlay">04</span><div class="wire"></div><span class="note">G</span></div>
+    <div class="wallnote">click · tap · keys 1-4 — the wall is live</div>
+  </div>
+
+  <section class="dock">
+    <div class="fig">the studio</div>
+    <div class="status">one voice, one synth, no presets. orphaned tracks find homes here.</div>
+    <div class="status">the studio warms up when baseline opens fully · play the wall anyway</div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">socials / entertainment</div>
+    <div class="cove">
+      <div class="nook"><b>youtube</b><span>the honey tapes · visual static &amp; low frequencies</span><br><a href="https://youtube.com/@honey_smudgs" target="_blank">@honey_smudgs ↗</a></div>
+      <div class="nook"><b>instagram · the author</b><span>pages, spines &amp; marginalia</span><br><a href="https://instagram.com/steady_evenfall" target="_blank">@steady_evenfall ↗</a></div>
+      <div class="nook"><b>instagram · the signal</b><span>ruins, walks &amp; wireframes</span><br><a href="https://instagram.com/nooootoxnn_0" target="_blank">@nooootoxnn_0 ↗</a></div>
     </div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">the protocol dashboard</div>
+    <div class="status">drops · drips · loops · nodes — the culture ledger docks when baseline opens fully</div>
+  </section>
+
+  <div class="screensaver">
+    <svg class="tri a" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#3f7fc1" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+    <svg class="tri b" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#d9a83a" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+  </div>
+</main>
+
+<footer>
+  <b><a href="axiom.html">AXIOM INDUSTRIES</a></b> |
+  <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
+  <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
+  <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a>
+</footer>
+
+<script>
+let AC = null;
+function audio(){
+  if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if(AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function pluck(f){
+  const a = audio(), t = a.currentTime;
+  const o = a.createOscillator(), o2 = a.createOscillator();
+  const g = a.createGain(), lp = a.createBiquadFilter();
+  o.type = 'triangle'; o.frequency.value = f;
+  o2.type = 'sine'; o2.frequency.value = f * 2;
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(1400, t);
+  lp.frequency.exponentialRampToValueAtTime(180, t + 1.4);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 2);
+  o.connect(g); o2.connect(g); g.connect(lp); lp.connect(a.destination);
+  o.start(t); o2.start(t); o.stop(t + 2.1); o2.stop(t + 2.1);
+}
+const strings = document.querySelectorAll('.string');
+function hit(s){
+  pluck(parseFloat(s.dataset.f));
+  const w = s.querySelector('.wire');
+  w.classList.remove('buzz'); void w.offsetWidth; w.classList.add('buzz');
+}
+strings.forEach(s => {
+  s.addEventListener('pointerdown', () => hit(s));
+  s.querySelector('.wire').addEventListener('animationend', () =>
+    s.querySelector('.wire').classList.remove('buzz'));
+});
+addEventListener('keydown', e => {
+  if(e.repeat) return;
+  const i = ['1','2','3','4'].indexOf(e.key);
+  if(i > -1) hit(strings[i]);
+});
+</script>
+
 </body>
 </html>
