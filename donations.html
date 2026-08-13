@@ -25,7 +25,7 @@
   .rig{margin:6px auto 0;
     background:radial-gradient(ellipse at 50% 46%, #120806 0%, #030407 62%)}
   .flame{animation:flick 1.8s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
-  @keyframes flick{from{transform:scaleY(.94) }to{transform:scaleY(1.05)}}
+  @keyframes flick{from{transform:scaleY(.94)}to{transform:scaleY(1.05)}}
   .bgf{opacity:.12}
   #glow{animation:reson 5s ease-in-out infinite}
   @keyframes reson{0%,100%{opacity:.5}50%{opacity:1}}
@@ -71,7 +71,7 @@
   <p class="rest">· EX UMBRA, LUMEN · A REST ZONE · THE FLAME RESONATES WITH EVERY WITNESS ·</p>
 
   <div class="rig">
-    <svg width="420" height="420" viewBox="0 0 420 420" fill="none" stroke-linejoin="round">
+    <svg width="420" height="420" viewBox="0 0 420 420" fill="none" stroke-linejoin="miter">
       <defs>
         <radialGradient id="g1" cx=".5" cy=".5" r=".5">
           <stop offset="0" stop-color="#7a2d16" stop-opacity=".28"/>
@@ -81,9 +81,9 @@
       </defs>
       <!-- void fires, unattended -->
       <path class="flame bgf" style="animation-delay:-.4s" fill="#c8452c"
-        d="M52,392 C48,380 46,374 50,364 C52,370 56,368 56,360 C60,368 62,376 60,384 C58,390 56,392 52,392 Z"/>
+        d="M52,392 L48,378 L52,382 L50,364 L56,376 L58,366 L62,384 L58,392 Z"/>
       <path class="flame bgf" style="animation-delay:-1.2s" fill="#c8452c"
-        d="M368,388 C364,378 363,372 366,364 C368,370 372,368 372,361 C376,368 377,376 375,382 C373,387 371,388 368,388 Z"/>
+        d="M368,388 L364,376 L368,380 L366,364 L372,374 L374,366 L377,382 L373,388 Z"/>
       <!-- resonating glow -->
       <ellipse id="glow" cx="210" cy="250" rx="130" ry="95" fill="url(#g1)"/>
       <!-- smoke -->
@@ -91,12 +91,15 @@
         <path d="M204,70 C196,52 212,44 204,26"/>
         <path d="M220,76 C228,58 214,48 222,30"/>
       </g>
-      <!-- the fire: filled silhouettes, layered -->
+      <!-- the fire: engraved, blade-straight -->
       <g id="fire">
-        <path class="flame" fill="#3f120b" d="M210,70 C198,96 186,104 184,128 C183,146 192,154 188,170 C176,156 164,164 162,188 C160,210 172,220 168,240 C154,228 144,240 146,262 C148,284 162,294 170,300 L250,300 C258,294 272,284 274,262 C276,240 266,228 270,210 C256,220 248,208 250,188 C252,164 240,156 242,138 C230,150 224,140 226,118 C228,96 220,88 210,70 Z"/>
-        <path class="flame" style="animation-delay:-.7s" fill="#7a2d16" d="M210,110 C202,130 194,138 193,158 C192,174 200,182 197,196 C188,186 180,194 179,214 C178,232 188,242 185,258 C176,250 170,258 172,276 C174,290 184,297 190,300 L230,300 C236,297 246,290 248,276 C250,258 244,250 246,236 C236,244 230,234 231,216 C232,196 224,190 226,172 C228,152 218,132 210,110 Z"/>
-        <path class="flame" style="animation-delay:-1.2s" fill="#b3541e" d="M210,160 C204,176 199,182 198,198 C197,212 204,220 201,232 C194,226 189,232 190,248 C191,262 198,270 196,282 C192,278 188,282 189,292 C190,297 194,300 197,300 L223,300 C226,300 230,297 231,292 C232,282 228,278 224,282 C222,270 229,262 230,248 C231,232 226,226 219,232 C216,220 223,212 222,198 C221,182 216,176 210,160 Z"/>
-        <path class="flame" style="animation-delay:-.4s" fill="#d9a83a" opacity=".85" d="M210,210 C204,226 200,236 200,252 C200,272 205,286 210,296 C215,286 220,272 220,252 C220,236 216,226 210,210 Z"/>
+        <path class="flame" fill="#2a0d08" d="M210,64 L198,108 L204,100 L192,148 L200,138 L186,192 L196,180 L178,236 L190,222 L170,268 L184,258 L176,300 L244,300 L238,262 L250,272 L240,224 L252,234 L236,182 L246,192 L230,140 L238,150 L222,102 L228,112 Z"/>
+        <path class="flame" style="animation-delay:-.7s" fill="#6a1e10" d="M210,110 L200,146 L206,140 L194,184 L202,176 L190,224 L199,214 L186,262 L196,252 L190,300 L230,300 L226,256 L236,266 L226,218 L234,228 L222,180 L229,188 L218,142 L224,150 Z"/>
+        <path class="flame" style="animation-delay:-1.2s" fill="#a34a24" d="M210,160 L202,192 L207,186 L198,226 L205,219 L196,262 L204,254 L200,300 L222,300 L219,258 L226,266 L218,224 L224,231 L215,192 L220,198 Z"/>
+        <path class="flame" style="animation-delay:-.4s" fill="#d9a83a" opacity=".9" d="M210,214 L204,244 L208,240 L203,272 L209,266 L207,300 L215,300 L213,268 L218,272 L214,242 L217,246 Z"/>
+        <path class="flame" style="animation-delay:-.9s" fill="#6a1e10" d="M206,52 L210,38 L213,52 Z"/>
+        <path class="flame" style="animation-delay:-1.5s" fill="#6a1e10" d="M188,84 L192,72 L195,84 Z"/>
+        <path class="flame" style="animation-delay:-.2s" fill="#6a1e10" d="M228,90 L232,78 L235,90 Z"/>
       </g>
       <!-- rising embers -->
       <g fill="#d98a3a">
@@ -107,9 +110,9 @@
         <circle class="ember" style="animation-delay:-4.2s" cx="230" cy="240" r="1.4"/>
         <circle class="ember" style="animation-delay:-2s" cx="205" cy="210" r="1.2"/>
       </g>
-      <!-- the brazier: dark rim, bowl, block legs -->
-      <path d="M150,300 L270,300 L266,312 Q210,320 154,312 Z" fill="#050608" stroke="#1f2630" stroke-width="1.5"/>
-      <path d="M154,312 Q210,326 266,312 L258,344 Q210,352 162,344 Z" fill="#0a0d12" stroke="#223041" stroke-width="1.5"/>
+      <!-- the brazier: hard black rim, bowl, block legs -->
+      <path d="M148,300 L272,300 L268,314 L152,314 Z" fill="#050608" stroke="#1f2630" stroke-width="1.5"/>
+      <path d="M154,314 Q210,328 266,314 L258,344 Q210,352 162,344 Z" fill="#0a0d12" stroke="#223041" stroke-width="1.5"/>
       <g fill="#0a0d12" stroke="#223041" stroke-width="1.5">
         <rect x="176" y="344" width="16" height="26"/><rect x="228" y="344" width="16" height="26"/>
         <rect x="170" y="370" width="28" height="6"/><rect x="222" y="370" width="28" height="6"/>
@@ -157,7 +160,8 @@ const flavor = [
   'the keeper of the fire nods.',
   'sediment, not jackpot.',
   'the stones warm on the near side.',
-  'other fires burn unattended in the dark. not this one.'
+  'other fires burn unattended in the dark. not this one.',
+  'a fire that prices things. carefully.'
 ];
 const NS = 'http://www.w3.org/2000/svg';
 const tg = document.getElementById('totems');
@@ -166,7 +170,7 @@ const spots = [[120,388,14],[160,396,12],[210,400,14],[262,396,12],[300,388,14],
 const totems = spots.map(s=>{
   const e = document.createElementNS(NS,'ellipse');
   e.setAttribute('cx',String(s[0])); e.setAttribute('cy',String(s[1]));
-  e.setAttribute('rx',String(s[0+1]!==undefined?s[2]:10)); e.setAttribute('ry',String(s[2]/3.5));
+  e.setAttribute('rx',String(s[2])); e.setAttribute('ry',String(s[2]/3.5));
   e.setAttribute('stroke','#223041'); e.setAttribute('stroke-width','1.2');
   e.setAttribute('fill','#0a0d12');
   tg.appendChild(e); return e;
