@@ -18,7 +18,13 @@
   main{max-width:820px;margin:0 auto;padding:48px 24px 60px}
   .hook{font-family:var(--serif);font-style:italic;font-size:24px;text-align:center}
   .man{text-align:center;color:var(--dim);font-size:12px;margin-top:10px;letter-spacing:.06em;line-height:1.9}
-  .rows{margin-top:36px;border:1px solid var(--line);background:var(--panel)}
+  .legend{margin:22px auto 0;border:1px dashed var(--line);background:var(--panel);
+    padding:12px 16px;font-size:11px;color:var(--dim);line-height:2;text-align:center}
+  .legend .ok{color:var(--green)} .legend .wf{color:var(--gold)} .legend .aw{color:#5c6875}
+  .part{margin:44px 0 18px;text-align:center;letter-spacing:.3em;font-size:11px;color:var(--dim);
+    border-top:2px solid var(--line);border-bottom:2px solid var(--line);
+    padding:12px;background:var(--panel)}
+  .rows{border:1px solid var(--line);background:var(--panel)}
   .row{display:flex;gap:14px;align-items:baseline;padding:10px 16px;
     border-bottom:1px solid var(--line);font-size:12px;flex-wrap:wrap}
   .row:last-child{border-bottom:none}
@@ -26,9 +32,11 @@
   .row span{color:var(--ink);width:96px}
   .row em{color:var(--dim);font-style:normal;flex:1;min-width:220px}
   .row i{color:#5c6875;font-style:normal;font-size:11px}
-  .dock{margin:40px auto 0;border:1px solid var(--line);background:var(--panel);padding:22px 20px}
+  .dock{margin:34px auto 0;border:1px solid var(--line);background:var(--panel);padding:22px 20px}
   .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;
-    margin-bottom:12px;text-align:center}
+    margin-bottom:10px;text-align:center}
+  .faces{font-size:10.5px;letter-spacing:.08em;color:#5c6875;text-align:center;margin-bottom:14px}
+  .faces .ok{color:var(--green)} .faces .wf{color:var(--gold)} .faces .aw{color:#5c6875}
   .dock ul{list-style:none;color:var(--dim);font-size:12px;line-height:1.9}
   .dock li{margin-bottom:6px}
   .dock li b{color:var(--ink)}
@@ -52,11 +60,21 @@
 <main>
   <p class="hook">the backnull codex.</p>
   <p class="man">building electromechanical &amp; digital system literacy — in thirty-three pages.<br>
-  photographed 07/17 · day-3 transcription in progress · stacks 1–5 provisional · the stemming point.</p>
+  photographed 07/17 · day-3 transcription in progress · the stemming point.</p>
 
+  <div class="legend">
+    <span class="ok">■ transcribed (crisp):</span> 27f·27b · 28f·29f · 30f·30b · 31f · 32f·32b · 33f·33b · closing &nbsp;·&nbsp;
+    <span class="wf">■ verify (strip):</span> 28b &nbsp;·&nbsp;
+    <span class="aw">■ awaiting:</span> 1–26 · 29b
+  </div>
+
+  <div class="part">PART I — THE BACKNULL INDEX · ONE LINE PER PAGE</div>
   <div class="rows" id="rows"></div>
 
+  <div class="part">PART II — THE STACKS · VERBATIM · MARGINS &amp; ARROWS KEPT</div>
+
   <section class="dock"><div class="fig">stacks 1–5 · provisional titles [verify]</div>
+    <div class="faces">coverage: <span class="wf">discord strips only</span> · missing: <span class="aw">crisp pages 1–25</span></div>
     <ul>
       <li><b>stack 1 · control &amp; cybernetics</b> — feedback loops · control systems · complex adaptive systems</li>
       <li class="m">margin, transcribed: “this is where electronics + philosophy collapse.”</li>
@@ -66,7 +84,8 @@
       <li><b>stack 5 · electromechanical &amp; access</b> — electronics primers [verify] · Lewins · Pavey · Ollam, <i>Practical Lock Picking</i></li>
     </ul></section>
 
-  <section class="dock"><div class="fig">stack 6 · infrastructure — page 27, front &amp; back [transcribed]</div>
+  <section class="dock"><div class="fig">stack 6 · infrastructure</div>
+    <div class="faces">covered: <span class="ok">27f · 27b</span> · missing: <span class="aw">26f · 26b</span></div>
     <ul>
       <li class="m">“if you want a real education in this, read these in order.”</li>
       <li><b>1. Seeing Like a State — James C. Scott</b><br>
@@ -82,7 +101,8 @@
         explains how modern infrastructure = data + coordination. (this explains Uber, Amazon, Google, etc.)</li>
     </ul></section>
 
-  <section class="dock"><div class="fig">stack 7 · infrastructure cont’d — pages 28–29 [transcribed]</div>
+  <section class="dock"><div class="fig">stack 7 · infrastructure cont’d</div>
+    <div class="faces">covered: <span class="ok">28f · 29f</span> · <span class="wf">28b (strip — verify)</span></div>
     <ul>
       <li><b>1. “The Art of Strategy” — Avinash Dixit &amp; Barry Nalebuff</b><br>
         this one hits close. it teaches: how people act in systems · how leverage emerges · how positioning beats effort · why indirect moves win.<br>
@@ -90,10 +110,10 @@
       <li><b>2. “The 33 Strategies of War” — Robert Greene</b><br>
         not the 48 laws. this one is different. it’s about: psychological terrain · structural advantage · knowing when <i>not</i> to engage · creating asymmetry.<br>
         <span class="m">margin: “less slimy. more strategic.”</span></li>
-      <li><b>3. “Debt: The First 5000 Years” — David Graeber</b><br>
+      <li><b>3. “Debt: The First 5000 Years” — David Graeber</b> <span class="m">[strip — verify]</span><br>
         this one hits deep. explaining: why money is power · how debt controls people · why economics aren’t fair · how obligation creates hierarchy.<br>
         <span class="m">margin: “this will probably resonate w/ you hard.”</span></li>
-      <li><b>4. “The Box” — Marc Levinson</b><br>
+      <li><b>4. “The Box” — Marc Levinson</b> <span class="m">[strip — verify]</span><br>
         this one surprises people. it’s about shipping containers. why it matters: explains how logistics reshaped the world · shows how infrastructure quietly controls everything · makes clear how boring innovations create massive leverage.<br>
         <span class="m">margin: “if you understand containers, you understand globalization.”</span></li>
       <li><b>5. fiction that teaches power better than nonfiction</b><br>
@@ -102,26 +122,60 @@
         <span class="m">margin: “these show power in motion. (lens)”</span></li>
     </ul></section>
 
-  <section class="dock"><div class="fig">stack 8 · structural power — pages 30–31 [transcribed — verify]</div>
+  <section class="dock"><div class="fig">stack 8 · structural power</div>
+    <div class="faces">covered: <span class="ok">30f · 30b · 31f</span> · missing: <span class="aw">29b</span> · <span class="m">header margin: “(overlap w/ stack 6)”</span></div>
     <ul>
-      <li><b>Scott</b> — Seeing Like a State (re-read) · “how systems simplify people; why platforms win; why standardization feels powerless”</li>
-      <li class="m">margin, transcribed: “this will click hard for you.”</li>
-      <li><b>Caro</b> — The Power Broker · “control over infrastructure; money follows infrastructure”</li>
-      <li><b>Fisher</b> — Capitalist Realism · “why it feels impossible to imagine alternatives; how capitalism absorbs critique; why burnout is systemic, not personal”</li>
-      <li><b>Graeber</b> — Bullshit Jobs · “why high pay ≠ real value; why doers feel the system; why status ≠ contribution”</li>
-      <li><b>Sandel</b> — The Tyranny of Merit · “why meritocracy reads as cruel; people internalize failure unfairly”</li>
-      <li class="m">margin, transcribed: “good for choosing mental poison ✗”</li>
+      <li><b>1. Seeing Like a State — James C. Scott</b><br>
+        this one is huge for what you’re thinking. it explains: how systems simplify people · why institutions behave the way they do · why legibility = control · why people outside systems get crushed.<br>
+        it explains why: platforms win · bureaucracies dominate · individuals feel powerless.<br>
+        <span class="m">margin: “this will click hard for you...”</span></li>
+      <li><b>2. “The Power Broker” — Robert Caro</b><br>
+        not about money. about control over infrastructure.<br>
+        core lesson: whoever controls the pipes controls the flow — roads. housing. transit. bureaucracy. money follows infrastructure.</li>
+      <li><b>3. “Capitalist Realism” — Mark Fisher</b><br>
+        short, brutal, accurate. explains: why it feels impossible to escape · why everything feels commodified · why burnout is systemic, not personal.<br>
+        <span class="m">margin: “this one will validate a lot of your existent feelings.”</span></li>
+      <li><b>4. “Bullshit Jobs” — David Graeber</b><br>
+        this one explains: why so much work feels pointless · why pay isn’t tied to value · why admin roles exist · why power sustains inefficiency.<br>
+        <span class="m">margin: “it helps you understand where not to aim.”</span></li>
+      <li><b>5. “The Tyranny of Merit” — Michael Sandel</b><br>
+        explains why: effort ≠ reward · meritocracy is a myth · people internalize failure unfairly.<br>
+        <span class="m">margin: “good for choosing mental poison ✗”</span></li>
     </ul></section>
 
-  <section class="dock"><div class="fig">stack 9 · money / psychology — pages 32–33 [transcribed — verify]</div>
+  <section class="dock"><div class="fig">stack 8 · bonus / reorienting — the money-flow pivot</div>
+    <div class="faces">covered: <span class="ok">32f · 32b</span></div>
     <ul>
-      <li><b>caro, again, as money</b> · “power, not finance; how the money application of power actually works in modern systems”</li>
-      <li class="m">margin, transcribed: “if you only read one book, make it this?”</li>
-      <li><b>follow the money</b> · “why money = signal; why debt = leverage; why assets ≠ income; why ‘hard work’ doesn’t correlate to pay”</li>
-      <li class="m">margin, transcribed: “this one will explain why you feel trapped.”</li>
-      <li><b>Carnegie</b> — The Gospel of Wealth · “wealth comes from controlling production &amp; distribution, not labor”</li>
-      <li><b>Srnicek</b> — Platform Capitalism · “why everything became an app; why platforms beat products; why data = the new oil; why autonomy is disappearing”</li>
-      <li class="m">closing note, transcribed: “these 33 pages buy so much already — stopping here till the surface.”</li>
+      <li class="m">epigraph: “money flows through systems, not people. people only get paid when they sit at a point in that flow.”</li>
+      <li><b>“The Power Broker” — Robert Caro</b> (not a money book on the surface — the ultimate one!)<br>
+        it explains how: control over infrastructure = control over money · being “useful” is secondary to being positioned · institutions matter more than talent · the person who controls access wins.<br>
+        it’s about Robert Moses, not finance — but it’s the clearest explanation of how power &amp; money actually work in modern systems.<br>
+        <span class="m">margin: “if you read only one book, make it this. ↑”</span></li>
+      <li><b>Positive Money — “Where does money come from?”</b><br>
+        the clearest money-flow book (non-economy). short, factual, dry.<br>
+        it explains: how money is created · why labour is always downstream · why banks &amp; platforms extract value · why “hard work” doesn’t correlate to pay.<br>
+        <span class="m">margin: “this one will explain ‘why’ you feel trapped.”</span></li>
+    </ul></section>
+
+  <section class="dock"><div class="fig">stack 9 · money / psychology — the historical lens</div>
+    <div class="faces">covered: <span class="ok">33f · 33b</span></div>
+    <ul>
+      <li class="m">“the most important historical lens”</li>
+      <li><b>“The Gospel of Wealth” — Andrew Carnegie</b><br>
+        short essay, not a hype book.<br>
+        key insight: wealth comes from controlling production and distribution, not labour.<br>
+        carnegie didn’t glorify work. he glorified positioning.</li>
+      <li><b>“Platform Capitalism” — Nick Srnicek</b><br>
+        the book that explains why Uber-style systems exist.<br>
+        this one explains: why everything became an app · why workers get squeezed · why platforms extract value · why autonomy is disappearing.<br>
+        it will validate a LOT of what’s been said.</li>
+      <li class="m">N.B!! money flows towards leverage, not effort.</li>
+    </ul></section>
+
+  <section class="dock"><div class="fig">closing page — the colophon</div>
+    <div class="faces">covered: <span class="ok">the footer note</span></div>
+    <ul>
+      <li class="m">“there’s more, but so much already. (i figure stopping here for now will suffice :3” — and the arrow, off the page.</li>
     </ul></section>
 </main>
 
@@ -138,16 +192,16 @@
 const stacks={26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
   28:'stack 7 · infrastructure cont\u2019d',29:'stack 7 · fiction that teaches power',
   30:'stack 8 · structural power',31:'stack 8 · structural power',
-  32:'stack 9 · money / psychology',33:'stack 9 · money / psychology'};
+  32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'};
 const content={
-  26:'[awaiting transcription — send page 26]',
+  26:'[awaiting — send 26f · 26b]',
   27:'seeing like a state — scott · the power broker — caro · field guide — larkin · utopia of rules — graeber · platform capitalism — srnicek · [transcribed]',
   28:'art of strategy — dixit · 33 strategies — greene · debt — graeber · the box — levinson · [transcribed]',
   29:'fiction that teaches power — dune · the dispossessed · neuromancer · the wire · [transcribed]',
-  30:'stack 8 · [awaiting transcription]',
-  31:'bullshit jobs — graeber · the tyranny of merit — sandel · [transcribed — verify]',
-  32:'money as control · follow the money · [transcribed — verify]',
-  33:'gospel of wealth — carnegie · platform capitalism — srnicek · closing note · [transcribed — verify]'
+  30:'seeing like a state — scott · power broker — caro · capitalist realism — fisher · [transcribed]',
+  31:'bullshit jobs — graeber · the tyranny of merit — sandel · [transcribed]',
+  32:'bonus/reorienting · power broker as money · positive money · [transcribed]',
+  33:'gospel of wealth — carnegie · platform capitalism — srnicek · n.b. leverage, not effort · [transcribed]'
 };
 const box=document.getElementById('rows');
 for(let n=1;n<=33;n++){
