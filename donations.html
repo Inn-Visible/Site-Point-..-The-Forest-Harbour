@@ -61,7 +61,7 @@
   <div class="keep">keep the flame burning — rest a while, keeper. the ink remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">schematic idle. the drawing dreams of fire.</div>
+  <div class="status" id="stat">schematic idle. telemetry nominal.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
@@ -81,7 +81,7 @@
 </footer>
 
 <script>
-/* the blueprint, professional edge: ink powers up, filament ignites, zero exhaust */
+/* the drawing never changes. the telemetry reacts. */
 const cv = document.getElementById('engine');
 const g2 = cv.getContext('2d');
 let W, H;
@@ -90,20 +90,20 @@ addEventListener('resize', fit); fit();
 
 let busy = false, dropY = null;
 let spoolAt = 0, burnAt = 0, burnUntil = 0;
+let flux = 0.08;
+const samples = [];
 function tick(now){
   g2.clearRect(0,0,W,H);
   const cx = W/2, cy = H-230;
   const spool = now>spoolAt && now<burnAt;
   const burn  = now>burnAt && now<burnUntil;
   const decay = now>burnUntil && now<burnUntil+900;
-  const g = burn?1 : spool?.55 : decay?.45 : .16 + .05*Math.sin(now*.002);
-  const A = .10 + .38*g;
+  const A = .14 + .04*Math.sin(now*.002);
   const CY = c => 'rgba(127,214,232,'+Math.min(1,c).toFixed(3)+')';
   const GD = c => 'rgba(217,168,58,'+Math.min(1,c).toFixed(3)+')';
-  const WT = c => 'rgba(255,240,200,'+Math.min(1,c).toFixed(3)+')';
   g2.lineWidth = 1;
 
-  /* framing ring + rotating dash */
+  /* ---- the schematic: pristine, always ---- */
   g2.strokeStyle = CY(A*.8);
   g2.beginPath(); g2.arc(cx,cy,168,0,7); g2.stroke();
   g2.save();
@@ -119,70 +119,41 @@ function tick(now){
     g2.lineTo(cx+Math.cos(a)*(168-l), cy+Math.sin(a)*(168-l));
     g2.stroke();
   }
-
-  /* centerline */
   g2.save();
-  g2.setLineDash([12,4,2,4]); g2.lineDashOffset = burn? -now*.05 : 0;
+  g2.setLineDash([12,4,2,4]);
   g2.strokeStyle = CY(A*.9);
   g2.beginPath(); g2.moveTo(cx,cy-190); g2.lineTo(cx,cy+190); g2.stroke();
   g2.restore();
-
-  /* containment rings */
   for(const ry of [-96,-32,32,96]){
-    g2.strokeStyle = burn? CY(A+.45) : CY(A);
+    g2.strokeStyle = CY(A);
     g2.beginPath(); g2.ellipse(cx,cy+ry,96,16,0,0,7); g2.stroke();
-    g2.strokeStyle = burn? GD(.3) : CY(A*.6);
+    g2.strokeStyle = CY(A*.6);
     g2.beginPath(); g2.ellipse(cx,cy+ry,88,13,0,0,7); g2.stroke();
   }
-
-  /* plasma column: no balloon fill — ink only */
-  g2.fillStyle = burn? 'rgba(255,196,80,0.05)' : 'rgba(127,214,232,0.03)';
+  g2.fillStyle = 'rgba(127,214,232,0.03)';
   g2.beginPath();
   g2.moveTo(cx-22,cy-70); g2.lineTo(cx-22,cy+70);
   g2.arc(cx,cy+70,22,Math.PI,0,true);
   g2.lineTo(cx+22,cy-70);
   g2.arc(cx,cy-70,22,0,Math.PI,true);
   g2.closePath(); g2.fill();
-  g2.strokeStyle = burn? GD(.75) : CY(A*1.2);
-  g2.lineWidth = burn?1.5:1; g2.stroke(); g2.lineWidth = 1;
-  g2.strokeStyle = burn? GD(.4) : CY(A*.7);
+  g2.strokeStyle = CY(A*1.2); g2.stroke();
+  g2.strokeStyle = CY(A*.7);
   for(let y=cy-64;y<cy+66;y+=6){ g2.beginPath(); g2.moveTo(cx-22,y); g2.lineTo(cx+22,y); g2.stroke(); }
-
-  /* the filament: ignition down the axis, no exhaust */
-  if(g > 0.3){
-    const fa = burn? .85 : .35*g;
-    g2.save();
-    g2.strokeStyle = WT(fa); g2.lineWidth = 2;
-    g2.shadowColor = 'rgba(255,196,80,1)'; g2.shadowBlur = 10*g;
-    g2.beginPath(); g2.moveTo(cx,cy-64); g2.lineTo(cx,cy+64); g2.stroke();
-    g2.lineWidth = 1; g2.shadowBlur = 6*g;
-    g2.strokeStyle = GD(fa*.5);
-    g2.beginPath(); g2.moveTo(cx-5,cy-58); g2.lineTo(cx-5,cy+58); g2.stroke();
-    g2.beginPath(); g2.moveTo(cx+5,cy-58); g2.lineTo(cx+5,cy+58); g2.stroke();
-    g2.restore();
-  }
-
-  /* flanges + bolts + crosshairs */
   for(const s of [-1,1]){
     const fy = cy + s*96;
-    g2.strokeStyle = burn? GD(.6) : CY(A*1.1);
+    g2.strokeStyle = CY(A*1.1);
     g2.strokeRect(cx-60, fy-6, 120, 12);
-    for(let k=0;k<10;k++){
-      g2.beginPath(); g2.arc(cx-50+k*11.1, fy, 1.6, 0, 7); g2.stroke();
-    }
+    for(let k=0;k<10;k++){ g2.beginPath(); g2.arc(cx-50+k*11.1, fy, 1.6, 0, 7); g2.stroke(); }
     g2.save(); g2.setLineDash([6,4]);
     g2.strokeStyle = CY(A*.7);
     g2.beginPath(); g2.moveTo(cx-78,fy); g2.lineTo(cx+78,fy); g2.stroke();
     g2.restore();
   }
-
-  /* vent (labeled, sealed) */
   g2.strokeStyle = CY(A);
   g2.beginPath();
   g2.moveTo(cx-8,cy-102); g2.lineTo(cx-5,cy-124); g2.lineTo(cx+5,cy-124); g2.lineTo(cx+8,cy-102);
   g2.stroke();
-
-  /* dims */
   g2.strokeStyle = CY(A*.9);
   g2.beginPath(); g2.moveTo(cx+40,cy-70); g2.lineTo(cx+118,cy-70); g2.stroke();
   g2.beginPath(); g2.moveTo(cx+40,cy+70); g2.lineTo(cx+118,cy+70); g2.stroke();
@@ -192,8 +163,6 @@ function tick(now){
   g2.fillText('140u', cx+118, cy+3);
   g2.beginPath(); g2.moveTo(cx-22,cy+120); g2.lineTo(cx+22,cy+120); g2.stroke();
   g2.fillText('44u', cx+28, cy+123);
-
-  /* callouts */
   g2.strokeStyle = CY(A);
   g2.beginPath(); g2.moveTo(cx+16,cy-40); g2.lineTo(cx+84,cy-128); g2.lineTo(cx+128,cy-128); g2.stroke();
   g2.fillText('PLASMA COLUMN — GLYPH', cx+88, cy-132);
@@ -205,18 +174,6 @@ function tick(now){
   g2.beginPath(); g2.moveTo(cx-8,cy-120); g2.lineTo(cx-70,cy-160); g2.lineTo(cx-110,cy-160); g2.stroke();
   g2.fillText('VENT, SEALED', cx-72, cy-164);
   g2.textAlign='left';
-
-  /* containment pulse ellipses (internal, not exhaust) */
-  if(burn || decay){
-    for(let k=0;k<3;k++){
-      const t = ((now/12)+k*40) % 120;
-      const a = Math.max(0, .35 - t/260);
-      g2.strokeStyle = GD(a);
-      g2.beginPath(); g2.ellipse(cx,cy, 30+t, 8+t*.3, 0, 0, 7); g2.stroke();
-    }
-  }
-
-  /* title block */
   const tx = W-238, ty = H-96;
   g2.strokeStyle = CY(Math.min(.5,A*1.4));
   g2.strokeRect(tx,ty,214,72);
@@ -227,7 +184,50 @@ function tick(now){
   g2.fillText('THE RING · SCHEMATIC', tx+10, ty+39);
   g2.fillText('SCALE 1:∞ · DRAWN: THE FERRYMAN', tx+10, ty+63);
 
-  /* the offering drop down the centerline */
+  /* ---- the stamp ---- */
+  if(burn){
+    const t=Math.min(1,(now-burnAt)/150);
+    const sc=1.6-0.6*t;
+    g2.save();
+    g2.translate(cx-150,cy-150); g2.rotate(-0.14); g2.scale(sc,sc);
+    g2.strokeStyle='rgba(200,69,44,'+(0.8*t).toFixed(3)+')';
+    g2.lineWidth=2; g2.strokeRect(-62,-17,124,34);
+    g2.fillStyle='rgba(200,69,44,'+(0.85*t).toFixed(3)+')';
+    g2.font='bold 14px monospace'; g2.textAlign='center';
+    g2.fillText('FULL BURN', 0, 5);
+    g2.restore();
+    g2.textAlign='left';
+  }
+
+  /* ---- telemetry panel: the part that reacts ---- */
+  const target = burn?1 : spool?.5 : decay?.3 : .08;
+  flux += (target-flux)*0.08;
+  samples.push(Math.max(0,Math.min(1,flux + (Math.random()-.5)*0.03)));
+  if(samples.length>72) samples.shift();
+  const px=W-268, py=64, pw=244, ph=132;
+  g2.strokeStyle=CY(.35); g2.strokeRect(px,py,pw,ph);
+  g2.beginPath(); g2.moveTo(px,py+22); g2.lineTo(px+pw,py+22); g2.stroke();
+  g2.fillStyle=CY(.7); g2.font='9px monospace';
+  g2.fillText('OUTFLOW-07 · TELEMETRY', px+10, py+14);
+  g2.fillText('STATUS: '+(burn?'FULL BURN':spool?'SPOOL':decay?'DECAY':'IDLE'), px+10, py+38);
+  g2.fillText('CORE FLUX', px+10, py+57);
+  for(let k=0;k<12;k++){
+    const on = k < Math.round(flux*12);
+    g2.strokeStyle=CY(.4); g2.strokeRect(px+72+k*11, py+49, 8, 8);
+    if(on){ g2.fillStyle = k>8 ? GD(.8) : CY(.6); g2.fillRect(px+73+k*11, py+50, 6, 6); }
+  }
+  g2.fillStyle=CY(.7);
+  g2.fillText('CONTAINMENT 100.0%', px+10, py+76);
+  g2.fillText('DROPS LOGGED '+drops, px+10, py+92);
+  g2.strokeStyle=CY(.6);
+  g2.beginPath();
+  samples.forEach((s,i)=>{
+    const x=px+10+i*(pw-20)/71, y=py+ph-10 - s*30;
+    i?g2.lineTo(x,y):g2.moveTo(x,y);
+  });
+  g2.stroke();
+
+  /* ---- the offering drop ---- */
   if(dropY !== null){
     dropY += 11;
     g2.save();
@@ -245,14 +245,6 @@ requestAnimationFrame(tick);
 
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
-const flavor = [
-  'schematic idle. the drawing dreams of fire.',
-  'a drop lands; the ink remembers.',
-  'containment nominal. ink powered.',
-  'sediment, not jackpot.',
-  'no exhaust. the ring keeps its heat.',
-  'somewhere the real machine hums. this is its portrait.'
-];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
 function render(){
@@ -264,9 +256,9 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — sheet 2 of 1 drafted. the ledger turns.';
-  else if(drops%10===0) s.textContent='FIRST LIGHT — the filament holds; a lamp joins the row.';
-  else s.textContent='>> powering the ink .. <<  ·  '+flavor[drops%flavor.length];
+  if(drops%100===0) s.textContent='A LOOP CLOSES — the ledger turns. containment held.';
+  else if(drops%10===0) s.textContent='FIRST LIGHT — a lamp joins the row. containment held.';
+  else s.textContent='FULL BURN logged · flux peaked · containment held.';
   render(); busy=false;
 }
 function whoosh(){
