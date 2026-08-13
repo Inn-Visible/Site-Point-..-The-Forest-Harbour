@@ -8,7 +8,7 @@
   :root{
     --bg:#0a0d12; --panel:#0e141b; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --green:#58a36a;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
     --serif:Georgia,"Times New Roman",serif;
   }
@@ -19,27 +19,62 @@
                linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
   header{display:flex;justify-content:space-between;align-items:center;
     padding:18px 44px;border-bottom:1px solid var(--line)}
-  .brand{display:flex;gap:12px;align-items:center;font-size:18px;letter-spacing:.3em;color:var(--red)}
-  header a{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
-  header a:hover{color:var(--ink)}
-  main{max-width:900px;margin:0 auto;padding:56px 24px 60px;text-align:center}
-  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px;margin-bottom:10px}
-  .pol{color:var(--dim);font-size:12px;letter-spacing:.2em;margin-bottom:36px}
-  .deck{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .brand{display:flex;gap:12px;align-items:center;font-size:16px;letter-spacing:.3em;color:var(--red)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:960px;margin:0 auto;padding:56px 24px 60px;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
+  .pol{color:var(--dim);font-size:12px;letter-spacing:.2em;margin:12px 0 36px}
+  .deck{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left}
   @media(max-width:700px){.deck{grid-template-columns:1fr}}
-  .card{border:1px dashed var(--line);background:var(--panel);padding:18px 14px;
-    font-size:12px;letter-spacing:.08em;color:var(--dim);line-height:2;text-align:left}
-  .card .h{color:var(--ink);display:block;margin-bottom:8px;letter-spacing:.15em}
+  .card{border:1px dashed var(--line);background:var(--panel);padding:18px 16px}
+  .card .h{display:block;margin-bottom:12px;letter-spacing:.15em;font-size:12px}
   .card.buy .h{color:var(--green)} .card.sell .h{color:var(--red)}
   .card.ful .h{color:var(--gold)} .card.turn .h{color:var(--blue)}
-  .settle{margin-top:34px;color:var(--dim);font-size:12px;letter-spacing:.1em}
-  .settle a{color:var(--blue);text-decoration:none}
+  .card ul{list-style:none}
+  .card li{display:flex;align-items:center;gap:8px;padding:7px 2px;
+    border-bottom:1px solid var(--line);font-size:12px;color:var(--dim);flex-wrap:wrap}
+  .card li.empty{border-bottom:none;color:#5c6875;font-style:italic}
+  .card li span{flex:1;min-width:120px}
+  .card li button{background:none;border:1px solid var(--line);color:var(--dim);
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:4px 8px;cursor:pointer}
+  .card li button:hover{border-color:var(--gold);color:var(--gold)}
+  .dock{margin:40px auto 0;border:1px solid var(--line);background:var(--panel);
+    padding:26px 20px;max-width:700px}
+  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
+  .write{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .write input,.write select{background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:9px 10px}
+  .write input:focus,.write select:focus{outline:none;border-color:var(--gold)}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
+    cursor:pointer;margin-top:14px;text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .status a{color:var(--blue);text-decoration:none}
   footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
-    color:var(--dim);font-size:12px;letter-spacing:.12em}
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  footer b{color:var(--ink)}
   footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
+
+<script>
+/* the house keeps the lock */
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
+function lockdoor(){
+  localStorage.removeItem('hive_access');
+  sessionStorage.removeItem('hive_session');
+  location.href='index.html?gate';
+}
+</script>
 
 <header>
   <div class="brand">
@@ -48,30 +83,98 @@
     </svg>
     ROTA(S)
   </div>
-  <a href="index.html">core ↩</a>
+  <a class="back" href="core.html">core ↩</a>
 </header>
 
 <main>
-  <div class="fig">the market of contracts — every promise, on the books</div>
-  <div class="pol">( + ) inflow ⇄ outflow ( − )</div>
+  <p class="hook">the market of contracts — every promise, on the books.</p>
+  <p class="pol">( + ) inflow ⇄ outflow ( − )</p>
 
   <div class="deck">
-    <div class="card buy"><span class="h">( + ) BUY</span>
-      contract ········<br>price ·········<br>settled in glyphs ··<br>status ········</div>
-    <div class="card sell"><span class="h">( − ) SELL</span>
-      contract ········<br>price ·········<br>settled in glyphs ··<br>status ········</div>
-    <div class="card ful"><span class="h">( ✓ ) FULFILLED</span>
-      contract ········<br>delivered ·····<br>turned to ······<br>record ········</div>
-    <div class="card turn"><span class="h">( ⇄ ) TURNED-OVER</span>
-      contract ········<br>from ··········<br>to ···········<br>record ········</div>
+    <div class="card buy"><span class="h">( + ) BUY</span><ul id="list-buy"></ul></div>
+    <div class="card sell"><span class="h">( − ) SELL</span><ul id="list-sell"></ul></div>
+    <div class="card ful"><span class="h">( ✓ ) FULFILLED</span><ul id="list-ful"></ul></div>
+    <div class="card turn"><span class="h">( ⇄ ) TURNED-OVER</span><ul id="list-turn"></ul></div>
   </div>
 
-  <div class="settle">settled in glyphs · buffered by the lantern ·
+  <section class="dock">
+    <div class="fig">write a contract</div>
+    <div class="write">
+      <input id="cn" placeholder="the promise · name">
+      <input id="cp" placeholder="price · glyphs">
+      <select id="cs">
+        <option value="buy">( + ) inflow</option>
+        <option value="sell">( − ) outflow</option>
+      </select>
+      <button class="btn" style="margin-top:0" onclick="write()">write it</button>
+    </div>
+    <div class="status" id="wstat"></div>
+  </section>
+
+  <div class="status">settled in glyphs · buffered by the lantern ·
     <a href="https://sepolia.etherscan.io/token/0x8128ab50de624815045856aab904dc51a871e732"
        target="_blank">the ledger ↗</a></div>
 </main>
 
-<footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”</footer>
+<footer>
+  <b><a href="axiom.html">AXIOM INDUSTRIES</a></b> |
+  <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
+  <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
+  <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a>
+</footer>
+
+<script>
+const BKEY = 'rota_books';
+let books;
+try{ books = JSON.parse(localStorage.getItem(BKEY)) || null; }catch(e){ books = null; }
+if(!books || typeof books !== 'object') books = {buy:[],sell:[],ful:[],turn:[]};
+function save(){ localStorage.setItem(BKEY, JSON.stringify(books)); }
+
+function row(item, listName, idx){
+  const li = document.createElement('li');
+  const t = document.createElement('span');
+  t.textContent = item.n + ' · ' + item.p + ' glyphs';
+  li.appendChild(t);
+  if(listName === 'buy' || listName === 'sell'){
+    const b1 = document.createElement('button');
+    b1.textContent = '✓ fulfill';
+    b1.onclick = () => { books.ful.push(books[listName].splice(idx,1)[0]); save(); render(); };
+    const b2 = document.createElement('button');
+    b2.textContent = '⇄ turn over';
+    b2.onclick = () => { books.turn.push(books[listName].splice(idx,1)[0]); save(); render(); };
+    li.appendChild(b1); li.appendChild(b2);
+  }
+  return li;
+}
+function render(){
+  for(const k of ['buy','sell','ful','turn']){
+    const ul = document.getElementById('list-'+k);
+    ul.innerHTML = '';
+    if(!books[k].length){
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = '— nothing written —';
+      ul.appendChild(li);
+    }else{
+      books[k].forEach((it,i)=>ul.appendChild(row(it,k,i)));
+    }
+  }
+}
+function write(){
+  const n = document.getElementById('cn').value.trim();
+  const p = document.getElementById('cp').value.trim() || '—';
+  const s = document.getElementById('cs').value;
+  if(!n){ document.getElementById('wstat').textContent = 'a contract needs a name'; return; }
+  books[s].push({n:n, p:p});
+  save(); render();
+  document.getElementById('cn').value = '';
+  document.getElementById('cp').value = '';
+  document.getElementById('wstat').textContent = 'written to the books';
+}
+render();
+</script>
 
 </body>
 </html>
