@@ -8,7 +8,7 @@
   :root{
     --bg:#030407; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --cyan:#7fd6e8;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
     --serif:Georgia,"Times New Roman",serif;
   }
@@ -56,12 +56,12 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· EX UMBRA, LUMEN · THE CHAMBER IDLES FOR NO ONE · IT BURNS FOR WITNESSES ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · THE RING IDLES FOR NO ONE · IT BURNS FOR WITNESSES ·</p>
 
-  <div class="keep">keep the flame burning — rest a while, keeper. the chamber remembers you.</div>
+  <div class="keep">keep the flame burning — rest a while, keeper. the ring remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">core warm. containment nominal. the chamber dreams.</div>
+  <div class="status" id="stat">core warm. lattice cold. the ring dreams.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
@@ -81,7 +81,7 @@
 </footer>
 
 <script>
-/* the outflow chamber: horizontal tokamak, ribbed glowing core, top vent whoosh */
+/* the outflow ring: cyan lattice accelerator around a ribbed orange core; beams on burn */
 const cv = document.getElementById('engine');
 const g2 = cv.getContext('2d');
 let W, H;
@@ -91,177 +91,180 @@ addEventListener('resize', fit); fit();
 const P = [], S = [];
 let busy = false, dropY = null;
 let spoolAt = 0, burnAt = 0, burnUntil = 0;
+let ringA = 0, last = 0;
 function rnd(a,b){ return a + Math.random()*(b-a); }
-function spawn(n, ox, oy, kind){
-  for(let i=0;i<n;i++){
-    if(kind==='jet'){
-      P.push({ x:ox+rnd(-12,12), y:oy+rnd(0,6), vx:rnd(-.5,.5), vy:-rnd(7,12),
-        r:rnd(5,12), life:0, max:rnd(30,50) });
-    } else if(kind==='burst'){
-      P.push({ x:ox+rnd(-26,26), y:oy+rnd(-4,4), vx:rnd(-2,2), vy:-rnd(3,8),
-        r:rnd(8,16), life:0, max:rnd(40,70) });
-    } else {
-      P.push({ x:ox+rnd(-8,8), y:oy-rnd(0,4), vx:rnd(-.3,.3), vy:-rnd(.6,1.6),
-        r:rnd(3,7), life:0, max:rnd(30,60) });
-    }
-  }
-  if(P.length>340) P.splice(0, P.length-340);
+/* deterministic greebles around the ring */
+const GB = [];
+(function(){ let s=7; function r(){ s=(s*16807)%2147483647; return s/2147483647; }
+  for(let i=0;i<46;i++){ GB.push([r()*Math.PI*2, 150+(r()*30-15), 4+r()*11, 2+r()*5]); }
+})();
+function spawnShimmer(n,ox,oy,hot){
+  for(let i=0;i<n;i++)
+    P.push({ x:ox+rnd(-60,60), y:oy-rnd(0,6), vx:rnd(-.25,.25), vy:-rnd(.6,1.8)*(hot?2:1),
+      r:rnd(3,7)*(hot?1.3:1), life:0, max:rnd(30,60), hot:!!hot });
+  if(P.length>240) P.splice(0,P.length-240);
 }
-function spark(ox,oy,blue){
-  S.push({ x:ox+rnd(-18,18), y:oy, vx:rnd(-.5,.5), vy:-rnd(2.5,4.5), life:0, max:rnd(30,70), b:!!blue });
+function spark(ox,oy,cyan){
+  S.push({ x:ox, y:oy+rnd(-10,10), vx:rnd(-.5,.5)+(cyan?0:0), vy:rnd(-.6,.6), life:0, max:rnd(24,50), c:!!cyan });
 }
 function tick(now){
+  const dt = Math.min(.05,(now-last)/1000||.016); last = now;
   g2.clearRect(0,0,W,H);
-  const cx = W/2, cy = H-170;
+  const cx = W/2, cy = H-190;
   const spool = now>spoolAt && now<burnAt;
   const burn  = now>burnAt && now<burnUntil;
   const decay = now>burnUntil && now<burnUntil+900;
-  const amp = burn?2.2 : spool?1 : 0.12;
+  const amp = burn?2.4 : spool?1 : 0.1;
   const ox = (Math.random()-.5)*amp, oy = (Math.random()-.5)*amp;
-  const cg = burn?1.4 : spool?0.9 : decay?0.8 : 0.5 + 0.08*Math.sin(now*0.002);
+  const cg = burn?1.4 : spool?0.95 : decay?0.85 : 0.5+0.08*Math.sin(now*0.002);
+  ringA += dt*(burn?0.5: spool?0.25:0.05);
 
-  /* leaked light */
+  /* leaked light: cold outside, hot inside */
   g2.globalCompositeOperation='source-over';
-  const lg=g2.createRadialGradient(cx,cy,0,cx,cy,210);
-  lg.addColorStop(0,'rgba(200,90,25,'+(0.13*cg).toFixed(3)+')');
-  lg.addColorStop(1,'rgba(200,90,25,0)');
-  g2.fillStyle=lg; g2.beginPath(); g2.arc(cx,cy,210,0,7); g2.fill();
+  let lg=g2.createRadialGradient(cx,cy,0,cx,cy,230);
+  lg.addColorStop(0,'rgba(200,90,25,'+(0.12*cg).toFixed(3)+')');
+  lg.addColorStop(.6,'rgba(40,90,120,'+(0.05).toFixed(3)+')');
+  lg.addColorStop(1,'rgba(40,90,120,0)');
+  g2.fillStyle=lg; g2.beginPath(); g2.arc(cx,cy,230,0,7); g2.fill();
 
   g2.save(); g2.translate(ox,oy);
 
-  /* big dark arcs above & below */
-  g2.strokeStyle='#0a0c10'; g2.lineWidth=26;
-  g2.beginPath(); g2.arc(cx,cy,128,Math.PI*1.12,Math.PI*1.88); g2.stroke();
-  g2.beginPath(); g2.arc(cx,cy,128,Math.PI*0.12,Math.PI*0.88); g2.stroke();
-  g2.strokeStyle='rgba(255,140,50,'+(0.10*cg).toFixed(3)+')'; g2.lineWidth=2;
-  g2.beginPath(); g2.arc(cx,cy,114,Math.PI*1.15,Math.PI*1.85); g2.stroke();
-  g2.beginPath(); g2.arc(cx,cy,114,Math.PI*0.15,Math.PI*0.85); g2.stroke();
-
-  /* greeble side blocks */
-  g2.fillStyle='#07090c';
-  g2.fillRect(cx-208,cy-40,44,80); g2.fillRect(cx+164,cy-40,44,80);
-  g2.fillRect(cx-176,cy-56,20,24); g2.fillRect(cx+156,cy-56,20,24);
-  g2.fillRect(cx-176,cy+32,20,24); g2.fillRect(cx+156,cy+32,20,24);
-
-  /* end flanges */
-  for(const s of [-1,1]){
-    const fx = cx + s*118;
-    g2.fillStyle='#07090c';
-    g2.beginPath(); g2.arc(fx,cy,46,0,7); g2.fill();
-    g2.strokeStyle='#1f2630'; g2.lineWidth=2;
-    g2.beginPath(); g2.arc(fx,cy,46,0,7); g2.stroke();
-    g2.beginPath(); g2.arc(fx,cy,36,0,7); g2.stroke();
-    g2.strokeStyle='#0a0c10'; g2.lineWidth=4;
-    for(let k=0;k<16;k++){
-      const a=k*Math.PI/8;
-      g2.beginPath();
-      g2.moveTo(fx+Math.cos(a)*38, cy+Math.sin(a)*38);
-      g2.lineTo(fx+Math.cos(a)*46, cy+Math.sin(a)*46);
-      g2.stroke();
+  /* greeble panels */
+  g2.fillStyle='rgba(10,15,20,.9)';
+  for(const g of GB){
+    const x=cx+Math.cos(g[0])*g[1], y=cy+Math.sin(g[1<0?0:0])*0+Math.sin(g[0])*g[1];
+    g2.fillRect(x-g[2]/2, y-g[3]/2, g[2], g[3]);
+  }
+  /* lattice ring: circles + spokes + nodes, slow turn */
+  g2.strokeStyle='rgba(90,170,200,.20)'; g2.lineWidth=1;
+  for(const r of [150,132,114]){ g2.beginPath(); g2.arc(cx,cy,r,0,7); g2.stroke(); }
+  for(let k=0;k<36;k++){
+    const a=ringA+k*Math.PI/18;
+    g2.beginPath();
+    g2.moveTo(cx+Math.cos(a)*114, cy+Math.sin(a)*114);
+    g2.lineTo(cx+Math.cos(a)*150, cy+Math.sin(a)*150);
+    g2.stroke();
+    if(k%3===0){
+      g2.fillStyle='rgba(127,214,232,.35)';
+      g2.beginPath(); g2.arc(cx+Math.cos(a)*132, cy+Math.sin(a)*132, 1.5,0,7); g2.fill();
     }
-    g2.strokeStyle='rgba(255,140,50,'+(0.22*cg).toFixed(3)+')'; g2.lineWidth=2;
-    g2.beginPath(); g2.arc(fx,cy,28,0,7); g2.stroke();
-    /* lamps */
-    const on = Math.floor(now/600)%2===0;
-    g2.fillStyle = (s<0?on:!on)?'rgba(200,69,44,.9)':'rgba(200,69,44,.25)';
-    g2.beginPath(); g2.arc(fx,cy+52,2.2,0,7); g2.fill();
+  }
+  g2.strokeStyle='rgba(127,214,232,'+(0.10+0.25*(burn?1:0)).toFixed(3)+')';
+  g2.lineWidth=2; g2.beginPath(); g2.arc(cx,cy,150,0,7); g2.stroke();
+
+  /* end flanges with bolts */
+  for(const s of [-1,1]){
+    const fx=cx+s*104;
+    g2.fillStyle='#07090c';
+    g2.beginPath(); g2.arc(fx,cy,40,0,7); g2.fill();
+    g2.strokeStyle='#1f2630'; g2.lineWidth=1.5;
+    for(const r of [40,33,26]){ g2.beginPath(); g2.arc(fx,cy,r,0,7); g2.stroke(); }
+    g2.fillStyle='#0a0c10';
+    for(let k=0;k<12;k++){
+      const a=k*Math.PI/6;
+      g2.beginPath(); g2.arc(fx+Math.cos(a)*36, cy+Math.sin(a)*36, 2,0,7); g2.fill();
+    }
+    g2.strokeStyle='rgba(255,140,50,'+(0.25*cg).toFixed(3)+')';
+    g2.beginPath(); g2.arc(fx,cy,22,0,7); g2.stroke();
+    const on=Math.floor(now/600)%2===0;
+    g2.fillStyle=(s<0?on:!on)?'rgba(200,69,44,.9)':'rgba(200,69,44,.25)';
+    g2.beginPath(); g2.arc(fx,cy+46,2.2,0,7); g2.fill();
   }
 
-  /* the glowing ribbed core */
+  /* the ribbed core, fine this time */
   const top = burn?'255,236,190':'255,154,60';
   const mid = burn?'255,250,230':'255,210,120';
   const bot = burn?'255,170,70':'200,90,30';
-  const coreG = g2.createLinearGradient(0,cy-26,0,cy+26);
+  const coreG=g2.createLinearGradient(0,cy-22,0,cy+22);
   coreG.addColorStop(0,'rgba('+top+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
   coreG.addColorStop(.5,'rgba('+mid+','+Math.min(1,.55+.4*cg).toFixed(3)+')');
   coreG.addColorStop(1,'rgba('+bot+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
   g2.fillStyle=coreG;
   g2.beginPath();
-  g2.moveTo(cx-66,cy-26); g2.lineTo(cx+66,cy-26);
-  g2.arc(cx+66,cy,26,-Math.PI/2,Math.PI/2);
-  g2.lineTo(cx-66,cy+26);
-  g2.arc(cx-66,cy,26,Math.PI/2,Math.PI*1.5);
+  g2.moveTo(cx-60,cy-22); g2.lineTo(cx+60,cy-22);
+  g2.arc(cx+60,cy,22,-Math.PI/2,Math.PI/2);
+  g2.lineTo(cx-60,cy+22);
+  g2.arc(cx-60,cy,22,Math.PI/2,Math.PI*1.5);
   g2.closePath(); g2.fill();
-  /* ribs */
-  g2.fillStyle='rgba(60,20,8,.55)';
-  for(let x=cx-84;x<cx+88;x+=14) g2.fillRect(x,cy-26,4,52);
-  /* containment hoops */
-  g2.strokeStyle='rgba(20,10,6,.85)'; g2.lineWidth=3;
-  for(const k of [-60,-20,20,60]){
-    g2.beginPath(); g2.ellipse(cx+k,cy,7,30,0,0,7); g2.stroke();
-  }
-  /* glass highlight */
-  g2.strokeStyle='rgba(255,255,255,.14)'; g2.lineWidth=2;
-  g2.beginPath(); g2.moveTo(cx-80,cy-17); g2.lineTo(cx+80,cy-17); g2.stroke();
-
-  /* vent stack */
-  g2.fillStyle='#07090c';
-  g2.beginPath();
-  g2.moveTo(cx-12,cy-28); g2.lineTo(cx+12,cy-28); g2.lineTo(cx+8,cy-58); g2.lineTo(cx-8,cy-58);
-  g2.closePath(); g2.fill();
-  g2.strokeStyle='rgba(255,140,50,'+Math.min(.75,.12+.32*cg).toFixed(3)+')'; g2.lineWidth=2;
-  g2.beginPath(); g2.moveTo(cx-8,cy-58); g2.lineTo(cx+8,cy-58); g2.stroke();
+  g2.fillStyle='rgba(60,20,8,.5)';
+  for(let x=cx-78;x<cx+80;x+=6) g2.fillRect(x,cy-22,2,44);
+  g2.strokeStyle='rgba(15,8,4,.85)'; g2.lineWidth=2;
+  for(const k of [-52,-26,0,26,52]){ g2.beginPath(); g2.ellipse(cx+k,cy,6,26,0,0,7); g2.stroke(); }
+  g2.strokeStyle='rgba(255,255,255,.14)'; g2.lineWidth=1.5;
+  g2.beginPath(); g2.moveTo(cx-72,cy-14); g2.lineTo(cx+72,cy-14); g2.stroke();
 
   /* stencil */
   g2.fillStyle='rgba(216,221,227,.22)';
   g2.font='10px monospace'; g2.textAlign='center';
-  g2.fillText('OUTFLOW-07 · CHAMBER II', cx, cy+92);
+  g2.fillText('OUTFLOW-07 · THE RING', cx, cy+178);
   g2.restore();
 
-  /* feed + vent plume */
-  if(burn) spawn(16, cx, cy-58, 'jet');
-  else if(decay) spawn(6, cx, cy-58, 'jet');
-  else spawn(spool?5:2, cx, cy-58, 'pilot');
-  if(burn && Math.random()<0.5) spark(cx, cy-64, true);
-  else if(Math.random()<0.08) spark(cx, cy-60, false);
-
+  /* heat shimmer above the core */
+  spawnShimmer(burn?6: spool?4:2, cx, cy-26, burn);
   g2.globalCompositeOperation='lighter';
   for(let i=P.length-1;i>=0;i--){
     const p=P[i]; p.life++;
-    p.x+=p.vx + Math.sin(p.life*0.08+p.y*0.02)*0.5 + (p.vy<-6?(p.x-cx)*0.012:0);
-    p.y+=p.vy; p.r*=0.966;
+    p.x+=p.vx+Math.sin(p.life*0.08+p.y*0.02)*0.4; p.y+=p.vy; p.r*=0.966;
     const t=p.life/p.max;
     if(t>=1||p.r<0.7){ P.splice(i,1); continue; }
-    const col = t<0.18?'255,250,235' : t<0.42?'255,196,80' : t<0.7?'96,150,255' : '40,70,190';
-    const a=(1-t)*0.6;
+    const col = p.hot ? (t<0.3?'255,240,200':'255,150,50') : (t<0.4?'255,170,70':'150,60,25');
+    const a=(1-t)*0.5;
     const gr=g2.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
     gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
     gr.addColorStop(1,'rgba('+col+',0)');
-    g2.fillStyle=gr;
-    g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+    g2.fillStyle=gr; g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+  }
+
+  /* cyan beams on burn */
+  if(burn || decay){
+    const ba = burn?1:Math.max(0,1-(now-burnUntil)/900);
+    for(const s of [-1,1]){
+      const x0=cx+s*144, x1=cx+s*Math.max(W,H);
+      for(let k=0;k<3;k++){
+        const y=cy-8+k*8+Math.sin(now*0.02+k*2)*1.5;
+        const hgt=4+(2-k)*3;
+        const gr=g2.createLinearGradient(x0,y,x1,y);
+        gr.addColorStop(0,'rgba(200,245,255,'+(0.7*ba).toFixed(3)+')');
+        gr.addColorStop(.2,'rgba(127,214,232,'+(0.4*ba).toFixed(3)+')');
+        gr.addColorStop(1,'rgba(60,140,220,0)');
+        g2.fillStyle=gr;
+        g2.fillRect(Math.min(x0,x1), y-hgt/2, Math.abs(x1-x0), hgt);
+      }
+      g2.strokeStyle='rgba(240,252,255,'+(0.8*ba).toFixed(3)+')';
+      g2.lineWidth=1.5;
+      g2.beginPath(); g2.moveTo(x0,cy); g2.lineTo(x1,cy); g2.stroke();
+      for(let k=0;k<4;k++){
+        const dx=cx+s*(170+k*64), sz=9-k*1.5;
+        g2.save(); g2.translate(dx,cy); g2.rotate(Math.PI/4);
+        g2.fillStyle='rgba(210,240,255,'+(0.5*ba-k*0.09).toFixed(3)+')';
+        g2.shadowColor='rgba(127,214,232,1)'; g2.shadowBlur=14;
+        g2.fillRect(-sz/2,-sz/2,sz,sz);
+        g2.restore();
+      }
+      if(burn && Math.random()<0.6) spark(x0+ s*rnd(0,200), cy, true);
+    }
   }
   for(let i=S.length-1;i>=0;i--){
     const s=S[i]; s.life++;
     s.x+=s.vx; s.y+=s.vy;
     const t=s.life/s.max;
     if(t>=1){ S.splice(i,1); continue; }
-    g2.fillStyle = s.b ? 'rgba(160,200,255,'+((1-t)*0.9).toFixed(3)+')'
+    g2.fillStyle = s.c ? 'rgba(160,230,250,'+((1-t)*0.9).toFixed(3)+')'
                        : 'rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
-    g2.beginPath(); g2.arc(s.x,s.y,1.3,0,7); g2.fill();
-  }
-  if(burn){
-    for(let k=0;k<4;k++){
-      const dy=cy-96-k*56, s=11-k*2;
-      const a=Math.max(0,(0.5-k*0.1));
-      g2.save();
-      g2.translate(cx,dy); g2.rotate(Math.PI/4);
-      g2.fillStyle='rgba(210,235,255,'+a.toFixed(3)+')';
-      g2.shadowColor='rgba(160,200,255,1)'; g2.shadowBlur=16;
-      g2.fillRect(-s/2,-s/2,s,s);
-      g2.restore();
-    }
+    g2.beginPath(); g2.arc(s.x,s.y,1.2,0,7); g2.fill();
   }
 
   /* the offering drop */
   if(dropY !== null){
     dropY += 11;
     g2.save();
+    g2.globalCompositeOperation='source-over';
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=8;
     g2.beginPath(); g2.arc(cx, dropY, 3.2, 0, 7); g2.fill();
     g2.restore();
-    if(dropY >= cy-60){
-      dropY=null; spoolAt=now; burnAt=now+480; burnUntil=now+480+1400;
-      spawn(40, cx, cy-58, 'burst'); onLand();
+    if(dropY >= cy-26){
+      dropY=null; spoolAt=now; burnAt=now+480; burnUntil=now+480+1500;
+      spawnShimmer(30, cx, cy-26, true); onLand();
     }
   }
   requestAnimationFrame(tick);
@@ -271,12 +274,12 @@ requestAnimationFrame(tick);
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 const flavor = [
-  'core warm. containment nominal. the chamber dreams.',
+  'core warm. lattice cold. the ring dreams.',
   'a drop lands; the core drinks.',
-  'exhaust reads blue-clean. keep burning.',
+  'the ring sings in cyan. keep burning.',
   'sediment, not jackpot.',
   'the manifold remembers you.',
-  'somewhere a reactor idles for nobody. not this one.'
+  'somewhere an accelerator idles for nobody. not this one.'
 ];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
@@ -289,7 +292,7 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the chamber turns the ledger page.';
+  if(drops%100===0) s.textContent='A LOOP CLOSES — the ring turns the ledger page.';
   else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a lamp joins the row.';
   else s.textContent='>> spooling .. FULL BURN <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
