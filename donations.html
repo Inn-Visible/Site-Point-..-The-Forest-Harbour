@@ -6,7 +6,7 @@
 <title>Inn.Visible — the rest zone</title>
 <style>
   :root{
-    --bg:#040609; --panel:#0e141b; --line:#223041;
+    --bg:#030407; --panel:#0e141b; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
     --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --orange:#d98a3a;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
@@ -21,25 +21,28 @@
   .back:hover{color:var(--ink)}
   main{max-width:760px;margin:0 auto;padding:40px 24px 60px;text-align:center}
   .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
-  .rest{margin-top:10px;color:var(--dim);font-size:11.5px;letter-spacing:.2em}
-  .rig{margin:10px auto 0}
-  .tw{animation:tw 3.5s ease-in-out infinite}
-  @keyframes tw{50%{opacity:.06}}
-  .flame{animation:flick 1.7s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
-  @keyframes flick{from{transform:scaleY(.92)}to{transform:scaleY(1.06)}}
-  .bgf{opacity:.3}
-  #glow{animation:reson 4.5s ease-in-out infinite}
-  @keyframes reson{0%,100%{opacity:.55}50%{opacity:1}}
+  .rest{margin-top:10px;color:#5c6875;font-size:11px;letter-spacing:.24em}
+  .rig{margin:6px auto 0;
+    background:radial-gradient(ellipse at 50% 46%, #120806 0%, #030407 62%)}
+  .flame{animation:flick 1.8s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes flick{from{transform:scaleY(.94) }to{transform:scaleY(1.05)}}
+  .bgf{opacity:.12}
+  #glow{animation:reson 5s ease-in-out infinite}
+  @keyframes reson{0%,100%{opacity:.5}50%{opacity:1}}
   #fire{transform-box:fill-box;transform-origin:50% 100%}
   #fire.whoosh{animation:whoosh 1.3s ease}
-  @keyframes whoosh{0%{transform:scale(1)}30%{transform:scale(1.28);
-    filter:drop-shadow(0 0 30px #c8452c)}100%{transform:scale(1)}}
+  @keyframes whoosh{0%{transform:scale(1)}30%{transform:scale(1.22);
+    filter:drop-shadow(0 0 34px #7a2d16)}100%{transform:scale(1)}}
+  .ember{animation:rise 5s linear infinite;opacity:0}
+  @keyframes rise{0%{transform:translateY(0);opacity:0}12%{opacity:.8}100%{transform:translateY(-170px);opacity:0}}
+  .smoke{animation:smk 7s ease-in-out infinite alternate;opacity:.07}
+  @keyframes smk{from{transform:translateY(0)}to{transform:translateY(-14px)}}
   #drip{opacity:0}
   #drip.toss{animation:toss .8s ease-in}
   @keyframes toss{0%{transform:translate(0,0);opacity:1}
-    60%{transform:translate(-50px,-92px);opacity:1}
-    100%{transform:translate(-88px,-62px);opacity:0}}
-  .keep{margin-top:6px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
+    60%{transform:translate(-60px,-100px);opacity:1}
+    100%{transform:translate(-110px,-112px);opacity:0}}
+  .keep{margin-top:4px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
   .tally{margin-top:12px;font-size:12px;color:var(--dim)}
   .tally b{color:var(--ink)}
   .btn{background:none;border:1px solid var(--gold);color:var(--gold);
@@ -65,66 +68,68 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· A REST ZONE · THE FLAME RESONATES WITH EVERY WITNESS ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · A REST ZONE · THE FLAME RESONATES WITH EVERY WITNESS ·</p>
 
   <div class="rig">
-    <svg width="420" height="360" viewBox="0 0 420 360" fill="none" stroke-linejoin="round">
+    <svg width="420" height="420" viewBox="0 0 420 420" fill="none" stroke-linejoin="round">
       <defs>
         <radialGradient id="g1" cx=".5" cy=".5" r=".5">
-          <stop offset="0" stop-color="#c8452c" stop-opacity=".22"/>
-          <stop offset="1" stop-color="#c8452c" stop-opacity="0"/>
+          <stop offset="0" stop-color="#7a2d16" stop-opacity=".28"/>
+          <stop offset="1" stop-color="#7a2d16" stop-opacity="0"/>
         </radialGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
       </defs>
-      <!-- night -->
-      <g fill="#d8dde3">
-        <circle class="tw" style="animation-delay:0s" cx="40" cy="40" r="1"/>
-        <circle class="tw" style="animation-delay:-1s" cx="90" cy="26" r="1"/>
-        <circle class="tw" style="animation-delay:-2s" cx="150" cy="30" r="1"/>
-        <circle class="tw" style="animation-delay:-.6s" cx="250" cy="20" r="1"/>
-        <circle class="tw" style="animation-delay:-1.6s" cx="330" cy="34" r="1"/>
-        <circle class="tw" style="animation-delay:-2.6s" cx="380" cy="60" r="1"/>
-      </g>
-      <line x1="20" y1="300" x2="400" y2="300" stroke="#223041" opacity=".6"/>
-      <!-- background flames, unattended -->
-      <g stroke="#c8452c" stroke-width="1.2">
-        <path class="flame bgf" style="animation-delay:-.3s" d="M42,300 L46,286 L50,294 L54,282 L58,300 Z"/>
-        <path class="flame bgf" style="animation-delay:-1.1s" d="M352,300 L356,288 L360,295 L364,284 L368,300 Z"/>
-        <path class="flame bgf" style="animation-delay:-.7s" d="M386,300 L389,291 L392,296 L395,289 L398,300 Z"/>
-      </g>
+      <!-- void fires, unattended -->
+      <path class="flame bgf" style="animation-delay:-.4s" fill="#c8452c"
+        d="M52,392 C48,380 46,374 50,364 C52,370 56,368 56,360 C60,368 62,376 60,384 C58,390 56,392 52,392 Z"/>
+      <path class="flame bgf" style="animation-delay:-1.2s" fill="#c8452c"
+        d="M368,388 C364,378 363,372 366,364 C368,370 372,368 372,361 C376,368 377,376 375,382 C373,387 371,388 368,388 Z"/>
       <!-- resonating glow -->
-      <ellipse id="glow" cx="210" cy="225" rx="120" ry="80" fill="url(#g1)"/>
-      <!-- the bonfire -->
+      <ellipse id="glow" cx="210" cy="250" rx="130" ry="95" fill="url(#g1)"/>
+      <!-- smoke -->
+      <g class="smoke" stroke="#93a1b0" stroke-width="2" filter="url(#soft)">
+        <path d="M204,70 C196,52 212,44 204,26"/>
+        <path d="M220,76 C228,58 214,48 222,30"/>
+      </g>
+      <!-- the fire: filled silhouettes, layered -->
       <g id="fire">
-        <path class="flame" stroke="#c8452c" stroke-width="2" d="M165,252 L152,214 L163,224 L154,178 L170,204 L166,142 L182,190 L186,116 L196,178 L204,92 L212,170 L222,120 L228,186 L240,146 L244,208 L256,180 L252,226 L264,206 L258,252 Z"/>
-        <path class="flame" style="animation-delay:-.8s" stroke="#d98a3a" stroke-width="1.6" d="M178,252 L170,214 L180,226 L176,176 L188,206 L192,140 L200,196 L208,120 L214,192 L224,152 L228,214 L238,190 L234,252 Z"/>
-        <path class="flame" style="animation-delay:-1.3s" stroke="#d9a83a" stroke-width="1.4" d="M192,252 L186,220 L194,230 L196,186 L204,222 L210,168 L216,220 L224,196 L226,252 Z"/>
-        <path class="flame" style="animation-delay:-.5s" stroke="#c8452c" stroke-width="1.2" d="M204,84 L208,68 L212,84 Z"/>
-        <path class="flame" style="animation-delay:-1.6s" stroke="#d98a3a" stroke-width="1.2" d="M182,104 L186,92 L190,104 Z"/>
+        <path class="flame" fill="#3f120b" d="M210,70 C198,96 186,104 184,128 C183,146 192,154 188,170 C176,156 164,164 162,188 C160,210 172,220 168,240 C154,228 144,240 146,262 C148,284 162,294 170,300 L250,300 C258,294 272,284 274,262 C276,240 266,228 270,210 C256,220 248,208 250,188 C252,164 240,156 242,138 C230,150 224,140 226,118 C228,96 220,88 210,70 Z"/>
+        <path class="flame" style="animation-delay:-.7s" fill="#7a2d16" d="M210,110 C202,130 194,138 193,158 C192,174 200,182 197,196 C188,186 180,194 179,214 C178,232 188,242 185,258 C176,250 170,258 172,276 C174,290 184,297 190,300 L230,300 C236,297 246,290 248,276 C250,258 244,250 246,236 C236,244 230,234 231,216 C232,196 224,190 226,172 C228,152 218,132 210,110 Z"/>
+        <path class="flame" style="animation-delay:-1.2s" fill="#b3541e" d="M210,160 C204,176 199,182 198,198 C197,212 204,220 201,232 C194,226 189,232 190,248 C191,262 198,270 196,282 C192,278 188,282 189,292 C190,297 194,300 197,300 L223,300 C226,300 230,297 231,292 C232,282 228,278 224,282 C222,270 229,262 230,248 C231,232 226,226 219,232 C216,220 223,212 222,198 C221,182 216,176 210,160 Z"/>
+        <path class="flame" style="animation-delay:-.4s" fill="#d9a83a" opacity=".85" d="M210,210 C204,226 200,236 200,252 C200,272 205,286 210,296 C215,286 220,272 220,252 C220,236 216,226 210,210 Z"/>
       </g>
-      <!-- the pedestal: dark rim + legs, per the sketch -->
-      <path d="M150,252 Q210,264 270,252 L270,262 Q210,274 150,262 Z" fill="#05070a" stroke="#93a1b0" stroke-width="1.6"/>
-      <g stroke="#d8dde3" stroke-width="3">
-        <line x1="172" y1="268" x2="166" y2="300"/><line x1="248" y1="268" x2="254" y2="300"/>
+      <!-- rising embers -->
+      <g fill="#d98a3a">
+        <circle class="ember" style="animation-delay:0s" cx="200" cy="280" r="1.6"/>
+        <circle class="ember" style="animation-delay:-1.4s" cx="222" cy="270" r="1.3"/>
+        <circle class="ember" style="animation-delay:-2.6s" cx="210" cy="250" r="1.8"/>
+        <circle class="ember" style="animation-delay:-3.5s" cx="190" cy="240" r="1.2"/>
+        <circle class="ember" style="animation-delay:-4.2s" cx="230" cy="240" r="1.4"/>
+        <circle class="ember" style="animation-delay:-2s" cx="205" cy="210" r="1.2"/>
       </g>
-      <g stroke="#93a1b0" stroke-width="2">
-        <line x1="156" y1="300" x2="178" y2="300"/><line x1="242" y1="300" x2="266" y2="300"/>
+      <!-- the brazier: dark rim, bowl, block legs -->
+      <path d="M150,300 L270,300 L266,312 Q210,320 154,312 Z" fill="#050608" stroke="#1f2630" stroke-width="1.5"/>
+      <path d="M154,312 Q210,326 266,312 L258,344 Q210,352 162,344 Z" fill="#0a0d12" stroke="#223041" stroke-width="1.5"/>
+      <g fill="#0a0d12" stroke="#223041" stroke-width="1.5">
+        <rect x="176" y="344" width="16" height="26"/><rect x="228" y="344" width="16" height="26"/>
+        <rect x="170" y="370" width="28" height="6"/><rect x="222" y="370" width="28" height="6"/>
       </g>
-      <!-- the robot, resting by the fire -->
-      <g stroke="#d8dde3" stroke-width="1.6">
-        <rect x="306" y="272" width="18" height="14" rx="4"/>
-        <line x1="306" y1="278" x2="299" y2="273"/>
-        <line x1="310" y1="286" x2="310" y2="293"/><line x1="318" y1="286" x2="318" y2="293"/>
+      <!-- the robot, a dark silhouette keeping watch -->
+      <g fill="#0a0d12" stroke="#223041" stroke-width="1.5">
+        <rect x="312" y="352" width="18" height="14" rx="4"/>
+        <line x1="312" y1="358" x2="305" y2="353"/>
+        <line x1="316" y1="366" x2="316" y2="373"/><line x1="324" y1="366" x2="324" y2="373"/>
       </g>
-      <line x1="310" y1="278" x2="320" y2="278" stroke="#c8452c" stroke-width="2"/>
-      <circle id="drip" cx="298" cy="272" r="3.5" fill="#d9a83a"/>
-      <!-- totem stones around the base -->
+      <line x1="316" y1="358" x2="326" y2="358" stroke="#c8452c" stroke-width="1.6" opacity=".7"/>
+      <circle id="drip" cx="308" cy="352" r="3.5" fill="#d9a83a"/>
+      <!-- totem stones, scattered -->
       <g id="totems"></g>
     </svg>
   </div>
   <div class="keep">keep the flame burning — rest a while, keeper. the flame remembers you.</div>
 
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">the flame hums. you are witnessed.</div>
+  <div class="status" id="stat">the central flame humbly flickers.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
@@ -147,30 +152,31 @@
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 let busy = false;
 const flavor = [
-  'the flame hums. you are witnessed.',
+  'the void listens. the flame answers.',
   'a drop lands; the fire eats well.',
-  'the robot keeps watch. rest.',
+  'the keeper of the fire nods.',
   'sediment, not jackpot.',
-  'the totems warm on the near side.',
-  'somewhere, a background flame goes unattended. not this one.'
+  'the stones warm on the near side.',
+  'other fires burn unattended in the dark. not this one.'
 ];
-/* ten totem stones in an arc around the base */
 const NS = 'http://www.w3.org/2000/svg';
 const tg = document.getElementById('totems');
-const spots = [[110,306],[132,314],[156,320],[182,324],[210,326],[238,324],[264,320],[288,314],[310,306],[330,296]];
+const spots = [[120,388,14],[160,396,12],[210,400,14],[262,396,12],[300,388,14],
+               [140,378,10],[280,378,10],[185,384,9],[235,384,9],[322,372,8]];
 const totems = spots.map(s=>{
   const e = document.createElementNS(NS,'ellipse');
   e.setAttribute('cx',String(s[0])); e.setAttribute('cy',String(s[1]));
-  e.setAttribute('rx','10'); e.setAttribute('ry','3.5');
-  e.setAttribute('stroke','#5c6875'); e.setAttribute('stroke-width','1.2');
+  e.setAttribute('rx',String(s[0+1]!==undefined?s[2]:10)); e.setAttribute('ry',String(s[2]/3.5));
+  e.setAttribute('stroke','#223041'); e.setAttribute('stroke-width','1.2');
+  e.setAttribute('fill','#0a0d12');
   tg.appendChild(e); return e;
 });
 function render(){
   const tot = Math.floor(drops / 10);
   const shown = tot % 10;
   totems.forEach((e,i)=>{
-    if(i < shown){ e.setAttribute('fill','#d9a83a'); e.setAttribute('opacity','.85'); e.setAttribute('stroke','#d9a83a'); }
-    else { e.setAttribute('fill','none'); e.setAttribute('opacity','1'); e.setAttribute('stroke','#5c6875'); }
+    if(i < shown){ e.setAttribute('fill','#8a3418'); e.setAttribute('stroke','#c8452c'); }
+    else { e.setAttribute('fill','#0a0d12'); e.setAttribute('stroke','#223041'); }
   });
   document.getElementById('drops').textContent = String(drops);
   document.getElementById('tot').textContent = String(tot);
@@ -187,8 +193,8 @@ function whoosh(){
   setTimeout(()=>{
     fire.classList.remove('whoosh'); void fire.getBoundingClientRect(); fire.classList.add('whoosh');
     const s = document.getElementById('stat');
-    if(drops % 100 === 0) s.textContent = 'A LOOP CLOSES — the fire resonates; the ledger turns a page.';
-    else if(drops % 10 === 0) s.textContent = 'FIRST LIGHT — the whole flame whooshes; a totem takes its place by the fire.';
+    if(drops % 100 === 0) s.textContent = 'A LOOP CLOSES — the fire resonates through the void; the ledger turns.';
+    else if(drops % 10 === 0) s.textContent = 'FIRST LIGHT — the whole flame whooshes; a stone takes its place in the circle.';
     else s.textContent = flavor[drops % flavor.length];
   }, 650);
   setTimeout(()=>{ render(); busy = false; }, 1600);
