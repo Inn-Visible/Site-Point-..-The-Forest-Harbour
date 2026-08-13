@@ -31,16 +31,18 @@
   #bot{transition:transform 1s ease-in-out}
   #bot.down{transform:translateY(110px)}
   #cable{transform-origin:160px 18px;transition:transform 1s ease-in-out}
-  #cable.down{transform:scaleY(4.9)}
-  .flame{animation:flick 2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
-  @keyframes flick{from{transform:scaleY(.85)}to{transform:scaleY(1.12)}}
+  #cable.down{transform:scaleY(6)}
+  #weight{transition:transform 1s ease-in-out}
+  #weight.up{transform:translateY(-12px)}
+  .flame{animation:flick 1.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes flick{from{transform:scaleY(.9)}to{transform:scaleY(1.08)}}
   #pitflames{transform-box:fill-box;transform-origin:50% 100%}
   #pitflames.whoosh{animation:whoosh 1.2s ease}
-  @keyframes whoosh{0%{transform:scale(1)}30%{transform:scale(1.35);
+  @keyframes whoosh{0%{transform:scale(1)}30%{transform:scale(1.3);
     filter:drop-shadow(0 0 26px #c8452c)}100%{transform:scale(1)}}
   #drip{opacity:0}
   #drip.fall{animation:fall .7s ease-in}
-  @keyframes fall{0%{transform:translateY(0);opacity:1}90%{opacity:.9}100%{transform:translateY(150px);opacity:0}}
+  @keyframes fall{0%{transform:translateY(0);opacity:1}90%{opacity:.9}100%{transform:translateY(148px);opacity:0}}
   .keep{margin-top:8px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px}
   .totems{margin-top:14px}
   .pip{display:inline-block;width:16px;height:7px;border:1px solid #5c6875;border-radius:2px;
@@ -88,19 +90,35 @@
         <line x1="60" y1="18" x2="260" y2="18"/>
         <line x1="70" y1="18" x2="70" y2="6"/><line x1="250" y1="18" x2="250" y2="6"/>
       </g>
-      <line id="cable" x1="160" y1="18" x2="160" y2="46" stroke="#93a1b0" stroke-width="1.4"/>
-      <!-- the robot -->
-      <g id="bot" stroke="#d8dde3" stroke-width="1.8">
-        <rect x="152" y="46" width="16" height="12" rx="2"/>
-        <circle cx="157" cy="52" r="1.8" fill="#c8452c" stroke="none"/>
-        <circle cx="163" cy="52" r="1.8" fill="#c8452c" stroke="none"/>
-        <rect x="148" y="58" width="24" height="18" rx="3"/>
-        <line x1="148" y1="64" x2="140" y2="72"/><line x1="172" y1="64" x2="180" y2="72"/>
+      <!-- counterweight -->
+      <g id="weight" stroke="#5c6875" stroke-width="1.6">
+        <line x1="93" y1="18" x2="93" y2="26"/>
+        <rect x="86" y="26" width="14" height="18"/>
       </g>
-      <!-- rim with hazard stripes + opening -->
+      <!-- top cable -->
+      <line id="cable" x1="160" y1="18" x2="160" y2="40" stroke="#93a1b0" stroke-width="1.4"/>
+      <!-- the cage + robot -->
+      <g id="bot">
+        <g stroke="#93a1b0" stroke-width="1.4">
+          <line x1="140" y1="40" x2="180" y2="40"/>
+          <line x1="140" y1="40" x2="140" y2="70"/>
+          <line x1="180" y1="40" x2="180" y2="70"/>
+        </g>
+        <line x1="138" y1="70" x2="182" y2="70" stroke="#d8dde3" stroke-width="3"/>
+        <g stroke="#d8dde3" stroke-width="1.8">
+          <rect x="150" y="52" width="20" height="14" rx="4"/>
+          <line x1="160" y1="52" x2="160" y2="48"/>
+          <line x1="150" y1="58" x2="144" y2="63"/>
+          <line x1="170" y1="58" x2="176" y2="63"/>
+          <line x1="155" y1="66" x2="155" y2="70"/>
+          <line x1="165" y1="66" x2="165" y2="70"/>
+        </g>
+        <circle cx="160" cy="47" r="1.6" fill="#d9a83a"/>
+        <line x1="154" y1="58" x2="166" y2="58" stroke="#c8452c" stroke-width="2.5"/>
+      </g>
+      <!-- rim + shaft -->
       <rect x="70" y="198" width="40" height="10" fill="url(#hz)" stroke="#223041"/>
       <rect x="210" y="198" width="40" height="10" fill="url(#hz)" stroke="#223041"/>
-      <!-- shaft walls + rivets -->
       <g stroke="#93a1b0" stroke-width="2">
         <line x1="110" y1="208" x2="110" y2="420"/><line x1="210" y1="208" x2="210" y2="420"/>
       </g>
@@ -108,17 +126,17 @@
         <circle cx="110" cy="240" r="2"/><circle cx="110" cy="280" r="2"/><circle cx="110" cy="320" r="2"/>
         <circle cx="210" cy="240" r="2"/><circle cx="210" cy="280" r="2"/><circle cx="210" cy="320" r="2"/>
       </g>
-      <!-- bottomless fade -->
       <rect x="111" y="360" width="98" height="60" fill="url(#fade)"/>
-      <!-- the pit flames -->
-      <g id="pitflames" stroke="#c8452c" stroke-width="2">
-        <path class="flame" style="animation-delay:0s" d="M130,340 C126,350 122,355 122,364 C122,373 126,378 130,380 C134,378 138,373 138,364 C138,355 134,350 130,340 Z"/>
-        <path class="flame" style="animation-delay:-.7s" d="M160,326 C155,338 150,344 150,356 C150,368 155,374 160,377 C165,374 170,368 170,356 C170,344 165,338 160,326 Z"/>
-        <path class="flame" style="animation-delay:-1.3s" d="M190,340 C186,350 182,355 182,364 C182,373 186,378 190,380 C194,378 198,373 198,364 C198,355 194,350 190,340 Z"/>
-        <path class="flame" style="animation-delay:-.4s" stroke-width="1.4" d="M145,392 C142,399 140,402 140,408 C140,414 142,417 145,419 C148,417 150,414 150,408 C150,402 148,399 145,392 Z"/>
-        <path class="flame" style="animation-delay:-1s" stroke-width="1.4" d="M176,392 C173,399 171,402 171,408 C171,414 173,417 176,419 C179,417 181,414 181,408 C181,402 179,399 176,392 Z"/>
+      <!-- jagged pit flames -->
+      <g id="pitflames">
+        <path class="flame" stroke="#c8452c" stroke-width="2"
+          d="M118,380 L126,352 L133,368 L141,334 L149,364 L157,326 L165,362 L173,338 L181,368 L189,350 L198,380 Z"/>
+        <path class="flame" style="animation-delay:-.8s" stroke="#d9a83a" stroke-width="1.4"
+          d="M136,380 L142,360 L148,372 L156,346 L164,370 L170,356 L178,380 Z"/>
+        <path class="flame" style="animation-delay:-1.4s" stroke="#c8452c" stroke-width="1.2"
+          d="M146,414 L151,398 L156,408 L162,392 L168,406 L173,396 L178,414 Z"/>
       </g>
-      <circle id="drip" cx="160" cy="190" r="3.5" fill="#d9a83a"/>
+      <circle id="drip" cx="160" cy="186" r="3.5" fill="#d9a83a"/>
     </svg>
   </div>
   <div class="keep">keep the flame burning — the pit is bottomless; the flame is not. that is the whole point.</div>
@@ -177,9 +195,10 @@ function whoosh(){
   localStorage.setItem('hive_drops', String(drops));
   const bot = document.getElementById('bot');
   const cab = document.getElementById('cable');
+  const wt  = document.getElementById('weight');
   const drip = document.getElementById('drip');
   const flames = document.getElementById('pitflames');
-  bot.classList.add('down'); cab.classList.add('down');
+  bot.classList.add('down'); cab.classList.add('down'); wt.classList.add('up');
   setTimeout(()=>{ drip.classList.remove('fall'); void drip.getBoundingClientRect(); drip.classList.add('fall'); }, 900);
   setTimeout(()=>{
     flames.classList.remove('whoosh'); void flames.getBoundingClientRect(); flames.classList.add('whoosh');
@@ -188,7 +207,10 @@ function whoosh(){
     else if(drops % 10 === 0) s.textContent = 'FIRST LIGHT — flame whoosh event logged. one totem fills.';
     else s.textContent = flavor[drops % flavor.length];
   }, 1500);
-  setTimeout(()=>{ bot.classList.remove('down'); cab.classList.remove('down'); render(); busy = false; }, 2400);
+  setTimeout(()=>{
+    bot.classList.remove('down'); cab.classList.remove('down'); wt.classList.remove('up');
+    render(); busy = false;
+  }, 2400);
 }
 render();
 </script>
