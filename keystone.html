@@ -1,69 +1,193 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keystone Solutions | Inn.Visible</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #ffb454; margin-bottom: 10px; font-size: 1.8rem; }
-        .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .back { display: inline-block; margin-top: 30px; color: #ffb454; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #ffb454; color: #050505; }
-        .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
-        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
-        .block-header h3 { margin: 0; color: #cbd5e1; }
-        .block-icon { font-size: 1.2rem; }
-        .block-body { padding: 20px; }
-        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: monospace; }
-        .data-table th, .data-table td { padding: 10px; text-align: left; border: 1px solid #333; }
-        .data-table th { color: #ffb454; }
-        .theme-keystone .content-block:hover { border-style: solid; border-color: #ffb454; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keystone Solutions | Inn.Visible</title>
+<style>
+  :root{
+    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --orange:#d98a3a;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
+               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line)}
+  .brand{font-size:16px;letter-spacing:.35em;color:var(--orange)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:900px;margin:0 auto;padding:56px 24px 0;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
+  .manifesto{margin-top:12px;color:var(--dim);font-size:12.5px;letter-spacing:.06em}
+  .dock{margin:44px auto 0;border:1px solid var(--line);background:var(--panel);
+    padding:26px 20px;max-width:700px}
+  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
+  .plaque{display:inline-block;border:1px solid var(--line);background:var(--bg);
+    padding:9px 18px;color:var(--dim);font-size:12px;letter-spacing:.08em}
+  .plaque a{color:var(--blue);text-decoration:none}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
+    cursor:pointer;margin-top:14px;text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .status a{color:var(--blue);text-decoration:none}
+  .econ{display:flex;gap:26px;justify-content:center;margin-top:16px;
+    font-size:12.5px;color:var(--dim);flex-wrap:wrap}
+  .econ b{color:var(--ink)}
+  .ladder{margin-top:18px;color:var(--dim);font-size:12px;letter-spacing:.06em}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+  th,td{padding:10px;border:1px solid var(--line);text-align:left}
+  th{color:var(--orange);letter-spacing:.1em}
+  td{color:var(--dim)}
+  .screensaver{position:relative;height:100px;overflow:hidden;margin-top:64px;
+    border-top:1px solid var(--line)}
+  .tri{position:absolute;top:26px;opacity:.22}
+  .tri.a{animation:driftA 70s linear infinite}
+  .tri.b{animation:driftB 95s linear infinite}
+  @keyframes driftA{from{left:-15%}to{left:110%}}
+  @keyframes driftB{from{left:110%}to{left:-15%}}
+  footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  footer b{color:var(--ink)}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+</style>
 </head>
-<body class="theme-keystone">
-    <script>
-      /* hive safeguard — no valid passkey? back to the door */
-      (function(){var a=localStorage.getItem('hive_access');
-        if(!a||+a<Date.now()){location.replace('index.html');}})();
-    </script>
-    <div class="container">
-        <h1>04. Keystone Solutions</h1>
-        <p class="subtitle">The Craft / Signal / Output</p>
+<body>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🎙</span><h3>Signal & Noise</h3></div>
-            <div class="block-body">
-                <p>Recording notes, mixdowns, and the honey_smudge vault. One publishable thing per week — the hive eats momentum.</p>
-                <p class="meta-text">- Status: In Forge | Tag: #output</p>
-            </div>
-        </div>
+<script>
+/* the house keeps the lock */
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
+function lockdoor(){
+  localStorage.removeItem('hive_access');
+  sessionStorage.removeItem('hive_session');
+  location.href='index.html?gate';
+}
+</script>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">📦</span><h3>Shipped / In Forge</h3></div>
-            <div class="block-body">
-                <table class="data-table">
-                    <thead><tr><th>Project</th><th>Phase</th><th>Next</th></tr></thead>
-                    <tbody>
-                        <tr><td>Inn.Visible</td><td>Skeleton</td><td>Wire the login</td></tr>
-                        <tr><td>Zine vol.1</td><td>Draft</td><td>Outline</td></tr>
-                        <tr><td>Beat pack</td><td>Idea</td><td>Name it</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<header>
+  <div class="brand">KEYSTONE SOLUTIONS</div>
+  <a class="back" href="core.html">core ↩</a>
+</header>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🔑</span><h3>Keystone Habits</h3></div>
-            <div class="block-body">
-                <p>Ship small, log everything, protect the quiet hours. The keystone holds the arch.</p>
-            </div>
-        </div>
+<main>
+  <p class="hook">the books / accounting / the quiet math.</p>
+  <p class="manifesto">every glyph accounted for. every promise written down. the house keeps its own books.</p>
 
-        <a href="core.html" class="back">← Return to Core</a>
+  <section class="dock">
+    <div class="fig">the books — live off the chain</div>
+    <div class="plaque">contract ·
+      <a href="https://sepolia.etherscan.io/token/0x8128ab50de624815045856aab904dc51a871e732"
+         target="_blank">0x8128…e732</a> · sepolia · decimals 3</div>
+    <div class="econ">
+      <div><b id="txs">…</b> transfers</div>
+      <div>vault <b id="vault">…</b></div>
+      <div>till <b id="till">…</b></div>
     </div>
+    <div class="status">
+      <a href="https://sepolia.etherscan.io/token/0x8128ab50de624815045856aab904dc51a871e732"
+         target="_blank">the holders ledger ↗</a>
+    </div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">the glyph room</div>
+    <div class="status">the lantern currency lives here — the cage, the light, ten loops.</div>
+    <a class="btn" href="glyph.html">the glyph page ↗</a>
+    <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">the works ledger</div>
+    <table>
+      <thead><tr><th>work</th><th>phase</th><th>status</th></tr></thead>
+      <tbody>
+        <tr><td>house books</td><td>active</td><td>balanced</td></tr>
+        <tr><td>glyph till</td><td>active</td><td>seeded · 100.000</td></tr>
+        <tr><td>client ledger</td><td>quiet</td><td>awaiting first entry</td></tr>
+        <tr><td>workforce resumes</td><td>docking</td><td>applications open</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="dock">
+    <div class="fig">workforce — the employee application bypass</div>
+    <div class="status">bring your resume. the house reads quietly, and answers at first light.</div>
+    <button class="btn" onclick="document.getElementById('wf').textContent='the application form docks with the money door'">apply to the workforce</button>
+    <div class="status" id="wf"></div>
+  </section>
+
+  <div class="screensaver">
+    <svg class="tri a" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#3f7fc1" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+    <svg class="tri b" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#d98a3a" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+  </div>
+</main>
+
+<footer>
+  <b><a href="axiom.html">AXIOM INDUSTRIES</a></b> |
+  <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
+  <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
+  <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a>
+</footer>
+
+<script>
+const C = '0x8128ab50de624815045856aab904dc51a871e732';
+const FOUNDER = '0xf80cBE1278d3f388Fd955A7E0a99595528c9e1f4';
+const TILL = '0xD49Fe489D76c3EE1331891170d5edF235a95Af59';
+const TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const DEPLOY_BLOCK = '0xaee431';
+const RPCS = [
+  'https://ethereum-sepolia-rpc.publicnode.com',
+  'https://sepolia.gateway.tenderly.co',
+  'https://1rpc.io/sep',
+  'https://rpc.sepolia.org'
+];
+const $ = id => document.getElementById(id);
+
+async function rpc(method, params){
+  let lastErr;
+  for(const url of RPCS){
+    try{
+      const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+      const j = await r.json();
+      if(j.error) throw new Error(j.error.message);
+      return j.result;
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+const call = data => rpc('eth_call',[{to:C,data},'latest']);
+function fmt(raw){
+  const v = BigInt(raw);
+  return (v/1000n).toLocaleString('en-US') + '.' + (v%1000n).toString().padStart(3,'0');
+}
+const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
+
+(async () => {
+  try{ $('vault').textContent = fmt(await call('0x70a08231'+pad64(FOUNDER))); }catch(e){ $('vault').textContent = '—'; }
+  try{ $('till').textContent = fmt(await call('0x70a08231'+pad64(TILL))); }catch(e){ $('till').textContent = '—'; }
+  try{
+    const l = await rpc('eth_getLogs',[{address:C,topics:[TOPIC],fromBlock:DEPLOY_BLOCK,toBlock:'latest'}]);
+    $('txs').textContent = Math.max(0, l.length - 1);
+  }catch(e){ $('txs').textContent = '—'; }
+})();
+</script>
+
 </body>
 </html>
