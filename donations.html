@@ -56,16 +56,16 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· EX UMBRA, LUMEN · THE ENGINE IDLES FOR NO ONE · IT BURNS FOR WITNESSES ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · THE CHAMBER IDLES FOR NO ONE · IT BURNS FOR WITNESSES ·</p>
 
-  <div class="keep">keep the flame burning — rest a while, keeper. the engine remembers you.</div>
+  <div class="keep">keep the flame burning — rest a while, keeper. the chamber remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">pilot flame nominal. the turbine dreams.</div>
+  <div class="status" id="stat">core warm. containment nominal. the chamber dreams.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
-    <button class="btn red" onclick="whoosh()">i dropped — feed the burner</button>
+    <button class="btn red" onclick="whoosh()">i dropped — feed the core</button>
   </div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
@@ -81,7 +81,7 @@
 </footer>
 
 <script>
-/* the outflow engine: head-on turbine, afterburner plume, blue-edge ramp */
+/* the outflow chamber: horizontal tokamak, ribbed glowing core, top vent whoosh */
 const cv = document.getElementById('engine');
 const g2 = cv.getContext('2d');
 let W, H;
@@ -91,18 +91,17 @@ addEventListener('resize', fit); fit();
 const P = [], S = [];
 let busy = false, dropY = null;
 let spoolAt = 0, burnAt = 0, burnUntil = 0;
-let bladeA = 0, rot = 0.4, last = 0;
 function rnd(a,b){ return a + Math.random()*(b-a); }
 function spawn(n, ox, oy, kind){
   for(let i=0;i<n;i++){
     if(kind==='jet'){
-      P.push({ x:ox+rnd(-14,14), y:oy+rnd(0,8), vx:rnd(-.5,.5), vy:-rnd(7,12),
+      P.push({ x:ox+rnd(-12,12), y:oy+rnd(0,6), vx:rnd(-.5,.5), vy:-rnd(7,12),
         r:rnd(5,12), life:0, max:rnd(30,50) });
     } else if(kind==='burst'){
       P.push({ x:ox+rnd(-26,26), y:oy+rnd(-4,4), vx:rnd(-2,2), vy:-rnd(3,8),
         r:rnd(8,16), life:0, max:rnd(40,70) });
     } else {
-      P.push({ x:ox+rnd(-8,8), y:oy-rnd(0,4), vx:rnd(-.3,.3), vy:-rnd(.8,2),
+      P.push({ x:ox+rnd(-8,8), y:oy-rnd(0,4), vx:rnd(-.3,.3), vy:-rnd(.6,1.6),
         r:rnd(3,7), life:0, max:rnd(30,60) });
     }
   }
@@ -112,53 +111,109 @@ function spark(ox,oy,blue){
   S.push({ x:ox+rnd(-18,18), y:oy, vx:rnd(-.5,.5), vy:-rnd(2.5,4.5), life:0, max:rnd(30,70), b:!!blue });
 }
 function tick(now){
-  const dt = Math.min(0.05, (now-last)/1000 || 0.016); last = now;
   g2.clearRect(0,0,W,H);
-  const cx = W/2, cy = H-150, R = 64;
+  const cx = W/2, cy = H-170;
   const spool = now>spoolAt && now<burnAt;
   const burn  = now>burnAt && now<burnUntil;
   const decay = now>burnUntil && now<burnUntil+900;
-  /* spool the turbine */
-  const target = burn?9 : spool?4.5 : decay?1.5 : 0.4;
-  rot += (target-rot)*0.06;
-  bladeA += rot*dt;
   const amp = burn?2.2 : spool?1 : 0.12;
   const ox = (Math.random()-.5)*amp, oy = (Math.random()-.5)*amp;
-  const cg = burn?1.3 : spool?0.9 : decay?0.8 : 0.5;
+  const cg = burn?1.4 : spool?0.9 : decay?0.8 : 0.5 + 0.08*Math.sin(now*0.002);
 
-  /* ground pool */
+  /* leaked light */
   g2.globalCompositeOperation='source-over';
-  g2.save();
-  g2.translate(cx,cy+R+10); g2.scale(1,0.16); g2.translate(-cx,-(cy+R+10));
-  const gp=g2.createRadialGradient(cx,cy+R+10,0,cx,cy+R+10,200);
-  gp.addColorStop(0,'rgba(180,70,25,'+(0.09*cg).toFixed(3)+')');
-  gp.addColorStop(1,'rgba(180,70,25,0)');
-  g2.fillStyle=gp; g2.beginPath(); g2.arc(cx,cy+R+10,200,0,7); g2.fill();
-  g2.restore();
+  const lg=g2.createRadialGradient(cx,cy,0,cx,cy,210);
+  lg.addColorStop(0,'rgba(200,90,25,'+(0.13*cg).toFixed(3)+')');
+  lg.addColorStop(1,'rgba(200,90,25,0)');
+  g2.fillStyle=lg; g2.beginPath(); g2.arc(cx,cy,210,0,7); g2.fill();
 
-  /* side machinery blocks */
   g2.save(); g2.translate(ox,oy);
+
+  /* big dark arcs above & below */
+  g2.strokeStyle='#0a0c10'; g2.lineWidth=26;
+  g2.beginPath(); g2.arc(cx,cy,128,Math.PI*1.12,Math.PI*1.88); g2.stroke();
+  g2.beginPath(); g2.arc(cx,cy,128,Math.PI*0.12,Math.PI*0.88); g2.stroke();
+  g2.strokeStyle='rgba(255,140,50,'+(0.10*cg).toFixed(3)+')'; g2.lineWidth=2;
+  g2.beginPath(); g2.arc(cx,cy,114,Math.PI*1.15,Math.PI*1.85); g2.stroke();
+  g2.beginPath(); g2.arc(cx,cy,114,Math.PI*0.15,Math.PI*0.85); g2.stroke();
+
+  /* greeble side blocks */
   g2.fillStyle='#07090c';
-  g2.fillRect(cx-R-52,cy-26,44,52); g2.fillRect(cx+R+8,cy-26,44,52);
-  g2.strokeStyle='rgba(120,140,160,.12)'; g2.lineWidth=1;
-  for(let i=0;i<4;i++){
-    g2.beginPath(); g2.moveTo(cx-R-48,cy-16+i*10); g2.lineTo(cx-R-12,cy-16+i*10); g2.stroke();
-    g2.beginPath(); g2.moveTo(cx+R+12,cy-16+i*10); g2.lineTo(cx+R+48,cy-16+i*10); g2.stroke();
+  g2.fillRect(cx-208,cy-40,44,80); g2.fillRect(cx+164,cy-40,44,80);
+  g2.fillRect(cx-176,cy-56,20,24); g2.fillRect(cx+156,cy-56,20,24);
+  g2.fillRect(cx-176,cy+32,20,24); g2.fillRect(cx+156,cy+32,20,24);
+
+  /* end flanges */
+  for(const s of [-1,1]){
+    const fx = cx + s*118;
+    g2.fillStyle='#07090c';
+    g2.beginPath(); g2.arc(fx,cy,46,0,7); g2.fill();
+    g2.strokeStyle='#1f2630'; g2.lineWidth=2;
+    g2.beginPath(); g2.arc(fx,cy,46,0,7); g2.stroke();
+    g2.beginPath(); g2.arc(fx,cy,36,0,7); g2.stroke();
+    g2.strokeStyle='#0a0c10'; g2.lineWidth=4;
+    for(let k=0;k<16;k++){
+      const a=k*Math.PI/8;
+      g2.beginPath();
+      g2.moveTo(fx+Math.cos(a)*38, cy+Math.sin(a)*38);
+      g2.lineTo(fx+Math.cos(a)*46, cy+Math.sin(a)*46);
+      g2.stroke();
+    }
+    g2.strokeStyle='rgba(255,140,50,'+(0.22*cg).toFixed(3)+')'; g2.lineWidth=2;
+    g2.beginPath(); g2.arc(fx,cy,28,0,7); g2.stroke();
+    /* lamps */
+    const on = Math.floor(now/600)%2===0;
+    g2.fillStyle = (s<0?on:!on)?'rgba(200,69,44,.9)':'rgba(200,69,44,.25)';
+    g2.beginPath(); g2.arc(fx,cy+52,2.2,0,7); g2.fill();
   }
-  /* lamps */
-  const on = Math.floor(now/600)%2===0;
-  g2.fillStyle = on?'rgba(200,69,44,.9)':'rgba(200,69,44,.25)';
-  g2.beginPath(); g2.arc(cx-R-30,cy+18,2.2,0,7); g2.fill();
-  g2.fillStyle = !on?'rgba(217,168,58,.9)':'rgba(217,168,58,.25)';
-  g2.beginPath(); g2.arc(cx+R+30,cy+18,2.2,0,7); g2.fill();
+
+  /* the glowing ribbed core */
+  const top = burn?'255,236,190':'255,154,60';
+  const mid = burn?'255,250,230':'255,210,120';
+  const bot = burn?'255,170,70':'200,90,30';
+  const coreG = g2.createLinearGradient(0,cy-26,0,cy+26);
+  coreG.addColorStop(0,'rgba('+top+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
+  coreG.addColorStop(.5,'rgba('+mid+','+Math.min(1,.55+.4*cg).toFixed(3)+')');
+  coreG.addColorStop(1,'rgba('+bot+','+Math.min(1,.5+.4*cg).toFixed(3)+')');
+  g2.fillStyle=coreG;
+  g2.beginPath();
+  g2.moveTo(cx-66,cy-26); g2.lineTo(cx+66,cy-26);
+  g2.arc(cx+66,cy,26,-Math.PI/2,Math.PI/2);
+  g2.lineTo(cx-66,cy+26);
+  g2.arc(cx-66,cy,26,Math.PI/2,Math.PI*1.5);
+  g2.closePath(); g2.fill();
+  /* ribs */
+  g2.fillStyle='rgba(60,20,8,.55)';
+  for(let x=cx-84;x<cx+88;x+=14) g2.fillRect(x,cy-26,4,52);
+  /* containment hoops */
+  g2.strokeStyle='rgba(20,10,6,.85)'; g2.lineWidth=3;
+  for(const k of [-60,-20,20,60]){
+    g2.beginPath(); g2.ellipse(cx+k,cy,7,30,0,0,7); g2.stroke();
+  }
+  /* glass highlight */
+  g2.strokeStyle='rgba(255,255,255,.14)'; g2.lineWidth=2;
+  g2.beginPath(); g2.moveTo(cx-80,cy-17); g2.lineTo(cx+80,cy-17); g2.stroke();
+
+  /* vent stack */
+  g2.fillStyle='#07090c';
+  g2.beginPath();
+  g2.moveTo(cx-12,cy-28); g2.lineTo(cx+12,cy-28); g2.lineTo(cx+8,cy-58); g2.lineTo(cx-8,cy-58);
+  g2.closePath(); g2.fill();
+  g2.strokeStyle='rgba(255,140,50,'+Math.min(.75,.12+.32*cg).toFixed(3)+')'; g2.lineWidth=2;
+  g2.beginPath(); g2.moveTo(cx-8,cy-58); g2.lineTo(cx+8,cy-58); g2.stroke();
+
+  /* stencil */
+  g2.fillStyle='rgba(216,221,227,.22)';
+  g2.font='10px monospace'; g2.textAlign='center';
+  g2.fillText('OUTFLOW-07 · CHAMBER II', cx, cy+92);
   g2.restore();
 
-  /* feed + plume particles (behind the disc) */
-  if(burn) spawn(16, cx, cy-R+16, 'jet');
-  else if(decay) spawn(6, cx, cy-R+16, 'jet');
-  else spawn(spool?5:2, cx, cy-14, 'pilot');
-  if(burn && Math.random()<0.5) spark(cx, cy-R, true);
-  else if(Math.random()<0.08) spark(cx, cy-16, false);
+  /* feed + vent plume */
+  if(burn) spawn(16, cx, cy-58, 'jet');
+  else if(decay) spawn(6, cx, cy-58, 'jet');
+  else spawn(spool?5:2, cx, cy-58, 'pilot');
+  if(burn && Math.random()<0.5) spark(cx, cy-64, true);
+  else if(Math.random()<0.08) spark(cx, cy-60, false);
 
   g2.globalCompositeOperation='lighter';
   for(let i=P.length-1;i>=0;i--){
@@ -184,10 +239,9 @@ function tick(now){
                        : 'rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
     g2.beginPath(); g2.arc(s.x,s.y,1.3,0,7); g2.fill();
   }
-  /* shock diamonds */
   if(burn){
     for(let k=0;k<4;k++){
-      const dy=cy-R-40-k*56, s=11-k*2;
+      const dy=cy-96-k*56, s=11-k*2;
       const a=Math.max(0,(0.5-k*0.1));
       g2.save();
       g2.translate(cx,dy); g2.rotate(Math.PI/4);
@@ -198,57 +252,16 @@ function tick(now){
     }
   }
 
-  /* the turbine disc, over the plume base */
-  g2.globalCompositeOperation='source-over';
-  g2.save(); g2.translate(ox,oy);
-  /* combustion glow behind blades */
-  const gg=g2.createRadialGradient(cx,cy,0,cx,cy,50);
-  gg.addColorStop(0,'rgba(255,'+Math.round(150+60*cg)+',60,'+Math.min(1,.35+.4*cg).toFixed(3)+')');
-  gg.addColorStop(1,'rgba(120,40,15,0)');
-  g2.fillStyle=gg; g2.beginPath(); g2.arc(cx,cy,50,0,7); g2.fill();
-  /* rotating blades */
-  for(let k=0;k<12;k++){
-    g2.save(); g2.translate(cx,cy); g2.rotate(bladeA + k*Math.PI/6);
-    g2.fillStyle='#05070a';
-    g2.fillRect(18,-4.5,28,9);
-    g2.strokeStyle='rgba(140,160,180,.14)'; g2.lineWidth=1;
-    g2.strokeRect(18,-4.5,28,9);
-    g2.restore();
-  }
-  /* core hole + glowing ring */
-  g2.fillStyle='#050608'; g2.beginPath(); g2.arc(cx,cy,13,0,7); g2.fill();
-  g2.save();
-  g2.strokeStyle='rgba(255,'+Math.round(150+70*cg)+',60,'+Math.min(1,.5+.4*cg).toFixed(3)+')';
-  g2.lineWidth=5; g2.shadowColor='rgba(255,150,50,1)'; g2.shadowBlur=18*cg;
-  g2.beginPath(); g2.arc(cx,cy,16,0,7); g2.stroke();
-  g2.restore();
-  /* casing + nozzle petals */
-  g2.strokeStyle='#0a0c10'; g2.lineWidth=12;
-  g2.beginPath(); g2.arc(cx,cy,R,0,7); g2.stroke();
-  g2.strokeStyle='rgba(120,140,160,.15)'; g2.lineWidth=1;
-  g2.beginPath(); g2.arc(cx,cy,R+6,0,7); g2.stroke();
-  for(let k=0;k<12;k++){
-    g2.save(); g2.translate(cx,cy); g2.rotate(k*Math.PI/6 + Math.PI/12);
-    g2.fillStyle='#07090c';
-    g2.fillRect(R-12,-5,14,10);
-    g2.restore();
-  }
-  /* stencil */
-  g2.fillStyle='rgba(216,221,227,.22)';
-  g2.font='10px monospace'; g2.textAlign='center';
-  g2.fillText('OUTFLOW-07', cx, cy+R+22);
-  g2.restore();
-
-  /* the offering drop into the core */
+  /* the offering drop */
   if(dropY !== null){
     dropY += 11;
     g2.save();
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=8;
     g2.beginPath(); g2.arc(cx, dropY, 3.2, 0, 7); g2.fill();
     g2.restore();
-    if(dropY >= cy-4){
+    if(dropY >= cy-60){
       dropY=null; spoolAt=now; burnAt=now+480; burnUntil=now+480+1400;
-      spawn(40, cx, cy-R+16, 'burst'); onLand();
+      spawn(40, cx, cy-58, 'burst'); onLand();
     }
   }
   requestAnimationFrame(tick);
@@ -258,12 +271,12 @@ requestAnimationFrame(tick);
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 const flavor = [
-  'pilot flame nominal. the turbine dreams.',
-  'a drop lands; the burner drinks.',
+  'core warm. containment nominal. the chamber dreams.',
+  'a drop lands; the core drinks.',
   'exhaust reads blue-clean. keep burning.',
   'sediment, not jackpot.',
   'the manifold remembers you.',
-  'somewhere a reactor spools for nobody. not this one.'
+  'somewhere a reactor idles for nobody. not this one.'
 ];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
@@ -276,7 +289,7 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the engine turns the ledger page.';
+  if(drops%100===0) s.textContent='A LOOP CLOSES — the chamber turns the ledger page.';
   else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a lamp joins the row.';
   else s.textContent='>> spooling .. FULL BURN <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
