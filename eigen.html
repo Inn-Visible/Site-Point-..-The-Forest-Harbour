@@ -137,13 +137,14 @@ const yTop=18, gap=12, N=33;
 const figEl = document.getElementById('spinefig');
 const FIG0 = 'fig. e1 — the eigen stack · 33 pages · turning';
 const stacks = {
-  const stacks={1:'aside · the bifurcation',2:'system literacy, defined',3:'clarity statement',
-  4:'practical part · OS',5:'practical part · languages',6:'hardware work',
-  7:'control systems',8:'concrete learning stack',9:'orange bottleneck',10:'scratch note · EMC/RF',
-  26:'stack 6 · infrastructure',27:'stack 6 · infrastructure',
-  28:'stack 7 · infrastructure cont\u2019d',29:'stack 7 · fiction that teaches power',
-  30:'stack 8 · structural power',31:'stack 8 · structural power',
-  32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'};
+  1:'aside · the bifurcation', 2:'system literacy, defined', 3:'clarity statement',
+  4:'practical part · OS', 5:'practical part · languages', 6:'hardware work',
+  7:'control systems', 8:'concrete learning stack', 9:'orange bottleneck', 10:'scratch note · EMC/RF',
+  26:'stack 6 · infrastructure', 27:'stack 6 · infrastructure',
+  28:'stack 7 · infrastructure cont\u2019d', 29:'stack 7 · fiction that teaches power',
+  30:'stack 8 · structural power', 31:'stack 8 · structural power',
+  32:'stack 8 · bonus / reorienting', 33:'stack 9 · money / psychology'
+};
 function whisper(n){
   return 'page ' + n + ' · ' + (stacks[n] ? stacks[n] : 'backnull · awaiting transcription');
 }
@@ -156,13 +157,13 @@ function mk(x1,y1,x2,y2,stroke,w,op){
   svg.appendChild(l); return l;
 }
 
-/* one axis, one continuous lattice — no outer verticals, no gaps */
+/* one axis, one continuous lattice */
 mk(210, yTop-8, 210, yTop+N*gap+10, '#58a36a', 1, .5);
 for(let n=1;n<=N;n++){
   mk(60, yTop+n*gap, 360, yTop+n*gap, '#58a36a', .8, .22);
 }
 
-/* white steps + fat invisible hit-lines, easy to grab */
+/* white steps + fat invisible hit-lines */
 const steps=[], hits=[];
 for(let n=1;n<=N;n++){
   const l=mk(0,0,0,0,'#d8dde3',1.6,1);
@@ -184,7 +185,7 @@ function frame(now){
     const ph=n*0.42 - t*1.4;
     const depth=Math.cos(ph);
     const center=210 + 24*Math.sin(ph);
-    const half=20 + 22*(0.5+0.5*depth)*1.5;
+    const half=(20 + 22*(0.5+0.5*depth))*1.5;
     const a=center-half, b=center+half;
     steps[n-1].setAttribute('x1',a); steps[n-1].setAttribute('x2',b);
     steps[n-1].setAttribute('y1',y); steps[n-1].setAttribute('y2',y);
