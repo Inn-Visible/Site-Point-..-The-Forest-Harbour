@@ -179,3 +179,9 @@ function closeCard() {
 if (cardClose) cardClose.addEventListener('click', closeCard);
 if (cardView) cardView.addEventListener('click', e => { if (e.target === cardView) closeCard(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
+
+/* deep-link: #E1..#E4 opens that card on load */
+(function(){
+  var h = location.hash.replace('#','');
+  if (cards[h]) openCard(h);
+})();
