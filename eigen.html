@@ -8,7 +8,7 @@
   :root{
     --bg:#0a0d12; --panel:#0e141b; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --green:#58a36a;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --green:#58a36a; --silver:#d8dde3;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
     --serif:Georgia,"Times New Roman",serif;
   }
@@ -131,26 +131,32 @@ function lockdoor(){
 const svg = document.getElementById('spine');
 const NS = 'http://www.w3.org/2000/svg';
 const cx=130, yTop=18, gap=12, N=33;
-
-/* the pole, dim */
-const pole = document.createElementNS(NS,'line');
-pole.setAttribute('x1',cx); pole.setAttribute('y1',yTop-8);
-pole.setAttribute('x2',cx); pole.setAttribute('y2',yTop+N*gap+10);
-pole.setAttribute('stroke','#58a36a'); pole.setAttribute('stroke-width',1);
-pole.setAttribute('opacity','.3');
-svg.appendChild(pole);
-
-/* the steps: thin green throughlines, no numbers */
-const rungs=[];
-for(let n=1;n<=N;n++){
+function mk(x1,y1,x2,y2,stroke,w,op){
   const l=document.createElementNS(NS,'line');
-  l.setAttribute('stroke','#58a36a'); l.setAttribute('stroke-width',1.1);
-  l.setAttribute('stroke-linecap','round');
-  svg.appendChild(l); rungs.push(l);
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('stroke',stroke); l.setAttribute('stroke-width',w);
+  l.setAttribute('opacity',op);
+  svg.appendChild(l); return l;
 }
 
-/* the cascade: a slow spiral staircase of green bones */
-const start = performance.now();
+/* the axis: one central green line */
+mk(cx, yTop-8, cx, yTop+N*gap+10, '#58a36a', 1, .5);
+
+/* 33 long static thin green layers */
+for(let n=1;n<=N;n++){
+  mk(cx-62, yTop+n*gap, cx+62, yTop+n*gap, '#58a36a', .8, .3);
+}
+
+/* 33 white spiral rotating steps */
+const rungs=[];
+for(let n=1;n<=N;n++){
+  const l=mk(0,0,0,0,'#d8dde3',1.6,1);
+  l.setAttribute('stroke-linecap','round');
+  rungs.push(l);
+}
+
+const start=performance.now();
 function frame(now){
   const t=(now-start)/1000;
   for(let n=1;n<=N;n++){
@@ -162,7 +168,7 @@ function frame(now){
     const half=12 + 16*(0.5+0.5*depth);
     l.setAttribute('x1',center-half); l.setAttribute('x2',center+half);
     l.setAttribute('y1',y); l.setAttribute('y2',y);
-    l.setAttribute('opacity',(0.22+0.7*(0.5+0.5*depth)).toFixed(2));
+    l.setAttribute('opacity',(0.25+0.7*(0.5+0.5*depth)).toFixed(2));
   }
   requestAnimationFrame(frame);
 }
