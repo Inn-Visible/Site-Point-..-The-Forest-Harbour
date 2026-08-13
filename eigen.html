@@ -1,89 +1,164 @@
-<!DOCTYPE html>
-<!-- build: pine-stack -->
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eigen Dynamics | Inn.Visible</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #050505; color: #d4d4d4; font-family: 'Courier New', Courier, monospace; padding: 40px 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #45997b; margin-bottom: 10px; font-size: 1.8rem; }
-        .subtitle { color: #666; margin-bottom: 30px; font-style: italic; }
-        .back { display: inline-block; margin-top: 30px; color: #45997b; text-decoration: none; border: 1px solid #333; padding: 10px 20px; border-radius: 4px; }
-        .back:hover { background: #45997b; color: #050505; }
-        .content-block { background: #080808; border: 1px dashed #444; border-radius: 0; margin-bottom: 25px; }
-        .block-header { padding: 15px 20px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; background: #111; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
-        .block-header h3 { margin: 0; color: #cbd5e1; }
-        .block-icon { font-size: 1.2rem; }
-        .block-body { padding: 20px; }
-        .meta-text { font-size: 0.75rem; color: #555; margin-top: 10px; font-family: monospace; }
-        .block-button { display: inline-block; padding: 8px 16px; background: #45997b; border: 1px solid #45997b; color: #050505; text-decoration: none; margin-top: 10px; font-size: 0.85rem; }
-        .block-button:hover { background: transparent; color: #45997b; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: monospace; }
-        .data-table th, .data-table td { padding: 10px; text-align: left; border: 1px solid #333; }
-        .data-table th { color: #45997b; }
-        .theme-eigen .content-block:hover { border-style: solid; border-color: #45997b; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eigen Dynamics | Inn.Visible</title>
+<style>
+  :root{
+    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --green:#58a36a;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
+               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line)}
+  .brand{font-size:16px;letter-spacing:.35em;color:var(--green)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:900px;margin:0 auto;padding:56px 24px 0;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
+  .manifesto{margin-top:12px;color:var(--dim);font-size:12.5px;letter-spacing:.06em}
+  .spinebox{margin:36px auto 0}
+  .scan{animation:scan 7s ease-in-out infinite}
+  @keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(396px)}}
+  .dock{margin:44px auto 0;border:1px solid var(--line);background:var(--panel);
+    padding:26px 20px;max-width:700px}
+  .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
+    cursor:pointer;margin-top:14px;text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .cove{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.cove{grid-template-columns:1fr}}
+  .nook{border:1px dashed var(--line);background:var(--bg);padding:14px;text-align:left}
+  .nook b{display:block;color:var(--ink);font-size:12px;letter-spacing:.08em;margin-bottom:8px}
+  .nook span{color:var(--dim);font-size:11px;line-height:1.7}
+  .screensaver{position:relative;height:100px;overflow:hidden;margin-top:64px;
+    border-top:1px solid var(--line)}
+  .tri{position:absolute;top:26px;opacity:.22}
+  .tri.a{animation:driftA 70s linear infinite}
+  .tri.b{animation:driftB 95s linear infinite}
+  @keyframes driftA{from{left:-15%}to{left:110%}}
+  @keyframes driftB{from{left:110%}to{left:-15%}}
+  footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1}
+  footer b{color:var(--ink)}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+</style>
 </head>
-<body class="theme-eigen">
-    <script>
-      /* hive safeguard — no valid passkey? back to the door */
-      (function(){var a=localStorage.getItem('hive_access');
-        if(!a||+a<Date.now()){location.replace('index.html');}})();
-    </script>
-    <div class="container">
-        <h1>01. Eigen Dynamics</h1>
-        <p class="subtitle">The Mind / Research / Library</p>
+<body>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">📙</span><h3>System Literacy Notes</h3></div>
-            <div class="block-body">
-                <p>Initial thoughts on restructuring the digital archive. The goal is to keep raw data accessible but visually separated from active projects.</p>
-                <p class="meta-text">- Logged on [Date] | Tag: #architecture</p>
-            </div>
-        </div>
+<script>
+/* the house keeps the lock */
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
+function lockdoor(){
+  localStorage.removeItem('hive_access');
+  sessionStorage.removeItem('hive_session');
+  location.href='index.html?gate';
+}
+</script>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">📚</span><h3>Book Tracking Ledger</h3></div>
-            <div class="block-body">
-                <table class="data-table">
-                    <thead><tr><th>Title</th><th>Status</th><th>Notes</th></tr></thead>
-                    <tbody>
-                        <tr><td>The 48 Laws of Power</td><td>Reading</td><td>Chapter 4</td></tr>
-                        <tr><td>Digital Minimalism</td><td>Completed</td><td>Core philosophy applied</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<header>
+  <div class="brand">EIGEN DYNAMICS</div>
+  <a class="back" href="core.html">core ↩</a>
+</header>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">📖</span><h3>Published Work</h3></div>
-            <div class="block-body">
-                <p>Author's published book available on Amazon.</p>
-                <a href="#" class="block-button">View on Amazon →</a>
-            </div>
-        </div>
+<main>
+  <p class="hook">the library so to speak — strategy, structure, leverage.</p>
+  <p class="manifesto">thirty-three pages bound along a spine. the scan reads them while you sleep.</p>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🔗</span><h3>External Resource</h3></div>
-            <div class="block-body">
-                <p>Cyber Security Google Certificate portal and study guides.</p>
-                <a href="#" class="block-button">Access Portal →</a>
-            </div>
-        </div>
+  <div class="spinebox">
+    <svg id="spine" width="260" height="430" viewBox="0 0 260 430"></svg>
+    <div class="fig">fig. e1 — the eigen stack · 33 pages · scanning</div>
+  </div>
 
-        <div class="content-block">
-            <div class="block-header"><span class="block-icon">🗄</span><h3>The Eigenstack</h3></div>
-            <div class="block-body">
-                <p>Raw library entries, excavation logs and foundation notes. The quiet stack the hive grows from.</p>
-                <a href="eigenstack/index.html" class="block-button">Open the Eigenstack →</a>
-                <p class="meta-text">- Status: Growing | Tag: #library</p>
-            </div>
-        </div>
-
-        <a href="core.html" class="back">← Return to Core</a>
+  <section class="dock">
+    <div class="fig">the reading nook cove</div>
+    <div class="cove">
+      <div class="nook"><b>victorian seaside reading nook</b><span>nostalgic piano · rainy dark academia for the forgotten</span></div>
+      <div class="nook"><b>rain sound on window</b><span>thunder sounds · heavy rain for sleep, study &amp; relaxation</span></div>
+      <div class="nook"><b>it's 3:03 am</b><span>and you need to stop a war before it starts</span></div>
     </div>
+    <div class="status">the cove streams when the library opens fully · sit anyway</div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">the synthesizer — the signal layer beneath the text</div>
+    <div class="status">raw library research · transcription logs · frequency scans</div>
+    <button class="btn" onclick="document.getElementById('syn').textContent='the synthesizer wakes when the library opens fully'">open the synthesizer</button>
+    <div class="status" id="syn"></div>
+  </section>
+
+  <section class="dock">
+    <div class="fig">stacks</div>
+    <div class="cove">
+      <div class="nook"><b>system literacy hub</b><span>the underlying architecture of the web &amp; hardware, tidied</span></div>
+      <div class="nook"><b>published work</b><span>the shelf · view on amazon when stocked</span></div>
+      <div class="nook"><b>editorial comment</b><span>commentary on infrastructure events &amp; policy shifts</span></div>
+    </div>
+  </section>
+
+  <div class="screensaver">
+    <svg class="tri a" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#3f7fc1" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+    <svg class="tri b" width="70" height="50" viewBox="0 0 70 50" fill="none" stroke="#58a36a" stroke-width="2">
+      <polygon points="5,25 35,5 35,45"/><polygon points="40,5 68,25 40,45"/></svg>
+  </div>
+</main>
+
+<footer>
+  <b><a href="axiom.html">AXIOM INDUSTRIES</a></b> |
+  <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
+  <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
+  <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a>
+</footer>
+
+<script>
+const svg = document.getElementById('spine');
+const NS = 'http://www.w3.org/2000/svg';
+function line(x1,y1,x2,y2,stroke,w){
+  const l = document.createElementNS(NS,'line');
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('stroke',stroke); l.setAttribute('stroke-width',w);
+  svg.appendChild(l); return l;
+}
+const cx=130, top=18, gap=12;
+line(cx, top-8, cx, top+33*gap+10, '#58a36a', 2);
+for(let n=1;n<=33;n++){
+  const y = top + n*gap;
+  let w;
+  if(n<=10) w = 16 + 46*Math.sin(Math.PI*n/11);
+  else      w = 16 + 56*Math.sin(Math.PI*(n-10)/24);
+  line(cx-w/2, y, cx+w/2, y, '#93a1b0', 1.4);
+  if(n===1 || n===10 || n===33){
+    const t = document.createElementNS(NS,'text');
+    t.setAttribute('x', cx+w/2+10); t.setAttribute('y', y+4);
+    t.setAttribute('fill', '#e8e4d8'); t.setAttribute('font-size', '11');
+    t.setAttribute('font-family', 'monospace');
+    t.textContent = n; svg.appendChild(t);
+  }
+}
+const s = line(cx-70, top, cx+70, top, '#58a36a', 2);
+s.setAttribute('class','scan');
+s.style.filter = 'drop-shadow(0 0 6px #58a36a)';
+</script>
+
 </body>
 </html>
