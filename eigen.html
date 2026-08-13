@@ -141,42 +141,41 @@ function mk(x1,y1,x2,y2,stroke,w,op){
   svg.appendChild(l); return l;
 }
 
-/* three poles: center leads, flanks turn phase-shifted */
+/* three poles: quiet flanks, one hero */
 const cols=[
-  {cx:70,  off:-2.094, lines:[]},
-  {cx:210, off:0,      lines:[]},
-  {cx:350, off:2.094,  lines:[]}
+  {cx:70,  hero:false},
+  {cx:210, hero:true},
+  {cx:350, hero:false}
 ];
 for(const c of cols){
-  /* the axis */
-  mk(c.cx, yTop-8, c.cx, yTop+N*gap+10, '#58a36a', 1, .5);
-  /* 33 long static thin green layers */
+  mk(c.cx, yTop-8, c.cx, yTop+N*gap+10, '#58a36a', 1, c.hero ? .5 : .38);
   for(let n=1;n<=N;n++){
-    mk(c.cx-55, yTop+n*gap, c.cx+55, yTop+n*gap, '#58a36a', .8, .28);
+    mk(c.cx-55, yTop+n*gap, c.cx+55, yTop+n*gap, '#58a36a', .8, c.hero ? .28 : .2);
   }
-  /* 33 white rotating steps */
-  for(let n=1;n<=N;n++){
-    const l=mk(0,0,0,0,'#d8dde3',1.6,1);
-    l.setAttribute('stroke-linecap','round');
-    c.lines.push(l);
+  c.lines=[];
+  if(c.hero){
+    for(let n=1;n<=N;n++){
+      const l=mk(0,0,0,0,'#d8dde3',1.6,1);
+      l.setAttribute('stroke-linecap','round');
+      c.lines.push(l);
+    }
   }
 }
+const hero = cols[1];
 
 const start=performance.now();
 function frame(now){
   const t=(now-start)/1000;
-  for(const c of cols){
-    for(let n=1;n<=N;n++){
-      const l=c.lines[n-1];
-      const y=yTop+n*gap;
-      const ph=n*0.42 - t*1.4 + c.off;
-      const depth=Math.cos(ph);
-      const center=c.cx + 24*Math.sin(ph);
-      const half=12 + 16*(0.5+0.5*depth);
-      l.setAttribute('x1',center-half); l.setAttribute('x2',center+half);
-      l.setAttribute('y1',y); l.setAttribute('y2',y);
-      l.setAttribute('opacity',(0.25+0.7*(0.5+0.5*depth)).toFixed(2));
-    }
+  for(let n=1;n<=N;n++){
+    const l=hero.lines[n-1];
+    const y=yTop+n*gap;
+    const ph=n*0.42 - t*1.4;
+    const depth=Math.cos(ph);
+    const center=hero.cx + 24*Math.sin(ph);
+    const half=12 + 16*(0.5+0.5*depth);
+    l.setAttribute('x1',center-half); l.setAttribute('x2',center+half);
+    l.setAttribute('y1',y); l.setAttribute('y2',y);
+    l.setAttribute('opacity',(0.25+0.7*(0.5+0.5*depth)).toFixed(2));
   }
   requestAnimationFrame(frame);
 }
