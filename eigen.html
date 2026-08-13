@@ -132,21 +132,21 @@ function lockdoor(){
 <script>
 const svg = document.getElementById('spine');
 const NS = 'http://www.w3.org/2000/svg';
-function line(x1,y1,x2,y2,stroke,w){
+function rung(x1,y1,x2,y2,stroke,w){
   const l = document.createElementNS(NS,'line');
   l.setAttribute('x1',x1); l.setAttribute('y1',y1);
   l.setAttribute('x2',x2); l.setAttribute('y2',y2);
   l.setAttribute('stroke',stroke); l.setAttribute('stroke-width',w);
   svg.appendChild(l); return l;
 }
-const cx=130, top=18, gap=12;
-line(cx, top-8, cx, top+33*gap+10, '#58a36a', 2);
+const cx=130, yTop=18, gap=12;
+rung(cx, yTop-8, cx, yTop+33*gap+10, '#58a36a', 2);
 for(let n=1;n<=33;n++){
-  const y = top + n*gap;
+  const y = yTop + n*gap;
   let w;
   if(n<=10) w = 16 + 46*Math.sin(Math.PI*n/11);
   else      w = 16 + 56*Math.sin(Math.PI*(n-10)/24);
-  line(cx-w/2, y, cx+w/2, y, '#93a1b0', 1.4);
+  rung(cx-w/2, y, cx+w/2, y, '#93a1b0', 1.4);
   if(n===1 || n===10 || n===33){
     const t = document.createElementNS(NS,'text');
     t.setAttribute('x', cx+w/2+10); t.setAttribute('y', y+4);
@@ -155,9 +155,9 @@ for(let n=1;n<=33;n++){
     t.textContent = n; svg.appendChild(t);
   }
 }
-const s = line(cx-70, top, cx+70, top, '#58a36a', 2);
-s.setAttribute('class','scan');
-s.style.filter = 'drop-shadow(0 0 6px #58a36a)';
+const scan = rung(cx-70, yTop, cx+70, yTop, '#58a36a', 2);
+scan.setAttribute('class','scan');
+scan.style.filter = 'drop-shadow(0 0 6px #58a36a)';
 </script>
 
 </body>
