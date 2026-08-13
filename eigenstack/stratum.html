@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EIGENSTACK // MACRO-STRATUM</title>
+<style>
+  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;
+    --green:#58a36a;--blue:#3f7fc1;--gold:#d9a83a;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line);
+    font-size:13px;letter-spacing:.25em;color:var(--green);flex-wrap:wrap;gap:8px}
+  header nav{display:flex;gap:16px}
+  header a{color:var(--dim);text-decoration:none;letter-spacing:.15em;font-size:12px}
+  header a:hover{color:var(--ink)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 60px}
+  .hook{font-family:var(--serif);font-style:italic;font-size:22px;text-align:center}
+  .man{text-align:center;color:var(--dim);font-size:12px;margin-top:10px;letter-spacing:.06em}
+  .core{margin-top:40px;position:relative;padding-left:34px}
+  .core::before{content:"";position:absolute;left:10px;top:0;bottom:0;
+    border-left:1px solid var(--green);opacity:.5}
+  .stratum{display:block;border:1px dashed var(--line);background:var(--panel);
+    padding:18px 20px;margin-bottom:14px;text-decoration:none;color:var(--ink);
+    position:relative;transition:border-color .2s}
+  .stratum:hover{border-color:var(--green)}
+  .stratum::before{content:"";position:absolute;left:-28px;top:26px;width:10px;
+    border-top:1px solid var(--green);opacity:.5}
+  .stratum .d{color:#5c6875;font-size:10.5px;letter-spacing:.2em}
+  .stratum b{display:block;margin-top:6px;font-size:13px;letter-spacing:.12em;color:var(--green)}
+  .stratum span{display:block;margin-top:8px;color:var(--dim);font-size:12px;line-height:1.8}
+  .stratum .go{position:absolute;right:16px;top:18px;color:var(--dim);font-size:12px}
+  footer{border-top:1px solid var(--line);padding:22px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2}
+  footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+
+<script>
+  /* hive safeguard — absolute edition */
+  (function(){var a=localStorage.getItem('hive_access');
+    if(!a||+a<Date.now()){location.replace('https://innvisible.org/index.html');}})();
+</script>
+
+<header>EIGENSTACK // MACRO-STRATUM
+  <nav><a href="index.html">↓ the core</a><a href="pages.html">↓ the 33 pages</a></nav>
+</header>
+
+<main>
+  <p class="hook">the macro-stratum · five libraries, one core.</p>
+  <p class="man">read down: each layer feeds the constellation below it.</p>
+
+  <div class="core">
+    <a class="stratum" href="index.html#E1">
+      <span class="d">STRATUM I · depth 0–30m</span>
+      <b>NAVIDSTAD</b>
+      <span>the demon-mode trio · wealth, peace, leverage · paper name retained.</span>
+      <span class="go">↧ E1</span></a>
+
+    <a class="stratum" href="index.html#E2">
+      <span class="d">STRATUM II · depth 30–80m</span>
+      <b>CHEM / NUKE / SOLAR</b>
+      <span>the physical laws shelf · Klein's 15 essentials · Lewins · Pavey.</span>
+      <span class="go">↧ E2</span></a>
+
+    <a class="stratum" href="index.html#E3">
+      <span class="d">STRATUM III · depth 80–120m</span>
+      <b>HANDIBOOK</b>
+      <span>the access layer · locks, bypasses, physical security · the body is the first perimeter.</span>
+      <span class="go">↧ E3</span></a>
+
+    <a class="stratum" href="pages.html">
+      <span class="d">STRATUM IV · depth 120–200m</span>
+      <b>READING STACK(S)</b>
+      <span>the work-stack · 33 backnull pages · photographed, awaiting transcription.</span>
+      <span class="go">↧ the pages</span></a>
+
+    <a class="stratum" href="https://discord.gg/7k2sNHS3n" target="_blank">
+      <span class="d">STRATUM V · the living layer</span>
+      <b>DISCORD BOOK LIST</b>
+      <span>the list that updates itself · quiet rooms, low talk, open door.</span>
+      <span class="go">↧ the hearth</span></a>
+  </div>
+</main>
+
+<footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+<a href="https://innvisible.org/index.html?gate">the hive entrance ↗</a></footer>
+
+</body>
+</html>
