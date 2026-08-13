@@ -112,7 +112,7 @@ function lockdoor(){
     <div class="cove">
       <div class="nook"><b>youtube</b><span>the honey tapes · visual static &amp; low frequencies</span><br><a href="https://youtube.com/@honey_smudgs" target="_blank">@honey_smudgs ↗</a></div>
       <div class="nook"><b>instagram · the author</b><span>pages, spines &amp; marginalia</span><br><a href="https://instagram.com/steady_evenfall" target="_blank">@steady_evenfall ↗</a></div>
-      <div class="nook"><b>instagram · the signal</b><span>ruins, walks &amp; wireframes</span><br><a href="https://instagram.com/nooootoxnn_0" target="_blank">@nooootoxnn_0 ↗</a></div>
+      <div class="nook"><b>discord · the hearth</b><span>quiet rooms, low talk, open door</span><br><a href="#" onclick="return false">the invite docks when you paste it</a></div>
     </div>
   </section>
 
@@ -139,7 +139,7 @@ function lockdoor(){
 </footer>
 
 <script>
-let AC = null;
+let AC = null, comp = null;
 function audio(){
   if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
   if(AC.state === 'suspended') AC.resume();
@@ -147,18 +147,23 @@ function audio(){
 }
 function pluck(f){
   const a = audio(), t = a.currentTime;
-  const o = a.createOscillator(), o2 = a.createOscillator();
+  if(!comp){ comp = a.createDynamicsCompressor(); comp.connect(a.destination); }
   const g = a.createGain(), lp = a.createBiquadFilter();
-  o.type = 'triangle'; o.frequency.value = f;
-  o2.type = 'sine'; o2.frequency.value = f * 2;
   lp.type = 'lowpass';
-  lp.frequency.setValueAtTime(1400, t);
-  lp.frequency.exponentialRampToValueAtTime(180, t + 1.4);
+  lp.frequency.setValueAtTime(Math.max(1200, f*14), t);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(260, f*4), t + 1.4);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 2);
-  o.connect(g); o2.connect(g); g.connect(lp); lp.connect(a.destination);
-  o.start(t); o2.start(t); o.stop(t + 2.1); o2.stop(t + 2.1);
+  g.gain.exponentialRampToValueAtTime(f < 60 ? 0.85 : 0.55, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+  /* fundamental + harmonics, so small speakers still hear the low strings */
+  const parts = [[f,'triangle',1],[f*2,'sine',.4],[f*3,'sine',.2],[f*4,'sine',.1]];
+  for(const p of parts){
+    const o = a.createOscillator(), og = a.createGain();
+    o.type = p[1]; o.frequency.value = p[0]; og.gain.value = p[2];
+    o.connect(og); og.connect(g);
+    o.start(t); o.stop(t + 2.3);
+  }
+  g.connect(lp); lp.connect(comp);
 }
 const strings = document.querySelectorAll('.string');
 function hit(s){
