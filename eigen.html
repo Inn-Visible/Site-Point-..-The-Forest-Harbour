@@ -182,7 +182,7 @@ function frame(now){
     const ph=n*0.42 - t*1.4;
     const depth=Math.cos(ph);
     const center=210 + 24*Math.sin(ph);
-    const half=20 + 22*(0.5+0.5*depth);
+    const half=20 + 22*(0.5+0.5*depth)*1.5;
     const a=center-half, b=center+half;
     steps[n-1].setAttribute('x1',a); steps[n-1].setAttribute('x2',b);
     steps[n-1].setAttribute('y1',y); steps[n-1].setAttribute('y2',y);
