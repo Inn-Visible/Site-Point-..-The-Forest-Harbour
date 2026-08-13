@@ -26,6 +26,7 @@
   .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
   .manifesto{margin-top:12px;color:var(--dim);font-size:12.5px;letter-spacing:.06em}
   .spinebox{margin:36px auto 0}
+  #spine{max-width:100%;height:auto}
   .dock{margin:44px auto 0;border:1px solid var(--line);background:var(--panel);
     padding:26px 20px;max-width:700px}
   .fig{color:var(--dim);font-family:var(--serif);font-style:italic;font-size:13px;margin-bottom:16px}
@@ -80,7 +81,7 @@ function lockdoor(){
   <p class="manifesto">thirty-three pages bound along a spine. the staircase turns while you sleep.</p>
 
   <div class="spinebox">
-    <svg id="spine" width="260" height="430" viewBox="0 0 260 430"></svg>
+    <svg id="spine" width="420" height="430" viewBox="0 0 420 430"></svg>
     <div class="fig">fig. e1 — the eigen stack · 33 pages · turning</div>
   </div>
 
@@ -130,7 +131,7 @@ function lockdoor(){
 <script>
 const svg = document.getElementById('spine');
 const NS = 'http://www.w3.org/2000/svg';
-const cx=130, yTop=18, gap=12, N=33;
+const yTop=18, gap=12, N=33;
 function mk(x1,y1,x2,y2,stroke,w,op){
   const l=document.createElementNS(NS,'line');
   l.setAttribute('x1',x1); l.setAttribute('y1',y1);
@@ -140,42 +141,41 @@ function mk(x1,y1,x2,y2,stroke,w,op){
   svg.appendChild(l); return l;
 }
 
-/* the axis: one central green line */
-mk(cx, yTop-8, cx, yTop+N*gap+10, '#58a36a', 1, .5);
-
-/* 33 long static thin green layers */
-for(let n=1;n<=N;n++){
-  mk(cx-70, yTop+n*gap, cx+70, yTop+n*gap, '#58a36a', .8, .28);
-}
-
-/* three braided staircases: one bright white in front, two dim ghosts behind */
-const helices=[
-  {off:0,      col:'#d8dde3', w:1.6, mul:1,  lines:[]},
-  {off:2.094,  col:'#93a1b0', w:1,   mul:.38, lines:[]},
-  {off:-2.094, col:'#93a1b0', w:1,   mul:.38, lines:[]}
+/* three poles: center leads, flanks turn phase-shifted */
+const cols=[
+  {cx:70,  off:-2.094, lines:[]},
+  {cx:210, off:0,      lines:[]},
+  {cx:350, off:2.094,  lines:[]}
 ];
-for(const h of helices){
+for(const c of cols){
+  /* the axis */
+  mk(c.cx, yTop-8, c.cx, yTop+N*gap+10, '#58a36a', 1, .5);
+  /* 33 long static thin green layers */
   for(let n=1;n<=N;n++){
-    const l=mk(0,0,0,0,h.col,h.w,1);
+    mk(c.cx-55, yTop+n*gap, c.cx+55, yTop+n*gap, '#58a36a', .8, .28);
+  }
+  /* 33 white rotating steps */
+  for(let n=1;n<=N;n++){
+    const l=mk(0,0,0,0,'#d8dde3',1.6,1);
     l.setAttribute('stroke-linecap','round');
-    h.lines.push(l);
+    c.lines.push(l);
   }
 }
 
 const start=performance.now();
 function frame(now){
   const t=(now-start)/1000;
-  for(const h of helices){
+  for(const c of cols){
     for(let n=1;n<=N;n++){
-      const l=h.lines[n-1];
+      const l=c.lines[n-1];
       const y=yTop+n*gap;
-      const ph=n*0.42 - t*1.4 + h.off;
+      const ph=n*0.42 - t*1.4 + c.off;
       const depth=Math.cos(ph);
-      const center=cx + 24*Math.sin(ph);
+      const center=c.cx + 24*Math.sin(ph);
       const half=12 + 16*(0.5+0.5*depth);
       l.setAttribute('x1',center-half); l.setAttribute('x2',center+half);
       l.setAttribute('y1',y); l.setAttribute('y2',y);
-      l.setAttribute('opacity',((0.25+0.7*(0.5+0.5*depth))*h.mul).toFixed(2));
+      l.setAttribute('opacity',(0.25+0.7*(0.5+0.5*depth)).toFixed(2));
     }
   }
   requestAnimationFrame(frame);
