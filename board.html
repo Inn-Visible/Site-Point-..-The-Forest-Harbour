@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inn.Visible — the house book</title>
+<style>
+  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding:40px 16px}
+  main{max-width:640px;margin:0 auto;text-align:center}
+  h1{font-family:var(--serif);font-style:italic;font-size:22px}
+  .sub{color:var(--dim);font-size:11px;letter-spacing:.2em;margin-top:8px}
+  .tot{margin-top:18px;font-size:12px;color:var(--dim)}
+  .tot b{color:var(--gold)}
+  table{width:100%;border-collapse:collapse;margin-top:22px;font-size:12px}
+  th{color:#5c6875;font-weight:normal;font-size:10px;letter-spacing:.2em;padding:8px 6px;border-bottom:1px solid var(--line)}
+  td{padding:9px 6px;border-bottom:1px solid var(--line);color:var(--dim)}
+  td.n{color:var(--ink)}
+  td.s{color:var(--gold)}
+  .stamp{margin-top:14px;font-size:10px;color:#5c6875}
+  a{color:var(--dim);text-decoration:none;font-size:11px;letter-spacing:.15em}
+  a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+  <h1>the house book.</h1>
+  <div class="sub">· PATRONS OF THE HEARTH · EVERY ROW A BURNED KEY ·</div>
+  <div class="tot" id="tot">the book is opening ..</div>
+  <table><thead><tr><th></th><th>the hand that feeds</th><th>seed</th><th>first light</th></tr></thead>
+  <tbody id="rows"></tbody></table>
+  <div class="stamp" id="stamp"></div>
+  <div style="margin-top:26px"><a href="donations.html">↩ the hearth</a></div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
+  authDomain: "innvisible-hearth.firebaseapp.com",
+  databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
+  projectId: "innvisible-hearth",
+  storageBucket: "innvisible-hearth.firebasestorage.app",
+  messagingSenderId: "852474450672",
+  appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
+});
+const db = getDatabase(app);
+function render(rows, live){
+  const tb=document.getElementById('rows');
+  tb.innerHTML='';
+  rows.sort(function(a,b){return (b.seed||0)-(a.seed||0);});
+  rows.forEach(function(r,i){
+    const tr=document.createElement('tr');
+    const d=new Date(r.when||0);
+    tr.innerHTML='<td>'+(i+1)+'</td><td class="n">\u25c6 '+r.name+'</td><td class="s">'+(r.seed||0)+'</td><td>'+d.toLocaleDateString()+'</td>';
+    tb.appendChild(tr);
+  });
+  const totSeed=rows.reduce(function(s,r){return s+(r.seed||0);},0);
+  document.getElementById('tot').innerHTML='<b>'+rows.length+'</b> patron'+(rows.length===1?'':'s')+' · <b>'+totSeed+'</b> total seed · the fire keeps the count';
+  document.getElementById('stamp').textContent = live
+    ? 'witnessed live · '+new Date().toLocaleTimeString()
+    : 'cached · last witnessed '+new Date(parseInt(localStorage.getItem('hive_board_when')||'0',10)).toLocaleString();
+}
+try{
+  const snap = await get(ref(db,'keys'));
+  const val = snap.val()||{};
+  const rows=[];
+  Object.keys(val).forEach(function(k){
+    const r=val[k];
+    if(r && typeof r==='object' && r.used && r.name) rows.push({name:r.name,when:r.when,seed:r.seed||0});
+  });
+  localStorage.setItem('hive_board_cache',JSON.stringify(rows));
+  localStorage.setItem('hive_board_when',String(Date.now()));
+  render(rows,true);
+}catch(e){
+  try{ render(JSON.parse(localStorage.getItem('hive_board_cache')||'[]'),false); }catch(e2){
+    document.getElementById('tot').textContent='the book is closed (offline) — no cached witness yet.';
+  }
+}
+</script>
+</body>
+</html>
