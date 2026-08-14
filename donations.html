@@ -68,8 +68,8 @@
 </head>
 <body>
 
-<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js');});}</script>
-  
+<script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+
 <header>
   <div class="brand">THE OUTFLOW</div>
   <a class="back" href="index.html">the hive entrance ↩</a>
@@ -242,7 +242,6 @@ let flare=0, coin=null, busy=false, wind=0, windT=0, mx=0.5;
 const RINGS=[];
 let v=0.45, mode='fire', lastMode='';
 let gx=0, sacT=0, sacX=0, nextBlink=0, blinkUntil=0, lastPokeMint=0;
-const feeds=[];
 addEventListener('mousemove',e=>{ windT=(e.clientX/W-.5)*0.9; mx=e.clientX/W; });
 addEventListener('touchstart',e=>{ if(e.touches[0]){ mx=e.touches[0].clientX/W; } },{passive:true});
 addEventListener('touchmove',e=>{ if(e.touches[0]) mx=e.touches[0].clientX/W; },{passive:true});
@@ -448,7 +447,7 @@ requestAnimationFrame(tick);
 /* ---- ledger + witness book + patron keys ---- */
 let drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
 const HOUSE_BOOK=[ /* paid witnesses — the ferryman writes these by hand */ ];
-const KEYS=['firstlight']; /* rotate per commit · hand-delivered by the ferryman after payment */
+const KEYS=['firstlight']; /* local master word · offline fallback · rotate per commit */
 const flavor=[
   'the hearth has a tenant. it watches.',
   'a drop lands; the fire eats well.',
@@ -473,12 +472,18 @@ function render(){
   document.getElementById('loops').textContent=String(Math.floor(drops/100));
 }
 function renderPat(){
+  const nm=localStorage.getItem('hive_name');
   document.getElementById('pat').textContent =
-    localStorage.getItem('hive_patron') ? '\u25c6 patron of the hearth' : '';
+    localStorage.getItem('hive_patron') ? (nm ? '\u25c6 '+nm+' \u00b7 the hand that feeds' : '\u25c6 patron of the hearth') : '';
 }
 function onLand(kind){
   const s=document.getElementById('stat');
-  if(kind==='patron') s.textContent='>> FIRST LIGHT, PATRON — the fire knows your name. <<';
+  if(kind==='patron'){
+    const nm=localStorage.getItem('hive_name');
+    s.textContent= nm
+      ? '>> FIRST LIGHT, '+nm+' \u2014 the hand that feeds. the hearth grows by one flame. <<'
+      : '>> FIRST LIGHT, PATRON \u2014 the fire knows your face, if not your name. <<';
+  }
   else if(kind==='toss') s.textContent='the fire catches your coin. witnessed.';
   else if(drops%100===0) s.textContent='A LOOP CLOSES — the fire turns the ledger page.';
   else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a totem joins the row.';
@@ -504,32 +509,81 @@ function redeem(){
     return;
   }
   const k=(document.getElementById('key').value||'').trim().toLowerCase();
-  if(!KEYS.includes(k)){
-    document.getElementById('stat').textContent='the fire does not know that word.';
-    v=Math.max(-1,v-0.05);
-    return;
-  }
-  localStorage.setItem('hive_patron','1');
-  drops++;
-  localStorage.setItem('hive_drops',String(drops));
+  if(!k) return;
   const name=(document.getElementById('who').value||'').trim().replace(/[<>&·]/g,'').slice(0,24);
-  if(name){
-    const w=witnesses(); w.push('\u25c6 '+name);
-    localStorage.setItem('hive_witnesses',JSON.stringify(w));
+  const finish=function(ok,why){
+    if(!ok){
+      document.getElementById('stat').textContent = why==='used'
+        ? 'that word is already spent. keys burn once.'
+        : 'the fire does not know that word.';
+      v=Math.max(-1,v-0.05);
+      return;
+    }
+    localStorage.setItem('hive_patron','1');
+    if(name) localStorage.setItem('hive_name',name);
+    drops++;
+    localStorage.setItem('hive_drops',String(drops));
+    if(name){
+      const w=witnesses(); w.push('\u25c6 '+name);
+      localStorage.setItem('hive_witnesses',JSON.stringify(w));
+    }
+    mint('patron',name||null);
+    render(); renderPat(); renderWit();
+    document.getElementById('key').value='';
+    document.getElementById('who').value='';
+    document.getElementById('stat').textContent='>> the coin leaves your side of the glass .. <<';
+    try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+    setTimeout(function(){ coin={t:0,dur:78,spin:0,kind:'patron'}; try{ tink(); }catch(e){} },420);
+  };
+  if(window.cloudRedeem){
+    document.getElementById('stat').textContent='the fire asks the cloud ..';
+    window.cloudRedeem(k,name).then(function(r){
+      if(r==='ok') finish(true);
+      else if(r==='offline'){ KEYS.includes(k)?finish(true):finish(false,'unknown'); }
+      else finish(false,r);
+    });
+  } else {
+    KEYS.includes(k)?finish(true):finish(false,'unknown');
   }
-  mint('patron',name||null);
-  render(); renderPat(); renderWit();
-  document.getElementById('key').value='';
-  document.getElementById('who').value='';
-  document.getElementById('stat').textContent='>> the coin leaves your side of the glass .. <<';
-  try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
-  setTimeout(function(){ coin={t:0,dur:78,spin:0,kind:'patron'}; try{ tink(); }catch(e){} },420);
 }
 document.getElementById('toss').addEventListener('click',toss);
 document.getElementById('redeem').addEventListener('click',openKey);
 document.getElementById('key').addEventListener('keydown',function(e){ if(e.key==='Enter') redeem(); });
 document.getElementById('pp').addEventListener('click',paypalRite);
+if(localStorage.getItem('hive_name')){
+  document.getElementById('stat').textContent='the fire remembers you, '+localStorage.getItem('hive_name')+'.';
+}
 render(); renderPat(); renderWit(); renderChain();
+</script>
+
+<script type="module">
+/* the cloud gate: single-use keys live in the realtime database.
+   add keys in the firebase console under  keys/{word} = "open".
+   on redeem the row flips to {used:true, name, when} — the house book. */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
+  authDomain: "innvisible-hearth.firebaseapp.com",
+  databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
+  projectId: "innvisible-hearth",
+  storageBucket: "innvisible-hearth.firebasestorage.app",
+  messagingSenderId: "852474450672",
+  appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
+});
+const db = getDatabase(app);
+window.cloudRedeem = async function(key, name){
+  try{
+    const r = ref(db, 'keys/'+encodeURIComponent(key));
+    const snap = await get(r);
+    if(!snap.exists()) return 'unknown';
+    const val = snap.val();
+    const used = (val && typeof val==='object') ? !!val.used : (val==='used');
+    if(used) return 'used';
+    await set(r, { used:true, name:name||null, when:Date.now() });
+    return 'ok';
+  }catch(e){ return 'offline'; }
+};
 </script>
 
 </body>
