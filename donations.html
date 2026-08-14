@@ -80,10 +80,10 @@
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
     <button class="btn red" onclick="whoosh()">i dropped — feed the fire</button>
-    <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button>
+    <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button> <button class="btn mini" onclick="forgetNames()">forget names</button>
   </div>
 
-  <div class="wit"><input id="who" placeholder="name the hand that feeds (optional)" maxlength="24"></div>
+  <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="returnee? name the hand that feeds" maxlength="24"></div>
   <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
@@ -158,6 +158,10 @@ function toggleSnd(){ soundOn=!soundOn;
 function paypalRite(){
   bell();
   document.getElementById('stat').textContent='the door is open. return, and the fire will know.';
+}
+function forgetNames(){
+localStorage.removeItem('hive_witnesses');
+renderWit();
 }
 
 /* ---- the fire: sprite renderer, scaled to the room ---- */
