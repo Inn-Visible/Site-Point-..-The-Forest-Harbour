@@ -105,14 +105,12 @@
 
   <div class="wit" id="keybox" style="display:none"><input id="key" placeholder="the word the ferryman gave you" maxlength="24"></div>
   <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="name the hand that feeds (optional)" maxlength="24"></div>
+  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count · scroll down to the hearth · poke it, if you dare</div>
   <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
   <div class="honor">X years = X currency — the years you keep the flame are counted in the same ledger.<br>
   the house takes you at your word — know thyself; do no harm; hold the truth.</div>
-  
-  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count · scroll down to the hearth · poke it, if you dare</div>
-  
 </main>
 
 <canvas id="fire"></canvas>
@@ -579,7 +577,7 @@ render(); renderPat(); renderWit(); renderChain();
 <script type="module">
 /* the cloud gate: single-use keys live in the realtime database.
    add keys in the firebase console under  keys/{word} = "open".
-   on redeem the row flips to {used:true, name, when} — the house book. */
+   on redeem the row flips to {used:true, name, when, seed} — the house book. */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 const app = initializeApp({
@@ -600,9 +598,7 @@ window.cloudRedeem = async function(key, name){
     const val = snap.val();
     const used = (val && typeof val==='object') ? !!val.used : (val==='used');
     if(used) return 'used';
-
     await set(r, { used:true, name:name||null, when:Date.now(), seed: parseInt(localStorage.getItem('hive_chain_h')||'0',10) });
-    
     return 'ok';
   }catch(e){ return 'offline'; }
 };
