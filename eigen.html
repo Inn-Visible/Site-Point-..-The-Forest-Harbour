@@ -72,7 +72,10 @@ function lockdoor(){
 </script>
 
 <header>
-  <div class="brand">EIGEN DYNAMICS</div>
+  
+<div class="brand">EIGEN DYNAMICS<span id="pm" style="color:var(--gold)"></span></div>
+  <script>if(localStorage.getItem('hive_patron'))document.getElementById('pm').textContent=' ◆';</script>
+  
   <a class="back" href="core.html">core ↩</a>
 </header>
 
