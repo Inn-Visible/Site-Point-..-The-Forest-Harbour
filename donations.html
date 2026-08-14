@@ -14,14 +14,14 @@
   }
   *{box-sizing:border-box;margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
-  #fire{position:fixed;inset:0;z-index:0;pointer-events:none}
-  header,main,footer{position:relative;z-index:1}
+  #fire{display:block;width:100%;height:72vh;pointer-events:none}
+  header,main,footer{position:relative}
   header{display:flex;justify-content:space-between;align-items:center;
     padding:18px 44px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.7)}
   .brand{font-size:16px;letter-spacing:.35em;color:var(--red)}
   .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
   .back:hover{color:var(--ink)}
-  main{max-width:760px;margin:0 auto;padding:48px 20px 42vh;text-align:center;
+  main{max-width:760px;margin:0 auto;padding:48px 20px 28px;text-align:center;
     text-shadow:0 1px 8px rgba(0,0,0,.9)}
   .hook{font-family:var(--serif);font-style:italic;font-size:clamp(18px,2.6vw,26px)}
   .rest{margin-top:10px;color:#7d8a99;font-size:10.5px;letter-spacing:.22em}
@@ -53,15 +53,13 @@
   footer a{color:var(--blue);text-decoration:none}
   @media(max-width:640px){
     header{padding:14px 18px}
-    main{padding-bottom:36vh}
     .ladder{font-size:10px}
     .btn{padding:9px 14px;font-size:11px}
+    #fire{height:64vh}
   }
 </style>
 </head>
 <body>
-
-<canvas id="fire"></canvas>
 
 <header>
   <div class="brand">THE OUTFLOW</div>
@@ -75,22 +73,25 @@
   <div class="keep">keep the flame burning — rest a while, keeper. the fire remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">the flame hums. you are witnessed.</div>
+  <div class="status" id="stat">the hearth has a tenant. it blinks.</div>
 
   <div>
-    <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
-    <button class="btn red" onclick="whoosh()">i dropped — feed the fire</button>
-    <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button> <button class="btn mini" onclick="forgetNames()">forget names</button>
+    <a class="btn" id="pp" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
+    <button class="btn red" id="feed" onclick="whoosh()">i dropped — feed the fire</button>
+    <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button>
+    <button class="btn mini" onclick="forgetNames()">forget names</button>
   </div>
 
-  <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="returnee? name the hand that feeds" maxlength="24"></div>
+  <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="your own fire keeps this name (optional)" maxlength="24"></div>
   <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
   <div class="honor">X years = X currency — the years you keep the flame are counted in the same ledger.<br>
   the house takes you at your word — know thyself; do no harm; hold the truth.</div>
-  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count</div>
+  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count · scroll down to the hearth</div>
 </main>
+
+<canvas id="fire"></canvas>
 
 <footer>
   An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
@@ -99,7 +100,7 @@
 </footer>
 
 <script>
-/* ---- the sound: synthesized in-house, no library, no royalty ---- */
+/* ---- sound: synthesized in-house, can never break the rite ---- */
 let AC=null, NB=null, soundOn=true;
 function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
   if(AC.state==='suspended') AC.resume(); return AC; }
@@ -155,20 +156,23 @@ function bell(){
 }
 function toggleSnd(){ soundOn=!soundOn;
   document.getElementById('snd').textContent='sound: '+(soundOn?'on':'off'); }
+let lastRite=0;
 function paypalRite(){
-  bell();
-  document.getElementById('stat').textContent='the door is open. return, and the fire will know.';
+  const n=Date.now(); if(n-lastRite<900) return; lastRite=n;
+  try{ bell(); }catch(e){}
+  document.getElementById('witbox').style.display='block';
+  document.getElementById('stat').textContent='the door is open. leave your name in the paypal note — the ferryman writes it into the house book.';
 }
 function forgetNames(){
-localStorage.removeItem('hive_witnesses');
-renderWit();
+  localStorage.removeItem('hive_witnesses');
+  renderWit();
 }
 
-/* ---- the fire: sprite renderer, scaled to the room ---- */
+/* ---- the hearth room ---- */
 const cv=document.getElementById('fire');
 const g2=cv.getContext('2d');
 let W,H,SC=1;
-function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+function fit(){ W=cv.width=cv.clientWidth; H=cv.height=cv.clientHeight;
   SC=Math.max(0.55,Math.min(1,W/1000)); }
 addEventListener('resize',fit); fit();
 function sprite(col){
@@ -180,12 +184,15 @@ function sprite(col){
 }
 const SP=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprite('140,40,18')];
 const P=[],S=[];
-let flare=0, dropY=null, busy=false, wind=0, windT=0;
-addEventListener('mousemove',e=>{ windT=(e.clientX/W-.5)*0.9; });
+let flare=0, dropY=null, busy=false, wind=0, windT=0, mx=0.5;
+let nextBlink=0, blinkUntil=0;
+addEventListener('mousemove',e=>{ windT=(e.clientX/W-.5)*0.9; mx=e.clientX/W; });
+addEventListener('touchstart',e=>{ if(e.touches[0]){ mx=e.touches[0].clientX/W; flare=Math.max(flare,0.25);} },{passive:true});
+addEventListener('touchmove',e=>{ if(e.touches[0]) mx=e.touches[0].clientX/W; },{passive:true});
 function rnd(a,b){ return a+Math.random()*(b-a); }
 function spawn(n,burst){
   for(let i=0;i<n;i++){
-    P.push({ x:W/2+rnd(-1,1)*(burst?100:62)*SC, y:H-rnd(0,20),
+    P.push({ x:W/2+rnd(-1,1)*(burst?90:55)*SC, y:H-rnd(10,30),
       vx:rnd(-.5,.5)+(burst?rnd(-1.2,1.2):0),
       vy:-rnd(1.4,4.2)*(burst?1.4:1),
       r:rnd(14,30)*SC*(burst?1.15:1), life:0, max:rnd(60,110) });
@@ -193,20 +200,51 @@ function spawn(n,burst){
   if(P.length>600) P.splice(0,P.length-600);
 }
 function spark(){
-  S.push({ x:W/2+rnd(-70,70)*SC, y:H-rnd(0,40), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
+  S.push({ x:W/2+rnd(-60,60)*SC, y:H-rnd(20,60), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
 }
 function tick(now){
   g2.clearRect(0,0,W,H);
   wind+=(windT-wind)*0.04;
   const flick=0.8+0.2*Math.abs(Math.sin(now*0.0021))+flare*0.5;
+  const ow=170*SC, colW=34*SC, mantY=H-300*SC;
+
   g2.globalCompositeOperation='lighter';
   const R=Math.max(W,H);
   g2.globalAlpha=0.10*flick;
   g2.drawImage(SP[2], W/2-R*0.55, H-R*0.62, R*1.1, R*0.85);
+
+  g2.globalCompositeOperation='source-over';
+  g2.globalAlpha=1;
+  g2.fillStyle='#07090c';
+  g2.fillRect(W/2-ow-colW, mantY, colW, H-mantY);
+  g2.fillRect(W/2+ow, mantY, colW, H-mantY);
+  g2.fillRect(W/2-ow-colW-22*SC, mantY-16*SC, 2*ow+2*colW+44*SC, 18*SC);
+  g2.fillRect(W/2-ow-colW-22*SC, H-12*SC, 2*ow+2*colW+44*SC, 12*SC);
+  g2.lineWidth=26*SC; g2.strokeStyle='#07090c';
+  g2.beginPath(); g2.arc(W/2, mantY+4*SC, ow+13*SC, Math.PI, 0); g2.stroke();
+  g2.globalCompositeOperation='lighter';
+  g2.strokeStyle='rgba(255,140,50,'+Math.min(.6,.14+.28*flick).toFixed(3)+')';
+  g2.lineWidth=2; g2.shadowColor='rgba(255,120,40,.8)'; g2.shadowBlur=10*flick;
+  g2.beginPath(); g2.moveTo(W/2-ow, H); g2.lineTo(W/2-ow, mantY); g2.stroke();
+  g2.beginPath(); g2.moveTo(W/2+ow, H); g2.lineTo(W/2+ow, mantY); g2.stroke();
+  g2.beginPath(); g2.arc(W/2, mantY+4*SC, ow, Math.PI, 0); g2.stroke();
+  g2.shadowBlur=0;
+
+  g2.globalCompositeOperation='source-over';
+  g2.fillStyle='#05060a';
+  g2.save(); g2.translate(W/2,H-26*SC); g2.rotate(0.16);
+  g2.beginPath(); g2.roundRect ? g2.roundRect(-95*SC,-9*SC,190*SC,18*SC,9*SC) : g2.rect(-95*SC,-9*SC,190*SC,18*SC); g2.fill(); g2.restore();
+  g2.save(); g2.translate(W/2,H-20*SC); g2.rotate(-0.14);
+  g2.beginPath(); g2.roundRect ? g2.roundRect(-85*SC,-8*SC,170*SC,16*SC,8*SC) : g2.rect(-85*SC,-8*SC,170*SC,16*SC); g2.fill(); g2.restore();
+  g2.globalCompositeOperation='lighter';
+  g2.strokeStyle='rgba(255,120,40,'+(0.3*flick).toFixed(3)+')'; g2.lineWidth=1.5;
+  g2.beginPath(); g2.moveTo(W/2-60*SC,H-26*SC); g2.lineTo(W/2-10*SC,H-24*SC); g2.stroke();
+  g2.beginPath(); g2.moveTo(W/2+15*SC,H-20*SC); g2.lineTo(W/2+58*SC,H-22*SC); g2.stroke();
+
   g2.globalAlpha=0.5*flick;
-  g2.drawImage(SP[1], W/2-140*SC, H-150*SC, 280*SC, 240*SC);
+  g2.drawImage(SP[1], W/2-140*SC, H-160*SC, 280*SC, 240*SC);
   g2.globalAlpha=0.4*flick;
-  g2.drawImage(SP[0], W/2-80*SC, H-110*SC, 160*SC, 150*SC);
+  g2.drawImage(SP[0], W/2-80*SC, H-120*SC, 160*SC, 150*SC);
   flare*=0.965;
   spawn(10+Math.round(flare*12),false);
   if(Math.random()<0.3+flare*0.4) spark();
@@ -229,14 +267,45 @@ function tick(now){
     g2.fillStyle='rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
     g2.beginPath(); g2.arc(s.x,s.y,1.4,0,7); g2.fill();
   }
+
+  /* the tenant */
+  if(now>nextBlink){ blinkUntil=now+150; nextBlink=now+3200+Math.random()*5200; }
+  const blink = now<blinkUntil ? 0.12 : 1;
+  const wide = 1 + flare*0.5;
+  const wander = Math.sin(now*0.00045)*0.5 + Math.sin(now*0.00113+2)*0.5;
+  const lookX = ((mx-0.5)*26 + wander*10)*SC + wind*6;
+  const eyeY = H-95*SC + Math.sin(now*0.003)*2.5*SC;
+  for(const s of [-1,1]){
+    const ex = W/2 + s*26*SC + lookX;
+    g2.globalCompositeOperation='lighter';
+    g2.globalAlpha=0.9;
+    g2.save(); g2.translate(ex,eyeY); g2.scale(wide,wide*blink);
+    g2.drawImage(SP[0],-8*SC,-8*SC,16*SC,16*SC);
+    g2.restore();
+    g2.globalAlpha=1;
+    if(blink===1){
+      g2.globalCompositeOperation='source-over';
+      g2.fillStyle='rgba(25,12,6,.8)';
+      g2.beginPath(); g2.arc(ex+lookX*0.35, eyeY, 2.4*SC, 0, 7); g2.fill();
+    }
+  }
+  if(flare>0.35){
+    g2.globalCompositeOperation='source-over';
+    g2.fillStyle='rgba(25,12,6,'+(0.5*flare).toFixed(3)+')';
+    g2.beginPath();
+    g2.ellipse(W/2+lookX, H-58*SC, 9*SC*flare, 12*SC*flare, 0, 0, 7);
+    g2.fill();
+  }
+
+  /* the offering drop, slow enough to witness */
   if(dropY!==null){
-    dropY+=14;
+    dropY+=10;
     g2.globalCompositeOperation='source-over';
     g2.save();
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
     g2.beginPath(); g2.arc(W/2,dropY,3.5,0,7); g2.fill();
     g2.restore();
-    if(dropY>=H-24){ dropY=null; flare=1.6; spawn(140,true); roar(); onLand(); }
+    if(dropY>=H-40*SC){ dropY=null; flare=1.6; spawn(140,true); try{ roar(); }catch(e){} onLand(); }
   }
   requestAnimationFrame(tick);
 }
@@ -244,11 +313,12 @@ requestAnimationFrame(tick);
 
 /* ---- ledger + witness book ---- */
 let drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
+const HOUSE_BOOK=[ /* paid witnesses — the ferryman writes these by hand */ ];
 const flavor=[
-  'the flame hums. you are witnessed.',
+  'the hearth has a tenant. it blinks.',
   'a drop lands; the fire eats well.',
   'rest. the fire keeps watch tonight.',
-  'sediment, not jackpot.',
+  'the fire looks back. that is the whole trick.',
   'warm enough to plan by.',
   'other fires burn unattended in the dark. not this one.'
 ];
@@ -256,9 +326,9 @@ const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
 function witnesses(){ try{ return JSON.parse(localStorage.getItem('hive_witnesses')||'[]'); }catch(e){ return []; } }
 function renderWit(){
-  const w=witnesses();
+  const w=HOUSE_BOOK.concat(witnesses());
   document.getElementById('witline').textContent =
-    w.length ? 'the fire remembers: '+w.slice(-5).join(' · ') : '';
+    w.length ? 'the fire remembers: '+w.slice(-6).join(' · ') : '';
 }
 function render(){
   const tot=Math.floor(drops/10), shown=tot%10;
@@ -279,15 +349,21 @@ function whoosh(){
   busy=true;
   drops++;
   localStorage.setItem('hive_drops',String(drops));
-  const name=(document.getElementById('who').value||'').trim();
+  const name=(document.getElementById('who').value||'').trim().replace(/[<>&·]/g,'').slice(0,24);
   if(name){
     const w=witnesses(); w.push(name);
     localStorage.setItem('hive_witnesses',JSON.stringify(w));
     document.getElementById('who').value='';
     renderWit();
   }
-  dropY=-10;
+  render();
+  document.getElementById('stat').textContent='>> the drop falls .. <<';
+  try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+  setTimeout(function(){ dropY=-10; },420);
 }
+/* JS-wired, in case the sandbox strips inline handlers */
+document.getElementById('feed').addEventListener('click',whoosh);
+document.getElementById('pp').addEventListener('click',paypalRite);
 render(); renderWit();
 </script>
 
