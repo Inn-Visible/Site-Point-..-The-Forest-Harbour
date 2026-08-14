@@ -79,14 +79,15 @@
 
   <div class="keep">keep the flame burning — rest a while, keeper. the fire remembers you.</div>
   <div class="totems" id="totems"></div>
-  <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
+  <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed · <b id="pat" style="color:var(--gold)"></b></div>
   <div class="valence">water <div class="vbar"><i id="vmark"></i></div> fire · element: <span id="vel">FIRE</span></div>
   <div class="status" id="chain"></div>
   <div class="status" id="stat">the hearth has a tenant. it watches.</div>
 
   <div>
     <a class="btn" id="pp" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
-    <button class="btn red" id="feed" onclick="whoosh()">i dropped — feed the fire</button>
+    <button class="btn red" id="toss" onclick="toss()">toss a coin — free witness</button>
+    <button class="btn" id="redeem" onclick="openKey()">i paid — redeem my key</button>
     <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button>
     <button class="btn mini" onclick="forgetNames()">forget names</button>
   </div>
@@ -99,7 +100,8 @@
     <div class="status">honor-system recurring: set it monthly in paypal, or re-up whenever. the fire doesn't audit.</div>
   </div>
 
-  <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="your own fire keeps this name (optional)" maxlength="24"></div>
+  <div class="wit" id="keybox" style="display:none"><input id="key" placeholder="the word the ferryman gave you" maxlength="24"></div>
+  <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="name the hand that feeds (optional)" maxlength="24"></div>
   <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
@@ -160,14 +162,27 @@ function bell(){
     o.start(t); o.stop(t+1.5);
   });
 }
+function tink(){
+  if(!soundOn) return;
+  const ctx=ac(); const t=ctx.currentTime;
+  const o=ctx.createOscillator(); o.type='triangle';
+  o.frequency.setValueAtTime(2600,t);
+  o.frequency.exponentialRampToValueAtTime(1800,t+0.08);
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.18,t+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.14);
+}
 function toggleSnd(){ soundOn=!soundOn;
   document.getElementById('snd').textContent='sound: '+(soundOn?'on':'off'); }
 let lastRite=0;
 function paypalRite(){
   const n=Date.now(); if(n-lastRite<900) return; lastRite=n;
   try{ bell(); }catch(e){}
+  document.getElementById('keybox').style.display='block';
   document.getElementById('witbox').style.display='block';
-  document.getElementById('stat').textContent='the door is open. leave your name in the paypal note — the ferryman writes it into the house book.';
+  document.getElementById('stat').textContent='the door is open. pay, leave your name in the note — the ferryman sends your key by the hearth.';
 }
 function forgetNames(){
   localStorage.removeItem('hive_witnesses');
@@ -221,7 +236,8 @@ const SPF=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprit
 const SPS=[sprite('150,156,164'),sprite('96,100,108')];
 const SPW=[sprite('140,200,255'),sprite('60,120,210')];
 const P=[],S=[];
-let flare=0, dropY=null, busy=false, wind=0, windT=0, mx=0.5;
+let flare=0, coin=null, busy=false, wind=0, windT=0, mx=0.5;
+const RINGS=[];
 let v=0.45, mode='fire', lastMode='';
 let gx=0, sacT=0, sacX=0, nextBlink=0, blinkUntil=0, lastPokeMint=0;
 const feeds=[];
@@ -271,13 +287,11 @@ function tick(now){
   const flick=0.8+0.2*Math.abs(Math.sin(now*0.0021))+flare*0.5;
   const ow=170*SC, colW=34*SC, mantY=H-300*SC;
 
-  /* room glow, element-tinted */
   g2.globalCompositeOperation='lighter';
   const R=Math.max(W,H);
   g2.globalAlpha=(mode==='fire'?0.10:mode==='smoke'?0.05:0.06)*flick;
   g2.drawImage(mode==='fire'?SPF[2]:mode==='smoke'?SPS[1]:SPW[1], W/2-R*0.55, H-R*0.62, R*1.1, R*0.85);
 
-  /* fireplace silhouette */
   g2.globalCompositeOperation='source-over';
   g2.globalAlpha=1;
   g2.fillStyle='#07090c';
@@ -297,7 +311,6 @@ function tick(now){
   g2.beginPath(); g2.arc(W/2, mantY+4*SC, ow, Math.PI, 0); g2.stroke();
   g2.shadowBlur=0;
 
-  /* logs or pool */
   g2.globalCompositeOperation='source-over';
   if(mode==='water'){
     g2.fillStyle='rgba(60,120,210,0.30)';
@@ -313,7 +326,6 @@ function tick(now){
     g2.beginPath(); g2.moveTo(W/2-60*SC,H-26*SC); g2.lineTo(W/2-10*SC,H-24*SC); g2.stroke();
   }
 
-  /* core */
   g2.globalCompositeOperation='lighter';
   if(mode==='fire'){
     g2.globalAlpha=0.5*flick; g2.drawImage(SPF[1],W/2-140*SC,H-160*SC,280*SC,240*SC);
@@ -379,23 +391,62 @@ function tick(now){
   }
   g2.shadowBlur=0;
 
-  /* the drop */
-  if(dropY!==null){
-    dropY+=10;
+  /* melt rings */
+  for(let i=RINGS.length-1;i>=0;i--){
+    const r=RINGS[i]; r.t++;
+    const t=r.t/r.max;
+    if(t>=1){ RINGS.splice(i,1); continue; }
+    g2.globalCompositeOperation='lighter';
+    g2.strokeStyle='rgba(241,208,120,'+((1-t)*0.7).toFixed(3)+')';
+    g2.lineWidth=2;
+    g2.beginPath(); g2.arc(r.x,r.y,r.r0+t*60*SC,0,7); g2.stroke();
+  }
+  /* the offering coin: tossed from your side of the glass */
+  if(coin){
+    coin.t++;
+    const k=coin.t/coin.dur;
+    const y=-30 + (H-40*SC+30)*k;
+    const s=2.4-1.5*Math.min(1,k);
+    coin.spin+=0.32;
+    const sq=Math.cos(coin.spin);
+    const r=10*SC*s;
+    const x=W/2+Math.sin(k*3.1)*8*SC;
     g2.globalCompositeOperation='source-over';
-    g2.save();
-    g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
-    g2.beginPath(); g2.arc(W/2,dropY,3.5,0,7); g2.fill();
+    g2.save(); g2.translate(x,y);
+    if(Math.abs(sq)>0.18){
+      g2.scale(1,Math.abs(sq));
+      g2.fillStyle= sq>0 ? '#f1d078' : '#c9a23f';
+      g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=12;
+      g2.beginPath(); g2.arc(0,0,r,0,7); g2.fill();
+      g2.shadowBlur=0;
+      if(sq>0){
+        g2.strokeStyle='rgba(110,65,10,.9)'; g2.lineWidth=1.4*SC*s; g2.lineJoin='round';
+        g2.beginPath(); g2.moveTo(-r*0.45,-r*0.5); g2.lineTo(r*0.45,-r*0.5); g2.lineTo(0,-r*0.05); g2.closePath(); g2.stroke();
+        g2.beginPath(); g2.moveTo(-r*0.45,r*0.5); g2.lineTo(r*0.45,r*0.5); g2.lineTo(0,r*0.05); g2.closePath(); g2.stroke();
+        g2.fillStyle='rgba(110,65,10,.9)';
+        g2.beginPath(); g2.arc(0,0,r*0.12,0,7); g2.fill();
+      }
+    } else {
+      g2.strokeStyle='#c9a23f'; g2.lineWidth=2*SC*s;
+      g2.beginPath(); g2.moveTo(0,-r); g2.lineTo(0,r); g2.stroke();
+    }
     g2.restore();
-    if(dropY>=H-40*SC){ dropY=null; flare=1.6; v=Math.min(1,v+0.18); spawn(140,true); try{ roar(); }catch(e){} onLand(); }
+    if(k>=1){
+      const ck=coin.kind; coin=null; flare=1.6; v=Math.min(1,v+0.18);
+      spawn(140,true);
+      RINGS.push({x:x,y:H-40*SC,r0:6*SC,t:0,max:40});
+      try{ roar(); }catch(e){}
+      onLand(ck);
+    }
   }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
 
-/* ---- ledger + witness book ---- */
+/* ---- ledger + witness book + patron keys ---- */
 let drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
 const HOUSE_BOOK=[ /* paid witnesses — the ferryman writes these by hand */ ];
+const KEYS=['firstlight']; /* rotate per commit · hand-delivered by the ferryman after payment */
 const flavor=[
   'the hearth has a tenant. it watches.',
   'a drop lands; the fire eats well.',
@@ -419,37 +470,64 @@ function render(){
   document.getElementById('tot').textContent=String(tot);
   document.getElementById('loops').textContent=String(Math.floor(drops/100));
 }
-function onLand(){
+function renderPat(){
+  document.getElementById('pat').textContent =
+    localStorage.getItem('hive_patron') ? '\u25c6 patron of the hearth' : '';
+}
+function onLand(kind){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the fire turns the ledger page.';
+  if(kind==='patron') s.textContent='>> FIRST LIGHT, PATRON — the fire knows your name. <<';
+  else if(kind==='toss') s.textContent='the fire catches your coin. witnessed.';
+  else if(drops%100===0) s.textContent='A LOOP CLOSES — the fire turns the ledger page.';
   else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a totem joins the row.';
-  else s.textContent='>> FULL BURN <<  ·  '+flavor[drops%flavor.length];
+  else s.textContent='>> FULL BURN << · '+flavor[drops%flavor.length];
   render(); busy=false;
 }
-function whoosh(){
+function openKey(){
+  document.getElementById('keybox').style.display='block';
+  document.getElementById('witbox').style.display='block';
+  document.getElementById('key').focus();
+}
+function toss(){
   if(busy) return;
   busy=true;
-  const n=Date.now(); feeds.push(n);
-  while(feeds.length&&n-feeds[0]>2000) feeds.shift();
-  if(feeds.length>=4){ v=Math.max(-1,v-0.08); }
+  mint('witness');
+  document.getElementById('stat').textContent='>> a coin leaves your side of the glass .. <<';
+  try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+  setTimeout(function(){ coin={t:0,dur:78,spin:0,kind:'toss'}; try{ tink(); }catch(e){} },420);
+}
+function redeem(){
+  if(localStorage.getItem('hive_patron')){
+    document.getElementById('stat').textContent='you are already patron — the fire remembers.';
+    return;
+  }
+  const k=(document.getElementById('key').value||'').trim().toLowerCase();
+  if(!KEYS.includes(k)){
+    document.getElementById('stat').textContent='the fire does not know that word.';
+    v=Math.max(-1,v-0.05);
+    return;
+  }
+  localStorage.setItem('hive_patron','1');
   drops++;
   localStorage.setItem('hive_drops',String(drops));
   const name=(document.getElementById('who').value||'').trim().replace(/[<>&·]/g,'').slice(0,24);
   if(name){
-    const w=witnesses(); w.push(name);
+    const w=witnesses(); w.push('\u25c6 '+name);
     localStorage.setItem('hive_witnesses',JSON.stringify(w));
-    document.getElementById('who').value='';
-    renderWit();
   }
-  mint('drop',name||null);
-  render();
-  document.getElementById('stat').textContent='>> the drop falls .. <<';
+  mint('patron',name||null);
+  render(); renderPat(); renderWit();
+  document.getElementById('key').value='';
+  document.getElementById('who').value='';
+  document.getElementById('stat').textContent='>> the coin leaves your side of the glass .. <<';
   try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
-  setTimeout(function(){ dropY=-10; },420);
+  setTimeout(function(){ coin={t:0,dur:78,spin:0,kind:'patron'}; try{ tink(); }catch(e){} },420);
 }
-document.getElementById('feed').addEventListener('click',whoosh);
+document.getElementById('toss').addEventListener('click',toss);
+document.getElementById('redeem').addEventListener('click',openKey);
+document.getElementById('key').addEventListener('keydown',function(e){ if(e.key==='Enter') redeem(); });
 document.getElementById('pp').addEventListener('click',paypalRite);
-render(); renderWit(); renderChain();
+render(); renderPat(); renderWit(); renderChain();
 </script>
 
 </body>
