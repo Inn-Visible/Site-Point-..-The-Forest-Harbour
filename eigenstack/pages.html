@@ -280,5 +280,52 @@ if(location.hash){
 }
 </script>
 
+<style>
+#pace{position:fixed;left:18px;bottom:18px;z-index:2;pointer-events:none;opacity:.85}
+#pace .lbl{font-size:9px;letter-spacing:.2em;color:#58a36a;text-align:center;margin-top:2px}
+</style>
+<div id="pace">
+<svg width="110" height="110" viewBox="0 0 110 110">
+  <circle cx="55" cy="55" r="50" fill="rgba(10,13,18,.8)" stroke="#223041"/>
+  <g id="ticks" stroke="#58a36a" stroke-width="1"></g>
+  <line id="needle" x1="55" y1="55" x2="55" y2="14" stroke="#58a36a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="55" cy="55" r="3" fill="#58a36a"/>
+  <text id="pv" x="55" y="88" text-anchor="middle" fill="#93a1b0" font-size="9" font-family="monospace">0.0 pp/m</text>
+</svg>
+<div class="lbl" id="pl">PACE COMPASS · RESTING</div>
+</div>
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var tg=document.getElementById('ticks');
+  for(var k=0;k<12;k++){
+    var a=k*Math.PI/6, l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',55+Math.cos(a)*44); l.setAttribute('y1',55+Math.sin(a)*44);
+    l.setAttribute('x2',55+Math.cos(a)*50); l.setAttribute('y2',55+Math.sin(a)*50);
+    l.setAttribute('opacity',k%3===0?'.8':'.35');
+    tg.appendChild(l);
+  }
+  var nd=document.getElementById('needle'), pv=document.getElementById('pv'), pl=document.getElementById('pl');
+  var lastY=scrollY, lastT=performance.now(), sv=0;
+  addEventListener('scroll',function(){
+    var now=performance.now(), dt=Math.max(16,now-lastT);
+    sv += ((scrollY-lastY)/dt*1000 - sv)*0.25;
+    lastY=scrollY; lastT=now;
+  },{passive:true});
+  function frame(){
+    sv*=0.94;
+    var ang=Math.max(-1,Math.min(1,sv/4000))*120;
+    nd.setAttribute('transform','rotate('+ang.toFixed(1)+' 55 55)');
+    var dh=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+    var ppm=Math.abs(sv)/dh*33*60;
+    pv.textContent=(ppm<10?ppm.toFixed(1):Math.round(ppm))+' pp/m';
+    var s=Math.abs(sv);
+    pl.textContent='PACE COMPASS · '+(s<40?'RESTING':s<600?'READING':s<1600?'SKIMMING':'FLIPPING');
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
 </body>
+  
 </html>
