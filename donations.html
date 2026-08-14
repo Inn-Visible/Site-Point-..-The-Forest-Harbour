@@ -57,12 +57,12 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· EX UMBRA, LUMEN · THE VOID IS THE ROOM · THE FIRE IS THE DOOR ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · A REST ZONE · THE FLAME RESONATES WITH EVERY WITNESS ·</p>
 
   <div class="keep">keep the flame burning — rest a while, keeper. the fire remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">the void listens. the flame answers.</div>
+  <div class="status" id="stat">the flame hums. you are witnessed.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
@@ -82,68 +82,77 @@
 </footer>
 
 <script>
-/* the void owns the viewport; one enormous fire owns the void.
-   cursor = wind. drop = whoosh. nothing else in the room. */
+/* a resting bonfire, not a death screen: dense warm body, room lit by fire.
+   sprite renderer = hundreds of stacked glows = solid flame. cursor = gentle wind. */
 const cv = document.getElementById('fire');
 const g2 = cv.getContext('2d');
 let W, H;
 function fit(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
 addEventListener('resize', fit); fit();
 
+function sprite(col){
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const x=c.getContext('2d');
+  const g=x.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0,'rgba('+col+',1)');
+  g.addColorStop(1,'rgba('+col+',0)');
+  x.fillStyle=g; x.fillRect(0,0,64,64);
+  return c;
+}
+const SP=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprite('140,40,18')];
+
 const P = [], S = [];
 let flare = 0, dropY = null, busy = false;
 let wind = 0, windT = 0;
-addEventListener('mousemove', e => { windT = (e.clientX / W - .5) * 1.6; });
+addEventListener('mousemove', e => { windT = (e.clientX / W - .5) * 0.9; });
 function rnd(a,b){ return a + Math.random()*(b-a); }
 function spawn(n, burst){
   for(let i=0;i<n;i++){
-    P.push({ x:W/2 + rnd(-1,1)*(burst?95:50), y:H - rnd(0,16),
-      vx:rnd(-.6,.6) + (burst?rnd(-1.2,1.2):0),
-      vy:-rnd(2,5.5)*(burst?1.45:1),
-      r:rnd(10,26)*(burst?1.2:1), life:0, max:rnd(70,130) });
+    P.push({ x:W/2 + rnd(-1,1)*(burst?100:62), y:H - rnd(0,20),
+      vx:rnd(-.5,.5) + (burst?rnd(-1.2,1.2):0),
+      vy:-rnd(1.4,4.2)*(burst?1.4:1),
+      r:rnd(14,30)*(burst?1.15:1), life:0, max:rnd(60,110) });
   }
-  if(P.length>380) P.splice(0, P.length-380);
+  if(P.length>600) P.splice(0, P.length-600);
 }
 function spark(){
-  S.push({ x:W/2+rnd(-60,60), y:H-rnd(0,30), vx:rnd(-.6,.6), vy:-rnd(3,6), life:0, max:rnd(50,110) });
+  S.push({ x:W/2+rnd(-70,70), y:H-rnd(0,40), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
 }
-function tick(){
+function tick(now){
   g2.clearRect(0,0,W,H);
   wind += (windT - wind)*0.04;
-
-  /* coals at the base */
+  const flick = 0.8 + 0.2*Math.abs(Math.sin(now*0.0021)) + flare*0.5;
   g2.globalCompositeOperation='lighter';
-  for(let k=0;k<3;k++){
-    const cx = W/2 + (k-1)*46, rr = 60 + 14*Math.sin(Date.now()*0.002 + k*2);
-    const cg = g2.createRadialGradient(cx,H,0,cx,H,rr);
-    cg.addColorStop(0,'rgba(255,150,50,.20)');
-    cg.addColorStop(1,'rgba(255,150,50,0)');
-    g2.fillStyle=cg; g2.beginPath(); g2.arc(cx,H,rr,0,7); g2.fill();
-  }
+
+  /* the room is lit by fire */
+  g2.globalAlpha = 0.10*flick;
+  g2.drawImage(SP[2], W/2-Math.max(W,H)*0.55, H-Math.max(W,H)*0.62, Math.max(W,H)*1.1, Math.max(W,H)*0.85);
+  /* permanent luminous core */
+  g2.globalAlpha = 0.5*flick;
+  g2.drawImage(SP[1], W/2-140, H-150, 280, 240);
+  g2.globalAlpha = 0.4*flick;
+  g2.drawImage(SP[0], W/2-80, H-110, 160, 150);
 
   /* feed */
   flare *= 0.965;
-  spawn(4 + Math.round(flare*10), false);
-  if(Math.random() < .25 + flare*.4) spark();
+  spawn(10 + Math.round(flare*12), false);
+  if(Math.random() < .3 + flare*.4) spark();
 
-  /* the fire column */
+  /* the flame body */
   for(let i=P.length-1;i>=0;i--){
     const p=P[i]; p.life++;
     const t=p.life/p.max;
-    p.x += p.vx + wind*(1-t)*2.2 + Math.sin(p.life*0.07 + p.y*0.015)*0.6;
-    p.y += p.vy; p.vy *= 0.998; p.r *= 0.972;
-    if(t>=1 || p.r<0.8){ P.splice(i,1); continue; }
-    const col = t<0.15?'255,250,235' : t<0.4?'255,196,80' : t<0.68?'226,110,40' : t<0.86?'150,40,20' : '70,110,200';
-    const a=(1-t)*0.55;
-    const gr=g2.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
-    gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
-    gr.addColorStop(1,'rgba('+col+',0)');
-    g2.fillStyle=gr;
-    g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+    p.x += p.vx + wind*(1-t)*2 + Math.sin(p.life*0.07 + p.y*0.015)*0.55;
+    p.y += p.vy; p.vy *= 0.998; p.r *= 0.975;
+    if(t>=1 || p.r<1){ P.splice(i,1); continue; }
+    const idx = t<0.3?0 : t<0.55?1 : t<0.8?2 : 3;
+    g2.globalAlpha = (1-t)*0.7;
+    g2.drawImage(SP[idx], p.x-p.r, p.y-p.r, p.r*2, p.r*2);
   }
+  g2.globalAlpha = 1;
   for(let i=S.length-1;i>=0;i--){
     const s=S[i]; s.life++;
-    s.x += s.vx + wind*1.5; s.y += s.vy;
+    s.x += s.vx + wind*1.2; s.y += s.vy;
     const t=s.life/s.max;
     if(t>=1){ S.splice(i,1); continue; }
     g2.fillStyle='rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
@@ -158,8 +167,8 @@ function tick(){
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
     g2.beginPath(); g2.arc(W/2, dropY, 3.5, 0, 7); g2.fill();
     g2.restore();
-    if(dropY >= H-20){
-      dropY=null; flare=1.5; spawn(90,true); onLand();
+    if(dropY >= H-24){
+      dropY=null; flare=1.6; spawn(140,true); onLand();
     }
   }
   requestAnimationFrame(tick);
@@ -169,11 +178,11 @@ requestAnimationFrame(tick);
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
 const flavor = [
-  'the void listens. the flame answers.',
-  'a drop lands; the column roars.',
-  'the fire leans toward the hand that feeds it.',
+  'the flame hums. you are witnessed.',
+  'a drop lands; the fire eats well.',
+  'rest. the fire keeps watch tonight.',
   'sediment, not jackpot.',
-  'no brazier. no cage. just the burn.',
+  'warm enough to plan by.',
   'other fires burn unattended in the dark. not this one.'
 ];
 const box=document.getElementById('totems'); const pips=[];
@@ -187,7 +196,7 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the void turns the ledger page.';
+  if(drops%100===0) s.textContent='A LOOP CLOSES — the fire turns the ledger page.';
   else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a totem joins the row.';
   else s.textContent='>> FULL BURN <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
