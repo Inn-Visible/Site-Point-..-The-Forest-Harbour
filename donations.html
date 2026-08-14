@@ -3,35 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inn.Visible — outflow schematic</title>
+<title>Inn.Visible — the outflow</title>
 <style>
   :root{
     --bg:#030407; --line:#223041;
     --ink:#e8e4d8; --dim:#93a1b0;
-    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a; --cyan:#7fd6e8;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
     --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
     --serif:Georgia,"Times New Roman",serif;
   }
   *{box-sizing:border-box;margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
-  #engine{position:fixed;inset:0;z-index:0;pointer-events:none}
+  #fire{position:fixed;inset:0;z-index:0;pointer-events:none}
   header,main,footer{position:relative;z-index:1}
   header{display:flex;justify-content:space-between;align-items:center;
-    padding:18px 44px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.72)}
+    padding:18px 44px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.7)}
   .brand{font-size:16px;letter-spacing:.35em;color:var(--red)}
   .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
   .back:hover{color:var(--ink)}
-  main{max-width:760px;margin:0 auto;padding:48px 24px 46vh;text-align:center}
-  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px)}
-  .rest{margin-top:10px;color:#5c6875;font-size:11px;letter-spacing:.24em}
+  main{max-width:760px;margin:0 auto;padding:52px 24px 44vh;text-align:center;
+    text-shadow:0 1px 8px rgba(0,0,0,.9)}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.6vw,26px)}
+  .rest{margin-top:10px;color:#7d8a99;font-size:11px;letter-spacing:.24em}
   .keep{margin-top:26px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
   .totems{margin-top:16px}
   .pip{display:inline-block;width:16px;height:7px;border:1px solid #5c6875;border-radius:2px;
     margin:0 3px;vertical-align:middle}
-  .pip.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(217,168,58,.7)}
+  .pip.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(217,168,58,.8)}
   .tally{margin-top:12px;font-size:12px;color:var(--dim)}
   .tally b{color:var(--ink)}
-  .btn{background:rgba(3,4,7,.6);border:1px solid var(--gold);color:var(--gold);
+  .btn{background:rgba(3,4,7,.65);border:1px solid var(--gold);color:var(--gold);
     font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
     cursor:pointer;margin-top:16px;text-decoration:none;display:inline-block}
   .btn:hover{background:var(--gold);color:#0a0d12}
@@ -39,15 +40,15 @@
   .btn.red:hover{background:var(--red);color:#0a0d12}
   .status{margin-top:14px;font-size:12px;color:var(--dim);min-height:16px}
   .ladder{margin-top:18px;color:var(--dim);font-size:12px;letter-spacing:.06em}
-  .honor{margin-top:16px;color:#5c6875;font-size:11px;font-style:italic;font-family:var(--serif);line-height:1.9}
+  .honor{margin-top:16px;color:#6b7684;font-size:11px;font-style:italic;font-family:var(--serif);line-height:1.9}
   footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
-    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1;background:rgba(3,4,7,.72)}
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1;background:rgba(3,4,7,.7)}
   footer a{color:var(--blue);text-decoration:none}
 </style>
 </head>
 <body>
 
-<canvas id="engine"></canvas>
+<canvas id="fire"></canvas>
 
 <header>
   <div class="brand">THE OUTFLOW</div>
@@ -56,16 +57,16 @@
 
 <main>
   <p class="hook">donations / founding — keep the flame burning.</p>
-  <p class="rest">· EX UMBRA, LUMEN · SHEET 1 OF 1 · THE DRAWING BURNS FOR WITNESSES ·</p>
+  <p class="rest">· EX UMBRA, LUMEN · THE VOID IS THE ROOM · THE FIRE IS THE DOOR ·</p>
 
-  <div class="keep">keep the flame burning — rest a while, keeper. the ink remembers you.</div>
+  <div class="keep">keep the flame burning — rest a while, keeper. the fire remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">schematic idle. telemetry nominal.</div>
+  <div class="status" id="stat">the void listens. the flame answers.</div>
 
   <div>
     <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
-    <button class="btn red" onclick="whoosh()">i dropped — feed the core</button>
+    <button class="btn red" onclick="whoosh()">i dropped — feed the fire</button>
   </div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
@@ -81,162 +82,84 @@
 </footer>
 
 <script>
-/* the drawing never changes. the telemetry reacts. */
-const cv = document.getElementById('engine');
+/* the void owns the viewport; one enormous fire owns the void.
+   cursor = wind. drop = whoosh. nothing else in the room. */
+const cv = document.getElementById('fire');
 const g2 = cv.getContext('2d');
 let W, H;
 function fit(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
 addEventListener('resize', fit); fit();
 
-let busy = false, dropY = null;
-let spoolAt = 0, burnAt = 0, burnUntil = 0;
-let flux = 0.08;
-const samples = [];
-function tick(now){
+const P = [], S = [];
+let flare = 0, dropY = null, busy = false;
+let wind = 0, windT = 0;
+addEventListener('mousemove', e => { windT = (e.clientX / W - .5) * 1.6; });
+function rnd(a,b){ return a + Math.random()*(b-a); }
+function spawn(n, burst){
+  for(let i=0;i<n;i++){
+    P.push({ x:W/2 + rnd(-1,1)*(burst?95:50), y:H - rnd(0,16),
+      vx:rnd(-.6,.6) + (burst?rnd(-1.2,1.2):0),
+      vy:-rnd(2,5.5)*(burst?1.45:1),
+      r:rnd(10,26)*(burst?1.2:1), life:0, max:rnd(70,130) });
+  }
+  if(P.length>380) P.splice(0, P.length-380);
+}
+function spark(){
+  S.push({ x:W/2+rnd(-60,60), y:H-rnd(0,30), vx:rnd(-.6,.6), vy:-rnd(3,6), life:0, max:rnd(50,110) });
+}
+function tick(){
   g2.clearRect(0,0,W,H);
-  const cx = W/2, cy = H-230;
-  const spool = now>spoolAt && now<burnAt;
-  const burn  = now>burnAt && now<burnUntil;
-  const decay = now>burnUntil && now<burnUntil+900;
-  const A = .14 + .04*Math.sin(now*.002);
-  const CY = c => 'rgba(127,214,232,'+Math.min(1,c).toFixed(3)+')';
-  const GD = c => 'rgba(217,168,58,'+Math.min(1,c).toFixed(3)+')';
-  g2.lineWidth = 1;
+  wind += (windT - wind)*0.04;
 
-  /* ---- the schematic: pristine, always ---- */
-  g2.strokeStyle = CY(A*.8);
-  g2.beginPath(); g2.arc(cx,cy,168,0,7); g2.stroke();
-  g2.save();
-  g2.setLineDash([4,10]); g2.lineDashOffset = -now*.02*(burn?5:1);
-  g2.strokeStyle = CY(A);
-  g2.beginPath(); g2.arc(cx,cy,158,0,7); g2.stroke();
-  g2.restore();
-  for(let k=0;k<60;k++){
-    const a=k*Math.PI/30, l=k%5===0?10:5;
-    g2.strokeStyle = CY(A*.9);
-    g2.beginPath();
-    g2.moveTo(cx+Math.cos(a)*168, cy+Math.sin(a)*168);
-    g2.lineTo(cx+Math.cos(a)*(168-l), cy+Math.sin(a)*(168-l));
-    g2.stroke();
-  }
-  g2.save();
-  g2.setLineDash([12,4,2,4]);
-  g2.strokeStyle = CY(A*.9);
-  g2.beginPath(); g2.moveTo(cx,cy-190); g2.lineTo(cx,cy+190); g2.stroke();
-  g2.restore();
-  for(const ry of [-96,-32,32,96]){
-    g2.strokeStyle = CY(A);
-    g2.beginPath(); g2.ellipse(cx,cy+ry,96,16,0,0,7); g2.stroke();
-    g2.strokeStyle = CY(A*.6);
-    g2.beginPath(); g2.ellipse(cx,cy+ry,88,13,0,0,7); g2.stroke();
-  }
-  g2.fillStyle = 'rgba(127,214,232,0.03)';
-  g2.beginPath();
-  g2.moveTo(cx-22,cy-70); g2.lineTo(cx-22,cy+70);
-  g2.arc(cx,cy+70,22,Math.PI,0,true);
-  g2.lineTo(cx+22,cy-70);
-  g2.arc(cx,cy-70,22,0,Math.PI,true);
-  g2.closePath(); g2.fill();
-  g2.strokeStyle = CY(A*1.2); g2.stroke();
-  g2.strokeStyle = CY(A*.7);
-  for(let y=cy-64;y<cy+66;y+=6){ g2.beginPath(); g2.moveTo(cx-22,y); g2.lineTo(cx+22,y); g2.stroke(); }
-  for(const s of [-1,1]){
-    const fy = cy + s*96;
-    g2.strokeStyle = CY(A*1.1);
-    g2.strokeRect(cx-60, fy-6, 120, 12);
-    for(let k=0;k<10;k++){ g2.beginPath(); g2.arc(cx-50+k*11.1, fy, 1.6, 0, 7); g2.stroke(); }
-    g2.save(); g2.setLineDash([6,4]);
-    g2.strokeStyle = CY(A*.7);
-    g2.beginPath(); g2.moveTo(cx-78,fy); g2.lineTo(cx+78,fy); g2.stroke();
-    g2.restore();
-  }
-  g2.strokeStyle = CY(A);
-  g2.beginPath();
-  g2.moveTo(cx-8,cy-102); g2.lineTo(cx-5,cy-124); g2.lineTo(cx+5,cy-124); g2.lineTo(cx+8,cy-102);
-  g2.stroke();
-  g2.strokeStyle = CY(A*.9);
-  g2.beginPath(); g2.moveTo(cx+40,cy-70); g2.lineTo(cx+118,cy-70); g2.stroke();
-  g2.beginPath(); g2.moveTo(cx+40,cy+70); g2.lineTo(cx+118,cy+70); g2.stroke();
-  g2.beginPath(); g2.moveTo(cx+112,cy-70); g2.lineTo(cx+112,cy+70); g2.stroke();
-  g2.fillStyle = CY(Math.min(.8,A*1.6));
-  g2.font = '9px monospace'; g2.textAlign='left';
-  g2.fillText('140u', cx+118, cy+3);
-  g2.beginPath(); g2.moveTo(cx-22,cy+120); g2.lineTo(cx+22,cy+120); g2.stroke();
-  g2.fillText('44u', cx+28, cy+123);
-  g2.strokeStyle = CY(A);
-  g2.beginPath(); g2.moveTo(cx+16,cy-40); g2.lineTo(cx+84,cy-128); g2.lineTo(cx+128,cy-128); g2.stroke();
-  g2.fillText('PLASMA COLUMN — GLYPH', cx+88, cy-132);
-  g2.beginPath(); g2.moveTo(cx+90,cy+32); g2.lineTo(cx+128,cy+56); g2.lineTo(cx+150,cy+56); g2.stroke();
-  g2.fillText('CONTAINMENT RING ×4', cx+112, cy+52);
-  g2.beginPath(); g2.moveTo(cx-60,cy-96); g2.lineTo(cx-110,cy-140); g2.lineTo(cx-150,cy-140); g2.stroke();
-  g2.textAlign='right';
-  g2.fillText('FLANGE, BOLTED ×10', cx-112, cy-144);
-  g2.beginPath(); g2.moveTo(cx-8,cy-120); g2.lineTo(cx-70,cy-160); g2.lineTo(cx-110,cy-160); g2.stroke();
-  g2.fillText('VENT, SEALED', cx-72, cy-164);
-  g2.textAlign='left';
-  const tx = W-238, ty = H-96;
-  g2.strokeStyle = CY(Math.min(.5,A*1.4));
-  g2.strokeRect(tx,ty,214,72);
-  g2.beginPath(); g2.moveTo(tx,ty+24); g2.lineTo(tx+214,ty+24); g2.stroke();
-  g2.beginPath(); g2.moveTo(tx,ty+48); g2.lineTo(tx+214,ty+48); g2.stroke();
-  g2.fillStyle = CY(Math.min(.7,A*2));
-  g2.fillText('INN.VISIBLE — OUTFLOW-07', tx+10, ty+15);
-  g2.fillText('THE RING · SCHEMATIC', tx+10, ty+39);
-  g2.fillText('SCALE 1:∞ · DRAWN: THE FERRYMAN', tx+10, ty+63);
-
-  /* ---- the stamp ---- */
-  if(burn){
-    const t=Math.min(1,(now-burnAt)/150);
-    const sc=1.6-0.6*t;
-    g2.save();
-    g2.translate(cx-150,cy-150); g2.rotate(-0.14); g2.scale(sc,sc);
-    g2.strokeStyle='rgba(200,69,44,'+(0.8*t).toFixed(3)+')';
-    g2.lineWidth=2; g2.strokeRect(-62,-17,124,34);
-    g2.fillStyle='rgba(200,69,44,'+(0.85*t).toFixed(3)+')';
-    g2.font='bold 14px monospace'; g2.textAlign='center';
-    g2.fillText('FULL BURN', 0, 5);
-    g2.restore();
-    g2.textAlign='left';
+  /* coals at the base */
+  g2.globalCompositeOperation='lighter';
+  for(let k=0;k<3;k++){
+    const cx = W/2 + (k-1)*46, rr = 60 + 14*Math.sin(Date.now()*0.002 + k*2);
+    const cg = g2.createRadialGradient(cx,H,0,cx,H,rr);
+    cg.addColorStop(0,'rgba(255,150,50,.20)');
+    cg.addColorStop(1,'rgba(255,150,50,0)');
+    g2.fillStyle=cg; g2.beginPath(); g2.arc(cx,H,rr,0,7); g2.fill();
   }
 
-  /* ---- telemetry panel: the part that reacts ---- */
-  const target = burn?1 : spool?.5 : decay?.3 : .08;
-  flux += (target-flux)*0.08;
-  samples.push(Math.max(0,Math.min(1,flux + (Math.random()-.5)*0.03)));
-  if(samples.length>72) samples.shift();
-  const px=W-268, py=64, pw=244, ph=132;
-  g2.strokeStyle=CY(.35); g2.strokeRect(px,py,pw,ph);
-  g2.beginPath(); g2.moveTo(px,py+22); g2.lineTo(px+pw,py+22); g2.stroke();
-  g2.fillStyle=CY(.7); g2.font='9px monospace';
-  g2.fillText('OUTFLOW-07 · TELEMETRY', px+10, py+14);
-  g2.fillText('STATUS: '+(burn?'FULL BURN':spool?'SPOOL':decay?'DECAY':'IDLE'), px+10, py+38);
-  g2.fillText('CORE FLUX', px+10, py+57);
-  for(let k=0;k<12;k++){
-    const on = k < Math.round(flux*12);
-    g2.strokeStyle=CY(.4); g2.strokeRect(px+72+k*11, py+49, 8, 8);
-    if(on){ g2.fillStyle = k>8 ? GD(.8) : CY(.6); g2.fillRect(px+73+k*11, py+50, 6, 6); }
-  }
-  g2.fillStyle=CY(.7);
-  g2.fillText('CONTAINMENT 100.0%', px+10, py+76);
-  g2.fillText('DROPS LOGGED '+drops, px+10, py+92);
-  g2.strokeStyle=CY(.6);
-  g2.beginPath();
-  samples.forEach((s,i)=>{
-    const x=px+10+i*(pw-20)/71, y=py+ph-10 - s*30;
-    i?g2.lineTo(x,y):g2.moveTo(x,y);
-  });
-  g2.stroke();
+  /* feed */
+  flare *= 0.965;
+  spawn(4 + Math.round(flare*10), false);
+  if(Math.random() < .25 + flare*.4) spark();
 
-  /* ---- the offering drop ---- */
+  /* the fire column */
+  for(let i=P.length-1;i>=0;i--){
+    const p=P[i]; p.life++;
+    const t=p.life/p.max;
+    p.x += p.vx + wind*(1-t)*2.2 + Math.sin(p.life*0.07 + p.y*0.015)*0.6;
+    p.y += p.vy; p.vy *= 0.998; p.r *= 0.972;
+    if(t>=1 || p.r<0.8){ P.splice(i,1); continue; }
+    const col = t<0.15?'255,250,235' : t<0.4?'255,196,80' : t<0.68?'226,110,40' : t<0.86?'150,40,20' : '70,110,200';
+    const a=(1-t)*0.55;
+    const gr=g2.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
+    gr.addColorStop(1,'rgba('+col+',0)');
+    g2.fillStyle=gr;
+    g2.beginPath(); g2.arc(p.x,p.y,p.r,0,7); g2.fill();
+  }
+  for(let i=S.length-1;i>=0;i--){
+    const s=S[i]; s.life++;
+    s.x += s.vx + wind*1.5; s.y += s.vy;
+    const t=s.life/s.max;
+    if(t>=1){ S.splice(i,1); continue; }
+    g2.fillStyle='rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
+    g2.beginPath(); g2.arc(s.x,s.y,1.4,0,7); g2.fill();
+  }
+
+  /* the offering drop */
   if(dropY !== null){
-    dropY += 11;
+    dropY += 14;
+    g2.globalCompositeOperation='source-over';
     g2.save();
-    g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=8;
-    g2.beginPath(); g2.arc(cx, dropY, 3.2, 0, 7); g2.fill();
+    g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
+    g2.beginPath(); g2.arc(W/2, dropY, 3.5, 0, 7); g2.fill();
     g2.restore();
-    if(dropY >= cy-70){
-      dropY=null; spoolAt=now; burnAt=now+420; burnUntil=now+420+1500;
-      onLand();
+    if(dropY >= H-20){
+      dropY=null; flare=1.5; spawn(90,true); onLand();
     }
   }
   requestAnimationFrame(tick);
@@ -245,6 +168,14 @@ requestAnimationFrame(tick);
 
 /* ledger */
 let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
+const flavor = [
+  'the void listens. the flame answers.',
+  'a drop lands; the column roars.',
+  'the fire leans toward the hand that feeds it.',
+  'sediment, not jackpot.',
+  'no brazier. no cage. just the burn.',
+  'other fires burn unattended in the dark. not this one.'
+];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
 function render(){
@@ -256,9 +187,9 @@ function render(){
 }
 function onLand(){
   const s=document.getElementById('stat');
-  if(drops%100===0) s.textContent='A LOOP CLOSES — the ledger turns. containment held.';
-  else if(drops%10===0) s.textContent='FIRST LIGHT — a lamp joins the row. containment held.';
-  else s.textContent='FULL BURN logged · flux peaked · containment held.';
+  if(drops%100===0) s.textContent='A LOOP CLOSES — the void turns the ledger page.';
+  else if(drops%10===0) s.textContent='FIRST LIGHT — full burn logged; a totem joins the row.';
+  else s.textContent='>> FULL BURN <<  ·  '+flavor[drops%flavor.length];
   render(); busy=false;
 }
 function whoosh(){
