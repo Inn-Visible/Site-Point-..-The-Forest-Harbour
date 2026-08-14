@@ -1,9 +1,13 @@
-const CACHE='outflow-v1';
+const CACHE='outflow-v2';
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['donations.html'])));
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['donations.html','board.html'])));
   self.skipWaiting();
 });
-self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(function(ks){
+    return Promise.all(ks.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));
+  }).then(function(){return clients.claim();}));
+});
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET') return;
   e.respondWith(
