@@ -136,15 +136,17 @@ const NS = 'http://www.w3.org/2000/svg';
 const yTop=18, gap=12, N=33;
 const figEl = document.getElementById('spinefig');
 const FIG0 = 'fig. e1 — the backnull codex · 33 pages · turning';
-const stacks = {
-  1:'aside · the bifurcation', 2:'system literacy, defined', 3:'clarity statement',
-  4:'practical part · OS', 5:'practical part · languages', 6:'hardware work',
-  7:'control systems', 8:'concrete learning stack', 9:'orange bottleneck', 10:'scratch note · EMC/RF',
-  26:'stack 6 · infrastructure', 27:'stack 6 · infrastructure',
-  28:'stack 7 · infrastructure cont\u2019d', 29:'stack 7 · fiction that teaches power',
-  30:'stack 8 · structural power', 31:'stack 8 · structural power',
-  32:'stack 8 · bonus / reorienting', 33:'stack 9 · money / psychology'
-};
+const stacks={1:'aside · the bifurcation',2:'system literacy, defined',3:'clarity statement',
+  4:'practical part · OS',5:'practical part · languages',6:'hardware work',
+  7:'control systems',8:'concrete learning stack',9:'orange bottleneck',10:'scratch note · EMC/RF',
+  12:'stack 1 · booklist redo',13:'stack 1 · the missing piece',14:'stack 1 · in full',
+  15:'stack 1 · tiers',16:'stack 1 · the 8-book core',17:'stack 2 · textbook list',
+  18:'stack 3 · all txtbks',19:'stack 3 · courses & vids',20:'stack 3 · tools',21:'stack 3 · learning path',
+  22:'stack 4 · core textbooks',23:'stack 4 · sensors',24:'stack 4 · engagement paths',
+  25:'stack 4 · stitch-together',26:'stack 5 · locksmithing',
+  27:'stack 6 · infrastructure',28:'stack 7 · infrastructure cont\u2019d',29:'stack 7 · fiction that teaches power',
+  30:'stack 8 · structural power',31:'stack 8 · structural power',
+  32:'stack 8 · bonus / reorienting',33:'stack 9 · money / psychology'};
 function whisper(n){
   return 'page ' + n + ' · ' + (stacks[n] ? stacks[n] : 'backnull · awaiting transcription');
 }
