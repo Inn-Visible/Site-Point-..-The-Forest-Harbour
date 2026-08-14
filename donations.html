@@ -32,6 +32,11 @@
   .pip.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(217,168,58,.8)}
   .tally{margin-top:12px;font-size:12px;color:var(--dim)}
   .tally b{color:var(--ink)}
+  .valence{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;
+    font-size:10px;color:#5c6875;letter-spacing:.15em}
+  .vbar{position:relative;width:160px;height:4px;background:#223041;border-radius:2px}
+  #vmark{position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;
+    background:var(--gold);transform:translateX(-50%);left:70%}
   .btn{background:rgba(3,4,7,.65);border:1px solid var(--gold);color:var(--gold);
     font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
     cursor:pointer;margin-top:16px;text-decoration:none;display:inline-block}
@@ -40,6 +45,8 @@
   .btn.red:hover{background:var(--red);color:#0a0d12}
   .btn.mini{font-size:10px;padding:6px 12px;margin-top:16px;border-color:var(--line);color:var(--dim)}
   .btn.mini:hover{background:var(--line);color:var(--ink)}
+  .circle{margin-top:20px}
+  .figc{color:#6b7684;font-family:var(--serif);font-style:italic;font-size:12px;margin-bottom:4px}
   .wit{margin-top:14px}
   .wit input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);
     font-family:var(--mono);font-size:11px;padding:8px 12px;width:min(320px,82%);
@@ -73,7 +80,9 @@
   <div class="keep">keep the flame burning — rest a while, keeper. the fire remembers you.</div>
   <div class="totems" id="totems"></div>
   <div class="tally"><b id="drops">0</b> drops · <b id="tot">0</b> full totems · <b id="loops">0</b> loops closed</div>
-  <div class="status" id="stat">the hearth has a tenant. it blinks.</div>
+  <div class="valence">water <div class="vbar"><i id="vmark"></i></div> fire · element: <span id="vel">FIRE</span></div>
+  <div class="status" id="chain"></div>
+  <div class="status" id="stat">the hearth has a tenant. it watches.</div>
 
   <div>
     <a class="btn" id="pp" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
@@ -82,13 +91,21 @@
     <button class="btn mini" onclick="forgetNames()">forget names</button>
   </div>
 
+  <div class="circle">
+    <div class="figc">the hearth circle — patronage, not purchase</div>
+    <a class="btn mini" href="https://www.paypal.com/paypalme/QuillinnPrimrose/3" target="_blank">ember · 3/mo</a>
+    <a class="btn mini" href="https://www.paypal.com/paypalme/QuillinnPrimrose/13" target="_blank">keeper · 13/yr</a>
+    <a class="btn mini" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">a log on the fire · any amount</a>
+    <div class="status">honor-system recurring: set it monthly in paypal, or re-up whenever. the fire doesn't audit.</div>
+  </div>
+
   <div class="wit" id="witbox" style="display:none"><input id="who" placeholder="your own fire keeps this name (optional)" maxlength="24"></div>
   <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
   <div class="honor">X years = X currency — the years you keep the flame are counted in the same ledger.<br>
   the house takes you at your word — know thyself; do no harm; hold the truth.</div>
-  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count · scroll down to the hearth</div>
+  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count · scroll down to the hearth · poke it, if you dare</div>
 </main>
 
 <canvas id="fire"></canvas>
@@ -100,7 +117,7 @@
 </footer>
 
 <script>
-/* ---- sound: synthesized in-house, can never break the rite ---- */
+/* ---- sound ---- */
 let AC=null, NB=null, soundOn=true;
 function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
   if(AC.state==='suspended') AC.resume(); return AC; }
@@ -129,17 +146,6 @@ function roar(){
   og.gain.exponentialRampToValueAtTime(0.0001,t+0.7);
   o.connect(og); og.connect(ctx.destination);
   o.start(t); o.stop(t+0.8);
-  for(let k=0;k<6;k++){
-    const s2=ctx.createBufferSource(); s2.buffer=NB;
-    const tt=t+0.15+Math.random()*0.9;
-    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2500;
-    const gg=ctx.createGain();
-    gg.gain.setValueAtTime(0.0001,tt);
-    gg.gain.exponentialRampToValueAtTime(0.12,tt+0.01);
-    gg.gain.exponentialRampToValueAtTime(0.0001,tt+0.06);
-    s2.connect(hp); hp.connect(gg); gg.connect(ctx.destination);
-    s2.start(tt); s2.stop(tt+0.08);
-  }
 }
 function bell(){
   if(!soundOn) return;
@@ -165,10 +171,39 @@ function paypalRite(){
 }
 function forgetNames(){
   localStorage.removeItem('hive_witnesses');
+  v=Math.max(-1,v-0.5);
   renderWit();
 }
 
-/* ---- the hearth room ---- */
+/* ---- emberchain: hash-chained proof-of-witness ---- */
+function loadChain(){ try{ return JSON.parse(localStorage.getItem('hive_emberchain')||'[]'); }catch(e){ return []; } }
+function renderChain(){
+  const c=loadChain();
+  const hgt=parseInt(localStorage.getItem('hive_chain_h')||'0',10);
+  const el=document.getElementById('chain');
+  if(!c.length){ el.textContent='emberchain · genesis pending — first interaction mints block 1'; return; }
+  el.textContent='emberchain · height '+hgt+' · tip 0x'+c[c.length-1].h.slice(0,10);
+}
+function mint(kind,name){
+  const c=loadChain();
+  const prev=c.length?c[c.length-1].h:'0'.repeat(64);
+  const body=JSON.stringify({n:c.length,t:Date.now(),kind,w:name||null,p:prev.slice(0,16)});
+  const done=function(h){
+    c.push({n:c.length,t:Date.now(),kind,w:name||null,h});
+    localStorage.setItem('hive_emberchain',JSON.stringify(c.slice(-200)));
+    localStorage.setItem('hive_chain_h',String(parseInt(localStorage.getItem('hive_chain_h')||'0',10)+1));
+    renderChain();
+  };
+  try{
+    crypto.subtle.digest('SHA-256',new TextEncoder().encode(body)).then(function(buf){
+      done(Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''));
+    });
+  }catch(e){
+    done(Array.from({length:64},function(){ return '0123456789abcdef'[Math.random()*16|0]; }).join(''));
+  }
+}
+
+/* ---- the hearth: tenant v2 — instrument, not creature ---- */
 const cv=document.getElementById('fire');
 const g2=cv.getContext('2d');
 let W,H,SC=1;
@@ -182,37 +217,67 @@ function sprite(col){
   g.addColorStop(0,'rgba('+col+',1)'); g.addColorStop(1,'rgba('+col+',0)');
   x.fillStyle=g; x.fillRect(0,0,64,64); return c;
 }
-const SP=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprite('140,40,18')];
+const SPF=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprite('140,40,18')];
+const SPS=[sprite('150,156,164'),sprite('96,100,108')];
+const SPW=[sprite('140,200,255'),sprite('60,120,210')];
 const P=[],S=[];
 let flare=0, dropY=null, busy=false, wind=0, windT=0, mx=0.5;
-let nextBlink=0, blinkUntil=0;
+let v=0.45, mode='fire', lastMode='';
+let gx=0, sacT=0, sacX=0, nextBlink=0, blinkUntil=0, lastPokeMint=0;
+const feeds=[];
 addEventListener('mousemove',e=>{ windT=(e.clientX/W-.5)*0.9; mx=e.clientX/W; });
-addEventListener('touchstart',e=>{ if(e.touches[0]){ mx=e.touches[0].clientX/W; flare=Math.max(flare,0.25);} },{passive:true});
+addEventListener('touchstart',e=>{ if(e.touches[0]){ mx=e.touches[0].clientX/W; } },{passive:true});
 addEventListener('touchmove',e=>{ if(e.touches[0]) mx=e.touches[0].clientX/W; },{passive:true});
+addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect();
+  if(e.clientY>r.top && e.clientY<r.bottom) poke(e.clientX, e.clientY-r.top);
+});
 function rnd(a,b){ return a+Math.random()*(b-a); }
+function poke(x,y){
+  v=Math.min(1,v+0.03);
+  for(let i=0;i<6;i++) S.push({x:x,y:y,vx:rnd(-1,1),vy:rnd(-2,0),life:0,max:rnd(30,60)});
+  const n=Date.now();
+  if(n-lastPokeMint>800){ lastPokeMint=n; mint('witness'); }
+}
 function spawn(n,burst){
   for(let i=0;i<n;i++){
-    P.push({ x:W/2+rnd(-1,1)*(burst?90:55)*SC, y:H-rnd(10,30),
-      vx:rnd(-.5,.5)+(burst?rnd(-1.2,1.2):0),
-      vy:-rnd(1.4,4.2)*(burst?1.4:1),
-      r:rnd(14,30)*SC*(burst?1.15:1), life:0, max:rnd(60,110) });
+    if(mode==='water'){
+      P.push({m:'water',x:W/2+rnd(-1,1)*120*SC,y:H-300*SC+rnd(0,40),
+        vx:rnd(-.3,.3),vy:rnd(1.5,3.5),r:rnd(6,14)*SC,life:0,max:rnd(80,140)});
+    } else if(mode==='smoke'){
+      P.push({m:'smoke',x:W/2+rnd(-1,1)*50*SC,y:H-rnd(20,70),
+        vx:rnd(-.3,.3),vy:-rnd(0.5,1.4),r:rnd(12,26)*SC,life:0,max:rnd(90,150)});
+    } else {
+      P.push({m:'fire',x:W/2+rnd(-1,1)*(burst?90:55)*SC,y:H-rnd(10,30),
+        vx:rnd(-.5,.5)+(burst?rnd(-1.2,1.2):0),vy:-rnd(1.4,4.2)*(burst?1.4:1),
+        r:rnd(14,30)*SC*(burst?1.15:1),life:0,max:rnd(60,110)});
+    }
   }
   if(P.length>600) P.splice(0,P.length-600);
-}
-function spark(){
-  S.push({ x:W/2+rnd(-60,60)*SC, y:H-rnd(20,60), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
 }
 function tick(now){
   g2.clearRect(0,0,W,H);
   wind+=(windT-wind)*0.04;
+  v=Math.max(-1,Math.min(1,v-0.00012));
+  mode=v>0.15?'fire':v>=-0.15?'smoke':'water';
+  if(mode!==lastMode){
+    lastMode=mode;
+    document.getElementById('vel').textContent=mode.toUpperCase();
+    document.getElementById('stat').textContent='the hearth shifts — '+mode.toUpperCase()+'.';
+    document.getElementById('vmark').style.background=
+      mode==='fire'?'var(--gold)':mode==='smoke'?'#9aa4ae':'var(--blue)';
+  }
+  document.getElementById('vmark').style.left=(((v+1)/2)*100).toFixed(1)+'%';
   const flick=0.8+0.2*Math.abs(Math.sin(now*0.0021))+flare*0.5;
   const ow=170*SC, colW=34*SC, mantY=H-300*SC;
 
+  /* room glow, element-tinted */
   g2.globalCompositeOperation='lighter';
   const R=Math.max(W,H);
-  g2.globalAlpha=0.10*flick;
-  g2.drawImage(SP[2], W/2-R*0.55, H-R*0.62, R*1.1, R*0.85);
+  g2.globalAlpha=(mode==='fire'?0.10:mode==='smoke'?0.05:0.06)*flick;
+  g2.drawImage(mode==='fire'?SPF[2]:mode==='smoke'?SPS[1]:SPW[1], W/2-R*0.55, H-R*0.62, R*1.1, R*0.85);
 
+  /* fireplace silhouette */
   g2.globalCompositeOperation='source-over';
   g2.globalAlpha=1;
   g2.fillStyle='#07090c';
@@ -223,40 +288,60 @@ function tick(now){
   g2.lineWidth=26*SC; g2.strokeStyle='#07090c';
   g2.beginPath(); g2.arc(W/2, mantY+4*SC, ow+13*SC, Math.PI, 0); g2.stroke();
   g2.globalCompositeOperation='lighter';
-  g2.strokeStyle='rgba(255,140,50,'+Math.min(.6,.14+.28*flick).toFixed(3)+')';
-  g2.lineWidth=2; g2.shadowColor='rgba(255,120,40,.8)'; g2.shadowBlur=10*flick;
+  g2.strokeStyle=mode==='fire'?'rgba(255,140,50,'+Math.min(.6,.14+.28*flick).toFixed(3)+')'
+    :mode==='smoke'?'rgba(150,156,164,0.25)':'rgba(90,150,220,0.3)';
+  g2.lineWidth=2; g2.shadowColor=mode==='fire'?'rgba(255,120,40,.8)':mode==='smoke'?'rgba(150,156,164,.5)':'rgba(90,150,220,.6)';
+  g2.shadowBlur=10*flick;
   g2.beginPath(); g2.moveTo(W/2-ow, H); g2.lineTo(W/2-ow, mantY); g2.stroke();
   g2.beginPath(); g2.moveTo(W/2+ow, H); g2.lineTo(W/2+ow, mantY); g2.stroke();
   g2.beginPath(); g2.arc(W/2, mantY+4*SC, ow, Math.PI, 0); g2.stroke();
   g2.shadowBlur=0;
 
+  /* logs or pool */
   g2.globalCompositeOperation='source-over';
-  g2.fillStyle='#05060a';
-  g2.save(); g2.translate(W/2,H-26*SC); g2.rotate(0.16);
-  g2.beginPath(); g2.roundRect ? g2.roundRect(-95*SC,-9*SC,190*SC,18*SC,9*SC) : g2.rect(-95*SC,-9*SC,190*SC,18*SC); g2.fill(); g2.restore();
-  g2.save(); g2.translate(W/2,H-20*SC); g2.rotate(-0.14);
-  g2.beginPath(); g2.roundRect ? g2.roundRect(-85*SC,-8*SC,170*SC,16*SC,8*SC) : g2.rect(-85*SC,-8*SC,170*SC,16*SC); g2.fill(); g2.restore();
-  g2.globalCompositeOperation='lighter';
-  g2.strokeStyle='rgba(255,120,40,'+(0.3*flick).toFixed(3)+')'; g2.lineWidth=1.5;
-  g2.beginPath(); g2.moveTo(W/2-60*SC,H-26*SC); g2.lineTo(W/2-10*SC,H-24*SC); g2.stroke();
-  g2.beginPath(); g2.moveTo(W/2+15*SC,H-20*SC); g2.lineTo(W/2+58*SC,H-22*SC); g2.stroke();
+  if(mode==='water'){
+    g2.fillStyle='rgba(60,120,210,0.30)';
+    g2.beginPath(); g2.ellipse(W/2,H-22*SC,ow*0.9,14*SC,0,0,7); g2.fill();
+  } else {
+    g2.fillStyle='#05060a';
+    g2.save(); g2.translate(W/2,H-26*SC); g2.rotate(0.16);
+    g2.beginPath(); g2.roundRect?g2.roundRect(-95*SC,-9*SC,190*SC,18*SC,9*SC):g2.rect(-95*SC,-9*SC,190*SC,18*SC); g2.fill(); g2.restore();
+    g2.save(); g2.translate(W/2,H-20*SC); g2.rotate(-0.14);
+    g2.beginPath(); g2.roundRect?g2.roundRect(-85*SC,-8*SC,170*SC,16*SC,8*SC):g2.rect(-85*SC,-8*SC,170*SC,16*SC); g2.fill(); g2.restore();
+    g2.globalCompositeOperation='lighter';
+    g2.strokeStyle='rgba(255,120,40,'+(0.3*flick).toFixed(3)+')'; g2.lineWidth=1.5;
+    g2.beginPath(); g2.moveTo(W/2-60*SC,H-26*SC); g2.lineTo(W/2-10*SC,H-24*SC); g2.stroke();
+  }
 
-  g2.globalAlpha=0.5*flick;
-  g2.drawImage(SP[1], W/2-140*SC, H-160*SC, 280*SC, 240*SC);
-  g2.globalAlpha=0.4*flick;
-  g2.drawImage(SP[0], W/2-80*SC, H-120*SC, 160*SC, 150*SC);
+  /* core */
+  g2.globalCompositeOperation='lighter';
+  if(mode==='fire'){
+    g2.globalAlpha=0.5*flick; g2.drawImage(SPF[1],W/2-140*SC,H-160*SC,280*SC,240*SC);
+    g2.globalAlpha=0.4*flick; g2.drawImage(SPF[0],W/2-80*SC,H-120*SC,160*SC,150*SC);
+  } else if(mode==='smoke'){
+    g2.globalAlpha=0.25*flick; g2.drawImage(SPS[1],W/2-120*SC,H-150*SC,240*SC,220*SC);
+  } else {
+    g2.globalAlpha=0.3*flick; g2.drawImage(SPW[1],W/2-120*SC,H-140*SC,240*SC,200*SC);
+  }
   flare*=0.965;
   spawn(10+Math.round(flare*12),false);
-  if(Math.random()<0.3+flare*0.4) spark();
+  if(Math.random()<0.3+flare*0.4)
+    S.push({x:W/2+rnd(-60,60)*SC,y:mode==='water'?H-rnd(20,40):H-rnd(20,60),vx:rnd(-.6,.6),vy:mode==='water'?-rnd(1,2.5):-rnd(2.5,5),life:0,max:rnd(50,110)});
+
   for(let i=P.length-1;i>=0;i--){
     const p=P[i]; p.life++;
     const t=p.life/p.max;
-    p.x+=p.vx+wind*(1-t)*2+Math.sin(p.life*0.07+p.y*0.015)*0.55;
-    p.y+=p.vy; p.vy*=0.998; p.r*=0.975;
+    if(p.m==='smoke'){ p.r*=1.004; p.x+=p.vx+wind*(1-t)*3; p.y+=p.vy; }
+    else if(p.m==='water'){ p.x+=p.vx+wind*0.4; p.y+=p.vy;
+      if(p.y>H-26*SC){ for(let k=0;k<2;k++) S.push({x:p.x,y:H-26*SC,vx:rnd(-1,1),vy:-rnd(0.5,2),life:0,max:rnd(20,40)}); P.splice(i,1); continue; } }
+    else { p.x+=p.vx+wind*(1-t)*2+Math.sin(p.life*0.07+p.y*0.015)*0.55; p.y+=p.vy; p.vy*=0.998; p.r*=0.975; }
     if(t>=1||p.r<1){ P.splice(i,1); continue; }
-    const idx=t<0.3?0:t<0.55?1:t<0.8?2:3;
-    g2.globalAlpha=(1-t)*0.7;
-    g2.drawImage(SP[idx],p.x-p.r,p.y-p.r,p.r*2,p.r*2);
+    let img,al;
+    if(p.m==='fire'){ img=SPF[t<0.3?0:t<0.55?1:t<0.8?2:3]; al=(1-t)*0.7; }
+    else if(p.m==='smoke'){ img=SPS[t<0.5?0:1]; al=(1-t)*0.3; }
+    else { img=SPW[t<0.5?0:1]; al=(1-t)*0.6; }
+    g2.globalAlpha=al;
+    g2.drawImage(img,p.x-p.r,p.y-p.r,p.r*2,p.r*2);
   }
   g2.globalAlpha=1;
   for(let i=S.length-1;i>=0;i--){
@@ -264,40 +349,37 @@ function tick(now){
     s.x+=s.vx+wind*1.2; s.y+=s.vy;
     const t=s.life/s.max;
     if(t>=1){ S.splice(i,1); continue; }
-    g2.fillStyle='rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
+    g2.fillStyle=mode==='water'?'rgba(140,200,255,'+((1-t)*0.9).toFixed(3)+')'
+      :mode==='smoke'?'rgba(180,186,194,'+((1-t)*0.6).toFixed(3)+')'
+      :'rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
     g2.beginPath(); g2.arc(s.x,s.y,1.4,0,7); g2.fill();
   }
 
-  /* the tenant */
-  if(now>nextBlink){ blinkUntil=now+150; nextBlink=now+3200+Math.random()*5200; }
-  const blink = now<blinkUntil ? 0.12 : 1;
-  const wide = 1 + flare*0.5;
-  const wander = Math.sin(now*0.00045)*0.5 + Math.sin(now*0.00113+2)*0.5;
-  const lookX = ((mx-0.5)*26 + wander*10)*SC + wind*6;
-  const eyeY = H-95*SC + Math.sin(now*0.003)*2.5*SC;
+  /* the tenant v2: aperture slits, saccades, shutter-blink */
+  if(now>sacT){ sacT=now+rnd(1800,4200); sacX=rnd(-8,8)*SC; }
+  gx+=(((mx-0.5)*20*SC+sacX)-gx)*0.3;
+  if(now>nextBlink){ blinkUntil=now+80; nextBlink=now+rnd(3000,6500); }
+  const shut=now<blinkUntil;
+  const ew=(13+flare*7)*SC;
+  const eyeY=H-95*SC;
+  const ecol=mode==='fire'?'#ffd9a0':mode==='smoke'?'#c2c8d0':'#a8d4ff';
+  g2.globalCompositeOperation='lighter';
   for(const s of [-1,1]){
-    const ex = W/2 + s*26*SC + lookX;
-    g2.globalCompositeOperation='lighter';
-    g2.globalAlpha=0.9;
-    g2.save(); g2.translate(ex,eyeY); g2.scale(wide,wide*blink);
-    g2.drawImage(SP[0],-8*SC,-8*SC,16*SC,16*SC);
-    g2.restore();
-    g2.globalAlpha=1;
-    if(blink===1){
-      g2.globalCompositeOperation='source-over';
-      g2.fillStyle='rgba(25,12,6,.8)';
-      g2.beginPath(); g2.arc(ex+lookX*0.35, eyeY, 2.4*SC, 0, 7); g2.fill();
+    const ex=W/2+s*24*SC+gx;
+    g2.strokeStyle=ecol; g2.lineWidth=2.2*SC; g2.lineCap='round';
+    g2.shadowColor=ecol; g2.shadowBlur=8;
+    g2.beginPath();
+    if(shut){ g2.moveTo(ex-ew*0.15,eyeY); g2.lineTo(ex+ew*0.15,eyeY); }
+    else { g2.moveTo(ex-ew/2,eyeY); g2.lineTo(ex+ew/2,eyeY); }
+    g2.stroke();
+    if(!shut){
+      g2.fillStyle='#fff';
+      g2.beginPath(); g2.arc(ex+gx*0.2,eyeY,1.6*SC,0,7); g2.fill();
     }
   }
-  if(flare>0.35){
-    g2.globalCompositeOperation='source-over';
-    g2.fillStyle='rgba(25,12,6,'+(0.5*flare).toFixed(3)+')';
-    g2.beginPath();
-    g2.ellipse(W/2+lookX, H-58*SC, 9*SC*flare, 12*SC*flare, 0, 0, 7);
-    g2.fill();
-  }
+  g2.shadowBlur=0;
 
-  /* the offering drop, slow enough to witness */
+  /* the drop */
   if(dropY!==null){
     dropY+=10;
     g2.globalCompositeOperation='source-over';
@@ -305,7 +387,7 @@ function tick(now){
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
     g2.beginPath(); g2.arc(W/2,dropY,3.5,0,7); g2.fill();
     g2.restore();
-    if(dropY>=H-40*SC){ dropY=null; flare=1.6; spawn(140,true); try{ roar(); }catch(e){} onLand(); }
+    if(dropY>=H-40*SC){ dropY=null; flare=1.6; v=Math.min(1,v+0.18); spawn(140,true); try{ roar(); }catch(e){} onLand(); }
   }
   requestAnimationFrame(tick);
 }
@@ -315,10 +397,10 @@ requestAnimationFrame(tick);
 let drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
 const HOUSE_BOOK=[ /* paid witnesses — the ferryman writes these by hand */ ];
 const flavor=[
-  'the hearth has a tenant. it blinks.',
+  'the hearth has a tenant. it watches.',
   'a drop lands; the fire eats well.',
   'rest. the fire keeps watch tonight.',
-  'the fire looks back. that is the whole trick.',
+  'the apertures track you. that is the whole trick.',
   'warm enough to plan by.',
   'other fires burn unattended in the dark. not this one.'
 ];
@@ -347,6 +429,9 @@ function onLand(){
 function whoosh(){
   if(busy) return;
   busy=true;
+  const n=Date.now(); feeds.push(n);
+  while(feeds.length&&n-feeds[0]>2000) feeds.shift();
+  if(feeds.length>=4){ v=Math.max(-1,v-0.08); }
   drops++;
   localStorage.setItem('hive_drops',String(drops));
   const name=(document.getElementById('who').value||'').trim().replace(/[<>&·]/g,'').slice(0,24);
@@ -356,15 +441,15 @@ function whoosh(){
     document.getElementById('who').value='';
     renderWit();
   }
+  mint('drop',name||null);
   render();
   document.getElementById('stat').textContent='>> the drop falls .. <<';
   try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
   setTimeout(function(){ dropY=-10; },420);
 }
-/* JS-wired, in case the sandbox strips inline handlers */
 document.getElementById('feed').addEventListener('click',whoosh);
 document.getElementById('pp').addEventListener('click',paypalRite);
-render(); renderWit();
+render(); renderWit(); renderChain();
 </script>
 
 </body>
