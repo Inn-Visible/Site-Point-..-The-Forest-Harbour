@@ -597,7 +597,9 @@ window.cloudRedeem = async function(key, name){
     const val = snap.val();
     const used = (val && typeof val==='object') ? !!val.used : (val==='used');
     if(used) return 'used';
-    await set(r, { used:true, name:name||null, when:Date.now() });
+
+    await set(r, { used:true, name:name||null, when:Date.now(), seed: parseInt(localStorage.getItem('hive_chain_h')||'0',10) });
+    
     return 'ok';
   }catch(e){ return 'offline'; }
 };
