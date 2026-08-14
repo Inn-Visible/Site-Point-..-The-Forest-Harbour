@@ -21,12 +21,12 @@
   .brand{font-size:16px;letter-spacing:.35em;color:var(--red)}
   .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
   .back:hover{color:var(--ink)}
-  main{max-width:760px;margin:0 auto;padding:52px 24px 44vh;text-align:center;
+  main{max-width:760px;margin:0 auto;padding:48px 20px 42vh;text-align:center;
     text-shadow:0 1px 8px rgba(0,0,0,.9)}
-  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.6vw,26px)}
-  .rest{margin-top:10px;color:#7d8a99;font-size:11px;letter-spacing:.24em}
-  .keep{margin-top:26px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
-  .totems{margin-top:16px}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(18px,2.6vw,26px)}
+  .rest{margin-top:10px;color:#7d8a99;font-size:10.5px;letter-spacing:.22em}
+  .keep{margin-top:24px;color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px}
+  .totems{margin-top:14px}
   .pip{display:inline-block;width:16px;height:7px;border:1px solid #5c6875;border-radius:2px;
     margin:0 3px;vertical-align:middle}
   .pip.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(217,168,58,.8)}
@@ -38,12 +38,25 @@
   .btn:hover{background:var(--gold);color:#0a0d12}
   .btn.red{border-color:var(--red);color:var(--red)}
   .btn.red:hover{background:var(--red);color:#0a0d12}
-  .status{margin-top:14px;font-size:12px;color:var(--dim);min-height:16px}
-  .ladder{margin-top:18px;color:var(--dim);font-size:12px;letter-spacing:.06em}
-  .honor{margin-top:16px;color:#6b7684;font-size:11px;font-style:italic;font-family:var(--serif);line-height:1.9}
-  footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;
+  .btn.mini{font-size:10px;padding:6px 12px;margin-top:16px;border-color:var(--line);color:var(--dim)}
+  .btn.mini:hover{background:var(--line);color:var(--ink)}
+  .wit{margin-top:14px}
+  .wit input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);
+    font-family:var(--mono);font-size:11px;padding:8px 12px;width:min(320px,82%);
+    text-align:center;letter-spacing:.08em}
+  .wit input::placeholder{color:#5c6875}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  .ladder{margin-top:16px;color:var(--dim);font-size:11.5px;letter-spacing:.05em}
+  .honor{margin-top:14px;color:#6b7684;font-size:11px;font-style:italic;font-family:var(--serif);line-height:1.9}
+  footer{border-top:1px solid var(--line);padding:22px 16px;text-align:center;
     color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1;background:rgba(3,4,7,.7)}
   footer a{color:var(--blue);text-decoration:none}
+  @media(max-width:640px){
+    header{padding:14px 18px}
+    main{padding-bottom:36vh}
+    .ladder{font-size:10px}
+    .btn{padding:9px 14px;font-size:11px}
+  }
 </style>
 </head>
 <body>
@@ -65,14 +78,18 @@
   <div class="status" id="stat">the flame hums. you are witnessed.</div>
 
   <div>
-    <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank">drop via paypal ↗</a>
+    <a class="btn" href="https://www.paypal.com/paypalme/QuillinnPrimrose" target="_blank" onclick="paypalRite()">drop via paypal ↗</a>
     <button class="btn red" onclick="whoosh()">i dropped — feed the fire</button>
+    <button class="btn mini" id="snd" onclick="toggleSnd()">sound: on</button>
   </div>
+
+  <div class="wit"><input id="who" placeholder="name the hand that feeds (optional)" maxlength="24"></div>
+  <div class="status" id="witline"></div>
 
   <div class="ladder">10 drops = 1 drip · 10 drips = 1 loop · 10 loops = 1 node · 100 nodes = 1 core</div>
   <div class="honor">X years = X currency — the years you keep the flame are counted in the same ledger.<br>
   the house takes you at your word — know thyself; do no harm; hold the truth.</div>
-  <div class="status">passkeys &amp; the hearth travel by the discord · the robot witnesses at first light</div>
+  <div class="status">passkeys &amp; the hearth travel by the discord · the fire keeps the count</div>
 </main>
 
 <footer>
@@ -82,102 +99,148 @@
 </footer>
 
 <script>
-/* a resting bonfire, not a death screen: dense warm body, room lit by fire.
-   sprite renderer = hundreds of stacked glows = solid flame. cursor = gentle wind. */
-const cv = document.getElementById('fire');
-const g2 = cv.getContext('2d');
-let W, H;
-function fit(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
-addEventListener('resize', fit); fit();
+/* ---- the sound: synthesized in-house, no library, no royalty ---- */
+let AC=null, NB=null, soundOn=true;
+function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume(); return AC; }
+function noiseBuf(ctx){ const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);
+  const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
+function roar(){
+  if(!soundOn) return;
+  const ctx=ac(); if(!NB) NB=noiseBuf(ctx);
+  const t=ctx.currentTime;
+  const src=ctx.createBufferSource(); src.buffer=NB;
+  const f=ctx.createBiquadFilter(); f.type='bandpass'; f.Q.value=0.8;
+  f.frequency.setValueAtTime(180,t);
+  f.frequency.exponentialRampToValueAtTime(900,t+0.35);
+  f.frequency.exponentialRampToValueAtTime(240,t+1.4);
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.5,t+0.12);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+1.6);
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  src.start(t); src.stop(t+1.7);
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(70,t); o.frequency.exponentialRampToValueAtTime(38,t+0.5);
+  const og=ctx.createGain();
+  og.gain.setValueAtTime(0.0001,t);
+  og.gain.exponentialRampToValueAtTime(0.4,t+0.05);
+  og.gain.exponentialRampToValueAtTime(0.0001,t+0.7);
+  o.connect(og); og.connect(ctx.destination);
+  o.start(t); o.stop(t+0.8);
+  for(let k=0;k<6;k++){
+    const s2=ctx.createBufferSource(); s2.buffer=NB;
+    const tt=t+0.15+Math.random()*0.9;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2500;
+    const gg=ctx.createGain();
+    gg.gain.setValueAtTime(0.0001,tt);
+    gg.gain.exponentialRampToValueAtTime(0.12,tt+0.01);
+    gg.gain.exponentialRampToValueAtTime(0.0001,tt+0.06);
+    s2.connect(hp); hp.connect(gg); gg.connect(ctx.destination);
+    s2.start(tt); s2.stop(tt+0.08);
+  }
+}
+function bell(){
+  if(!soundOn) return;
+  const ctx=ac(); const t=ctx.currentTime;
+  [880,1318].forEach((fr,i)=>{
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=fr;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(i?0.12:0.2,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.4);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t+1.5);
+  });
+}
+function toggleSnd(){ soundOn=!soundOn;
+  document.getElementById('snd').textContent='sound: '+(soundOn?'on':'off'); }
+function paypalRite(){
+  bell();
+  document.getElementById('stat').textContent='the door is open. return, and the fire will know.';
+}
 
+/* ---- the fire: sprite renderer, scaled to the room ---- */
+const cv=document.getElementById('fire');
+const g2=cv.getContext('2d');
+let W,H,SC=1;
+function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight;
+  SC=Math.max(0.55,Math.min(1,W/1000)); }
+addEventListener('resize',fit); fit();
 function sprite(col){
   const c=document.createElement('canvas'); c.width=c.height=64;
   const x=c.getContext('2d');
   const g=x.createRadialGradient(32,32,0,32,32,32);
-  g.addColorStop(0,'rgba('+col+',1)');
-  g.addColorStop(1,'rgba('+col+',0)');
-  x.fillStyle=g; x.fillRect(0,0,64,64);
-  return c;
+  g.addColorStop(0,'rgba('+col+',1)'); g.addColorStop(1,'rgba('+col+',0)');
+  x.fillStyle=g; x.fillRect(0,0,64,64); return c;
 }
 const SP=[sprite('255,240,200'),sprite('255,180,70'),sprite('226,100,35'),sprite('140,40,18')];
-
-const P = [], S = [];
-let flare = 0, dropY = null, busy = false;
-let wind = 0, windT = 0;
-addEventListener('mousemove', e => { windT = (e.clientX / W - .5) * 0.9; });
-function rnd(a,b){ return a + Math.random()*(b-a); }
-function spawn(n, burst){
+const P=[],S=[];
+let flare=0, dropY=null, busy=false, wind=0, windT=0;
+addEventListener('mousemove',e=>{ windT=(e.clientX/W-.5)*0.9; });
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function spawn(n,burst){
   for(let i=0;i<n;i++){
-    P.push({ x:W/2 + rnd(-1,1)*(burst?100:62), y:H - rnd(0,20),
-      vx:rnd(-.5,.5) + (burst?rnd(-1.2,1.2):0),
+    P.push({ x:W/2+rnd(-1,1)*(burst?100:62)*SC, y:H-rnd(0,20),
+      vx:rnd(-.5,.5)+(burst?rnd(-1.2,1.2):0),
       vy:-rnd(1.4,4.2)*(burst?1.4:1),
-      r:rnd(14,30)*(burst?1.15:1), life:0, max:rnd(60,110) });
+      r:rnd(14,30)*SC*(burst?1.15:1), life:0, max:rnd(60,110) });
   }
-  if(P.length>600) P.splice(0, P.length-600);
+  if(P.length>600) P.splice(0,P.length-600);
 }
 function spark(){
-  S.push({ x:W/2+rnd(-70,70), y:H-rnd(0,40), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
+  S.push({ x:W/2+rnd(-70,70)*SC, y:H-rnd(0,40), vx:rnd(-.6,.6), vy:-rnd(2.5,5), life:0, max:rnd(50,110) });
 }
 function tick(now){
   g2.clearRect(0,0,W,H);
-  wind += (windT - wind)*0.04;
-  const flick = 0.8 + 0.2*Math.abs(Math.sin(now*0.0021)) + flare*0.5;
+  wind+=(windT-wind)*0.04;
+  const flick=0.8+0.2*Math.abs(Math.sin(now*0.0021))+flare*0.5;
   g2.globalCompositeOperation='lighter';
-
-  /* the room is lit by fire */
-  g2.globalAlpha = 0.10*flick;
-  g2.drawImage(SP[2], W/2-Math.max(W,H)*0.55, H-Math.max(W,H)*0.62, Math.max(W,H)*1.1, Math.max(W,H)*0.85);
-  /* permanent luminous core */
-  g2.globalAlpha = 0.5*flick;
-  g2.drawImage(SP[1], W/2-140, H-150, 280, 240);
-  g2.globalAlpha = 0.4*flick;
-  g2.drawImage(SP[0], W/2-80, H-110, 160, 150);
-
-  /* feed */
-  flare *= 0.965;
-  spawn(10 + Math.round(flare*12), false);
-  if(Math.random() < .3 + flare*.4) spark();
-
-  /* the flame body */
+  const R=Math.max(W,H);
+  g2.globalAlpha=0.10*flick;
+  g2.drawImage(SP[2], W/2-R*0.55, H-R*0.62, R*1.1, R*0.85);
+  g2.globalAlpha=0.5*flick;
+  g2.drawImage(SP[1], W/2-140*SC, H-150*SC, 280*SC, 240*SC);
+  g2.globalAlpha=0.4*flick;
+  g2.drawImage(SP[0], W/2-80*SC, H-110*SC, 160*SC, 150*SC);
+  flare*=0.965;
+  spawn(10+Math.round(flare*12),false);
+  if(Math.random()<0.3+flare*0.4) spark();
   for(let i=P.length-1;i>=0;i--){
     const p=P[i]; p.life++;
     const t=p.life/p.max;
-    p.x += p.vx + wind*(1-t)*2 + Math.sin(p.life*0.07 + p.y*0.015)*0.55;
-    p.y += p.vy; p.vy *= 0.998; p.r *= 0.975;
-    if(t>=1 || p.r<1){ P.splice(i,1); continue; }
-    const idx = t<0.3?0 : t<0.55?1 : t<0.8?2 : 3;
-    g2.globalAlpha = (1-t)*0.7;
-    g2.drawImage(SP[idx], p.x-p.r, p.y-p.r, p.r*2, p.r*2);
+    p.x+=p.vx+wind*(1-t)*2+Math.sin(p.life*0.07+p.y*0.015)*0.55;
+    p.y+=p.vy; p.vy*=0.998; p.r*=0.975;
+    if(t>=1||p.r<1){ P.splice(i,1); continue; }
+    const idx=t<0.3?0:t<0.55?1:t<0.8?2:3;
+    g2.globalAlpha=(1-t)*0.7;
+    g2.drawImage(SP[idx],p.x-p.r,p.y-p.r,p.r*2,p.r*2);
   }
-  g2.globalAlpha = 1;
+  g2.globalAlpha=1;
   for(let i=S.length-1;i>=0;i--){
     const s=S[i]; s.life++;
-    s.x += s.vx + wind*1.2; s.y += s.vy;
+    s.x+=s.vx+wind*1.2; s.y+=s.vy;
     const t=s.life/s.max;
     if(t>=1){ S.splice(i,1); continue; }
     g2.fillStyle='rgba(255,196,100,'+((1-t)*0.9).toFixed(3)+')';
     g2.beginPath(); g2.arc(s.x,s.y,1.4,0,7); g2.fill();
   }
-
-  /* the offering drop */
-  if(dropY !== null){
-    dropY += 14;
+  if(dropY!==null){
+    dropY+=14;
     g2.globalCompositeOperation='source-over';
     g2.save();
     g2.fillStyle='#f1d078'; g2.shadowColor='rgba(241,208,120,1)'; g2.shadowBlur=10;
-    g2.beginPath(); g2.arc(W/2, dropY, 3.5, 0, 7); g2.fill();
+    g2.beginPath(); g2.arc(W/2,dropY,3.5,0,7); g2.fill();
     g2.restore();
-    if(dropY >= H-24){
-      dropY=null; flare=1.6; spawn(140,true); onLand();
-    }
+    if(dropY>=H-24){ dropY=null; flare=1.6; spawn(140,true); roar(); onLand(); }
   }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
 
-/* ledger */
-let drops = parseInt(localStorage.getItem('hive_drops') || '0', 10);
-const flavor = [
+/* ---- ledger + witness book ---- */
+let drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
+const flavor=[
   'the flame hums. you are witnessed.',
   'a drop lands; the fire eats well.',
   'rest. the fire keeps watch tonight.',
@@ -187,9 +250,15 @@ const flavor = [
 ];
 const box=document.getElementById('totems'); const pips=[];
 for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'; box.appendChild(s); pips.push(s); }
+function witnesses(){ try{ return JSON.parse(localStorage.getItem('hive_witnesses')||'[]'); }catch(e){ return []; } }
+function renderWit(){
+  const w=witnesses();
+  document.getElementById('witline').textContent =
+    w.length ? 'the fire remembers: '+w.slice(-5).join(' · ') : '';
+}
 function render(){
   const tot=Math.floor(drops/10), shown=tot%10;
-  pips.forEach((p,i)=>p.classList.toggle('on', i<shown));
+  pips.forEach((p,i)=>p.classList.toggle('on',i<shown));
   document.getElementById('drops').textContent=String(drops);
   document.getElementById('tot').textContent=String(tot);
   document.getElementById('loops').textContent=String(Math.floor(drops/100));
@@ -205,10 +274,17 @@ function whoosh(){
   if(busy) return;
   busy=true;
   drops++;
-  localStorage.setItem('hive_drops', String(drops));
+  localStorage.setItem('hive_drops',String(drops));
+  const name=(document.getElementById('who').value||'').trim();
+  if(name){
+    const w=witnesses(); w.push(name);
+    localStorage.setItem('hive_witnesses',JSON.stringify(w));
+    document.getElementById('who').value='';
+    renderWit();
+  }
   dropY=-10;
 }
-render();
+render(); renderWit();
 </script>
 
 </body>
