@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inn.Visible — the pit</title>
+<style>
+  :root{
+    --bg:#030407; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0;
+    --red:#c8452c; --blue:#3f7fc1; --gold:#d9a83a;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  #pit{display:block;width:100%;height:60vh;pointer-events:none}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.7)}
+  .brand{font-size:16px;letter-spacing:.35em;color:var(--red)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:760px;margin:0 auto;padding:40px 16px 20px;text-align:center;
+    text-shadow:0 1px 8px rgba(0,0,0,.9)}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(18px,2.6vw,24px)}
+  .rest{margin-top:10px;color:#7d8a99;font-size:10.5px;letter-spacing:.22em}
+  .status{margin-top:12px;font-size:12px;color:var(--dim);min-height:16px}
+  #line{font-style:italic;font-family:var(--serif);color:#8a94a2}
+  .btn{background:rgba(3,4,7,.65);border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--mono);font-size:12px;letter-spacing:.15em;padding:10px 22px;
+    cursor:pointer;margin-top:14px;text-decoration:none;display:inline-block}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.mini{font-size:10px;padding:6px 12px;border-color:var(--line);color:var(--dim)}
+  .btn.mini:hover{background:var(--line);color:var(--ink)}
+  #ledger{margin-top:14px;font-size:11px;line-height:1.9;color:#6b7684}
+  footer{border-top:1px solid var(--line);padding:22px 16px;text-align:center;
+    color:var(--dim);font-size:12px;letter-spacing:.12em;line-height:2.1;background:rgba(3,4,7,.7)}
+  footer a{color:var(--blue);text-decoration:none}
+  @media(max-width:640px){ header{padding:14px 18px} .btn{padding:9px 14px;font-size:11px} #pit{height:52vh} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">THE PIT</div>
+  <a class="back" href="donations.html">the hearth ↩</a>
+</header>
+
+<main>
+  <p class="hook">one bout at a time · the house watches.</p>
+  <p class="rest">· THE FLOOD DOUSES THE FLAME · THE FLAME SCATTERS THE FOG · THE FOG SWALLOWS THE FLOOD ·</p>
+  <div class="status" id="stat">the pit is raked ..</div>
+  <div>
+    <button class="btn" id="b-flame" onclick="back('flame')">back the flame</button>
+    <button class="btn" id="b-flood" onclick="back('flood')">back the flood</button>
+    <button class="btn" id="b-fog" onclick="back('fog')">back the fog</button>
+    <button class="btn mini" id="horn" onclick="start()">sound the horn ↠</button>
+  </div>
+  <div class="status" id="marks"></div>
+  <div class="status" id="line"></div>
+  <div id="ledger"></div>
+</main>
+
+<canvas id="pit"></canvas>
+
+<footer>
+  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="donations.html">the hearth ↗</a> · <a href="board.html">the house book ↗</a>
+</footer>
+
+<script>
+const cv=document.getElementById('pit'); const g=cv.getContext('2d');
+let W,H,SC=1;
+function fit(){ W=cv.width=cv.clientWidth; H=cv.height=cv.clientHeight;
+  SC=Math.max(0.55,Math.min(1,W/1000)); }
+addEventListener('resize',fit); fit();
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function sprite(col){
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const x=c.getContext('2d');
+  const gr=x.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,'rgba('+col+',1)'); gr.addColorStop(1,'rgba('+col+',0)');
+  x.fillStyle=gr; x.fillRect(0,0,64,64); return c;
+}
+const COL={flame:'255,180,70',flood:'90,150,220',fog:'150,156,164'};
+const CORE={flame:'255,240,200',flood:'190,225,255',fog:'214,218,224'};
+const SP={}; for(const k in COL) SP[k]=[sprite(CORE[k]),sprite(COL[k])];
+const BEATS={flood:'flame',flame:'fog',fog:'flood'};
+const VERB={flame:'scatters',flood:'douses',fog:'swallows'};
+const NAMES={flame:'the flame',flood:'the flood',fog:'the fog'};
+const PAIRS=[['flame','flood'],['flood','fog'],['fog','flame']];
+
+/* shared emberchain — the pit mints into the same ledger as the hearth */
+function mint(kind,name){
+  let c; try{ c=JSON.parse(localStorage.getItem('hive_emberchain')||'[]'); }catch(e){ c=[]; }
+  const prev=c.length?c[c.length-1].h:'0'.repeat(64);
+  const body=JSON.stringify({n:c.length,t:Date.now(),kind,w:name||null,p:prev.slice(0,16)});
+  const done=function(h){
+    c.push({n:c.length,t:Date.now(),kind,w:name||null,h});
+    localStorage.setItem('hive_emberchain',JSON.stringify(c.slice(-200)));
+    localStorage.setItem('hive_chain_h',String(parseInt(localStorage.getItem('hive_chain_h')||'0',10)+1));
+  };
+  try{
+    crypto.subtle.digest('SHA-256',new TextEncoder().encode(body)).then(function(buf){
+      done(Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''));
+    });
+  }catch(e){
+    done(Array.from({length:64},function(){ return '0123456789abcdef'[Math.random()*16|0]; }).join(''));
+  }
+}
+function ledger(){ try{ return JSON.parse(localStorage.getItem('hive_pit_ledger')||'[]'); }catch(e){ return []; } }
+function renderLedger(){
+  const l=ledger().slice(-4).reverse();
+  document.getElementById('ledger').innerHTML=l.map(function(r){
+    return 'bout '+r.b+' · '+NAMES[r.w]+(r.you?' · you backed '+NAMES[r.you]+(r.you===r.w?' ✓':' ✗'):'');
+  }).join('<br>');
+}
+
+let bout=parseInt(localStorage.getItem('hive_pit_bout')||'0',10);
+let A=null,B=null,P=[],S=[],marks=0,bk={},phase='boot',tickN=0;
+
+function setup(){
+  const pair=PAIRS[bout%3];
+  A={el:pair[0],hp:100,x:W*0.3,lunge:0,vig:1};
+  B={el:pair[1],hp:100,x:W*0.7,lunge:0,vig:1};
+  P=[];
+  [A,B].forEach(function(f){
+    for(let i=0;i<70;i++) P.push({f:f,a:Math.random()*7,r:rnd(10,70)*SC,
+      sp:rnd(0.01,0.045)*(Math.random()<.5?1:-1),s:rnd(6,16)*SC});
+  });
+  marks=3; bk={}; phase='back';
+  document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. three backing marks; spend them.';
+  document.getElementById('line').textContent='';
+  updBtns(); renderLedger();
+}
+function updBtns(){
+  ['flame','flood','fog'].forEach(function(k){
+    const b=document.getElementById('b-'+k);
+    const inBout=(A&&A.el===k)||(B&&B.el===k);
+    b.style.display=inBout?'inline-block':'none';
+    b.textContent='back '+NAMES[k]+(bk[k]?' ×'+bk[k]:'');
+    b.disabled=phase!=='back'||marks<=0;
+  });
+  document.getElementById('horn').style.display=phase==='back'?'inline-block':'none';
+  document.getElementById('marks').textContent=phase==='back'?'backing marks: '+marks:(phase==='fight'?'the bout is live.':'');
+}
+function back(k){
+  if(phase!=='back'||marks<=0) return;
+  bk[k]=(bk[k]||0)+1; marks--;
+  document.getElementById('stat').textContent='you back '+NAMES[k]+'. '+(marks?marks+' mark'+(marks===1?'':'s')+' left.':'the pit nods.');
+  updBtns();
+  if(marks===0) start();
+}
+function start(){
+  if(phase!=='back') return;
+  phase='fight';
+  A.vig=1+0.18*(bk[A.el]||0); B.vig=1+0.18*(bk[B.el]||0);
+  updBtns();
+  document.getElementById('stat').textContent='the horn sounds. '+NAMES[A.el]+' vs '+NAMES[B.el]+'.';
+}
+function exchange(){
+  const mult=function(x,y){ return BEATS[x]===y?1.5:BEATS[y]===x?0.7:1; };
+  const dA=(2+Math.random()*3)*A.vig*mult(A.el,B.el);
+  const dB=(2+Math.random()*3)*B.vig*mult(B.el,A.el);
+  B.hp-=dA; A.hp-=dB;
+  A.lunge=1; B.lunge=1;
+  for(let i=0;i<24;i++) S.push({x:W/2+rnd(-46,46)*SC,y:H*0.45+rnd(-46,46)*SC,
+    vx:rnd(-2.2,2.2),vy:rnd(-2.2,2.2),life:0,max:rnd(20,50),
+    c:Math.random()<.5?COL[A.el]:COL[B.el]});
+  const w=dA>dB?A:B, l=w===A?B:A;
+  const pool=[
+    NAMES[w.el]+' '+VERB[w.el]+' '+NAMES[l.el]+' ..',
+    NAMES[l.el]+' reels — '+NAMES[w.el]+' presses.',
+    'the pit leans toward '+NAMES[w.el]+'.',
+    NAMES[w.el]+' takes the exchange '+Math.round(Math.max(dA,dB))+' to '+Math.round(Math.min(dA,dB))+'.'
+  ];
+  document.getElementById('line').textContent=pool[Math.random()*pool.length|0];
+  if(A.hp<=0||B.hp<=0) end();
+}
+function end(){
+  const w=A.hp>=B.hp?A:B;
+  for(let i=0;i<120;i++) S.push({x:w.x+rnd(-30,30)*SC,y:H*0.45+rnd(-30,30)*SC,
+    vx:rnd(-3,3),vy:rnd(-3,1),life:0,max:rnd(40,90),c:COL[w.el]});
+  let you=null; for(const k in bk) if(!you||bk[k]>bk[you]) you=k;
+  const l=ledger(); l.push({b:bout+1,w:w.el,you:you});
+  localStorage.setItem('hive_pit_ledger',JSON.stringify(l.slice(-60)));
+  bout++; localStorage.setItem('hive_pit_bout',String(bout));
+  mint('pit',NAMES[w.el]);
+  phase='over';
+  document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid.':' your champion falls.'):'');
+  updBtns(); renderLedger();
+  setTimeout(setup,4000);
+}
+function tick(){
+  tickN++;
+  g.clearRect(0,0,W,H);
+  if(phase==='fight'&&tickN%40===0) exchange();
+  /* swarms */
+  [A,B].forEach(function(f){
+    if(!f) return;
+    f.lunge*=0.9;
+    const off=f.lunge*(W/2-f.x)*0.25;
+    g.globalCompositeOperation='lighter';
+    for(const p of P){
+      if(p.f!==f) continue;
+      p.a+=p.sp;
+      const x=f.x+off+Math.cos(p.a)*p.r;
+      const y=H*0.45+Math.sin(p.a)*p.r*0.8;
+      g.globalAlpha=0.5+0.3*Math.sin(p.a*3);
+      const img=SP[f.el][p.s>11*SC?1:0];
+      g.drawImage(img,x-p.s,y-p.s,p.s*2,p.s*2);
+    }
+    /* vigor bar */
+    g.globalAlpha=0.8; g.globalCompositeOperation='source-over';
+    g.fillStyle='#223041'; g.fillRect(f.x-60*SC,H*0.10,120*SC,4);
+    g.fillStyle='rgba('+COL[f.el]+',0.9)';
+    g.fillRect(f.x-60*SC,H*0.10,120*SC*Math.max(0,f.hp)/100,4);
+    g.fillStyle='rgba('+COL[f.el]+',0.6)';
+    g.font='10px monospace'; g.textAlign='center';
+    g.fillText(NAMES[f.el]+(bk[f.el]?' +'+bk[f.el]:''),f.x,H*0.10-6);
+  });
+  /* sparks */
+  g.globalCompositeOperation='lighter';
+  for(let i=S.length-1;i>=0;i--){
+    const s=S[i]; s.life++; s.x+=s.vx; s.y+=s.vy;
+    const t=s.life/s.max;
+    if(t>=1){ S.splice(i,1); continue; }
+    g.fillStyle='rgba('+s.c+','+((1-t)*0.9).toFixed(3)+')';
+    g.beginPath(); g.arc(s.x,s.y,1.4,0,7); g.arc(s.x,s.y,1.4,0,7); g.fill();
+  }
+  g.globalAlpha=1;
+  requestAnimationFrame(tick);
+}
+setup(); requestAnimationFrame(tick);
+</script>
+
+</body>
+</html>
