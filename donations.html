@@ -643,7 +643,6 @@ window.cloudRedeem = async function(key, name){
       el.style.color='#d9a83a';
     }catch(e){}
   }
-  function rr(a,b){ return a+Math.random()*(b-a); }
   function ring(x,y,color){
     var r=document.createElement('div');
     r.style.cssText='position:fixed;z-index:99;width:8px;height:8px;border-radius:50%;border:1.5px solid '+color+';pointer-events:none;margin:-4px 0 0 -4px;opacity:0';
@@ -654,10 +653,59 @@ window.cloudRedeem = async function(key, name){
       r.style.transform='scale('+(1+t*7)+')'; r.style.opacity=String((1-t)*0.9);
       if(t<1) requestAnimationFrame(st); else r.remove(); })(performance.now());
   }
-  /* ---- four-lane toss grammar ---- */
+  function floatLabel(x,y,msg,color){
+    var lb=document.createElement('div');
+    lb.textContent=msg;
+    lb.style.cssText='position:fixed;z-index:99;pointer-events:none;font:10px ui-monospace,Consolas,monospace;color:'+color+';letter-spacing:.1em';
+    lb.style.left=(x+14)+'px'; lb.style.top=(y-10)+'px';
+    document.body.appendChild(lb);
+    var t1=performance.now();
+    (function st(nw){ var t=Math.min(1,(nw-t1)/900);
+      lb.style.transform='translateY('+(-24*t)+'px)'; lb.style.opacity=String(1-t);
+      if(t<1) requestAnimationFrame(st); else lb.remove(); })(performance.now());
+  }
+  function bankFraction(x,y){
+    try{
+      var f=0.1+Math.random()*0.4;
+      var acc=parseFloat(localStorage.getItem('hive_spark_frac')||'0')+f;
+      var msg='+'+f.toFixed(2);
+      if(acc>=1){
+        acc-=1; msg='a drop condenses \u00b7 +1';
+        ring(x,y,'rgba(217,168,58,.9)');
+        try{ drops+=1; render(); flare=1.6; spawn(140,true);
+          RINGS.push({x:W/2,y:H-40*SC,r0:6*SC,t:0,max:40}); roar(); }catch(e){}
+        localStorage.setItem('hive_drops',String(parseInt(localStorage.getItem('hive_drops')||'0',10)+1));
+        var st=document.getElementById('stat');
+        if(st) st.textContent='the blink-coins gather into a drop. witnessed.';
+      }
+      localStorage.setItem('hive_spark_frac',String(acc));
+      floatLabel(x,y,msg,'#78dcc8');
+    }catch(e){}
+  }
+  /* the blink-coin: hops fractionally from your finger into the flame */
+  function hopCoin(x,y){
+    var f=document.getElementById('fire'); if(!f) return;
+    var rc=f.getBoundingClientRect();
+    var tx=rc.left+rc.width/2, ty=rc.top+rc.height*0.55;
+    var c=document.createElement('div');
+    c.style.cssText='position:fixed;z-index:99;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffe9b0, #d9a83a 60%, #8a6a1f);box-shadow:0 0 10px rgba(217,168,58,.8);pointer-events:none;margin:-7px 0 0 -7px';
+    document.body.appendChild(c);
+    var KS=[0,0.25,0.5,0.75,1], ki=0;
+    (function hop(){
+      var k=KS[ki];
+      var px=x+(tx-x)*k, py=y+(ty-y)*k-Math.sin(k*Math.PI)*30;
+      c.style.left=px+'px'; c.style.top=py+'px';
+      ring(px,py,'rgba(120,220,200,'+(ki===0?'0.9':'0.55')+')');
+      ki++;
+      if(ki<KS.length){ setTimeout(hop,95); }
+      else { c.remove(); ring(tx,ty,'rgba(217,168,58,.9)'); bankFraction(tx,ty); }
+    })();
+  }
+  /* three-lane toggle: og · teleport · sparks */
   var coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
   var style=localStorage.getItem('hive_tossstyle')||(coarse?'teleport':'og');
-  var ORDER=['og','teleport','drip','sparks'];
+  if(style==='drip'){ style='og'; }
+  var ORDER=['og','teleport','sparks'];
   var tg=document.createElement('button'); tg.className='btn mini';
   function tgLabel(){ tg.textContent='toss: '+style; }
   tgLabel();
@@ -665,7 +713,7 @@ window.cloudRedeem = async function(key, name){
     localStorage.setItem('hive_tossstyle',style); tgLabel(); };
   var snd=document.getElementById('snd');
   if(snd&&snd.parentNode) snd.parentNode.insertBefore(tg,snd.nextSibling);
-  /* takeover: we steer the engine's own dropper coin per lane */
+  /* button-coin takeover: in teleport lane the dropper coin hops instead of falls */
   var STEPS=[0.05,0.22,0.45,0.7,0.9,1];
   function coinView(){
     try{
@@ -674,7 +722,7 @@ window.cloudRedeem = async function(key, name){
       var k=Math.min(1,coin.t/coin.dur);
       var y=-30+(H-40*SC+30)*k;
       var x=W/2+Math.sin(k*3.1)*8*SC;
-      return {cx:x,cy:y,vx:rc.left+x,vy:rc.top+y,k:k};
+      return {vx:rc.left+x,vy:rc.top+y};
     }catch(e){ return null; }
   }
   (function loop(now){
@@ -687,21 +735,12 @@ window.cloudRedeem = async function(key, name){
           if(i!==coin._step){ coin._step=i;
             var p=coinView(); if(p) ring(p.vx,p.vy,'rgba(120,220,200,.9)'); }
           if(i>=STEPS.length-1) coin.t=coin.dur;
-        } else if(coin._lane==='drip'){
-          if(now-coin._t0<650){
-            coin.t=2;
-            var q=coinView();
-            if(q&&typeof S!=='undefined'){
-              for(var d=0;d<2;d++) S.push({x:q.cx+rr(-6,6)*SC,y:q.cy+10,
-                vx:rr(-0.4,0.4),vy:rr(2,4),life:0,max:rr(40,70)});
-            }
-          }
         }
       }
     }catch(e){}
     requestAnimationFrame(loop);
   })(performance.now());
-  /* ---- sparks lane (the tf2 tap-faucet) ---- */
+  /* sparks lane (tf2 tap-faucet) */
   function sparks(x,y){
     for(var i=0;i<10;i++){
       var s=document.createElement('div');
@@ -716,33 +755,22 @@ window.cloudRedeem = async function(key, name){
           if(t<1) requestAnimationFrame(st); else elm.remove(); })(performance.now());
       })(s,Math.cos(a)*d,Math.sin(a)*d);
     }
-    try{
-      var f=0.1+Math.random()*0.4;
-      var acc=parseFloat(localStorage.getItem('hive_spark_frac')||'0')+f;
-      var msg='+'+f.toFixed(2);
-      if(acc>=1){
-        acc-=1; msg='a drop condenses \u00b7 +1';
-        ring(x,y,'rgba(217,168,58,.9)');
-        try{ drops+=1; render(); }catch(e){}
-        localStorage.setItem('hive_drops',String(parseInt(localStorage.getItem('hive_drops')||'0',10)+1));
-        var st=document.getElementById('stat');
-        if(st) st.textContent='the sparks gather into a drop. witnessed.';
-      }
-      localStorage.setItem('hive_spark_frac',String(acc));
-      var lb=document.createElement('div');
-      lb.textContent=msg;
-      lb.style.cssText='position:fixed;z-index:99;pointer-events:none;font:10px ui-monospace,Consolas,monospace;color:#78dcc8;letter-spacing:.1em';
-      lb.style.left=(x+14)+'px'; lb.style.top=(y-10)+'px';
-      document.body.appendChild(lb);
-      var t1=performance.now();
-      (function st(nw){ var t=Math.min(1,(nw-t1)/900);
-        lb.style.transform='translateY('+(-24*t)+'px)'; lb.style.opacity=String(1-t);
-        if(t<1) requestAnimationFrame(st); else lb.remove(); })(performance.now());
-    }catch(e){}
+    bankFraction(x,y);
   }
   document.addEventListener('click',function(ev){
     if(!ev.target||!ev.target.closest) return;
-    var b=ev.target.closest('a,button'); if(!b) return;
+    var b=ev.target.closest('a,button');
+    /* teleport lane: tap the hearth itself — no button needed */
+    if(style==='teleport'&&!b){
+      var f=document.getElementById('fire');
+      if(f){ var rc=f.getBoundingClientRect();
+        if(ev.clientY>rc.top&&ev.clientY<rc.bottom){
+          hopCoin(ev.clientX,ev.clientY); firstlight();
+        }
+      }
+      return;
+    }
+    if(!b) return;
     var txt=(b.textContent||'').toLowerCase();
     var isFree=(b.id==='toss')||txt.indexOf('toss a coin')>-1;
     var isReal=txt.indexOf('toss a real coin')>-1;
@@ -750,12 +778,9 @@ window.cloudRedeem = async function(key, name){
       var x=ev.clientX||innerWidth/2, y=ev.clientY||innerHeight/2;
       if(style==='sparks'){ ev.stopPropagation(); ev.preventDefault(); sparks(x,y); firstlight(); return; }
       if(style==='teleport') ring(x,y,'rgba(120,220,200,.9)');
-      if(style==='drip') ring(x,y,'rgba(217,168,58,.9)');
       firstlight();
     } else if(isReal){
-      var x2=ev.clientX||innerWidth/2, y2=ev.clientY||innerHeight/2;
-      if(style==='teleport') ring(x2,y2,'rgba(120,220,200,.9)');
-      if(style==='drip') ring(x2,y2,'rgba(217,168,58,.9)');
+      if(style==='teleport') ring(ev.clientX||innerWidth/2, ev.clientY||innerHeight/2,'rgba(120,220,200,.9)');
       firstlight();
     }
   },true);
