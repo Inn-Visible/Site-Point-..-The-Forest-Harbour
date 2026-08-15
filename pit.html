@@ -155,7 +155,7 @@ function back(k){
 function start(){
   if(phase!=='back') return;
   phase='fight';
-  A.vig=1+0.18*(bk[A.el]||0); B.vig=1+0.18*(bk[B.el]||0);
+    A.vig=1+0.35*(bk[A.el]||0); B.vig=1+0.35*(bk[B.el]||0);
   updBtns();
   document.getElementById('stat').textContent='the horn sounds. '+NAMES[A.el]+' vs '+NAMES[B.el]+'.';
 }
