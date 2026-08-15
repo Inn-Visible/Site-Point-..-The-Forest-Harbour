@@ -111,7 +111,20 @@ function mint(kind,name){
   }
 }
 function ledger(){ try{ return JSON.parse(localStorage.getItem('hive_pit_ledger')||'[]'); }catch(e){ return []; } }
-function renderLedger(){
+function form(){ try{ return JSON.parse(localStorage.getItem('hive_pit_form')||'{}'); }catch(e){ return {}; } }
+function weather(el){
+  const map={flame:'fire',flood:'water',fog:'smoke'};
+  return (localStorage.getItem('hive_hearth_mode')||'fire')===map[el]?1.2:1;
+}
+function renderCond(){
+  const fm=form();
+  const m=localStorage.getItem('hive_hearth_mode')||'fire';
+  const wn={fire:'the flame',water:'the flood',smoke:'the fog'};
+  const parts=['hearth burns '+m.toUpperCase()+' \u2014 '+wn[m]+' eager'];
+  ['flame','flood','fog'].forEach(function(k){ if(fm[k]) parts.push(NAMES[k]+(fm[k]==='w'?' tired':' hungry')); });
+  document.getElementById('cond').textContent=parts.join(' \u00b7 ');
+}
+  function renderLedger(){
   const l=ledger().slice(-4).reverse();
   document.getElementById('ledger').innerHTML=l.map(function(r){
     return 'bout '+r.b+' · '+NAMES[r.w]+(r.you?' · you backed '+NAMES[r.you]+(r.you===r.w?' ✓':' ✗'):'');
