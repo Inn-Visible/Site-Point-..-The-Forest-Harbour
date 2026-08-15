@@ -170,7 +170,11 @@ function back(k){
 function start(){
   if(phase!=='back') return;
   phase='fight';
-    A.vig=1+0.35*(bk[A.el]||0); B.vig=1+0.35*(bk[B.el]||0);
+   const fm=form();
+  const mA=(fm[A.el]==='w'?0.9:fm[A.el]==='l'?1.1:1)*weather(A.el);
+  const mB=(fm[B.el]==='w'?0.9:fm[B.el]==='l'?1.1:1)*weather(B.el);
+  A.vig=(1+0.35*(bk[A.el]||0))*mA; B.vig=(1+0.35*(bk[B.el]||0))*mB;
+  renderCond();
   updBtns();
   document.getElementById('stat').textContent='the horn sounds. '+NAMES[A.el]+' vs '+NAMES[B.el]+'.';
 }
