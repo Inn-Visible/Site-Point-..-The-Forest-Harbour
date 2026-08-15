@@ -619,7 +619,6 @@ window.cloudRedeem = async function(key, name){
   var WATCHES=['dawn','noon','dusk','night'];
   var lines={dawn:'dawn watch \u00b7 the fire wakes hungry',noon:'noon watch \u00b7 steady burn',dusk:'dusk watch \u00b7 the tall flame',night:'night watch \u00b7 banked embers'};
   var seas={winter:'winter \u00b7 nights are long; keep the flame',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
-  /* the sky-dial, above the footer */
   var el=document.createElement('div');
   el.style.cssText='text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.18em;color:#5c6875;padding:12px 8px';
   var pips=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
@@ -637,6 +636,67 @@ window.cloudRedeem = async function(key, name){
   var ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 82%, '+tints[Wt]+', transparent 72%)';
   document.body.appendChild(ov);
+  /* ---- the deep noise + the evolving chirp ---- */
+  function sndOk(){ return typeof soundOn==='undefined'?true:soundOn; }
+  function deep(){
+    if(!sndOk()) return;
+    try{
+      var ctx=ac(); var t=ctx.currentTime;
+      var b=ctx.createBuffer(1,Math.floor(ctx.sampleRate*1.2),ctx.sampleRate);
+      var d=b.getChannelData(0); for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      var src=ctx.createBufferSource(); src.buffer=b;
+      var f=ctx.createBiquadFilter(); f.type='lowpass';
+      f.frequency.setValueAtTime(220,t); f.frequency.exponentialRampToValueAtTime(55,t+0.9);
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.5,t+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+1.0);
+      src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t); src.stop(t+1.1);
+      var o=ctx.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(70,t); o.frequency.exponentialRampToValueAtTime(28,t+0.7);
+      var og=ctx.createGain();
+      og.gain.setValueAtTime(0.0001,t);
+      og.gain.exponentialRampToValueAtTime(0.45,t+0.02);
+      og.gain.exponentialRampToValueAtTime(0.0001,t+0.8);
+      o.connect(og); og.connect(ctx.destination); o.start(t); o.stop(t+0.9);
+    }catch(e){}
+  }
+  var SCALE=[0,2,4,7,9,12];
+  var tickN=0;
+  var _tink=window.tink||null;
+  window.tink=function(){
+    if(!sndOk()) return;
+    try{
+      var ctx=ac(); var t=ctx.currentTime;
+      var oct=Math.floor(tickN/SCALE.length)%3;
+      var deg=SCALE[tickN%SCALE.length]+oct*12;
+      var f0=1150*Math.pow(2,deg/12);
+      var o=ctx.createOscillator(); o.type=(tickN%4===3)?'sine':'triangle';
+      o.frequency.setValueAtTime(f0,t);
+      o.frequency.exponentialRampToValueAtTime(f0*0.72,t+0.09);
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.15,t+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.16);
+      tickN++;
+    }catch(e){}
+  };
+  var _roar=window.roar||null;
+  window.roar=function(){ try{ if(_roar) _roar(); }catch(e){} deep(); };
+  function hopNote(i){
+    if(!sndOk()) return;
+    try{
+      var ctx=ac(); var t=ctx.currentTime;
+      var o=ctx.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(700*Math.pow(2,(i*3)/12),t);
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.07,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.1);
+    }catch(e){}
+  }
   var today=now.toDateString();
   function firstlight(){
     if(Wt!=='dawn') return;
@@ -702,17 +762,18 @@ window.cloudRedeem = async function(key, name){
   function hopCoin(x,y){
     var f=document.getElementById('fire'); if(!f) return;
     var rc=f.getBoundingClientRect();
-    var tx=rc.left+rc.width/2, ty=rc.top+rc.height*0.55;
+    var tx=rc.left+rc.width/2, ty=rc.top+rc.height*0.78;
     var c=document.createElement('div');
     c.style.cssText='position:fixed;z-index:99;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffe9b0, #d9a83a 60%, #8a6a1f);box-shadow:0 0 10px rgba(217,168,58,.8);pointer-events:none;margin:-7px 0 0 -7px';
     document.body.appendChild(c);
     var KS=[0,0.16,0.33,0.5,0.67,0.84,1], ki=0, lx=x, ly=y;
     (function hop(){
       var k=KS[ki];
-      var px=x+(tx-x)*k, py=y+(ty-y)*k-Math.sin(k*Math.PI)*30;
+      var px=x+(tx-x)*k, py=y+(ty-y)*k-Math.sin(k*Math.PI)*12;
       ghost(lx,ly);
       c.style.left=px+'px'; c.style.top=py+'px';
       ring(px,py,'rgba(120,220,200,'+(ki===0?'0.9':'0.5')+')');
+      hopNote(ki);
       lx=px; ly=py; ki++;
       if(ki<KS.length){ setTimeout(hop,70); }
       else { c.remove(); ring(tx,ty,'rgba(217,168,58,.9)'); bankFraction(tx,ty); }
