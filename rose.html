@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BASELINE // THE LIVING INSIGNIA</title>
+<style>
+  body { margin: 0; background: #0a0d12; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace; color: #5c6875; }
+  canvas { display: block; }
+  .readout { position: fixed; bottom: 20px; left: 20px; font-size: 11px; letter-spacing: 0.1em; }
+  .readout b { color: #d9a83a; }
+</style>
+</head>
+<body>
+
+<canvas id="species"></canvas>
+<div class="readout">
+  GEN: <b id="gen">0</b> &nbsp;|&nbsp; 
+  PETALS: <b id="count">0</b> &nbsp;|&nbsp; 
+  PULSE: <b>e^(-r)</b>
+</div>
+
+<script>
+const cv = document.getElementById('species');
+const g = cv.getContext('2d');
+let W, H;
+function fit() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+addEventListener('resize', fit); fit();
+
+// THE MATH OF THE SPECIES
+const PHI = 1.6180339887; 
+const GOLDEN_ANGLE = 137.508 * (Math.PI / 180); // The sunflower's exact spacing
+const MAX_PETALS = 600;
+const GROWTH_RATE = 0.8; // Petals born per frame
+let currentPetals = 0;
+let generation = 0;
+let pulseWave = 0; // The 'e' pulse traveling outward
+
+// Click to trigger a manual 'e' pulse (the house feeling something)
+addEventListener('click', () => { pulseWave = 0; });
+
+function tick() {
+  g.fillStyle = 'rgba(10, 13, 18, 0.15)'; // Ghosting trail
+  g.fillRect(0, 0, W, H);
+
+  const cx = W / 2;
+  const cy = H / 2;
+  const scale = Math.min(W, H) / 60;
+
+  // GROWTH (Phi): The structure expands
+  if (currentPetals < MAX_PETALS) {
+    currentPetals += GROWTH_RATE;
+    if (currentPetals >= MAX_PETALS) {
+      generation++;
+      currentPetals = 0; // The organism resets to grow the next whorl
+      document.getElementById('gen').textContent = generation;
+    }
+  }
+
+  // PULSE (e): The wave travels outward from the center
+  pulseWave += 2.5; 
+  if (pulseWave > scale * Math.sqrt(MAX_PETALS) + 50) pulseWave = -20;
+
+  document.getElementById('count').textContent = Math.floor(currentPetals);
+
+  // Draw the cage (faint)
+  g.strokeStyle = 'rgba(200, 69, 44, 0.1)';
+  g.lineWidth = 2;
+  g.beginPath();
+  for(let i=0; i<6; i++) {
+    const a = i * Math.PI / 3;
+    const px = cx + Math.cos(a) * scale * 25;
+    const py = cy + Math.sin(a) * scale * 25;
+    if(i===0) g.moveTo(px,py); else g.lineTo(px,py);
+  }
+  g.closePath(); g.stroke();
+
+  // Draw the organism
+  for (let n = 0; n < currentPetals; n++) {
+    // Vogel's Model: Golden angle + square root of n
+    const angle = n * GOLDEN_ANGLE;
+    const r = scale * Math.sqrt(n);
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+
+    // The 'e' decay: How close is this petal to the traveling pulse wave?
+    const distToWave = Math.abs(r - pulseWave);
+    
+    // Exponential decay: e^(-x). The closer to the wave, the hotter it glows.
+    const heat = Math.exp(-distToWave * 0.15); 
+
+    // Color interpolation: Ash (dim) -> Ember (hot)
+    const red = Math.floor(40 + 215 * heat);
+    const grn = Math.floor(30 + 130 * heat);
+    const blu = Math.floor(30 + 10 * heat);
+    const alpha = 0.3 + 0.7 * heat;
+
+    g.fillStyle = `rgba(${red}, ${grn}, ${blu}, ${alpha})`;
+    
+    // Petal shape (elongated ellipse pointing away from center)
+    g.save();
+    g.translate(x, y);
+    g.rotate(angle);
+    g.beginPath();
+    g.ellipse(0, 0, 2 + heat * 4, 6 + heat * 8, 0, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+
+    // If it's the exact crest of the wave, draw a spark
+    if (heat > 0.85) {
+      g.fillStyle = `rgba(255, 240, 200, ${heat})`;
+      g.beginPath();
+      g.arc(x, y, 1.5, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
