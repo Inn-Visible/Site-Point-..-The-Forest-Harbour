@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEED — the till split simulator</title>
+<style>
+  body{background:#0a0d12;color:#e8e4d8;font-family:ui-monospace,Consolas,monospace;margin:0}
+  header{padding:16px 22px;border-bottom:1px solid #223041;color:#d9a83a;letter-spacing:.3em;font-size:13px}
+  main{max-width:860px;margin:0 auto;padding:34px 16px 60px;text-align:center}
+  .hook{font-family:Georgia,serif;font-style:italic;font-size:22px}
+  .tillrow{margin-top:18px;font-size:12px;color:#93a1b0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+  input{background:#0a0d12;border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:12px;padding:8px;width:90px}
+  button{background:none;border:1px solid #d9a83a;color:#d9a83a;font-family:inherit;font-size:11px;letter-spacing:.1em;padding:8px 14px;cursor:pointer}
+  button:hover{background:#d9a83a;color:#0a0d12}
+  #bar{display:flex;gap:2px;height:30px;margin:26px 0 8px;border:1px solid #223041}
+  #bar div{transition:flex-grow .4s}
+  .row{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid #223041;font-size:12px;text-align:left}
+  .nm{flex:1;min-width:160px}
+  .dw{color:#d9a83a;width:130px}
+  .sh{color:#e8e4d8;width:80px}
+  .gw{color:#5c6875;font-size:11px;flex-basis:100%}
+  .weld{margin-top:22px;color:#5c6875;font-size:11px;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<header>DEED · PETRI DISH · PT2</header>
+<main>
+  <p class="hook">the till splits by deed, not by luck.</p>
+  <div class="tillrow">
+    season till: $<input id="till" value="100.00">
+    <button onclick="spawn(false)">spawn witness</button>
+    <button onclick="spawn(true)">spawn patron</button>
+    <button onclick="reset()">reset</button>
+    · souls: <span id="count">1</span>
+  </div>
+  <div id="bar"></div>
+  <div id="ledger"></div>
+  <p class="weld">chance earns glory · tenure earns value · money flows in from the real economy, out through witnessed hands</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const COLORS=['#d9a83a','#3f7fc1','#c8452c','#58a36a','#b07fd9','#d97fa8','#7fd9c8','#d9d07f'];
+const POOL=['wick','soot','moth','ember','dross','kindling','ash','spark','cinder','lantern','bellows','flue','tinder','hearthstone'];
+let patrons=[{name:'Quilliinn Primrose',patron:true,coins:275,drops:453,days:2,bouts:24}];
+function deedW(p){return (p.patron?5000:0)+p.coins*5+p.days;}
+function gloryW(p){return (p.patron?5000:0)+p.drops*5+p.days+p.bouts*2;}
+function spawn(isPatron){
+  const base=POOL[Math.floor(Math.random()*POOL.length)];
+  const name=base+(Math.random()<0.4?' '+(10+Math.floor(Math.random()*90)):'');
+  const coins=Math.floor(Math.random()*(isPatron?300:120));
+  patrons.push({name,patron:isPatron,coins,
+    drops:coins+Math.floor(Math.random()*600),
+    days:1+Math.floor(Math.random()*400),
+    bouts:Math.floor(Math.random()*60)});
+  render();
+}
+function reset(){patrons=[{name:'Quilliinn Primrose',patron:true,coins:275,drops:453,days:2,bouts:24}];render();}
+function render(){
+  const till=parseFloat($('till').value)||0;
+  const total=patrons.reduce((s,p)=>s+deedW(p),0)||1;
+  const bar=$('bar'); bar.innerHTML='';
+  patrons.forEach((p,i)=>{
+    const s=document.createElement('div');
+    s.style.flexGrow=deedW(p);
+    s.style.background=COLORS[i%COLORS.length];
+    s.title=p.name;
+    bar.appendChild(s);
+  });
+  const rows=patrons.map((p,i)=>({p,i})).sort((a,b)=>deedW(b.p)-deedW(a.p));
+  $('ledger').innerHTML=rows.map(function(r){
+    const p=r.p,w=deedW(p),share=till*w/total;
+    return '<div class="row"><span class="nm" style="color:'+COLORS[r.i%COLORS.length]+'">'+(p.patron?'\u25c6 ':'\u00b7 ')+p.name+'</span>'+
+      '<span class="dw">deed '+w.toLocaleString()+'</span>'+
+      '<span class="sh">$'+share.toFixed(2)+'</span>'+
+      '<span class="gw">glory '+gloryW(p).toLocaleString()+' \u00b7 light only</span></div>';
+  }).join('');
+  $('count').textContent=patrons.length;
+}
+$('till').addEventListener('input',render);
+render();
+</script>
+</body>
+</html>
