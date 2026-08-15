@@ -57,7 +57,7 @@
     <button class="btn" id="b-fog" onclick="back('fog')">back the fog</button>
     <button class="btn mini" id="horn" onclick="start()">sound the horn ↠</button>
   </div>
-    <div class="status" id="marks"></div>
+  <div class="status" id="marks"></div>
   <div class="status" id="cond"></div>
   <div class="status" id="line"></div>
   <div id="ledger"></div>
@@ -124,10 +124,10 @@ function renderCond(){
   ['flame','flood','fog'].forEach(function(k){ if(fm[k]) parts.push(NAMES[k]+(fm[k]==='w'?' tired':' hungry')); });
   document.getElementById('cond').textContent=parts.join(' \u00b7 ');
 }
-  function renderLedger(){
+function renderLedger(){
   const l=ledger().slice(-4).reverse();
   document.getElementById('ledger').innerHTML=l.map(function(r){
-    return 'bout '+r.b+' · '+NAMES[r.w]+(r.you?' · you backed '+NAMES[r.you]+(r.you===r.w?' ✓':' ✗'):'');
+    return 'bout '+r.b+' · '+NAMES[r.w]+(r.you?' · you backed '+NAMES[r.you]+(r.you===r.w?' \u2713':' \u2717'):'');
   }).join('<br>');
 }
 
@@ -146,15 +146,16 @@ function setup(){
   marks=3; bk={}; phase='back';
   document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. three backing marks; spend them.';
   document.getElementById('line').textContent='';
-    updBtns(); renderLedger(); renderCond();
+  updBtns(); renderLedger(); renderCond();
 }
 function updBtns(){
   ['flame','flood','fog'].forEach(function(k){
     const b=document.getElementById('b-'+k);
     const inBout=(A&&A.el===k)||(B&&B.el===k);
-    b.style.display=inBout?'inline-block':'none';    const other=(A.el===k?B.el:A.el);
+    b.style.display=inBout?'inline-block':'none';
+    const other=(A.el===k?B.el:A.el);
     const pays=BEATS[k]===other?1:3;
-    b.textContent='back '+NAMES[k]+' · pays '+pays+(bk[k]?' ×'+bk[k]:'');
+    b.textContent='back '+NAMES[k]+' \u00b7 pays '+pays+(bk[k]?' \u00d7'+bk[k]:'');
     b.disabled=phase!=='back'||marks<=0;
   });
   document.getElementById('horn').style.display=phase==='back'?'inline-block':'none';
@@ -170,7 +171,7 @@ function back(k){
 function start(){
   if(phase!=='back') return;
   phase='fight';
-   const fm=form();
+  const fm=form();
   const mA=(fm[A.el]==='w'?0.9:fm[A.el]==='l'?1.1:1)*weather(A.el);
   const mB=(fm[B.el]==='w'?0.9:fm[B.el]==='l'?1.1:1)*weather(B.el);
   A.vig=(1+0.35*(bk[A.el]||0))*mA; B.vig=(1+0.35*(bk[B.el]||0))*mB;
@@ -202,20 +203,18 @@ function end(){
   for(let i=0;i<120;i++) S.push({x:w.x+rnd(-30,30)*SC,y:H*0.45+rnd(-30,30)*SC,
     vx:rnd(-3,3),vy:rnd(-3,1),life:0,max:rnd(40,90),c:COL[w.el]});
   let you=null; for(const k in bk) if(!you||bk[k]>bk[you]) you=k;
-  const l=ledger(); l.push({b:bout+1,w:w.el,you:you});
-  localStorage.setItem('hive_pit_ledger',JSON.stringify(l.slice(-60)));
-  bout++; localStorage.setItem('hive_pit_bout',String(bout));
-
-    mint('pit',NAMES[w.el]);
-   const l=w===A?B:A;
+  const l=w===A?B:A;
   const fm=form(); fm[w.el]='w'; fm[l.el]='l';
   localStorage.setItem('hive_pit_form',JSON.stringify(fm));
   let pay=0;
   if(you&&you===w.el){ pay=(BEATS[w.el]===l.el)?1:3;
     const d=parseInt(localStorage.getItem('hive_drops')||'0',10)+pay; localStorage.setItem('hive_drops',String(d)); }
-  
+  const lg=ledger(); lg.push({b:bout+1,w:w.el,you:you});
+  localStorage.setItem('hive_pit_ledger',JSON.stringify(lg.slice(-60)));
+  bout++; localStorage.setItem('hive_pit_bout',String(bout));
+  mint('pit',NAMES[w.el]);
   phase='over';
-  document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid '+pay+' drop'+(pay===1?'':'s')+'.':' your champion falls.'):'');  
+  document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid '+pay+' drop'+(pay===1?'':'s')+'.':' your champion falls.'):'');
   updBtns(); renderLedger();
   setTimeout(setup,4000);
 }
@@ -223,7 +222,6 @@ function tick(){
   tickN++;
   g.clearRect(0,0,W,H);
   if(phase==='fight'&&tickN%40===0) exchange();
-  /* swarms */
   [A,B].forEach(function(f){
     if(!f) return;
     f.lunge*=0.9;
@@ -238,7 +236,6 @@ function tick(){
       const img=SP[f.el][p.s>11*SC?1:0];
       g.drawImage(img,x-p.s,y-p.s,p.s*2,p.s*2);
     }
-    /* vigor bar */
     g.globalAlpha=0.8; g.globalCompositeOperation='source-over';
     g.fillStyle='#223041'; g.fillRect(f.x-60*SC,H*0.10,120*SC,4);
     g.fillStyle='rgba('+COL[f.el]+',0.9)';
@@ -247,14 +244,13 @@ function tick(){
     g.font='10px monospace'; g.textAlign='center';
     g.fillText(NAMES[f.el]+(bk[f.el]?' +'+bk[f.el]:''),f.x,H*0.10-6);
   });
-  /* sparks */
   g.globalCompositeOperation='lighter';
   for(let i=S.length-1;i>=0;i--){
     const s=S[i]; s.life++; s.x+=s.vx; s.y+=s.vy;
     const t=s.life/s.max;
     if(t>=1){ S.splice(i,1); continue; }
     g.fillStyle='rgba('+s.c+','+((1-t)*0.9).toFixed(3)+')';
-    g.beginPath(); g.arc(s.x,s.y,1.4,0,7); g.arc(s.x,s.y,1.4,0,7); g.fill();
+    g.beginPath(); g.arc(s.x,s.y,1.4,0,7); g.fill();
   }
   g.globalAlpha=1;
   requestAnimationFrame(tick);
