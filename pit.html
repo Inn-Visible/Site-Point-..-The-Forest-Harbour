@@ -146,7 +146,7 @@ function setup(){
   marks=3; bk={}; phase='back';
   document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. three backing marks; spend them.';
   document.getElementById('line').textContent='';
-  updBtns(); renderLedger();
+    updBtns(); renderLedger(); renderCond();
 }
 function updBtns(){
   ['flame','flood','fog'].forEach(function(k){
