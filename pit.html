@@ -138,8 +138,9 @@ function updBtns(){
   ['flame','flood','fog'].forEach(function(k){
     const b=document.getElementById('b-'+k);
     const inBout=(A&&A.el===k)||(B&&B.el===k);
-    b.style.display=inBout?'inline-block':'none';
-    b.textContent='back '+NAMES[k]+(bk[k]?' ×'+bk[k]:'');
+    b.style.display=inBout?'inline-block':'none';    const other=(A.el===k?B.el:A.el);
+    const pays=BEATS[k]===other?1:3;
+    b.textContent='back '+NAMES[k]+' · pays '+pays+(bk[k]?' ×'+bk[k]:'');
     b.disabled=phase!=='back'||marks<=0;
   });
   document.getElementById('horn').style.display=phase==='back'?'inline-block':'none';
