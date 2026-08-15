@@ -1,4 +1,4 @@
-const CACHE='outflow-v8';
+const CACHE='outflow-v9';
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['donations.html','board.html'])));
   self.skipWaiting();
