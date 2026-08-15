@@ -195,7 +195,7 @@ function end(){
     const d=parseInt(localStorage.getItem('hive_drops')||'0',10)+pay; localStorage.setItem('hive_drops',String(d)); }
   
   phase='over';
-  document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid.':' your champion falls.'):'');
+  document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid '+pay+' drop'+(pay===1?'':'s')+'.':' your champion falls.'):'');  
   updBtns(); renderLedger();
   setTimeout(setup,4000);
 }
