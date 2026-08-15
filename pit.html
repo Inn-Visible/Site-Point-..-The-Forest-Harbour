@@ -300,5 +300,24 @@ function tick(){
 setup(); requestAnimationFrame(tick);
 </script>
 
+<script>
+(function(){
+  function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
+  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
+  var now=new Date(), S=season(now), Wt=watch(now);
+  var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
+  var RC={winter:'#7fb2e5',spring:'#58a36a',summer:'#d9a83a',autumn:'#c8452c'};
+  var WATCHES=['dawn','noon','dusk','night'];
+  var lines={dawn:'dawn watch \u00b7 the fire wakes hungry',noon:'noon watch \u00b7 steady burn',dusk:'dusk watch \u00b7 the tall flame',night:'night watch \u00b7 banked embers'};
+  var seas={winter:'winter \u00b7 nights are long',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
+  var el=document.createElement('div');
+  el.style.cssText='text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.18em;color:#5c6875;padding:12px 8px';
+  var pips=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+  el.innerHTML='<span style="color:'+RC[S]+'">'+RUNE[S]+'</span> '+pips+' <span style="color:#93a1b0">'+lines[Wt]+'</span> \u00b7 '+seas[S];
+  var f=document.querySelector('footer');
+  if(f) f.parentNode.insertBefore(el,f); else document.body.appendChild(el);
+})();
+</script>
+  
 </body>
 </html>
