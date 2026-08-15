@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>the slate — draw · share · erase</title>
+<style>
+  :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,Consolas,monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+  body.light{background:#f2efe6;color:#1c2430}
+  header{position:fixed;top:0;left:0;right:0;z-index:2;display:flex;justify-content:space-between;
+    padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none}
+  body.light header{color:#6b7684}
+  canvas{position:fixed;inset:0;cursor:crosshair}
+  #tools{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;
+    display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;
+    background:rgba(10,13,18,.85);border:1px solid var(--line);padding:8px;max-width:94vw}
+  body.light #tools{background:rgba(242,239,230,.9);border-color:#c9c2b2}
+  button{background:none;border:1px solid var(--line);color:var(--dim);font-family:inherit;
+    font-size:10px;letter-spacing:.08em;padding:6px 9px;cursor:pointer}
+  button:hover{border-color:var(--gold);color:var(--gold)}
+  button.on{border-color:var(--gold);color:var(--gold)}
+  .sw{width:22px;height:22px;border-radius:50%;padding:0}
+</style>
+</head>
+<body>
+<header><span>THE SLATE</span><span id="flash">draw · share · erase · tiaga-mode</span></header>
+<canvas id="slate"></canvas>
+<div id="tools">
+  <span id="swatches" style="display:flex;gap:6px"></span>
+  <input type="range" id="size" min="2" max="26" value="5" style="width:70px">
+  <button id="eraseBtn" onclick="erase=!erase;paint()">erase</button>
+  <button onclick="undo()">undo</button>
+  <button onclick="tiaga()">tiaga-shake</button>
+  <button onclick="board()">board</button>
+  <button onclick="png()">png</button>
+  <button onclick="copy()">copy</button>
+  <button onclick="share()">share</button>
+</div>
+<script>
+const cv=document.getElementById('slate'),x=cv.getContext('2d');
+const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8'],
+           light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76']};
+let ci=0,size=5,erase=false,light=false,W,H;
+function fit(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const old=document.createElement('canvas'); old.width=cv.width; old.height=cv.height;
+  if(cv.width) old.getContext('2d').drawImage(cv,0,0);
+  W=innerWidth; H=innerHeight;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
+  x.setTransform(dpr,0,0,dpr,0,0); x.lineCap='round'; x.lineJoin='round';
+  if(old.width) x.drawImage(old,0,0,old.width,old.height,0,0,W,H);
+}
+addEventListener('resize',fit); fit();
+const sw=document.getElementById('swatches');
+PAL.dark.forEach(function(c,i){
+  const b=document.createElement('button'); b.className='sw'; b.onclick=function(){ci=i;erase=false;paint();};
+  sw.appendChild(b);
+});
+document.getElementById('size').oninput=function(){size=+this.value;};
+function paint(){
+  const pal=PAL[light?'light':'dark'];
+  sw.querySelectorAll('.sw').forEach(function(b,i){
+    b.style.background=pal[i]; b.classList.toggle('on',i===ci&&!erase);
+  });
+  document.getElementById('eraseBtn').classList.toggle('on',erase);
+}
+function flash(m){ const f=document.getElementById('flash'); f.textContent=m;
+  setTimeout(function(){f.textContent='draw \u00b7 share \u00b7 erase \u00b7 tiaga-mode';},1500); }
+const undoStack=[];
+function pushUndo(){ try{ if(undoStack.length>9) undoStack.shift(); undoStack.push(cv.toDataURL()); }catch(e){} }
+function undo(){ const d=undoStack.pop(); if(!d) return; const im=new Image();
+  im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height);
+  x.drawImage(im,0,0,cv.width,cv.height); x.restore(); save(); }; im.src=d; }
+let drawing=false,lx=0,ly=0;
+cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+cv.addEventListener('pointerdown',function(e){
+  drawing=true; cv.setPointerCapture(e.pointerId); pushUndo();
+  lx=e.clientX; ly=e.clientY; stroke(e.clientX,e.clientY,e.pressure,true);
+});
+cv.addEventListener('pointermove',function(e){ if(drawing) stroke(e.clientX,e.clientY,e.pressure,false); });
+['pointerup','pointercancel'].forEach(function(ev){
+  cv.addEventListener(ev,function(){ if(drawing){drawing=false;save();} });
+});
+function stroke(px,py,pr,dot){
+  const p=(pr&&pr>0&&pr!==0.5)?pr:0.5;
+  x.globalCompositeOperation=erase?'destination-out':'source-over';
+  x.strokeStyle=PAL[light?'light':'dark'][ci];
+  x.lineWidth=erase?size*3:size*(0.6+p*1.4);
+  x.beginPath(); x.moveTo(lx,ly); x.lineTo(px+(dot?0.01:0),py+(dot?0.01:0)); x.stroke();
+  lx=px; ly=py;
+}
+function save(){ try{ localStorage.setItem('hive_slate',cv.toDataURL());
+  localStorage.setItem('hive_slate_mode',light?'1':'0'); }catch(e){} }
+function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); save(); }
+function tiaga(){ pushUndo(); let n=0;
+  const iv=setInterval(function(){ n++;
+    cv.style.transform='translate('+(n%2?7:-7)+'px,0) rotate('+(n%2?1.2:-1.2)+'deg)';
+    if(n>5){ clearInterval(iv); cv.style.transform=''; clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
+  },45); }
+function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save(); }
+function exportCanvas(){
+  const t=document.createElement('canvas'); t.width=cv.width; t.height=cv.height;
+  const c=t.getContext('2d');
+  c.fillStyle=light?'#f2efe6':'#0a0d12'; c.fillRect(0,0,t.width,t.height);
+  c.drawImage(cv,0,0); return t;
+}
+function png(){ exportCanvas().toBlob(function(b){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='slate.png'; a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000); flash('png saved'); }); }
+function copy(){ exportCanvas().toBlob(function(b){
+  try{ navigator.clipboard.write([new ClipboardItem({'image/png':b})])
+    .then(function(){flash('copied to clipboard');},function(){flash('copy blocked');});
+  }catch(e){ flash('copy blocked'); } }); }
+function share(){ exportCanvas().toBlob(function(b){
+  const f=new File([b],'slate.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f],title:'the slate'});
+  else png(); }); }
+(function(){ try{
+  if(localStorage.getItem('hive_slate_mode')==='1'){ light=true; document.body.classList.add('light'); }
+  const d=localStorage.getItem('hive_slate');
+  if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
+    x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
+}catch(e){} paint(); })();
+</script>
+</body>
+</html>
