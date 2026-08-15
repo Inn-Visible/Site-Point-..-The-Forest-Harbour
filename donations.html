@@ -608,7 +608,8 @@ window.cloudRedeem = async function(key, name){
   }catch(e){ return 'offline'; }
 };
 </script>
-<script>
+
+  <script>
 (function(){
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
   function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
@@ -642,7 +643,6 @@ window.cloudRedeem = async function(key, name){
       el.style.color='#d9a83a';
     }catch(e){}
   }
-  /* the toggle */
   var style=localStorage.getItem('hive_tossstyle')||'teleport';
   var tg=document.createElement('button'); tg.className='btn mini';
   function tgLabel(){ tg.textContent='toss: '+(style==='teleport'?'teleport':'sparks'); }
@@ -737,6 +737,5 @@ window.cloudRedeem = async function(key, name){
   },true);
 })();
 </script>
-  
 </body>
 </html>
