@@ -207,7 +207,9 @@ function end(){
   bout++; localStorage.setItem('hive_pit_bout',String(bout));
 
     mint('pit',NAMES[w.el]);
-  const l=w===A?B:A;
+   const l=w===A?B:A;
+  const fm=form(); fm[w.el]='w'; fm[l.el]='l';
+  localStorage.setItem('hive_pit_form',JSON.stringify(fm));
   let pay=0;
   if(you&&you===w.el){ pay=(BEATS[w.el]===l.el)?1:3;
     const d=parseInt(localStorage.getItem('hive_drops')||'0',10)+pay; localStorage.setItem('hive_drops',String(d)); }
