@@ -158,6 +158,7 @@
 
   <script>
   (function(){
+        var $ = function(id){ return document.getElementById(id); };
     var h = parseInt(localStorage.getItem('hive_chain_h')||'0',10);
     var d = parseInt(localStorage.getItem('hive_drops')||'0',10);
     var b = parseInt(localStorage.getItem('hive_pit_bout')||'0',10);
