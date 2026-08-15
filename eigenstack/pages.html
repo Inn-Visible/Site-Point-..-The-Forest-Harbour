@@ -71,9 +71,8 @@
   photographed 07/17 · pt 1/2 v1.2 complete · the stemming point.</p>
 
   <div class="legend">
-    <span class="ok">■ crisp:</span> 1f–10f (per faces) · 12f–26f (+backs where they exist) · 27f–33f (+backs) · closing &nbsp;·&nbsp;
-    <span class="wf">■ verify:</span> 28b &nbsp;·&nbsp;
-    <span class="aw">■ awaiting:</span> 11f · 29b
+    <span class="ok">■ crisp:</span> 1f–11f (11f returned) · 12f–26f (+backs where they exist) · 27f–33f (+backs · 28b verified) · closing &nbsp;·&nbsp;
+    <span class="aw">■ awaiting:</span> 29b — the last face · returns at loop 5
   </div>
 
   <div class="part">PART I — THE BACKNULL INDEX · ONE LINE PER PAGE</div>
@@ -115,7 +114,7 @@
     </ul></section>
 
   <section class="dock"><div class="fig">stack 1 · control &amp; cybernetics — the grounding layer</div>
-    <div class="faces">covered: <span class="ok">12f·12b · 13f · 14f·14b · 15f·15b · 16f·16b</span> · missing: <span class="aw">11f</span></div>
+        <div class="faces">covered: <span class="ok">11f (returned) · 12f·12b · 13f · 14f·14b · 15f·15b · 16f·16b</span></div>
     <ul>
       <li class="m">premise: “systems form ‘memory’ through repeated FBL — not through intention — through reinforcement. (memory is systems ≠ human recollection; i.e. = pattern stabilization over time)”</li>
       <li><b>① the missing piece (p13):</b> loop memory = trace accumulation. when a loop repeats: it strengthens certain pathways · suppresses others · creates structural bias · (that bias = memory). in Q-speak (Energy-Action-Trace): E → A → T → modifies next energy flow · (the trace is the memory imprint). built for: habit formation · emotional loops · economic systems · social polarization · identity stabilization · {engine room?}</li>
@@ -175,12 +174,13 @@
     </ul></section>
 
   <section class="dock"><div class="fig">stack 7 · infrastructure cont’d</div>
-    <div class="faces">covered: <span class="ok">28f · 29f</span> · <span class="wf">28b (strip — verify)</span></div>
+        <div class="faces">covered: <span class="ok">28f · 29f · 28b (verified)</span></div>
     <ul>
       <li><b>1. The Art of Strategy — Dixit &amp; Nalebuff</b> · how people act in systems · leverage emerges · positioning beats effort · indirect moves win. <span class="m">“it’s not moral. it’s not academic. it’s practical logic.”</span></li>
       <li><b>2. The 33 Strategies of War — Greene</b> · not the 48 laws · psychological terrain · structural advantage · knowing when <i>not</i> to engage · creating asymmetry. <span class="m">“less slimy. more strategic.”</span></li>
-      <li><b>3. Debt — Graeber</b> [verify] · why money is power · how debt controls people · how obligation creates hierarchy. <span class="m">“this will probably resonate w/ you hard.”</span></li>
-      <li><b>4. The Box — Levinson</b> [verify] · shipping containers · boring innovations create massive leverage. <span class="m">“if you understand containers, you understand globalization.”</span></li>
+      <li><b>3. Debt — Graeber</b> [verified 28b] · why money is power · how debt controls people · why economics isn’t fair · how obligation creates hierarchy. <span class="m">“this will probably resonate w/ you hard.”</span></li>
+      <li><b>4. The Box — Levinson</b> [verified 28b] · shipping containers · logistics reshaped the world · infrastructure quietly controls everything · boring innovations create massive leverage. <span class="m">“if you understand containers, you understand globalization.”</span></li>
+      <li class="m">28b strip, margins kept — debt: “this one hits deep.” · the box: “this one surprises people.”</li>
       <li><b>5. fiction that teaches power:</b> Dune · The Dispossessed · Neuromancer · The Wire. <span class="m">“these show power in motion. (lens)”</span></li>
     </ul></section>
 
@@ -259,7 +259,7 @@ const content={
   8:'concrete learning stack · phases I–IV · no fluff · [transcribed]',
   9:'orange bottleneck · apprenticeship behavior · anchoring statement · [transcribed]',
   10:'scratch note · EMC/RF · niche ideas · high-skill areas · [transcribed]',
-  11:'[awaiting — the lost page · resend when found]',
+  11:'stack 1 opener · foundational systems theory & loop dynamics · how systems w/ memory form patterns & can be reshaped · core texts — out of control — kelly (social systems & the economic world · biological & technological systems self-organize through FBL) · general system theory — von bertalanffy (the actual generating of thinking about systems w/ feedback & memory across disciplines) · the fifth discipline — senge (systems thinking loops · behavior emerges from cyclical feedback, not linear cause-effect) · [returned 08/14 · the lost page, found]',
   12:'booklist redo · stack 1 · out of control — kelly · GST — bertalanffy · fifth — senge · [transcribed]',
   13:'① the missing piece · loop memory = trace accumulation · E→A→T · {engine room?} · [transcribed]',
   14:'stack 1 in full · foundations · emergence · cybernetics · memory/pattern · [transcribed]',
@@ -276,7 +276,7 @@ const content={
   25:'stack 4 · stitch-together · that loop is fighting itself · that\u2019s system literacy · [transcribed]',
   26:'stack 5 · locksmithing · phillips · ollam · tobias · [transcribed]',
   27:'seeing like a state — scott · the power broker — caro · field guide — larkin · utopia of rules — graeber · platform capitalism — srnicek · [transcribed]',
-  28:'art of strategy — dixit · 33 strategies — greene · debt — graeber · the box — levinson · [transcribed]',
+  28:'art of strategy — dixit · 33 strategies — greene · debt — graeber · the box — levinson · 28b verified: debt hits deep · the box = containers = globalization · [transcribed + 28b returned 08/14]',
   29:'fiction that teaches power — dune · the dispossessed · neuromancer · the wire · [transcribed]',
   30:'seeing like a state — scott · power broker — caro · capitalist realism — fisher · [transcribed]',
   31:'bullshit jobs — graeber · the tyranny of merit — sandel · [transcribed]',
@@ -309,5 +309,20 @@ if(location.hash){
 })();
 </script>
 
+<script>
+  /* the last face — the ladder owes it */
+  (function(){
+    try{
+      var drops=parseInt(localStorage.getItem('hive_drops')||'0',10);
+      var loops=Math.floor(drops/100);
+      var el=document.createElement('div');
+      el.style.cssText='max-width:820px;margin:14px auto 0;padding:10px 14px;text-align:center;font-size:11px;letter-spacing:.08em;color:#93a1b0;border:1px dashed #223041;background:#0e141b';
+      el.innerHTML = loops>=5
+        ? 'loop 5 closed \u00b7 the house owes you the last face \u2014 paste 29b when the notebook turns up \u00b7 <span style="color:#d9a83a">'+drops+' drops</span>'
+        : 'the fire keeps the count \u00b7 <span style="color:#d9a83a">'+drops+' drops</span> \u00b7 the last face (29b) returns at loop 5 \u00b7 '+(500-drops)+' to go';
+      document.querySelector('.legend').after(el);
+    }catch(e){}
+  })();
+</script>
 </body>
 </html>
