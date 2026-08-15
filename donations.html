@@ -614,24 +614,22 @@ window.cloudRedeem = async function(key, name){
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
   function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
   var now=new Date(), S=season(now), Wt=watch(now);
+  var lines={dawn:'dawn watch \u00b7 the fire wakes hungry \u00b7 first toss carries +1 drop',
+    noon:'noon watch \u00b7 steady burn \u00b7 the fire minds its business',
+    dusk:'dusk watch \u00b7 the tall flame \u00b7 the hearth glows eager',
+    night:'night watch \u00b7 banked embers \u00b7 the rest zone rests'};
+  var seas={winter:'winter \u00b7 nights are long; keep the flame',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
+  var el=document.createElement('div');
+  el.style.cssText='text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#5c6875;padding:10px 12px 0';
+  el.textContent=lines[Wt]+' \u00b7 '+seas[S];
+  var main=document.querySelector('main')||document.body;
+  main.insertBefore(el, main.firstChild);
   var tints={dawn:'rgba(217,168,58,0.05)',noon:'rgba(0,0,0,0)',dusk:'rgba(200,90,40,0.07)',night:'rgba(18,24,32,0.38)'};
   if(S==='winter') tints.night='rgba(12,16,24,0.52)';
   if(S==='summer') tints.dusk='rgba(200,90,40,0.11)';
-  if(S==='autumn') tints.noon='rgba(120,130,140,0.05)';
   var ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 82%, '+tints[Wt]+', transparent 72%)';
   document.body.appendChild(ov);
-  var lines={
-    dawn:'dawn watch \u00b7 the fire wakes hungry \u00b7 first toss carries +1 drop',
-    noon:'noon watch \u00b7 steady burn \u00b7 the fire minds its business',
-    dusk:'dusk watch \u00b7 the tall flame \u00b7 the hearth glows eager',
-    night:'night watch \u00b7 banked embers \u00b7 the rest zone rests'
-  };
-  var seas={winter:'winter \u00b7 nights are long; keep the flame',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
-  var el=document.createElement('div');
-  el.style.cssText='position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:2;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#5c6875;pointer-events:none;text-align:center;max-width:92vw';
-  el.textContent=lines[Wt]+' \u00b7 '+seas[S];
-  document.body.appendChild(el);
   var today=now.toDateString();
   function firstlight(){
     if(Wt!=='dawn') return;
@@ -644,14 +642,78 @@ window.cloudRedeem = async function(key, name){
       el.style.color='#d9a83a';
     }catch(e){}
   }
+  var coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  function target(){
+    var f=document.getElementById('fire'); if(!f) return null;
+    var r=f.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:Math.min(r.top+r.height*0.55, innerHeight-40)};
+  }
+  function ring(x,y,color){
+    var r=document.createElement('div'); r.className='tpring';
+    if(color) r.style.borderColor=color;
+    r.style.left=x+'px'; r.style.top=y+'px';
+    document.body.appendChild(r);
+    var t0=performance.now();
+    (function st(now){
+      var t=Math.min(1,(now-t0)/450);
+      r.style.transform='scale('+(1+t*7)+')';
+      r.style.opacity=String((1-t)*0.9);
+      if(t<1) requestAnimationFrame(st); else r.remove();
+    })(performance.now());
+  }
+  function coin(x,y){
+    var c=document.createElement('div');
+    c.style.cssText='position:fixed;z-index:99;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffe9b0, #d9a83a 60%, #8a6a1f);box-shadow:0 0 10px rgba(217,168,58,.8);pointer-events:none;margin:-8px 0 0 -8px;opacity:0';
+    c.style.left=x+'px'; c.style.top=y+'px';
+    document.body.appendChild(c); return c;
+  }
+  function teleport(x,y){
+    var t=target(); if(!t) return;
+    var c=coin(x,y); ring(x,y,'rgba(120,220,200,.9)');
+    var t0=performance.now();
+    (function st(now){
+      var k=Math.min(1,(now-t0)/260);
+      c.style.opacity=String(k);
+      c.style.transform='scale('+(0.3+0.7*k)+')';
+      if(k<1) requestAnimationFrame(st);
+      else setTimeout(function(){
+        var t1=performance.now();
+        (function ot(now){
+          var u=Math.min(1,(now-t1)/180);
+          c.style.opacity=String(1-u);
+          c.style.transform='scale('+(1-0.7*u)+')';
+          if(u<1) requestAnimationFrame(ot); else c.remove();
+        })(performance.now());
+        ring(t.x,t.y,'rgba(217,168,58,.9)');
+      },140);
+    })(performance.now());
+  }
+  function arcflight(x,y){
+    var t=target(); if(!t) return;
+    var c=coin(x,y);
+    var t0=performance.now(), dur=650;
+    var mx=(x+t.x)/2, my=Math.min(y,t.y)-140;
+    (function st(now){
+      var k=Math.min(1,(now-t0)/dur), e=k*k*(3-2*k);
+      var qx=(1-e)*(1-e)*x+2*(1-e)*e*mx+e*e*t.x;
+      var qy=(1-e)*(1-e)*y+2*(1-e)*e*my+e*e*t.y;
+      c.style.transform='translate('+(qx-x)+'px,'+(qy-y)+'px) rotate('+(e*540)+'deg)';
+      c.style.opacity='1';
+      if(k<1) requestAnimationFrame(st);
+      else { ring(t.x,t.y,'rgba(217,168,58,.9)'); c.remove(); }
+    })(performance.now());
+  }
   document.addEventListener('click',function(ev){
     if(!ev.target||!ev.target.closest) return;
     var b=ev.target.closest('a,button'); if(!b) return;
     var s=(b.textContent||'').toLowerCase();
-    if(s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1) firstlight();
+    if(s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1){
+      var x=ev.clientX||innerWidth/2, y=ev.clientY||innerHeight/2;
+      if(coarse) teleport(x,y); else arcflight(x,y);
+      firstlight();
+    }
   },true);
 })();
-</script>
-  
+</script>  
 </body>
 </html>
