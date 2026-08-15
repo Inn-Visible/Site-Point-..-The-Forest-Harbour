@@ -1,6 +1,6 @@
-const CACHE='outflow-v12';
+const CACHE='outflow-v13';
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['donations.html','board.html'])));
+  e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(['donations.html','board.html']);}));
   self.skipWaiting();
 });
 self.addEventListener('activate',e=>{
@@ -11,10 +11,16 @@ self.addEventListener('activate',e=>{
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET') return;
   e.respondWith(
-    caches.match(e.request).then(hit=> hit || fetch(e.request).then(res=>{
-      const copy=res.clone();
-      caches.open(CACHE).then(c=>c.put(e.request,copy));
+    fetch(e.request).then(function(res){
+      if(res&&res.ok){
+        const copy=res.clone();
+        caches.open(CACHE).then(function(c){return c.put(e.request,copy);});
+      }
       return res;
-    }).catch(()=>caches.match('donations.html')))
+    }).catch(function(){
+      return caches.match(e.request).then(function(hit){
+        return hit||caches.match('donations.html');
+      });
+    })
   );
 });
