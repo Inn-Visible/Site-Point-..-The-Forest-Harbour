@@ -146,7 +146,45 @@
          target="_blank">the holders ledger ↗</a>
     </div>
   </div>
+  <div class="ledger">
+    <div class="fig" style="margin-top:0">fig. 4 — the checkpoint · the weight of the deed</div>
+    <div class="econ" id="checkpoint-econ">
+      <div>emberchain <b id="cp-height">…</b></div>
+      <div>arena bouts <b id="cp-bouts">…</b></div>
+      <div>keeper weight <b id="cp-weight" style="color:#d9a83a">…</b></div>
+    </div>
+    <div class="status" id="cp-status">calculating your share of the house...</div>
+  </div>
 
+  <script>
+  (function(){
+    var h = parseInt(localStorage.getItem('hive_chain_h')||'0',10);
+    var d = parseInt(localStorage.getItem('hive_drops')||'0',10);
+    var b = parseInt(localStorage.getItem('hive_pit_bout')||'0',10);
+    var isPatron = localStorage.getItem('hive_patron')==='1';
+    var patronBonus = isPatron ? 5000 : 0;
+
+    /* the weight formula: 
+       every chain block = 1 weight (presence)
+       every drop = 5 weight (capital)
+       every bout = 2 weight (spectacle)
+       patron status = 5000 weight (the deed itself)
+    */
+    var weight = (h * 1) + (d * 5) + (b * 2) + patronBonus;
+
+    $('cp-height').textContent = h;
+    $('cp-bouts').textContent = b;
+    $('cp-weight').textContent = weight.toLocaleString();
+
+    if(isPatron){
+      $('cp-status').innerHTML = 'you are the hand that feeds. your deed holds the permanent multiplier. the vault knows your face.';
+    } else if(h > 0){
+      $('cp-status').innerHTML = 'the chain remembers you. keep the flame; every block deepens your claim on the house.';
+    } else {
+      $('cp-status').innerHTML = 'the lantern is unlit. redeem a key to forge the deed.';
+    }
+  })();
+  </script>
   <div class="coins">
     <div class="coin">
       <svg viewBox="0 0 64 64">
