@@ -517,6 +517,10 @@ function toss(){
   if(busy) return;
   busy=true;
   mint('witness');
+  drops++;
+  localStorage.setItem('hive_drops',String(drops));
+
+  
   document.getElementById('stat').textContent='>> a coin leaves your side of the glass .. <<';
   try{ cv.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
   setTimeout(function(){ coin={t:0,dur:78,spin:0,kind:'toss'}; try{ tink(); }catch(e){} },420);
