@@ -609,7 +609,7 @@ window.cloudRedeem = async function(key, name){
 };
 </script>
 
-  <script>
+<script>
 (function(){
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
   function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
@@ -643,17 +643,10 @@ window.cloudRedeem = async function(key, name){
       el.style.color='#d9a83a';
     }catch(e){}
   }
-  var style=localStorage.getItem('hive_tossstyle')||'teleport';
-  var tg=document.createElement('button'); tg.className='btn mini';
-  function tgLabel(){ tg.textContent='toss: '+(style==='teleport'?'teleport':'sparks'); }
-  tgLabel();
-  tg.onclick=function(){ style=(style==='teleport')?'sparks':'teleport';
-    localStorage.setItem('hive_tossstyle',style); tgLabel(); };
-  var snd=document.getElementById('snd');
-  if(snd&&snd.parentNode) snd.parentNode.insertBefore(tg,snd.nextSibling);
+  function rr(a,b){ return a+Math.random()*(b-a); }
   function ring(x,y,color){
     var r=document.createElement('div');
-    r.style.cssText='position:fixed;z-index:99;width:8px;height:8px;border-radius:50%;border:1.5px solid '+(color||'rgba(120,220,200,.9)')+';pointer-events:none;margin:-4px 0 0 -4px;opacity:0';
+    r.style.cssText='position:fixed;z-index:99;width:8px;height:8px;border-radius:50%;border:1.5px solid '+color+';pointer-events:none;margin:-4px 0 0 -4px;opacity:0';
     r.style.left=x+'px'; r.style.top=y+'px';
     document.body.appendChild(r);
     var t0=performance.now();
@@ -661,28 +654,54 @@ window.cloudRedeem = async function(key, name){
       r.style.transform='scale('+(1+t*7)+')'; r.style.opacity=String((1-t)*0.9);
       if(t<1) requestAnimationFrame(st); else r.remove(); })(performance.now());
   }
-  function teleport(x,y){
-    var f=document.getElementById('fire'); if(!f) return;
-    var rc=f.getBoundingClientRect();
-    var tx=rc.left+rc.width/2, ty=Math.min(rc.top+rc.height*0.55, innerHeight-40);
-    var c=document.createElement('div');
-    c.style.cssText='position:fixed;z-index:99;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffe9b0, #d9a83a 60%, #8a6a1f);box-shadow:0 0 10px rgba(217,168,58,.8);pointer-events:none;margin:-8px 0 0 -8px;opacity:0';
-    c.style.left=x+'px'; c.style.top=y+'px';
-    document.body.appendChild(c);
-    ring(x,y);
-    var t0=performance.now();
-    (function st(nw){ var k=Math.min(1,(nw-t0)/260);
-      c.style.opacity=String(k); c.style.transform='scale('+(0.3+0.7*k)+')';
-      if(k<1) requestAnimationFrame(st);
-      else setTimeout(function(){
-        var t1=performance.now();
-        (function ot(nw){ var u=Math.min(1,(nw-t1)/180);
-          c.style.opacity=String(1-u); c.style.transform='scale('+(1-0.7*u)+')';
-          if(u<1) requestAnimationFrame(ot); else c.remove(); })(performance.now());
-        ring(tx,ty,'rgba(217,168,58,.9)');
-      },140);
-    })(performance.now());
+  /* ---- four-lane toss grammar ---- */
+  var coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  var style=localStorage.getItem('hive_tossstyle')||(coarse?'teleport':'og');
+  var ORDER=['og','teleport','drip','sparks'];
+  var tg=document.createElement('button'); tg.className='btn mini';
+  function tgLabel(){ tg.textContent='toss: '+style; }
+  tgLabel();
+  tg.onclick=function(){ style=ORDER[(ORDER.indexOf(style)+1)%ORDER.length];
+    localStorage.setItem('hive_tossstyle',style); tgLabel(); };
+  var snd=document.getElementById('snd');
+  if(snd&&snd.parentNode) snd.parentNode.insertBefore(tg,snd.nextSibling);
+  /* takeover: we steer the engine's own dropper coin per lane */
+  var STEPS=[0.05,0.22,0.45,0.7,0.9,1];
+  function coinView(){
+    try{
+      if(typeof coin==='undefined'||!coin) return null;
+      var rc=document.getElementById('fire').getBoundingClientRect();
+      var k=Math.min(1,coin.t/coin.dur);
+      var y=-30+(H-40*SC+30)*k;
+      var x=W/2+Math.sin(k*3.1)*8*SC;
+      return {cx:x,cy:y,vx:rc.left+x,vy:rc.top+y,k:k};
+    }catch(e){ return null; }
   }
+  (function loop(now){
+    try{
+      if(typeof coin!=='undefined'&&coin){
+        if(!coin._lane){ coin._lane=style; coin._t0=now; coin._step=-1; }
+        if(coin._lane==='teleport'){
+          var i=Math.min(STEPS.length-1,Math.floor((now-coin._t0)/110));
+          coin.t=Math.round(STEPS[i]*coin.dur);
+          if(i!==coin._step){ coin._step=i;
+            var p=coinView(); if(p) ring(p.vx,p.vy,'rgba(120,220,200,.9)'); }
+          if(i>=STEPS.length-1) coin.t=coin.dur;
+        } else if(coin._lane==='drip'){
+          if(now-coin._t0<650){
+            coin.t=2;
+            var q=coinView();
+            if(q&&typeof S!=='undefined'){
+              for(var d=0;d<2;d++) S.push({x:q.cx+rr(-6,6)*SC,y:q.cy+10,
+                vx:rr(-0.4,0.4),vy:rr(2,4),life:0,max:rr(40,70)});
+            }
+          }
+        }
+      }
+    }catch(e){}
+    requestAnimationFrame(loop);
+  })(performance.now());
+  /* ---- sparks lane (the tf2 tap-faucet) ---- */
   function sparks(x,y){
     for(var i=0;i<10;i++){
       var s=document.createElement('div');
@@ -730,9 +749,14 @@ window.cloudRedeem = async function(key, name){
     if(isFree&&!isReal){
       var x=ev.clientX||innerWidth/2, y=ev.clientY||innerHeight/2;
       if(style==='sparks'){ ev.stopPropagation(); ev.preventDefault(); sparks(x,y); firstlight(); return; }
-      teleport(x,y); firstlight();
+      if(style==='teleport') ring(x,y,'rgba(120,220,200,.9)');
+      if(style==='drip') ring(x,y,'rgba(217,168,58,.9)');
+      firstlight();
     } else if(isReal){
-      teleport(ev.clientX||innerWidth/2, ev.clientY||innerHeight/2); firstlight();
+      var x2=ev.clientX||innerWidth/2, y2=ev.clientY||innerHeight/2;
+      if(style==='teleport') ring(x2,y2,'rgba(120,220,200,.9)');
+      if(style==='drip') ring(x2,y2,'rgba(217,168,58,.9)');
+      firstlight();
     }
   },true);
 })();
