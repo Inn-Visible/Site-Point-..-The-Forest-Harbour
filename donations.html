@@ -609,5 +609,49 @@ window.cloudRedeem = async function(key, name){
 };
 </script>
 
+<script>
+(function(){
+  function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
+  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
+  var now=new Date(), S=season(now), Wt=watch(now);
+  var tints={dawn:'rgba(217,168,58,0.05)',noon:'rgba(0,0,0,0)',dusk:'rgba(200,90,40,0.07)',night:'rgba(18,24,32,0.38)'};
+  if(S==='winter') tints.night='rgba(12,16,24,0.52)';
+  if(S==='summer') tints.dusk='rgba(200,90,40,0.11)';
+  if(S==='autumn') tints.noon='rgba(120,130,140,0.05)';
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 82%, '+tints[Wt]+', transparent 72%)';
+  document.body.appendChild(ov);
+  var lines={
+    dawn:'dawn watch \u00b7 the fire wakes hungry \u00b7 first toss carries +1 drop',
+    noon:'noon watch \u00b7 steady burn \u00b7 the fire minds its business',
+    dusk:'dusk watch \u00b7 the tall flame \u00b7 the hearth glows eager',
+    night:'night watch \u00b7 banked embers \u00b7 the rest zone rests'
+  };
+  var seas={winter:'winter \u00b7 nights are long; keep the flame',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
+  var el=document.createElement('div');
+  el.style.cssText='position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:2;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#5c6875;pointer-events:none;text-align:center;max-width:92vw';
+  el.textContent=lines[Wt]+' \u00b7 '+seas[S];
+  document.body.appendChild(el);
+  var today=now.toDateString();
+  function firstlight(){
+    if(Wt!=='dawn') return;
+    try{
+      if(localStorage.getItem('hive_firstlight')===today) return;
+      localStorage.setItem('hive_firstlight',today);
+      var d=parseInt(localStorage.getItem('hive_drops')||'0',10)+1;
+      localStorage.setItem('hive_drops',String(d));
+      el.textContent='first light \u00b7 +1 drop \u00b7 the robot dispenses';
+      el.style.color='#d9a83a';
+    }catch(e){}
+  }
+  document.addEventListener('click',function(ev){
+    if(!ev.target||!ev.target.closest) return;
+    var b=ev.target.closest('a,button'); if(!b) return;
+    var s=(b.textContent||'').toLowerCase();
+    if(s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1) firstlight();
+  },true);
+})();
+</script>
+  
 </body>
 </html>
