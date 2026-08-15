@@ -92,6 +92,45 @@ const VERB={flame:'scatters',flood:'douses',fog:'swallows'};
 const NAMES={flame:'the flame',flood:'the flood',fog:'the fog'};
 const PAIRS=[['flame','flood'],['flood','fog'],['fog','flame']];
 
+/* the weather-sky — the arena stands in climate now */
+let MOTES=[],skyMode='fire',skyWatch='night',skySeason='summer',skyN=0;
+function skyRead(){
+  skyMode=localStorage.getItem('hive_hearth_mode')||'fire';
+  const d=new Date(),m=d.getMonth(),h=d.getHours();
+  skySeason=(m===11||m<2)?'winter':(m<5?'spring':(m<8?'summer':'autumn'));
+  skyWatch=(h>=5&&h<8)?'dawn':(h<17?'noon':(h<21)?'dusk':'night');
+  if(MOTES.length===0) for(let i=0;i<42;i++) MOTES.push({x:Math.random()*W,y:Math.random()*H,s:rnd(0.4,1.6),p:Math.random()*7});
+}
+function drawSky(){
+  const base={fire:'120,52,22',water:'22,52,92',smoke:'70,76,84'}[skyMode]||'70,76,84';
+  let a=0.10;
+  if(skyWatch==='dusk') a+=0.06;
+  if(skyWatch==='dawn') a+=0.03;
+  if(skySeason==='winter') a*=0.8;
+  if(skySeason==='summer') a*=1.15;
+  const gr=g.createRadialGradient(W/2,H*0.85,0,W/2,H*0.85,Math.max(W,H)*0.8);
+  gr.addColorStop(0,'rgba('+base+','+a.toFixed(3)+')');
+  gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=gr; g.fillRect(0,0,W,H);
+  if(skyWatch==='night'){
+    const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.45)');
+    g.fillStyle=vg; g.fillRect(0,0,W,H);
+  }
+  g.globalCompositeOperation='lighter';
+  for(const o of MOTES){
+    o.p+=0.02;
+    if(skyMode==='fire'){ o.y-=0.35*o.s; o.x+=Math.sin(o.p)*0.3; if(o.y<-10){o.y=H+10;o.x=Math.random()*W;} }
+    else if(skyMode==='water'){ o.y+=0.5*o.s; if(o.y>H+10){o.y=-10;o.x=Math.random()*W;} }
+    else { o.x+=0.4*o.s; o.y+=Math.sin(o.p)*0.2; if(o.x>W+10){o.x=-10;o.y=Math.random()*H;} }
+    const al=0.05+0.08*Math.abs(Math.sin(o.p));
+    g.fillStyle='rgba('+base+','+al.toFixed(3)+')';
+    g.beginPath(); g.arc(o.x,o.y,1.2*o.s,0,7); g.fill();
+  }
+  g.globalCompositeOperation='source-over';
+}
+skyRead();
+
 /* shared emberchain — the pit mints into the same ledger as the hearth */
 function mint(kind,name){
   let c; try{ c=JSON.parse(localStorage.getItem('hive_emberchain')||'[]'); }catch(e){ c=[]; }
@@ -143,8 +182,8 @@ function setup(){
     for(let i=0;i<70;i++) P.push({f:f,a:Math.random()*7,r:rnd(10,70)*SC,
       sp:rnd(0.01,0.045)*(Math.random()<.5?1:-1),s:rnd(6,16)*SC});
   });
-  marks=3; bk={}; phase='back';
-  document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. three backing marks; spend them.';
+  marks=Math.min(3,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)); bk={}; phase='back';
+  document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. '+(marks? 'three backing marks; spend them.':'no marks yet — the coin earns them.');
   document.getElementById('line').textContent='';
   updBtns(); renderLedger(); renderCond();
 }
@@ -159,14 +198,14 @@ function updBtns(){
     b.disabled=phase!=='back'||marks<=0;
   });
   document.getElementById('horn').style.display=phase==='back'?'inline-block':'none';
-  document.getElementById('marks').textContent=phase==='back'?'backing marks: '+marks:(phase==='fight'?'the bout is live.':'');
+  document.getElementById('marks').textContent=phase==='back'?(marks>0?'backing marks: '+marks+' \u00b7 earned by the coin':'backing marks: 0 \u00b7 toss coins at the hearth to earn'):(phase==='fight'?'the bout is live.':'');
 }
 function back(k){
   if(phase!=='back'||marks<=0) return;
   bk[k]=(bk[k]||0)+1; marks--;
+  localStorage.setItem('hive_pit_credits',String(Math.max(0,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)-1)));
   document.getElementById('stat').textContent='you back '+NAMES[k]+'. '+(marks?marks+' mark'+(marks===1?'':'s')+' left.':'the pit nods.');
   updBtns();
-  if(marks===0) start();
 }
 function start(){
   if(phase!=='back') return;
@@ -220,7 +259,10 @@ function end(){
 }
 function tick(){
   tickN++;
+  skyN++;
+  if(skyN%90===0) skyRead();
   g.clearRect(0,0,W,H);
+  drawSky();
   if(phase==='fight'&&tickN%40===0) exchange();
   [A,B].forEach(function(f){
     if(!f) return;
