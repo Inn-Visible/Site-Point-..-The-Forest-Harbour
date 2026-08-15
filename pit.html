@@ -186,7 +186,8 @@ function end(){
   const l=ledger(); l.push({b:bout+1,w:w.el,you:you});
   localStorage.setItem('hive_pit_ledger',JSON.stringify(l.slice(-60)));
   bout++; localStorage.setItem('hive_pit_bout',String(bout));
-  mint('pit',NAMES[w.el]);
+    mint('pit',NAMES[w.el]);
+  if(you&&you===w.el){ const d=parseInt(localStorage.getItem('hive_drops')||'0',10)+1; localStorage.setItem('hive_drops',String(d)); }
   phase='over';
   document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid.':' your champion falls.'):'');
   updBtns(); renderLedger();
