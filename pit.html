@@ -171,8 +171,6 @@ function renderLedger(){
 }
 
 let bout=parseInt(localStorage.getItem('hive_pit_bout')||'0',10);
-const SKYCOL={fire:'200,90,40',water:'40,90,160',smoke:'90,100,110'};
-const MOTES=[]; for(let i=0;i<36;i++) MOTES.push({x:Math.random(),y:Math.random(),s:rnd(0.15,0.5),r:rnd(0.6,1.8)});
   
 let A=null,B=null,P=[],S=[],marks=0,bk={},phase='boot',tickN=0;
 
@@ -186,7 +184,7 @@ function setup(){
       sp:rnd(0.01,0.045)*(Math.random()<.5?1:-1),s:rnd(6,16)*SC});
   });
   marks=Math.min(3,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)); bk={}; phase='back';
-  document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. '+(marks? 'three backing marks; spend them.':'no marks yet — the coin earns them.');
+  document.getElementById('stat').textContent='bout '+(bout+1)+' — '+NAMES[A.el]+' vs '+NAMES[B.el]+'. '+(marks? marks+' backing mark'+(marks===1?'':'s')+'; spend them.':'no marks yet — the coin earns them.');
   document.getElementById('line').textContent='';
   updBtns(); renderLedger(); renderCond();
 }
