@@ -164,32 +164,58 @@ function imgToPdf(file,done,fail){
     });
   });
 }
-function docxText(file,done,fail){
+
+  function docxText(file,done,fail){
   file.arrayBuffer().then(function(buf){
-    var u=new Uint8Array(buf), dv=new DataView(buf), o=0, doc=null;
-    while(o+30<u.length&&dv.getUint32(o,true)===0x04034b50){
-      var cm=dv.getUint16(o+8,true), cs=dv.getUint32(o+18,true),
-          nl=dv.getUint16(o+26,true), el=dv.getUint16(o+28,true), nm='', i2;
-      for(i2=0;i2<nl;i2++) nm+=String.fromCharCode(u[o+30+i2]);
-      var st=o+30+nl+el;
-      if(nm==='word/document.xml') doc={cm:cm,cs:cs,st:st};
-      o=st+cs;
-    }
-    if(!doc) return fail();
-    var raw=u.slice(doc.st,doc.st+doc.cs);
-    function x2t(xml){ return xml.replace(/<w:br[^>]*>/g,'\n').replace(/<w:tab[^>]*>/g,'\t')
+    var u=new Uint8Array(buf), dv=new DataView(buf);
+    function txt(xml){ return xml.replace(/<w:br[^>]*>/g,'\n').replace(/<w:tab[^>]*>/g,'\t')
       .replace(/<\/w:p>/g,'\n').replace(/<[^>]+>/g,'')
       .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')
       .replace(/\n{3,}/g,'\n\n').trim(); }
-    if(doc.cm===0){ done(x2t(new TextDecoder().decode(raw))); return; }
-    if(typeof DecompressionStream==='undefined') return fail();
-    try{
-      new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
-        .arrayBuffer().then(function(ab){ done(x2t(new TextDecoder().decode(ab))); },fail);
-    }catch(e){ fail(); }
+    function inflate(raw,cb){
+      if(typeof DecompressionStream==='undefined') return fail();
+      try{
+        new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
+          .arrayBuffer().then(function(ab){ cb(txt(new TextDecoder().decode(ab))); },fail);
+      }catch(e){ fail(); }
+    }
+    function nm(at,len){ var s=''; for(var i=0;i<len;i++) s+=String.fromCharCode(u[at+i]); return s; }
+    /* the central directory — the zip's own table of contents, sizes authoritative */
+    var eocd=-1;
+    for(var i=u.length-22;i>=0&&i>u.length-65558;i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+    if(eocd>-1){
+      var cnt=dv.getUint16(eocd+10,true), p=dv.getUint32(eocd+16,true);
+      for(var k=0;k<cnt;k++){
+        if(dv.getUint32(p,true)!==0x02014b50) break;
+        var cm=dv.getUint16(p+10,true), cs=dv.getUint32(p+20,true),
+            nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true),
+            cl=dv.getUint16(p+32,true), lo=dv.getUint32(p+42,true),
+            name=nm(p+46,nl);
+        if(name==='word/document.xml'){
+          var lnl=dv.getUint16(lo+26,true), lel=dv.getUint16(lo+28,true);
+          var raw=u.slice(lo+30+lnl+lel, lo+30+lnl+lel+cs);
+          if(cm===0) done(txt(new TextDecoder().decode(raw))); else inflate(raw,done);
+          return;
+        }
+        p+=46+nl+el+cl;
+      }
+    }
+    /* fallback — the old local-header walk */
+    var o=0, doc=null;
+    while(o+30<u.length&&dv.getUint32(o,true)===0x04034b50){
+      var cm2=dv.getUint16(o+8,true), cs2=dv.getUint32(o+18,true),
+          nl2=dv.getUint16(o+26,true), el2=dv.getUint16(o+28,true), nm2=nm(o+30,nl2);
+      var st2=o+30+nl2+el2;
+      if(nm2==='word/document.xml') doc={cm:cm2,cs:cs2,st:st2};
+      o=st2+(cs2||0);
+    }
+    if(!doc) return fail();
+    var raw2=u.slice(doc.st,doc.st+doc.cs);
+    if(doc.cm===0) done(txt(new TextDecoder().decode(raw2))); else inflate(raw2,done);
   }).catch(fail);
 }
-function show(f){
+  
+  function show(f){
   F=f; menu.innerHTML=''; out.textContent='the synth listens ..';
   info.innerHTML='<b>'+esc(f.name)+'</b> · '+(f.size/1024).toFixed(1)+' kb · family: <b>'+fam(f)+'</b>';
     var m={
