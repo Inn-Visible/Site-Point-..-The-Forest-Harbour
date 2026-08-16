@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE WICKET — employee bypass</title>
+<style>
+  body{margin:0;background:#0a0d12;overflow:hidden;font-family:ui-monospace,Consolas,monospace;color:#5c6875}
+  canvas{display:block;position:fixed;inset:0}
+  .panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;z-index:2}
+  .brand{font-size:13px;letter-spacing:.35em;color:#c8452c}
+  .sub{margin-top:8px;font-size:10px;letter-spacing:.2em}
+  input{margin-top:18px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;
+    font-family:inherit;font-size:12px;padding:10px 14px;width:min(300px,80vw);text-align:center;letter-spacing:.08em}
+  input::placeholder{color:#5c6875}
+  .btn{margin-top:12px;background:none;border:1px solid #d9a83a;color:#d9a83a;font-family:inherit;
+    font-size:11px;letter-spacing:.15em;padding:9px 20px;cursor:pointer}
+  .btn:hover{background:#d9a83a;color:#0a0d12}
+  .status{margin-top:12px;font-size:11px;min-height:14px;color:#93a1b0}
+  .status a{color:#3f7fc1;text-decoration:none}
+  .readout{position:fixed;bottom:16px;left:16px;font-size:10px;letter-spacing:.1em;z-index:2}
+  .readout b{color:#d9a83a}
+</style>
+</head>
+<body>
+<canvas id="species"></canvas>
+<div class="panel">
+  <div class="brand">THE WICKET</div>
+  <div class="sub">employee bypass · the small door in the big gate</div>
+  <input id="word" placeholder="the word the ferryman gave you" maxlength="24">
+  <br><button class="btn" id="knock">knock</button>
+  <div class="status" id="stat">the rose is listening ..</div>
+</div>
+<div class="readout">GEN: <b id="gen">0</b> &nbsp;|&nbsp; PETALS: <b id="count">0</b> &nbsp;|&nbsp; PULSE: <b>e^(-r)</b></div>
+
+<script>
+/* the living insignia — the waiting screen */
+const cv=document.getElementById('species'); const g=cv.getContext('2d');
+let W,H; function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
+addEventListener('resize',fit); fit();
+const PHI=1.6180339887;
+const GOLDEN_ANGLE=137.508*(Math.PI/180);
+const MAX_PETALS=600; const GROWTH_RATE=0.8;
+let currentPetals=0, generation=0, pulseWave=0;
+window.__bloom=false;
+addEventListener('click',()=>{ pulseWave=0; });
+function tick(){
+  g.fillStyle='rgba(10,13,18,0.15)'; g.fillRect(0,0,W,H);
+  const cx=W/2, cy=H/2, scale=Math.min(W,H)/60;
+  if(currentPetals<MAX_PETALS){
+    currentPetals+=GROWTH_RATE;
+    if(currentPetals>=MAX_PETALS){ generation++; currentPetals=0;
+      document.getElementById('gen').textContent=generation; }
+  }
+  pulseWave+=2.5;
+  if(pulseWave>scale*Math.sqrt(MAX_PETALS)+50) pulseWave=-20;
+  document.getElementById('count').textContent=Math.floor(currentPetals);
+  g.strokeStyle='rgba(200,69,44,0.1)'; g.lineWidth=2;
+  g.beginPath();
+  for(let i=0;i<6;i++){ const a=i*Math.PI/3;
+    const px=cx+Math.cos(a)*scale*25, py=cy+Math.sin(a)*scale*25;
+    if(i===0) g.moveTo(px,py); else g.lineTo(px,py); }
+  g.closePath(); g.stroke();
+  for(let n=0;n<currentPetals;n++){
+    const angle=n*GOLDEN_ANGLE, r=scale*Math.sqrt(n);
+    const x=cx+r*Math.cos(angle), y=cy+r*Math.sin(angle);
+    let heat=Math.exp(-Math.abs(r-pulseWave)*0.15);
+    if(window.__bloom) heat=Math.max(heat,0.6);
+    const red=Math.floor(40+215*heat), grn=Math.floor(30+130*heat), blu=Math.floor(30+10*heat);
+    g.fillStyle='rgba('+red+','+grn+','+blu+','+(0.3+0.7*heat)+')';
+    g.save(); g.translate(x,y); g.rotate(angle);
+    g.beginPath(); g.ellipse(0,0,2+heat*4,6+heat*8,0,0,Math.PI*2); g.fill();
+    g.restore();
+    if(heat>0.85){ g.fillStyle='rgba(255,240,200,'+heat+')';
+      g.beginPath(); g.arc(x,y,1.5,0,Math.PI*2); g.fill(); }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script>
+
+<script>
+/* the wicket — knock, and the rose decides */
+const KEYS=['firstlight'];
+function openDoor(){
+  localStorage.setItem('hive_access',String(Date.now()+7*864e5));
+  window.__bloom=true;
+  pulseWave=0;
+  document.getElementById('stat').innerHTML=
+    'the door remembers you · <a href="eigenstack/pages.html">enter the codex \u2197</a>';
+}
+function knock(){
+  pulseWave=0;
+  const k=(document.getElementById('word').value||'').trim().toLowerCase();
+  if(!k) return;
+  if(KEYS.indexOf(k)>-1){ openDoor(); return; }
+  if(k==='keeper'&&localStorage.getItem('hive_patron')){ openDoor(); return; }
+  document.getElementById('stat').textContent='the rose does not know that word.';
+}
+document.getElementById('knock').addEventListener('click',knock);
+document.getElementById('word').addEventListener('keydown',function(e){ if(e.key==='Enter') knock(); });
+</script>
+</body>
+</html>
