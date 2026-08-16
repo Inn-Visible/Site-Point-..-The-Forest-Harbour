@@ -294,9 +294,7 @@ function tick(now){
   mode=v>0.15?'fire':v>=-0.15?'smoke':'water';
   if(mode!==lastMode){
     lastMode=mode;
-    localStorage.setItem('hive_hearth_mode',mode);
-    document.getElementById('vel').textContent=mode.toUpperCase();
-    document.getElementById('stat').textContent='the hearth shifts — '+mode.toUpperCase()+'.';
+    localStorage.setItem('hive_hearth_mode',mode);    document.getElementById('vel').textConte    document.getElementById('stat').textContent='the hearth shifts — '+(mode==='fire'?'FORGE':mode.toUpperCase())+'.';
     document.getElementById('vmark').style.background=
       mode==='fire'?'var(--gold)':mode==='smoke'?'#9aa4ae':'var(--blue)';
   }
