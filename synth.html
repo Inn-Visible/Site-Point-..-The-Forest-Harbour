@@ -235,6 +235,11 @@ function run(id){
   if(id==='mh') F.text().then(function(t){ ok(new Blob(['<!doctype html><meta charset="utf-8">'+md2html(t)],{type:'text/html'}),n+'.html'); });
   if(id==='mt') F.text().then(function(t){ ok(new Blob([t.replace(/[#*`>\[\]()]/g,'')],{type:'text/plain'}),n+'.txt'); });
   if(id==='th') F.text().then(function(t){ ok(new Blob(['<!doctype html><meta charset="utf-8"><pre>'+esc(t)+'</pre>'],{type:'text/html'}),n+'.html'); });
+  if(id==='tpdf') F.text().then(function(t){ ok(textToPdf(t),n+'.pdf'); });
+  if(id==='mpdf') F.text().then(function(t){ ok(textToPdf(t.replace(/[#*`>]/g,'')),n+'.pdf'); });
+  if(id==='ipdf') imgToPdf(F,function(b){ ok(b,n+'.pdf'); },function(){ out.textContent='the synth cannot pdf that image.'; });
+  if(id==='dx') docxText(F,function(t){ ok(new Blob([t],{type:'text/plain'}),n+'.txt'); },function(){ out.textContent='the synth cannot open that docx yet — base64 still will.'; });
+  if(id==='dxp') docxText(F,function(t){ ok(textToPdf(t),n+'.pdf'); },function(){ out.textContent='the synth cannot open that docx yet — base64 still will.'; });  
 }
 drop.onclick=function(){ pick.click(); };
 pick.onchange=function(){ if(pick.files[0]) show(pick.files[0]); };
