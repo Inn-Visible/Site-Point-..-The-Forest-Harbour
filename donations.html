@@ -296,7 +296,7 @@ function tick(now){
    
     localStorage.setItem('hive_hearth_mode',mode);
     document.getElementById('vel').textContent = mode==='fire' ? 'FORGE' : mode.toUpperCase();
-    document.getElementById('stat').textContent='the hearth shifts — '+(mode==='fire'?'FORGE':mode.toUpperCase())+'.';
+       document.getElementById('stat').textContent='the hearth shifts — '+({fire:'the forge burns',water:'the water soaks',smoke:'the smoke drifts'})[mode]+'.';
     
     
     document.getElementById('vmark').style.background=
