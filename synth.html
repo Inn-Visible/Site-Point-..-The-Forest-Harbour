@@ -55,8 +55,9 @@ function fam(f){
   if(t.indexOf('audio/')===0||['mp3','wav','ogg','oga','m4a','aac','flac'].indexOf(e)>-1) return 'audio';
   if(t.indexOf('video/')===0||['mp4','webm','mov','mkv'].indexOf(e)>-1) return 'video';
   if(t.indexOf('json')>-1||e==='json') return 'json';
-  if(e==='csv') return 'csv';
-    if(e==='docx') return 'docx';
+  if(e==='csv') return 'csv';    
+  if(e==='docx') return 'docx';
+  if(e==='pdf'||t.indexOf('pdf')>-1) return 'pdf';
   if(e==='md'||e==='markdown') return 'md';
   if(t.indexOf('text/')===0||['txt','html','htm','js','css','log','xml'].indexOf(e)>-1) return 'text';
   return 'any';
@@ -215,7 +216,80 @@ function imgToPdf(file,done,fail){
   }).catch(fail);
 }
   
-  function show(f){
+ function latin(u){ var s=''; for(var i=0;i<u.length;i++) s+=String.fromCharCode(u[i]); return s; }
+function unescapePdf(s){ return s
+  .replace(/\\([()\\nrtbf])/g,function(_,c){ return c==='n'?'\n':c==='r'?'\r':c==='t'?'\t':c==='b'?'\b':c==='f'?'\f':c; })
+  .replace(/\\([0-7]{1,3})/g,function(_,o){ return String.fromCharCode(parseInt(o,8)); })
+  .replace(/[^\x09\x0A\x0D\x20-\x7E]/g,' '); }
+function extract(cs){
+  var out=[], re=/\(((?:\\.|[^\\()])*)\)\s*(Tj|'|")|\[((?:\\.|[^\]])*)\]\s*TJ|T\*|Td/g, m;
+  while((m=re.exec(cs))){
+    if(m[1]!==undefined){ out.push(unescapePdf(m[1])); if(m[2]!=='Tj') out.push('\n'); }
+    else if(m[3]!==undefined){ var r2=/\(((?:\\.|[^\\()])*)\)/g, m2;
+      while((m2=r2.exec(m[3]))) out.push(unescapePdf(m2[1])); }
+    else out.push('\n');
+  }
+  return out.join('');
+}
+function pdfText(file,done,fail){
+  file.arrayBuffer().then(function(buf){
+    var u=new Uint8Array(buf), s=latin(u), streams=[], re=/stream\r?\n/g, m;
+    while((m=re.exec(s))){ var st=m.index+m[0].length, en=s.indexOf('endstream',st);
+      if(en<0) break;
+      streams.push({raw:u.slice(st,en),dict:s.slice(Math.max(0,st-400),st)});
+      re.lastIndex=en; }
+    if(!streams.length) return fail();
+    Promise.all(streams.map(function(sm){
+      if(/\/Image\b|DCTDecode/.test(sm.dict)) return '';
+      if(/FlateDecode/.test(sm.dict)&&typeof DecompressionStream!=='undefined'){
+        try{ return new Response(new Blob([sm.raw]).stream().pipeThrough(new DecompressionStream('deflate')))
+          .arrayBuffer().then(function(ab){ return extract(latin(new Uint8Array(ab))); },function(){ return ''; });
+        }catch(e){ return ''; }
+      }
+      return extract(latin(sm.raw));
+    })).then(function(parts){
+      var txt=parts.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+      if(!txt) return fail();
+      done(txt);
+    });
+  }).catch(fail);
+}
+function crc32(u){ var t=crc32.t; if(!t){ t=crc32.t=[];
+  for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c; } }
+  var c=0xFFFFFFFF; for(var i=0;i<u.length;i++) c=t[(c^u[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function textToDocx(text,done){
+  var esc=function(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var paras=String(text).split('\n').map(function(l){ return '<w:p><w:r><w:t xml:space="preserve">'+esc(l)+'</w:t></w:r></w:p>'; }).join('');
+  var doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+paras+'<w:sectPr/></w:body></w:document>';
+  var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  var files=[['_rels/.rels',rels],['[Content_Types].xml',ct],['word/document.xml',doc]];
+  var TE=new TextEncoder(), chunks=[], central=[], pos=0;
+  files.forEach(function(f){
+    var nb=TE.encode(f[0]), db=TE.encode(f[1]), crc=crc32(db);
+    var lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint32(14,crc,true);
+    lh.setUint32(18,db.length,true); lh.setUint32(22,db.length,true); lh.setUint16(26,nb.length,true);
+    chunks.push(new Uint8Array(lh.buffer),nb,db);
+    central.push({nb:nb,crc:crc,size:db.length,off:pos});
+    pos+=30+nb.length+db.length;
+  });
+  var cds=pos;
+  central.forEach(function(c){
+    var ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint32(16,c.crc,true); ch.setUint32(20,c.size,true); ch.setUint32(24,c.size,true);
+    ch.setUint16(28,c.nb.length,true); ch.setUint32(42,c.off,true);
+    chunks.push(new Uint8Array(ch.buffer),c.nb);
+    pos+=46+c.nb.length;
+  });
+  var eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,files.length,true); eo.setUint16(10,files.length,true);
+  eo.setUint32(12,pos-cds,true); eo.setUint32(16,cds,true);
+  chunks.push(new Uint8Array(eo.buffer));
+  done(new Blob(chunks,{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));
+}
+function show(f){
   F=f; menu.innerHTML=''; out.textContent='the synth listens ..';
   info.innerHTML='<b>'+esc(f.name)+'</b> · '+(f.size/1024).toFixed(1)+' kb · family: <b>'+fam(f)+'</b>';
     var m={
@@ -225,7 +299,8 @@ function imgToPdf(file,done,fail){
     json:[['→ csv','jc'],['→ pretty .txt','jt'],['→ pdf','tpdf'],['→ base64 .txt','b']],
     csv:[['→ json','cj'],['→ html table','ch'],['→ pdf','tpdf'],['→ base64 .txt','b']],
     md:[['→ html','mh'],['→ plain .txt','mt'],['→ pdf','mpdf'],['→ base64 .txt','b']],
-    docx:[['→ pdf','dxp'],['→ plain .txt','dx'],['→ base64 .txt','b']],
+        docx:[['→ pdf','dxp'],['→ plain .txt','dx'],['→ base64 .txt','b']],
+    pdf:[['→ plain .txt','ptxt'],['→ docx','pdocx'],['→ html','phtml'],['→ base64 .txt','b']],
     text:[['→ html (pre)','th'],['→ pdf','tpdf'],['→ base64 .txt','b']],
     any:[['→ base64 .txt','b'],['→ hex .txt','hx']]
   }[fam(f)];
@@ -265,7 +340,7 @@ function run(id){
   if(id==='mpdf') F.text().then(function(t){ ok(textToPdf(t.replace(/[#*`>]/g,'')),n+'.pdf'); });
   if(id==='ipdf') imgToPdf(F,function(b){ ok(b,n+'.pdf'); },function(){ out.textContent='the synth cannot pdf that image.'; });
   if(id==='dx') docxText(F,function(t){ ok(new Blob([t],{type:'text/plain'}),n+'.txt'); },function(){ out.textContent='the synth cannot open that docx yet — base64 still will.'; });
-  if(id==='dxp') docxText(F,function(t){ ok(textToPdf(t),n+'.pdf'); },function(){ out.textContent='the synth cannot open that docx yet — base64 still will.'; });  
+  if(id==='dxp') docxText(F,function(t){ ok(textToPdf(t),n+'.pdf'); },function(){ out.textContent='the synth cannot open that docx yet — base64 still will.'; });   if(id==='ptxt') pdfText(F,function(t){ ok(new Blob([t],{type:'text/plain'}),n+'.txt'); },function(){ out.textContent='no lift-able text in that pdf — scanned pages need eyes; mk1 has none.'; });   if(id==='phtml') pdfText(F,function(t){ ok(new Blob(['<!doctype html><meta charset="utf-8"><pre>'+esc(t)+'</pre>'],{type:'text/html'}),n+'.html'); },function(){ out.textContent='no lift-able text in that pdf.'; });   if(id==='pdocx') pdfText(F,function(t){ textToDocx(t,function(b){ ok(b,n+'.docx'); }); },function(){ out.textContent='no lift-able text in that pdf.'; });  
 }
 drop.onclick=function(){ pick.click(); };
 pick.onchange=function(){ if(pick.files[0]) show(pick.files[0]); };
