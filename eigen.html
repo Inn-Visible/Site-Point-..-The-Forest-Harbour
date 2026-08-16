@@ -215,6 +215,30 @@ requestAnimationFrame(frame);
   f.parentNode.insertBefore(d,f);
 })();
 </script>
+
+<script>
+(function(){
+  function wire(){
+    var nodes=document.querySelectorAll('a,button,span,div,p');
+    var hit=null, sub=null;
+    for(var i=0;i<nodes.length;i++){
+      var own='';
+      for(var c=0;c<nodes[i].childNodes.length;c++)
+        if(nodes[i].childNodes[c].nodeType===3) own+=nodes[i].childNodes[c].textContent;
+      if(own.indexOf('open the synthesizer')>-1){ hit=nodes[i]; }
+      if(own.indexOf('the synthesizer wakes when the library opens fully')>-1){ sub=nodes[i]; }
+    }
+    if(sub) sub.textContent='the synthesizer is awake \u00b7 mk1 \u00b7 universal \u00b7 nothing leaves your glass';
+    if(!hit) return;
+    var a=hit.closest('a')||hit;
+    a.style.cursor='pointer';
+    if(a.tagName==='A') a.href='synth.html';
+    a.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); location.href='synth.html'; },true);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
+})();
+</script>
+
   
 </body>
 </html>
