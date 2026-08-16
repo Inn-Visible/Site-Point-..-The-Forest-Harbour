@@ -108,6 +108,87 @@ function md2html(md){ return esc(md)
   .replace(/^\- (.*)$/gm,'<li>$1</li>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>')
   .replace(/\n\n/g,'<br><br>'); }
 var F=null;
+function wrap92(lines){ var out=[]; lines.forEach(function(l){ l=l.replace(/\t/g,'    ');
+  while(l.length>92){ out.push(l.slice(0,92)); l=l.slice(92); } out.push(l); }); return out; }
+function textToPdf(text){
+  var lines=wrap92(String(text).split('\n'));
+  var per=52, chunks=[];
+  for(var i=0;i<lines.length;i+=per) chunks.push(lines.slice(i,i+per));
+  if(!chunks.length) chunks.push(['']);
+  function esc(s){ return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/[^\x20-\x7E]/g,' '); }
+  var nP=chunks.length, pageRefs=[], contentRefs=[], contents=[];
+  chunks.forEach(function(ch,p){ pageRefs.push(4+p*2); contentRefs.push(5+p*2);
+    var st='BT /F1 10 Tf 72 720 Td 14 TL\n';
+    ch.forEach(function(ln,li){ if(li) st+='T*\n'; st+='('+esc(ln)+') Tj\n'; });
+    contents.push(st+'ET'); });
+  var off=[], file='%PDF-1.4\n';
+  function obj(n,b){ off[n]=file.length; file+=n+' 0 obj\n'+b+'\nendobj\n'; }
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids ['+pageRefs.map(function(r){return r+' 0 R';}).join(' ')+'] /Count '+nP+' >>');
+  obj(3,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  for(var p=0;p<nP;p++){
+    obj(4+p*2,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents '+contentRefs[p]+' 0 R >>');
+    obj(5+p*2,'<< /Length '+contents[p].length+' >>\nstream\n'+contents[p]+'\nendstream');
+  }
+  var xr=file.length, tot=5+nP*2;
+  file+='xref\n0 '+tot+'\n0000000000 65535 f \n';
+  for(var n=1;n<tot;n++) file+=String(off[n]).padStart(10,'0')+' 00000 n \n';
+  file+='trailer\n<< /Size '+tot+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';
+  return new Blob([file],{type:'application/pdf'});
+}
+function imgToPdf(file,done,fail){
+  imgTo(file,'image/jpeg',function(b){
+    b.arrayBuffer().then(function(ab){
+      var u=new Uint8Array(ab), w=0, h=0, i=2;
+      while(i+9<u.length){
+        if(u[i]===0xFF&&u[i+1]>=0xC0&&u[i+1]<=0xC3){ h=(u[i+5]<<8)|u[i+6]; w=(u[i+7]<<8)|u[i+8]; break; }
+        if(u[i]===0xFF&&u[i+1]!==0xD8){ var ln=(u[i+2]<<8)|u[i+3]; i+=2+ln; } else i++;
+      }
+      if(!w||!h) return fail();
+      var sc=Math.min((612-72)/w,(792-72)/h,1), dw=w*sc, dh=h*sc;
+      var content='q\n'+dw.toFixed(2)+' 0 0 '+dh.toFixed(2)+' '+((612-dw)/2).toFixed(2)+' '+((792-dh)/2).toFixed(2)+' cm\n/Im1 Do\nQ';
+      var chunks=[], off=[], pos=0;
+      function push(s){ chunks.push(s); pos+=s.length; }
+      push('%PDF-1.4\n');
+      off[1]=pos; push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+      off[2]=pos; push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+      off[3]=pos; push('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>\nendobj\n');
+      off[4]=pos; push('4 0 obj\n<< /Length '+content.length+' >>\nstream\n'+content+'\nendstream\nendobj\n');
+      off[5]=pos; push('5 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+u.length+' >>\nstream\n');
+      chunks.push(u); pos+=u.length;
+      push('\nendstream\nendobj\n');
+      var xr=pos, x='xref\n0 6\n0000000000 65535 f \n';
+      for(var n=1;n<=5;n++) x+=String(off[n]).padStart(10,'0')+' 00000 n \n';
+      push(x+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF');
+      done(new Blob(chunks,{type:'application/pdf'}));
+    });
+  });
+}
+function docxText(file,done,fail){
+  file.arrayBuffer().then(function(buf){
+    var u=new Uint8Array(buf), dv=new DataView(buf), o=0, doc=null;
+    while(o+30<u.length&&dv.getUint32(o,true)===0x04034b50){
+      var cm=dv.getUint16(o+8,true), cs=dv.getUint32(o+18,true),
+          nl=dv.getUint16(o+26,true), el=dv.getUint16(o+28,true), nm='', i2;
+      for(i2=0;i2<nl;i2++) nm+=String.fromCharCode(u[o+30+i2]);
+      var st=o+30+nl+el;
+      if(nm==='word/document.xml') doc={cm:cm,cs:cs,st:st};
+      o=st+cs;
+    }
+    if(!doc) return fail();
+    var raw=u.slice(doc.st,doc.st+doc.cs);
+    function x2t(xml){ return xml.replace(/<w:br[^>]*>/g,'\n').replace(/<w:tab[^>]*>/g,'\t')
+      .replace(/<\/w:p>/g,'\n').replace(/<[^>]+>/g,'')
+      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')
+      .replace(/\n{3,}/g,'\n\n').trim(); }
+    if(doc.cm===0){ done(x2t(new TextDecoder().decode(raw))); return; }
+    if(typeof DecompressionStream==='undefined') return fail();
+    try{
+      new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
+        .arrayBuffer().then(function(ab){ done(x2t(new TextDecoder().decode(ab))); },fail);
+    }catch(e){ fail(); }
+  }).catch(fail);
+}
 function show(f){
   F=f; menu.innerHTML=''; out.textContent='the synth listens ..';
   info.innerHTML='<b>'+esc(f.name)+'</b> · '+(f.size/1024).toFixed(1)+' kb · family: <b>'+fam(f)+'</b>';
