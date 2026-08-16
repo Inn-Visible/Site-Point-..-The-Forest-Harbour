@@ -914,26 +914,21 @@ window.cloudRedeem = async function(key, name){
 
 <script>
 (function(){
-  var on=false;
+  var st=document.createElement('style');
+  st.textContent='body.zen header,body.zen main,body.zen footer{display:none}body.zen #fire{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:50}body.zen #wake{position:fixed;right:14px;bottom:14px;z-index:60}';
+  document.head.appendChild(st);
+  var wake=document.createElement('button'); wake.id='wake'; wake.className='btn mini';
+  wake.textContent='wake \u21a9'; wake.style.display='none';
+  wake.onclick=function(){ location.href='donations.html'; };
+  document.body.appendChild(wake);
   var b=document.createElement('button'); b.className='btn mini'; b.textContent='screensaver \u26f6';
   var snd=document.getElementById('snd');
   if(snd&&snd.parentNode) snd.parentNode.insertBefore(b,snd.nextSibling);
-
-  var home=b.parentNode;
-  function set(v){
-    on=v;
-    document.body.classList.toggle('zen',on);
-    b.textContent=on?'wake \u21a9':'screensaver \u26f6';
-    if(on){ document.body.appendChild(b); b.style.position='fixed'; b.style.right='14px'; b.style.bottom='14px'; b.style.zIndex=60; }
-    else { home.appendChild(b); b.style.position=''; b.style.right=''; b.style.bottom=''; b.style.zIndex=''; }
+  b.onclick=function(){
+    document.body.classList.add('zen');
+    wake.style.display='inline-block';
     setTimeout(function(){ dispatchEvent(new Event('resize')); },0);
-  }
-  b.onclick=function(e){ e.stopPropagation(); set(!on); };
-  document.addEventListener('pointerdown',function(ev){ if(on&&ev.target!==b) set(false); },true);
-  
-  var st=document.createElement('style');
-  st.textContent='body.zen header,body.zen main,body.zen footer,body.zen .ladder{display:none}body.zen #fire{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:50}';
-  document.head.appendChild(st);
+  };
 })();
 </script>
   
