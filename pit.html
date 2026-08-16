@@ -155,16 +155,18 @@ function weather(el){
   const map={flame:'fire',flood:'water',fog:'smoke'};
   return (localStorage.getItem('hive_hearth_mode')||'fire')===map[el]?1.2:1;
 }
+
 function renderCond(){
   const fm=form();
   const m=localStorage.getItem('hive_hearth_mode')||'fire';
-  const wn={fire:'the flame',water:'the flood',smoke:'the fog'};
-
-   const parts=[({fire:'the forge burns',water:'the water soaks',smoke:'the smoke drifts'})[m]+' \u2014 '+wn[m]+' eager'];
-  
-  ['flame','flood','fog'].forEach(function(k){ if(fm[k]) parts.push(NAMES[k]+(fm[k]==='w'?' tired':' hungry')); });
-  document.getElementById('cond').textContent=parts.join(' \u00b7 ');
+  const tags={flame:[],flood:[],fog:[]};
+  tags[({fire:'flame',water:'flood',smoke:'fog'})[m]].push('eager');
+  ['flame','flood','fog'].forEach(function(k){ if(fm[k]) tags[k].push(fm[k]==='w'?'tired':'hungry'); });
+  const parts=[];
+  ['flame','flood','fog'].forEach(function(k){ if(tags[k].length) parts.push('the '+k+' '+tags[k].join('+')); });
+  document.getElementById('cond').textContent=({fire:'the forge burns',water:'the water soaks',smoke:'the smoke drifts'})[m]+' \u2014 '+parts.join(' \u00b7 ');
 }
+  
 function renderLedger(){
   const l=ledger().slice(-4).reverse();
   document.getElementById('ledger').innerHTML=l.map(function(r){
