@@ -321,6 +321,27 @@ setup(); requestAnimationFrame(tick);
   if(f) f.parentNode.insertBefore(el,f); else document.body.appendChild(el);
 })();
 </script>
+
+<script>
+(function(){
+  function bank(){ return Math.min(3,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)); }
+  var el=document.createElement('div');
+  el.style.cssText='margin-top:10px;color:#93a1b0;font-size:11.5px;letter-spacing:.05em';
+  function draw(){
+    var b=bank(), s='';
+    for(var i=0;i<3;i++) s+='<i style="display:inline-block;width:10px;height:10px;margin:0 3px;border:1px solid '+(i<b?'#d9a83a':'#5c6875')+';vertical-align:middle;'+(i<b?'background:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.7)':'')+'"></i>';
+    el.innerHTML='the belt \u00b7 '+s+' \u00b7 <a href="donations.html" style="color:#3f7fc1;text-decoration:none">earn more at the hearth \u2197</a>';
+  }
+  draw();
+  document.addEventListener('click',function(ev){
+    var t=ev.target&&ev.target.closest?ev.target.closest('button'):null;
+    if(t&&(t.id.indexOf('b-')===0||t.id==='horn')) setTimeout(draw,0);
+  },true);
+  window.addEventListener('storage',draw);
+  var mk=document.getElementById('marks');
+  if(mk&&mk.parentNode) mk.parentNode.insertBefore(el,mk.nextSibling); else document.body.appendChild(el);
+})();
+</script>
   
 </body>
 </html>
