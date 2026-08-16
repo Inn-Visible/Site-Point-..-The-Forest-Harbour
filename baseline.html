@@ -197,5 +197,17 @@ addEventListener('keydown', e => {
 });
 </script>
 
+<script>
+(function(){
+  var d=document.createElement('div');
+  d.style.cssText='max-width:640px;margin:26px auto;padding:16px 18px;border:1px solid #223041;text-align:center;font-family:ui-monospace,Consolas,monospace';
+  d.innerHTML='<div style="color:#6b7684;font-style:italic;font-family:Georgia,serif;font-size:12px">baseline fm \u00b7 the house has frequencies</div>'
+   +'<a href="fm.html" style="display:inline-block;margin-top:10px;border:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.15em;padding:8px 18px;text-decoration:none">tune in \u2197</a>'
+   +'<div style="margin-top:8px;color:#5c6875;font-size:10px;letter-spacing:.12em">89.1 the forge \u00b7 91.5 the pit \u00b7 108.0 the rose \u00b7 \u23cf your tape</div>';
+  var f=document.querySelector('footer')||document.body;
+  f.parentNode.insertBefore(d,f);
+})();
+</script>
+  
 </body>
 </html>
