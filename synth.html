@@ -111,14 +111,15 @@ var F=null;
 function show(f){
   F=f; menu.innerHTML=''; out.textContent='the synth listens ..';
   info.innerHTML='<b>'+esc(f.name)+'</b> · '+(f.size/1024).toFixed(1)+' kb · family: <b>'+fam(f)+'</b>';
-  var m={
-    image:[['→ png','ip'],['→ jpeg','ij'],['→ webp','iw'],['→ base64 .txt','b']],
+    var m={
+    image:[['→ png','ip'],['→ jpeg','ij'],['→ webp','iw'],['→ pdf','ipdf'],['→ base64 .txt','b']],
     audio:[['→ wav · 16-bit pcm','aw'],['→ base64 .txt','b']],
     video:[['→ png poster frame','vp'],['→ base64 .txt','b']],
-    json:[['→ csv','jc'],['→ pretty .txt','jt'],['→ base64 .txt','b']],
-    csv:[['→ json','cj'],['→ html table','ch'],['→ base64 .txt','b']],
-    md:[['→ html','mh'],['→ plain .txt','mt'],['→ base64 .txt','b']],
-    text:[['→ html (pre)','th'],['→ base64 .txt','b']],
+    json:[['→ csv','jc'],['→ pretty .txt','jt'],['→ pdf','tpdf'],['→ base64 .txt','b']],
+    csv:[['→ json','cj'],['→ html table','ch'],['→ pdf','tpdf'],['→ base64 .txt','b']],
+    md:[['→ html','mh'],['→ plain .txt','mt'],['→ pdf','mpdf'],['→ base64 .txt','b']],
+    docx:[['→ pdf','dxp'],['→ plain .txt','dx'],['→ base64 .txt','b']],
+    text:[['→ html (pre)','th'],['→ pdf','tpdf'],['→ base64 .txt','b']],
     any:[['→ base64 .txt','b'],['→ hex .txt','hx']]
   }[fam(f)];
   m.forEach(function(p){ var b=document.createElement('button'); b.className='btn'; b.textContent=p[0];
