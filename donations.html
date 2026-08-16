@@ -931,6 +931,49 @@ window.cloudRedeem = async function(key, name){
   };
 })();
 </script>
+
+<script>
+(function(){
+  var wrap=document.createElement('div');
+  wrap.style.cssText='text-align:center;margin-top:14px';
+  wrap.innerHTML='<button class="btn mini" id="sealOut">wax-seal \u2b07</button> <button class="btn mini" id="sealIn" style="display:none">press the seal \u2b06</button>';
+  var ta=document.createElement('textarea');
+  ta.style.cssText='display:block;margin:10px auto 0;width:min(420px,86%);height:90px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:8px;letter-spacing:.03em';
+  ta.placeholder='paste a wax-seal here, then press the seal ..';
+  ta.style.display='none';
+  var st=document.createElement('div'); st.className='status';
+  var lad=document.querySelector('.honor');
+  var host=lad&&lad.parentNode?lad.parentNode:document.body;
+  if(lad){ host.insertBefore(st,lad); host.insertBefore(ta,lad); host.insertBefore(wrap,lad); }
+  else { document.body.appendChild(wrap); document.body.appendChild(ta); document.body.appendChild(st); }
+  function gather(){ var o={}; for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i);
+    if(k&&k.indexOf('hive_')===0) o[k]=localStorage.getItem(k); } return o; }
+  document.getElementById('sealOut').onclick=function(){
+    try{
+      var s=btoa(unescape(encodeURIComponent(JSON.stringify(gather()))));
+      ta.style.display='block'; ta.value=s;
+      document.getElementById('sealIn').style.display='inline-block';
+      st.textContent='the seal is poured \u00b7 copy it somewhere safe, or save it ..';
+      var a=document.createElement('a');
+      a.href='data:text/plain;base64,'+s;
+      a.download='innvisible-wax-seal.txt';
+      a.style.cssText='color:#3f7fc1;font-size:11px;margin-left:8px;text-decoration:none';
+      a.textContent='save the seal \u21a7';
+      wrap.appendChild(a);
+      ta.select(); try{ document.execCommand('copy'); }catch(e){}
+    }catch(e){ st.textContent='the wax would not pour.'; }
+  };
+  document.getElementById('sealIn').onclick=function(){
+    try{
+      var o=JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));
+      var n=0; for(var k in o){ if(k.indexOf('hive_')===0){ localStorage.setItem(k,o[k]); n++; } }
+      st.textContent='the seal presses \u00b7 '+n+' memories returned \u00b7 the house reloads ..';
+      setTimeout(function(){ location.reload(); },900);
+    }catch(e){ st.textContent='the fire does not recognize that seal.'; }
+  };
+})();
+</script>
+
   
 </body>
 </html>
