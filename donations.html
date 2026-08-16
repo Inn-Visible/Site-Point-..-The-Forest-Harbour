@@ -635,17 +635,25 @@ window.cloudRedeem = async function(key, name){
   var WATCHES=['dawn','noon','dusk','night'];
   var lines={dawn:'dawn watch \u00b7 the fire wakes hungry',noon:'noon watch \u00b7 steady burn',dusk:'dusk watch \u00b7 the tall flame',night:'night watch \u00b7 banked embers'};
   var seas={winter:'winter \u00b7 nights are long; keep the flame',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
+  
   var el=document.createElement('div');
   el.style.cssText='text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.18em;color:#5c6875;padding:12px 8px';
-  var pips=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
-  var elLine=document.createElement('span');
+  var elR=document.createElement('span'), elP=document.createElement('span'), elLine=document.createElement('span'), elS=document.createElement('span');
   elLine.style.color='#93a1b0';
-  elLine.textContent=lines[Wt];
-  el.innerHTML='<span style="color:'+RC[S]+'">'+RUNE[S]+'</span> '+pips+' ';
-  el.appendChild(elLine);
-  el.appendChild(document.createTextNode(' \u00b7 '+seas[S]));
+  function drawCal(){
+    now=new Date(); S=season(now); Wt=watch(now);
+    elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
+    elP.innerHTML=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+    elLine.textContent=lines[Wt];
+    elS.textContent=' \u00b7 '+seas[S];
+    try{ if(typeof tints!=='undefined'&&tints&&typeof ov!=='undefined'&&ov) ov.style.background='radial-gradient(ellipse at 50% 82%, '+tints[Wt]+', transparent 72%)'; }catch(e){}
+  }
+  drawCal();
+  el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elLine); el.appendChild(elS);
   var ft=document.querySelector('footer');
   if(ft) ft.parentNode.insertBefore(el,ft); else document.body.appendChild(el);
+  setInterval(drawCal,30000);
+  
   var tints={dawn:'rgba(217,168,58,0.05)',noon:'rgba(0,0,0,0)',dusk:'rgba(200,90,40,0.07)',night:'rgba(18,24,32,0.38)'};
   if(S==='winter') tints.night='rgba(12,16,24,0.52)';
   if(S==='summer') tints.dusk='rgba(200,90,40,0.11)';
