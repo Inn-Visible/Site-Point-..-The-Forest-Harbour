@@ -315,13 +315,23 @@ setup(); requestAnimationFrame(tick);
   var seas={winter:'winter \u00b7 nights are long',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
   var el=document.createElement('div');
   el.style.cssText='text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.18em;color:#5c6875;padding:12px 8px';
-  var pips=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
-  el.innerHTML='<span style="color:'+RC[S]+'">'+RUNE[S]+'</span> '+pips+' <span style="color:#93a1b0">'+lines[Wt]+'</span> \u00b7 '+seas[S];
+  var elR=document.createElement('span'), elP=document.createElement('span'), elL=document.createElement('span'), elS=document.createElement('span');
+  elL.style.color='#93a1b0';
+  function drawCal(){
+    now=new Date(); S=season(now); Wt=watch(now);
+    elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
+    elP.innerHTML=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+    elL.textContent=lines[Wt];
+    elS.textContent=' \u00b7 '+seas[S];
+  }
+  drawCal();
+  el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
   var f=document.querySelector('footer');
   if(f) f.parentNode.insertBefore(el,f); else document.body.appendChild(el);
+  setInterval(drawCal,30000);
 })();
 </script>
-
+  
 <script>
 (function(){
   function bank(){ return Math.min(3,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)); }
