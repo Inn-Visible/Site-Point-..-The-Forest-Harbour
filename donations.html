@@ -875,5 +875,29 @@ window.cloudRedeem = async function(key, name){
   },true);
 })();
 </script>
+
+<script>
+(function(){
+  function bank(){ return Math.min(3,parseInt(localStorage.getItem('hive_pit_credits')||'0',10)); }
+  var el=document.createElement('div');
+  el.style.cssText='margin-top:10px;color:#93a1b0;font-size:11.5px;letter-spacing:.05em';
+  function draw(){
+    var b=bank(), s='';
+    for(var i=0;i<3;i++) s+='<i style="display:inline-block;width:10px;height:10px;margin:0 3px;border:1px solid '+(i<b?'#d9a83a':'#5c6875')+';vertical-align:middle;'+(i<b?'background:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.7)':'')+'"></i>';
+    el.innerHTML='the belt \u00b7 '+s+' \u00b7 <a href="pit.html" style="color:#3f7fc1;text-decoration:none">carry them to the pit \u2197</a>';
+  }
+  draw();
+  document.addEventListener('click',function(ev){
+    var t=ev.target; if(!t||!t.closest) return;
+    var b=t.closest('a,button'); if(!b) return;
+    var s=(b.textContent||'').toLowerCase();
+    if(b.id==='toss'||s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1) setTimeout(draw,0);
+  },true);
+  var lad=document.querySelector('.ladder');
+  if(lad&&lad.parentNode) lad.parentNode.insertBefore(el,lad.nextSibling); else document.body.appendChild(el);
+  window.addEventListener('storage',draw);
+})();
+</script>
+  
 </body>
 </html>
