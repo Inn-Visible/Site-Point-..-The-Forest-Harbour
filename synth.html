@@ -56,6 +56,7 @@ function fam(f){
   if(t.indexOf('video/')===0||['mp4','webm','mov','mkv'].indexOf(e)>-1) return 'video';
   if(t.indexOf('json')>-1||e==='json') return 'json';
   if(e==='csv') return 'csv';
+    if(e==='docx') return 'docx';
   if(e==='md'||e==='markdown') return 'md';
   if(t.indexOf('text/')===0||['txt','html','htm','js','css','log','xml'].indexOf(e)>-1) return 'text';
   return 'any';
