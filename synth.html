@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EIGEN DYNAMICS — the synthesizer</title>
+<style>
+  :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#5c6875;--gold:#d9a83a;--blue:#3f7fc1;--red:#c8452c;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--line)}
+  .brand{letter-spacing:.3em;color:var(--blue);font-size:14px}
+  .back{color:var(--dim);font-size:11px;text-decoration:none;letter-spacing:.15em}
+  main{max-width:720px;margin:0 auto;padding:40px 16px;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.4vw,22px)}
+  .sub{margin-top:8px;color:var(--dim);font-size:10.5px;letter-spacing:.2em}
+  #drop{margin:26px auto;padding:44px 16px;border:1px dashed var(--line);color:var(--dim);
+    font-size:12px;letter-spacing:.12em;cursor:pointer;transition:border-color .2s}
+  #drop.hot{border-color:var(--gold);color:var(--gold)}
+  #info{margin-top:14px;font-size:11px;color:var(--dim);min-height:16px}
+  #info b{color:var(--ink)}
+  #menu{margin-top:16px}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);
+    font-size:11px;letter-spacing:.12em;padding:8px 16px;cursor:pointer;margin:4px}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  #out{margin-top:16px;font-size:11.5px;color:var(--dim);min-height:18px}
+  #out a{color:var(--blue)}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:18px;text-align:center;
+    color:var(--dim);font-size:11px;letter-spacing:.12em}
+  footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<header><div class="brand">EIGEN DYNAMICS</div><a class="back" href="eigen.html">the shelf ↩</a></header>
+<main>
+  <p class="hook">the synthesizer — every file speaks; the synth translates.</p>
+  <p class="sub">· ALL-IN ⇄ ALL-OUT · CLIENT-SIDE · NOTHING LEAVES YOUR GLASS ·</p>
+  <div id="drop">drop a file here · or tap to choose · the synth will name its family</div>
+  <input type="file" id="pick" style="display:none">
+  <div id="info"></div>
+  <div id="menu"></div>
+  <div id="out">the synth listens ..</div>
+</main>
+<footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.” · <a href="index.html">the hive entrance ↗</a></footer>
+<script>
+var drop=document.getElementById('drop'),pick=document.getElementById('pick'),
+    info=document.getElementById('info'),menu=document.getElementById('menu'),out=document.getElementById('out');
+function dl(blob,name){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },4000); }
+function base(file){ return (file.name||'file').replace(/\.[^.]+$/,''); }
+function fam(f){
+  var t=f.type||'', n=(f.name||'').toLowerCase(), e=n.indexOf('.')>-1?n.split('.').pop():'';
+  if(t.indexOf('image/')===0||['png','jpg','jpeg','webp','gif','bmp','svg'].indexOf(e)>-1) return 'image';
+  if(t.indexOf('audio/')===0||['mp3','wav','ogg','oga','m4a','aac','flac'].indexOf(e)>-1) return 'audio';
+  if(t.indexOf('video/')===0||['mp4','webm','mov','mkv'].indexOf(e)>-1) return 'video';
+  if(t.indexOf('json')>-1||e==='json') return 'json';
+  if(e==='csv') return 'csv';
+  if(e==='md'||e==='markdown') return 'md';
+  if(t.indexOf('text/')===0||['txt','html','htm','js','css','log','xml'].indexOf(e)>-1) return 'text';
+  return 'any';
+}
+function imgTo(file,type,done){
+  var url=URL.createObjectURL(file), img=new Image();
+  img.onload=function(){ var c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+    var x=c.getContext('2d'); if(type==='image/jpeg'){ x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); }
+    x.drawImage(img,0,0); c.toBlob(function(b){ URL.revokeObjectURL(url); done(b); },type,0.92); };
+  img.onerror=function(){ URL.revokeObjectURL(url); out.textContent='the synth cannot read that image.'; };
+  img.src=url;
+}
+function wav(ab){
+  var ch=Math.min(2,ab.numberOfChannels), sr=ab.sampleRate, len=ab.length, ba=ch*2, ds=len*ba;
+  var dv=new DataView(new ArrayBuffer(44+ds));
+  function ws(o,s){ for(var i=0;i<s.length;i++) dv.setUint8(o+i,s.charCodeAt(i)); }
+  ws(0,'RIFF'); dv.setUint32(4,36+ds,true); ws(8,'WAVE'); ws(12,'fmt ');
+  dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,ch,true);
+  dv.setUint32(24,sr,true); dv.setUint32(28,sr*ba,true); dv.setUint16(32,ba,true); dv.setUint16(34,16,true);
+  ws(36,'data'); dv.setUint32(40,ds,true);
+  var o=44, cs=[]; for(var c=0;c<ch;c++) cs.push(ab.getChannelData(c));
+  for(var i=0;i<len;i++) for(var k=0;k<ch;k++){ var s=Math.max(-1,Math.min(1,cs[k][i]));
+    dv.setInt16(o,s<0?s*0x8000:s*0x7FFF,true); o+=2; }
+  return new Blob([dv],{type:'audio/wav'});
+}
+function poster(file,done){
+  var url=URL.createObjectURL(file), v=document.createElement('video');
+  v.muted=true; v.playsInline=true; v.src=url;
+  v.onloadeddata=function(){ v.currentTime=Math.min(1,(v.duration||2)/2); };
+  v.onseeked=function(){ var c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+    c.getContext('2d').drawImage(v,0,0); c.toBlob(function(b){ URL.revokeObjectURL(url); done(b); },'image/png'); };
+  v.onerror=function(){ URL.revokeObjectURL(url); out.textContent='the synth cannot read that video.'; };
+}
+function b64(file,done){ var r=new FileReader(); r.onload=function(){ done(r.result); }; r.readAsDataURL(file); }
+function hex(file,done){
+  if(file.size>2*1024*1024){ out.textContent='too big for hex in mk1 — use base64.'; return; }
+  var r=new FileReader(); r.onload=function(){ var u=new Uint8Array(r.result), s='';
+    for(var i=0;i<u.length;i++) s+=u[i].toString(16).padStart(2,'0')+(i%32===31?'\n':' ');
+    done(s); }; r.readAsArrayBuffer(file);
+}
+function csvRows(t){ return t.trim().split(/\r?\n/).map(function(l){ var o=[],c='',q=false;
+  for(var i=0;i<l.length;i++){ var ch=l[i];
+    if(ch==='"') q=!q; else if(ch===','&&!q){ o.push(c); c=''; } else c+=ch; }
+  o.push(c); return o; }); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function md2html(md){ return esc(md)
+  .replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>')
+  .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>').replace(/`([^`]+)`/g,'<code>$1</code>')
+  .replace(/^\- (.*)$/gm,'<li>$1</li>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>')
+  .replace(/\n\n/g,'<br><br>'); }
+var F=null;
+function show(f){
+  F=f; menu.innerHTML=''; out.textContent='the synth listens ..';
+  info.innerHTML='<b>'+esc(f.name)+'</b> · '+(f.size/1024).toFixed(1)+' kb · family: <b>'+fam(f)+'</b>';
+  var m={
+    image:[['→ png','ip'],['→ jpeg','ij'],['→ webp','iw'],['→ base64 .txt','b']],
+    audio:[['→ wav · 16-bit pcm','aw'],['→ base64 .txt','b']],
+    video:[['→ png poster frame','vp'],['→ base64 .txt','b']],
+    json:[['→ csv','jc'],['→ pretty .txt','jt'],['→ base64 .txt','b']],
+    csv:[['→ json','cj'],['→ html table','ch'],['→ base64 .txt','b']],
+    md:[['→ html','mh'],['→ plain .txt','mt'],['→ base64 .txt','b']],
+    text:[['→ html (pre)','th'],['→ base64 .txt','b']],
+    any:[['→ base64 .txt','b'],['→ hex .txt','hx']]
+  }[fam(f)];
+  m.forEach(function(p){ var b=document.createElement('button'); b.className='btn'; b.textContent=p[0];
+    b.onclick=function(){ run(p[1]); }; menu.appendChild(b); });
+}
+function run(id){
+  out.textContent='translating ..';
+  var n=base(F);
+  function ok(blob,name){ dl(blob,name); out.innerHTML='done · the file speaks a new tongue · <a download="'+name+'" href="'+URL.createObjectURL(blob)+'">save again ↧</a>'; }
+  if(id==='ip') imgTo(F,'image/png',function(b){ ok(b,n+'.png'); });
+  if(id==='ij') imgTo(F,'image/jpeg',function(b){ ok(b,n+'.jpg'); });
+  if(id==='iw') imgTo(F,'image/webp',function(b){ ok(b,n+'.webp'); });
+  if(id==='aw'){ F.arrayBuffer().then(function(ab){ return new (window.AudioContext||window.webkitAudioContext)().decodeAudioData(ab); })
+    .then(function(ab){ ok(wav(ab),n+'.wav'); })
+    .catch(function(){ out.textContent='the synth cannot decode that audio.'; }); }
+  if(id==='vp') poster(F,function(b){ ok(b,n+'-poster.png'); });
+  if(id==='b') b64(F,function(s){ ok(new Blob([s],{type:'text/plain'}),n+'.b64.txt'); });
+  if(id==='hx') hex(F,function(s){ if(s) ok(new Blob([s],{type:'text/plain'}),n+'.hex.txt'); });
+  if(id==='jc') F.text().then(function(t){ try{ var a=JSON.parse(t);
+    if(!Array.isArray(a)||!a.length||typeof a[0]!=='object') throw 0;
+    var h=Object.keys(a[0]); var rows=[h.join(',')].concat(a.map(function(o){ return h.map(function(k){
+      var v=String(o[k]==null?'':o[k]); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(','); }));
+    ok(new Blob([rows.join('\n')],{type:'text/csv'}),n+'.csv'); }catch(e){ out.textContent='json must be an array of objects for csv.'; } });
+  if(id==='jt') F.text().then(function(t){ try{ ok(new Blob([JSON.stringify(JSON.parse(t),null,2)],{type:'text/plain'}),n+'.pretty.txt'); }
+    catch(e){ out.textContent='that json does not parse.'; } });
+  if(id==='cj') F.text().then(function(t){ var r=csvRows(t), h=r[0], a=r.slice(1).map(function(row){ var o={};
+    h.forEach(function(k,i){ o[k]=row[i]!==undefined?row[i]:''; }); return o; });
+    ok(new Blob([JSON.stringify(a,null,2)],{type:'application/json'}),n+'.json'); });
+  if(id==='ch') F.text().then(function(t){ var r=csvRows(t);
+    var html='<table border="1">'+r.map(function(row,i){ return '<tr>'+row.map(function(c){ return (i?'<td>':'<th>')+esc(c)+(i?'</td>':'</th>'); }).join('')+'</tr>'; }).join('')+'</table>';
+    ok(new Blob([html],{type:'text/html'}),n+'.html'); });
+  if(id==='mh') F.text().then(function(t){ ok(new Blob(['<!doctype html><meta charset="utf-8">'+md2html(t)],{type:'text/html'}),n+'.html'); });
+  if(id==='mt') F.text().then(function(t){ ok(new Blob([t.replace(/[#*`>\[\]()]/g,'')],{type:'text/plain'}),n+'.txt'); });
+  if(id==='th') F.text().then(function(t){ ok(new Blob(['<!doctype html><meta charset="utf-8"><pre>'+esc(t)+'</pre>'],{type:'text/html'}),n+'.html'); });
+}
+drop.onclick=function(){ pick.click(); };
+pick.onchange=function(){ if(pick.files[0]) show(pick.files[0]); };
+['dragenter','dragover'].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.add('hot'); }); });
+['dragleave','drop'].forEach(function(e){ drop.addEventListener(e,function(ev){ ev.preventDefault(); drop.classList.remove('hot'); }); });
+drop.addEventListener('drop',function(ev){ if(ev.dataTransfer.files[0]) show(ev.dataTransfer.files[0]); });
+</script>
+</body>
+</html>
