@@ -206,20 +206,6 @@ requestAnimationFrame(frame);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
 })();
 </script>
-
-<script>
-(function(){
-  var a=document.createElement('a');
-  a.href=(location.pathname.indexOf('/eigenstack/')>-1?'../':'')+'slate.html';
-  a.title='the slate \u00b7 the only wall the house lets you wipe';
-  a.setAttribute('aria-label','the slate');
-  a.style.cssText='position:fixed;left:14px;bottom:14px;z-index:40;width:26px;height:6px;background:#c2c8d0;border-radius:2px;opacity:.35;transform:rotate(-4deg);transition:opacity .2s,box-shadow .2s';
-  a.onmouseenter=function(){ a.style.opacity='.9'; a.style.boxShadow='0 0 10px rgba(194,200,208,.6)'; };
-  a.onmouseleave=function(){ a.style.opacity='.35'; a.style.boxShadow='none'; };
-  document.body.appendChild(a);
-})();
-</script>
-
  
 </body>
 </html>
