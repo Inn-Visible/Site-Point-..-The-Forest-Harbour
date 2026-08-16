@@ -166,6 +166,7 @@ function renderCond(){
   ['flame','flood','fog'].forEach(function(k){ if(tags[k].length) parts.push('the '+k+' '+tags[k].join('+')); });
   document.getElementById('cond').textContent=({fire:'the forge burns',water:'the water soaks',smoke:'the smoke drifts'})[m]+' \u2014 '+parts.join(' \u00b7 ');
 }
+window.addEventListener('storage',function(e){ if(e.key==='hive_hearth_mode'||e.key==='hive_pit_form') renderCond(); });
   
 function renderLedger(){
   const l=ledger().slice(-4).reverse();
