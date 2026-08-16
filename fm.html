@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BASELINE EVOLUTIONS — fm</title>
+<style>
+  :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#5c6875;--gold:#d9a83a;--blue:#3f7fc1;--red:#c8452c;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--line)}
+  .brand{letter-spacing:.3em;color:var(--red);font-size:14px}
+  .back{color:var(--dim);font-size:11px;text-decoration:none;letter-spacing:.15em}
+  main{max-width:720px;margin:0 auto;padding:40px 16px;text-align:center}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.4vw,22px)}
+  .sub{margin-top:8px;color:var(--dim);font-size:10.5px;letter-spacing:.2em}
+  #dial{width:100%;height:110px;display:block;margin-top:20px}
+  #stations{margin-top:14px}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);
+    font-size:11px;letter-spacing:.12em;padding:9px 14px;cursor:pointer;margin:4px}
+  .btn:hover{background:var(--gold);color:#0a0d12}
+  .btn.on{background:var(--gold);color:#0a0d12}
+  .btn.mini{border-color:var(--line);color:var(--dim)}
+  #readout{margin-top:14px;font-size:11.5px;color:var(--dim);min-height:16px;font-style:italic;font-family:var(--serif)}
+  #vol{margin-top:14px;width:min(240px,70%);accent-color:var(--gold)}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:18px;text-align:center;
+    color:var(--dim);font-size:11px;letter-spacing:.12em}
+  footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<header><div class="brand">BASELINE EVOLUTIONS</div><a class="back" href="baseline.html">the shelf ↩</a></header>
+<main>
+  <p class="hook">baseline fm — the house has frequencies.</p>
+  <p class="sub">· THREE STATIONS, SYNTHESIZED LIVE · NOTHING STREAMS · NOTHING LEAVES YOUR GLASS ·</p>
+  <canvas id="dial"></canvas>
+  <div id="stations">
+    <button class="btn" id="s-forge">89.1 · the forge</button>
+    <button class="btn" id="s-pit">91.5 · the pit</button>
+    <button class="btn" id="s-rose">108.0 · the rose</button>
+    <button class="btn mini" id="s-tape">⏏ your tape</button>
+    <input type="file" id="tapepick" accept="audio/*" style="display:none">
+  </div>
+  <div id="readout">static .. tune in, keeper.</div>
+  <input type="range" id="vol" min="0" max="100" value="80">
+</main>
+<footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.” · <a href="index.html">the hive entrance ↗</a></footer>
+<script>
+var AC=null, master=null, analyser=null, live=null, cur=null, tapeSrc=null;
+function ac(){
+  if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)();
+    master=AC.createGain(); master.gain.value=0.8;
+    analyser=AC.createAnalyser(); analyser.fftSize=64;
+    master.connect(analyser); analyser.connect(AC.destination); }
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function noiseBuf(ctx){ var b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate), d=b.getChannelData(0);
+  for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1; return b; }
+function fadeStop(g,nodes,ivs){
+  var ctx=ac();
+  (ivs||[]).forEach(function(v){ clearInterval(v); clearTimeout(v); });
+  try{ g.gain.cancelScheduledValues(ctx.currentTime); g.gain.setValueAtTime(g.gain.value,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5); }catch(e){}
+  setTimeout(function(){ nodes.forEach(function(n){ try{ n.stop(); }catch(e){} }); try{ g.disconnect(); }catch(e){} },600);
+}
+function stForge(){
+  var ctx=ac(), g=ctx.createGain(); g.gain.value=0; g.connect(master);
+  g.gain.linearRampToValueAtTime(0.9,ctx.currentTime+1.5);
+  var o=ctx.createOscillator(); o.type='sine'; o.frequency.value=58;
+  var og=ctx.createGain(); og.gain.value=0.25; o.connect(og); og.connect(g);
+  var lfo=ctx.createOscillator(); lfo.frequency.value=0.13;
+  var lg=ctx.createGain(); lg.gain.value=0.12; lfo.connect(lg); lg.connect(og.gain);
+  var nb=ctx.createBufferSource(); nb.buffer=noiseBuf(ctx); nb.loop=true;
+  var f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=420; f.Q.value=0.7;
+  var ng=ctx.createGain(); ng.gain.value=0.16; nb.connect(f); f.connect(ng); ng.connect(g);
+  var fl=ctx.createOscillator(); fl.frequency.value=0.07;
+  var flg=ctx.createGain(); flg.gain.value=180; fl.connect(flg); flg.connect(f.frequency);
+  var iv=setInterval(function(){
+    if(Math.random()<0.7){ var t=ctx.currentTime;
+      var s=ctx.createBufferSource(); s.buffer=noiseBuf(ctx);
+      var hf=ctx.createBiquadFilter(); hf.type='highpass'; hf.frequency.value=2400;
+      var cg=ctx.createGain(); cg.gain.setValueAtTime(0.0001,t);
+      cg.gain.exponentialRampToValueAtTime(0.05+Math.random()*0.08,t+0.005);
+      cg.gain.exponentialRampToValueAtTime(0.0001,t+0.03+Math.random()*0.05);
+      s.connect(hf); hf.connect(cg); cg.connect(g); s.start(t); s.stop(t+0.12); }
+  },140);
+  o.start(); lfo.start(); nb.start(); fl.start();
+  return {stop:function(){ fadeStop(g,[o,lfo,nb,fl],[iv]); }};
+}
+function stPit(){
+  var ctx=ac(), g=ctx.createGain(); g.gain.value=0; g.connect(master);
+  g.gain.linearRampToValueAtTime(0.8,ctx.currentTime+1.5);
+  var roots=[110,98,123.47,87.31], ri=0;
+  var o1=ctx.createOscillator(), o2=ctx.createOscillator(), o3=ctx.createOscillator();
+  o1.type='sawtooth'; o2.type='sawtooth'; o1.detune.value=-7; o2.detune.value=7;
+  var f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=300; f.Q.value=2;
+  var og=ctx.createGain(); og.gain.value=0.2; o1.connect(f); o2.connect(f); f.connect(og); og.connect(g);
+  o3.type='sine'; var o3g=ctx.createGain(); o3g.gain.value=0.2; o3.connect(o3g); o3g.connect(g);
+  var lfo=ctx.createOscillator(); lfo.frequency.value=0.05;
+  var lg=ctx.createGain(); lg.gain.value=140; lfo.connect(lg); lg.connect(f.frequency);
+  var nb=ctx.createBufferSource(); nb.buffer=noiseBuf(ctx); nb.loop=true;
+  var bf=ctx.createBiquadFilter(); bf.type='bandpass'; bf.frequency.value=700; bf.Q.value=0.6;
+  var bg=ctx.createGain(); bg.gain.value=0.05; nb.connect(bf); bf.connect(bg); bg.connect(g);
+  var wl=ctx.createOscillator(); wl.frequency.value=0.11;
+  var wg=ctx.createGain(); wg.gain.value=300; wl.connect(wg); wg.connect(bf.frequency);
+  function setRoot(r){ o1.frequency.value=r; o2.frequency.value=r; o3.frequency.value=r/2; }
+  setRoot(roots[0]);
+  var iv=setInterval(function(){ ri=(ri+1)%roots.length; setRoot(roots[ri]); },24000);
+  [o1,o2,o3,lfo,nb,wl].forEach(function(n){ n.start(); });
+  return {stop:function(){ fadeStop(g,[o1,o2,o3,lfo,nb,wl],[iv]); }};
+}
+function stRose(){
+  var ctx=ac(), g=ctx.createGain(); g.gain.value=0; g.connect(master);
+  g.gain.linearRampToValueAtTime(0.8,ctx.currentTime+1.2);
+  var pad=ctx.createOscillator(); pad.type='sine'; pad.frequency.value=220;
+  var pg=ctx.createGain(); pg.gain.value=0.06; pad.connect(pg); pg.connect(g);
+  var pad2=ctx.createOscillator(); pad2.type='sine'; pad2.frequency.value=330;
+  var pg2=ctx.createGain(); pg2.gain.value=0.04; pad2.connect(pg2); pg2.connect(g);
+  var PHI=1.618, penta=[0,2,4,7,9,12], deg=0, delay=480, to=null;
+  function note(){
+    var t=ctx.currentTime;
+    deg=(deg+(Math.random()<0.5?1:2))%penta.length;
+    var fr=440*Math.pow(2,(penta[deg]-12)/12);
+    var o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=fr;
+    var ng=ctx.createGain(); ng.gain.setValueAtTime(0.0001,t);
+    ng.gain.exponentialRampToValueAtTime(0.12,t+0.01);
+    ng.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+    o.connect(ng); ng.connect(g); o.start(t); o.stop(t+0.7);
+    delay=delay*PHI>1400?420:delay*PHI;
+    to=setTimeout(note,delay);
+  }
+  note(); pad.start(); pad2.start();
+  return {stop:function(){ fadeStop(g,[pad,pad2],[to]); }};
+}
+var FLAVOR={
+  forge:['the forge burns at 89.1 · hammer on the anvil, far off','coal shift · the tenant blinks in the static','keys cool on the shelf · the bellows breathe'],
+  pit:['91.5 · the crowd is two swarms and a rumor','weather report: whatever the hearth says','the odds move when you are not looking'],
+  rose:['108.0 · petals at the golden angle, humming','e-decay lullabies · the insignia grows in time','six hundred petals and not one off-beat'],
+  tape:['your tape · your rules · the house just holds the speaker']
+};
+var readout=document.getElementById('readout'), fi=0;
+function say(line){ readout.textContent=line; }
+setInterval(function(){ if(cur&&FLAVOR[cur]){ fi=(fi+1)%FLAVOR[cur].length; say(FLAVOR[cur][fi]); } },7000);
+function tune(id,builder){
+  ac();
+  if(live) live.stop();
+  if(tapeSrc){ try{ tapeSrc.stop(); }catch(e){} tapeSrc=null; }
+  document.querySelectorAll('.btn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('s-'+id).classList.add('on');
+  cur=id; fi=0; say(FLAVOR[id][0]);
+  live=builder();
+}
+document.getElementById('s-forge').onclick=function(){ tune('forge',stForge); };
+document.getElementById('s-pit').onclick=function(){ tune('pit',stPit); };
+document.getElementById('s-rose').onclick=function(){ tune('rose',stRose); };
+document.getElementById('s-tape').onclick=function(){ document.getElementById('tapepick').click(); };
+document.getElementById('tapepick').onchange=function(){
+  var f=this.files[0]; if(!f) return;
+  ac();
+  if(live){ live.stop(); live=null; }
+  f.arrayBuffer().then(function(ab){ return AC.decodeAudioData(ab); }).then(function(buf){
+    tapeSrc=AC.createBufferSource(); tapeSrc.buffer=buf;
+    var tg=AC.createGain(); tg.gain.value=0.9; tapeSrc.connect(tg); tg.connect(master);
+    document.querySelectorAll('.btn').forEach(function(b){ b.classList.remove('on'); });
+    document.getElementById('s-tape').classList.add('on');
+    cur='tape'; fi=0; say(FLAVOR.tape[0]+' · '+f.name);
+    tapeSrc.onended=function(){ if(cur==='tape'){ say('the tape ends · static returns ..'); cur=null; } };
+    tapeSrc.start();
+  }).catch(function(){ say('the deck cannot play that tape.'); });
+  this.value='';
+};
+document.getElementById('vol').oninput=function(){ if(master) master.gain.value=this.value/100; };
+/* the dial */
+var cv=document.getElementById('dial'), g2=cv.getContext('2d'), DW, DH;
+function fit(){ DW=cv.width=cv.clientWidth; DH=cv.height=cv.clientHeight; }
+addEventListener('resize',fit); fit();
+function drawDial(now){
+  g2.clearRect(0,0,DW,DH);
+  g2.strokeStyle='#223041'; g2.lineWidth=1;
+  g2.beginPath(); g2.moveTo(20,DH-24); g2.lineTo(DW-20,DH-24); g2.stroke();
+  g2.fillStyle='#5c6875'; g2.font='9px monospace'; g2.textAlign='center';
+  for(var i=0;i<=10;i++){ var x=20+(DW-40)*i/10;
+    g2.fillRect(x,DH-30,1,6);
+    if(i%2===0) g2.fillText(String(80+i*3),x,DH-34); }
+  var e=0;
+  if(analyser){ var a=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(a);
+    for(var k=0;k<a.length;k++) e+=a[k]; e/=(a.length*255); }
+  var ang=Math.PI*(0.15+0.7*((Math.sin(now*0.00013)+1)/2))+ (e? (Math.random()-0.5)*0.06*e : 0);
+  var px=20+(DW-40)*((ang/Math.PI)-0.15)/0.7;
+  g2.strokeStyle=cur?'#d9a83a':'#5c6875'; g2.lineWidth=1.5;
+  g2.beginPath(); g2.moveTo(px,DH-24); g2.lineTo(px,DH-58); g2.stroke();
+  g2.fillStyle='rgba(217,168,58,'+(0.25+e*0.75).toFixed(3)+')';
+  g2.beginPath(); g2.arc(px,DH-58,3+e*5,0,7); g2.fill();
+  if(analyser&&cur){ var bars=16;
+    var a2=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(a2);
+    for(var b=0;b<bars;b++){ var v=(a2[b]||0)/255;
+      g2.fillStyle='rgba(63,127,193,'+(0.2+v*0.7).toFixed(3)+')';
+      g2.fillRect(30+b*((DW-60)/bars),14,((DW-60)/bars)-4, -v*0+ v*26+2); } }
+  requestAnimationFrame(drawDial);
+}
+requestAnimationFrame(drawDial);
+</script>
+</body>
+</html>
