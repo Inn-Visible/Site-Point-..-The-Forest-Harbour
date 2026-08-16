@@ -898,6 +898,28 @@ window.cloudRedeem = async function(key, name){
   window.addEventListener('storage',draw);
 })();
 </script>
+
+
+<script>
+(function(){
+  var on=false;
+  var b=document.createElement('button'); b.className='btn mini'; b.textContent='screensaver \u26f6';
+  var snd=document.getElementById('snd');
+  if(snd&&snd.parentNode) snd.parentNode.insertBefore(b,snd.nextSibling);
+  function set(v){
+    on=v;
+    document.body.classList.toggle('zen',on);
+    b.textContent=on?'wake \u21a9':'screensaver \u26f6';
+    if(on){ b.style.position='fixed'; b.style.right='14px'; b.style.bottom='14px'; b.style.zIndex=60; }
+    else { b.style.position=''; b.style.right=''; b.style.bottom=''; b.style.zIndex=''; }
+    setTimeout(function(){ dispatchEvent(new Event('resize')); },0);
+  }
+  b.onclick=function(){ set(!on); };
+  var st=document.createElement('style');
+  st.textContent='body.zen header,body.zen main,body.zen footer,body.zen .ladder{display:none}body.zen #fire{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:50}';
+  document.head.appendChild(st);
+})();
+</script>
   
 </body>
 </html>
