@@ -259,7 +259,7 @@ function end(){
   mint('pit',NAMES[w.el]);
   phase='over';
   document.getElementById('stat').textContent=NAMES[w.el]+' takes bout '+bout+'.'+(you?(you===w.el?' your backing paid '+pay+' drop'+(pay===1?'':'s')+'.':' your champion falls.'):'');
-  updBtns(); renderLedger();
+  updBtns(); renderLedger(); renderCond();
   setTimeout(setup,4000);
 }
 function tick(){
