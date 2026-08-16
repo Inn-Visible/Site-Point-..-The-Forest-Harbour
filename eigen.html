@@ -203,5 +203,18 @@ function frame(now){
 requestAnimationFrame(frame);
 </script>
 
+<script>
+(function(){
+  var d=document.createElement('div');
+  d.style.cssText='max-width:640px;margin:26px auto;padding:16px 18px;border:1px solid #223041;text-align:center;font-family:ui-monospace,Consolas,monospace';
+  d.innerHTML='<div style="color:#6b7684;font-style:italic;font-family:Georgia,serif;font-size:12px">the keeper\u2019s shelf \u00b7 published work</div>'
+   +'<div style="margin-top:8px;color:#e8e4d8;font-size:13px;letter-spacing:.08em">CHASING BUTTERFLIES \u00b7 BOOK II \u2014 THE TEMPLE WITHIN</div>'
+   +'<a href="https://www.amazon.ca/dp/B0F4NL6KTB" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;border:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.15em;padding:8px 18px;text-decoration:none">read it on kindle \u2197</a>'
+   +'<div style="margin-top:8px;color:#5c6875;font-size:10px;letter-spacing:.12em">the temple within \u00b7 the house without \u00b7 same blueprint</div>';
+  var f=document.querySelector('footer')||document.body;
+  f.parentNode.insertBefore(d,f);
+})();
+</script>
+  
 </body>
 </html>
