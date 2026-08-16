@@ -755,6 +755,8 @@ window.cloudRedeem = async function(key, name){
         try{ drops+=1; render(); flare=1.6; spawn(140,true);
           RINGS.push({x:W/2,y:H-40*SC,r0:6*SC,t:0,max:40}); roar(); }catch(e){}
         localStorage.setItem('hive_drops',String(parseInt(localStorage.getItem('hive_drops')||'0',10)+1));
+        localStorage.setItem('hive_pit_credits',String(parseInt(localStorage.getItem('hive_pit_credits')||'0',10)+1));
+        
         var st=document.getElementById('stat');
         if(st) st.textContent='the blink-coins gather into a drop. witnessed.';
       }
