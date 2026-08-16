@@ -185,5 +185,27 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 </script>
+
+<script>
+(function(){
+  function wire(){
+    var nodes=document.querySelectorAll('a,button,span,div,p');
+    var hit=null;
+    for(var i=0;i<nodes.length;i++){
+      var own='';
+      for(var c=0;c<nodes[i].childNodes.length;c++)
+        if(nodes[i].childNodes[c].nodeType===3) own+=nodes[i].childNodes[c].textContent;
+      if(own.indexOf('employee application bypass')>-1){ hit=nodes[i]; break; }
+    }
+    if(!hit) return;
+    var a=hit.closest('a')||hit;
+    a.style.cursor='pointer';
+    if(a.tagName==='A') a.href='wicket.html';
+    a.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); location.href='wicket.html'; },true);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
+})();
+</script>
+ 
 </body>
 </html>
