@@ -160,7 +160,7 @@ function renderCond(){
   const m=localStorage.getItem('hive_hearth_mode')||'fire';
   const wn={fire:'the flame',water:'the flood',smoke:'the fog'};
 
-  const parts=['hearth burns '+(m==='fire'?'FORGE':m.toUpperCase())+' \u2014 '+wn[m]+' eager'];
+   const parts=[({fire:'the forge burns',water:'the water soaks',smoke:'the smoke drifts'})[m]+' \u2014 '+wn[m]+' eager'];
   
   ['flame','flood','fog'].forEach(function(k){ if(fm[k]) parts.push(NAMES[k]+(fm[k]==='w'?' tired':' hungry')); });
   document.getElementById('cond').textContent=parts.join(' \u00b7 ');
