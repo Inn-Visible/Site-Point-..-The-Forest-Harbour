@@ -517,9 +517,12 @@ function openKey(){
 function toss(){
   if(busy) return;
   busy=true;
+ 
   mint('witness');
   drops++;
   localStorage.setItem('hive_drops',String(drops));
+  localStorage.setItem('hive_pit_credits',String(parseInt(localStorage.getItem('hive_pit_credits')||'0',10)+1));
+  
 
   
   document.getElementById('stat').textContent='>> a coin leaves your side of the glass .. <<';
