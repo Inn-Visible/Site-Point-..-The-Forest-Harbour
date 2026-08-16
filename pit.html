@@ -171,6 +171,9 @@ function renderLedger(){
 }
 
 let bout=parseInt(localStorage.getItem('hive_pit_bout')||'0',10);
+const SKYCOL={fire:'200,90,40',water:'40,90,160',smoke:'90,100,110'};
+const MOTES=[]; for(let i=0;i<36;i++) MOTES.push({x:Math.random(),y:Math.random(),s:rnd(0.15,0.5),r:rnd(0.6,1.8)});
+  
 let A=null,B=null,P=[],S=[],marks=0,bk={},phase='boot',tickN=0;
 
 function setup(){
