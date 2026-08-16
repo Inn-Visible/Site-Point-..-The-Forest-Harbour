@@ -180,7 +180,7 @@ document.getElementById('tapepick').onchange=function(){
     cur='tape'; fi=0; readout.textContent=FLAVOR.tape[0]+' · '+f.name;
     tapeSrc.onended=function(){ if(cur==='tape'){ readout.textContent='the tape ends · static returns ..'; cur=null; } };
     tapeSrc.start();
-  }).catch(function(){ readout.textContent='the deck cannot play that tape.'); });
+    }).catch(function(){ readout.textContent='the deck cannot play that tape.'; });
   this.value='';
 };
 document.getElementById('vol').oninput=function(){ if(master) master.gain.value=this.value/100; };
