@@ -281,23 +281,27 @@ requestAnimationFrame(frame);
       if(Math.random()<0.4) later(function(){ tone(PENT[Math.random()*PENT.length|0],0.05,2.2,'sine'); },220);
       later(note,1500+Math.random()*3200); })(); }
  
-  function rain(){
-    var wash=bed('highpass',240,4800,0,0.05);
-    var tex=bed('bandpass',900,2400,0.6,0.028);
-    var wind=bed('bandpass',300,900,1.2,0.0);
+   function rain(){
+    var wash=bed('highpass',220,4200,0,0.045);
+    var roof=bed('lowpass',700,180,0,0.0);
+    var wind=bed('bandpass',260,800,1.1,0.0);
     (function gust(){ var c=ac(); var t=c.currentTime;
-      wash.gn.gain.setTargetAtTime(0.04+Math.random()*0.035,t,1.8);
-      tex.gn.gain.setTargetAtTime(0.02+Math.random()*0.02,t,1.5);
-      wind.gn.gain.setTargetAtTime(Math.random()<0.5?0.0:0.02+Math.random()*0.02,t,2.5);
-      wind.a.frequency.setTargetAtTime(200+Math.random()*500,t,2.0);
-      later(gust,4000+Math.random()*5000); })();
-    (function pat(){ burst(450+Math.random()*650,0.016+Math.random()*0.012,0.14+Math.random()*0.1); later(pat,110+Math.random()*260); })();
+      wash.gn.gain.setTargetAtTime(0.035+Math.random()*0.03,t,2.2);
+      roof.gn.gain.setTargetAtTime(0.015+Math.random()*0.02,t,2.8);
+      wind.gn.gain.setTargetAtTime(Math.random()<0.45?0.0:0.015+Math.random()*0.02,t,3.0);
+      wind.a.frequency.setTargetAtTime(180+Math.random()*480,t,2.4);
+      wash.a.frequency.setTargetAtTime(200+Math.random()*140,t,2.0);
+      later(gust,5000+Math.random()*6000); })();
+    function stream(f0,f1,v,ms0,ms1){ (function p(){ burst(f0+Math.random()*(f1-f0), v*(0.6+Math.random()*0.8), 0.10+Math.random()*0.14); later(p, ms0+Math.random()*(ms1-ms0)); })(); }
+    stream(420,900,0.014,90,300);
+    stream(240,520,0.016,140,420);
+    stream(900,1600,0.008,220,640);
     (function drip(){ if(Math.random()<0.6){ var c=ac(); var o=c.createOscillator(); o.type='sine'; var t=c.currentTime;
-        o.frequency.setValueAtTime(1100+Math.random()*500,t); o.frequency.exponentialRampToValueAtTime(380,t+0.09);
-        var gn=c.createGain(); gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(0.02,t+0.008); gn.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+        o.frequency.setValueAtTime(1000+Math.random()*600,t); o.frequency.exponentialRampToValueAtTime(360,t+0.09);
+        var gn=c.createGain(); gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(0.018,t+0.008); gn.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
         o.connect(gn); gn.connect(master); o.start(t); o.stop(t+0.15); }
-      later(drip,2500+Math.random()*6000); })();
-    (function roll(){ burst(70+Math.random()*40,0.26+Math.random()*0.12,2.8+Math.random()*2.2); later(roll,22000+Math.random()*30000); })();
+      later(drip,2600+Math.random()*6500); })();
+    (function roll(){ if(Math.random()<0.8) burst(65+Math.random()*45,0.22+Math.random()*0.14,3.0+Math.random()*2.5); later(roll,26000+Math.random()*34000); })();
   }
   
     function three03(){
