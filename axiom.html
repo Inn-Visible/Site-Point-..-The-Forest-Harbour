@@ -205,6 +205,71 @@ function lockdoor(){
   document.body.appendChild(a);
 })();
 </script>
+
+<script>
+(function(){
+  var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
+  function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
+  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
+  var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
+  var RC={winter:'#7fb2e5',spring:'#58a36a',summer:'#d9a83a',autumn:'#c8452c'};
+  var WATCHES=['dawn','noon','dusk','night'];
+  var lines={dawn:'dawn watch \u00b7 the fire wakes hungry',noon:'noon watch \u00b7 steady burn',dusk:'dusk watch \u00b7 the tall flame',night:'night watch \u00b7 banked embers'};
+  var seas={winter:'winter \u00b7 nights are long',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
+  var el=document.createElement('div');
+  el.style.cssText='max-width:640px;margin:18px auto;padding:12px 14px;border:1px solid #223041;text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#5c6875';
+  var elR=document.createElement('span'), elP=document.createElement('span'), elL=document.createElement('span'), elS=document.createElement('span');
+  elL.style.color='#93a1b0';
+  var elW=document.createElement('div'); elW.style.cssText='margin-top:8px;color:#93a1b0';
+  var elB=document.createElement('div'); elB.style.cssText='margin-top:8px';
+  el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
+  el.appendChild(elW); el.appendChild(elB);
+  var f=document.querySelector('footer')||document.body;
+  f.parentNode.insertBefore(el,f);
+  function drawCal(){
+    var now=new Date(), S=season(now), Wt=watch(now);
+    elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
+    elP.innerHTML=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+    elL.textContent=lines[Wt];
+    elS.textContent=' \u00b7 '+seas[S];
+  }
+  drawCal(); setInterval(drawCal,30000);
+  function desc(c){
+    if(c==null) return 'the sky keeps its counsel';
+    if(c===0) return 'clear glass';
+    if(c<=2) return 'a thin veil';
+    if(c===3) return 'the sky banks';
+    if(c===45||c===48) return 'the fog leans on the lake';
+    if(c<=57) return 'drizzle on the water';
+    if(c<=67) return 'rain on the lake';
+    if(c<=77) return 'snow over the shore';
+    if(c<=82) return 'squalls off the bay';
+    if(c<=94) return 'the lake breathes hard';
+    return 'the lake growls';
+  }
+  function paint(j,stale){
+    var c=j.current;
+    elW.textContent=Math.round(c.temperature_2m)+'\u00b0 \u00b7 wind '+Math.round(c.wind_speed_10m)+' \u00b7 cloud '+c.cloud_cover+'% \u00b7 '+desc(c.weather_code)+(stale?' \u00b7 last light':'');
+    var hrs=(j.hourly&&j.hourly.precipitation_probability)?j.hourly.precipitation_probability.slice(new Date().getHours(),new Date().getHours()+12):[];
+    elB.innerHTML='<span style="color:#5c6875">next 12h rain </span>'+hrs.map(function(p){ p=p||0;
+      return '<i style="display:inline-block;width:7px;margin:0 1px;background:rgba(63,127,193,'+(0.15+p/140).toFixed(2)+');height:'+(3+Math.round(p*0.22))+'px;vertical-align:bottom"></i>'; }).join('');
+  }
+  var c0=localStorage.getItem('hive_wx_full');
+  if(c0){ try{ paint(JSON.parse(c0),true); }catch(e){} }
+  function fetchW(){
+    try{
+      fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=temperature_2m,cloud_cover,wind_speed_10m,weather_code&hourly=precipitation_probability&forecast_days=1&timezone=auto')
+      .then(function(r){ return r.json(); }).then(function(j){
+        try{ localStorage.setItem('hive_wx_full',JSON.stringify(j)); localStorage.setItem('hive_wx_cc',String(j.current.cloud_cover)); }catch(e){}
+        paint(j,false);
+      }).catch(function(){});
+    }catch(e){}
+  }
+  function go(){ fetchW(); setInterval(fetchW,600000); }
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){ LAT=p.coords.latitude; LON=p.coords.longitude; go(); },function(){ go(); },{timeout:5000,maximumAge:600000});
+  else go();
+})();
+</script>
   
 </body>
 </html>
