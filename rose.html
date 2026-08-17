@@ -159,6 +159,47 @@ requestAnimationFrame(tick);
   addEventListener('mousedown',down); addEventListener('mouseup',up);
 })();
 </script>
+
+
+<script>
+(function(){
+  if(!(localStorage.getItem('hive_patron')||localStorage.getItem('hive_user'))) return;
+  document.body.classList.add('quiet');
+  var st=document.createElement('style');
+  st.textContent='body.quiet *{visibility:hidden}body.quiet canvas{visibility:visible}body.quiet #holdHint,body.quiet #holdRing{visibility:visible}';
+  document.head.appendChild(st);
+  var hint=document.createElement('div'); hint.id='holdHint';
+  hint.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#5c6875';
+  hint.textContent='hold the rose \u00b7 touch-login';
+  document.body.appendChild(hint);
+  var ring=document.createElement('canvas'); ring.id='holdRing'; ring.width=96; ring.height=96;
+  ring.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;display:none';
+  document.body.appendChild(ring);
+  var rg=ring.getContext('2d'), t0=0, raf=null, holding=false;
+  function drawRing(p){
+    rg.clearRect(0,0,96,96);
+    rg.strokeStyle='rgba(92,104,117,.4)'; rg.lineWidth=3;
+    rg.beginPath(); rg.arc(48,48,34,0,7); rg.stroke();
+    rg.strokeStyle='#d9a83a'; rg.lineCap='round';
+    rg.beginPath(); rg.arc(48,48,34,-Math.PI/2,-Math.PI/2+p*Math.PI*2); rg.stroke();
+  }
+  function loop(now){
+    if(!holding) return;
+    var p=Math.min(1,(now-t0)/2000);
+    drawRing(p);
+    if(p>=1){ holding=false;
+      localStorage.setItem('hive_access',String(Date.now()+30*864e5));
+      sessionStorage.setItem('hive_session','1');
+      location.href='core.html'; return; }
+    raf=requestAnimationFrame(loop);
+  }
+  function down(){ holding=true; t0=performance.now(); ring.style.display='block'; raf=requestAnimationFrame(loop); }
+  function up(){ holding=false; cancelAnimationFrame(raf); ring.style.display='none'; }
+  addEventListener('touchstart',down,{passive:true});
+  addEventListener('touchend',up); addEventListener('touchcancel',up);
+  addEventListener('mousedown',down); addEventListener('mouseup',up);
+})();
+</script>
   
 </body>
 </html>
