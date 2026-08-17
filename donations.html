@@ -976,7 +976,7 @@ window.cloudRedeem = async function(key, name){
 
 <script>
 (function(){
-  var patron=localStorage.getItem('hive_patron');
+    var patron=localStorage.getItem('hive_patron')||localStorage.getItem('hive_user');
   var bar=document.createElement('div');
   bar.style.cssText='text-align:center;margin-top:12px;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#5c6875';
   var lad=document.querySelector('.honor');
