@@ -329,7 +329,7 @@ requestAnimationFrame(frame);
     var d=new Date(), Wt=watch(d), t=lst();
     var starA=Wt==='night'?1:Wt==='noon'?0.35:0.7;
     var glow={dawn:'217,168,58',noon:'120,140,160',dusk:'200,90,40',night:'40,70,120'}[Wt];
-    var gr=g.createRadialGradient(CX,H*1.15,0,CX,H*1.15,H*0.9);
+    var gr=g.createRadialGradient(CX,CY+Math.min(VW,VH)*0.55,0,CX,CY+Math.min(VW,VH)*0.55,Math.max(VW,VH)*0.9);
     gr.addColorStop(0,'rgba('+glow+','+(Wt==='noon'?0.05:0.10)+')');
     gr.addColorStop(1,'rgba(0,0,0,0)');
     g.fillStyle=gr; g.fillRect(0,0,W,H);
