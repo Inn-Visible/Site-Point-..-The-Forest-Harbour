@@ -309,7 +309,7 @@ setup(); requestAnimationFrame(tick);
 <script>
 (function(){
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
-  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
+  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h>=8&&h<17)return'noon'; if(h>=17&&h<21)return'dusk'; return'night';}
   var now=new Date(), S=season(now), Wt=watch(now);
   var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
   var RC={winter:'#7fb2e5',spring:'#58a36a',summer:'#d9a83a',autumn:'#c8452c'};
@@ -323,7 +323,7 @@ setup(); requestAnimationFrame(tick);
   function drawCal(){
     now=new Date(); S=season(now); Wt=watch(now);
     elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
-    elP.innerHTML=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+    elP.innerHTML=WATCHES.map(function(w){ return '<i title="'+w+'" style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('')+' <span style="color:#5c6875;font-size:8px;letter-spacing:.08em">dawn\u00b7noon\u00b7dusk\u00b7night</span>';
     elL.textContent=lines[Wt];
     elS.textContent=' \u00b7 '+seas[S];
   }
