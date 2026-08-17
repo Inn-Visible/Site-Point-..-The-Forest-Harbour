@@ -1018,8 +1018,8 @@ window.cloudRedeem = async function(key, name){
     var m=b.getAttribute('data-m'); if(m==null) return;
     lock=m;
     if(m){ localStorage.setItem('hive_hearth_lock',m); localStorage.setItem('hive_hearth_mode',m); }
-    else localStorage.removeItem('hive_hearth_lock');
-    paint();
+        else localStorage.removeItem('hive_hearth_lock');
+    applyVoid(); paint();
   });
 })();
 </script>
