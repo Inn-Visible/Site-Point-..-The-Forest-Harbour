@@ -443,6 +443,76 @@ async function send(){
   draw();
 })();
 </script>  
+
+<script>
+(function(){
+  var skies=[];
+  var cs=document.querySelectorAll('body > canvas');
+  for(var i=0;i<cs.length;i++){
+    var st=cs[i].style;
+    if(st.position==='fixed'&&st.zIndex==='-1'){ cs[i].id=cs[i].id||('sky_'+i); skies.push(cs[i].id); }
+  }
+  var btn=document.createElement('button');
+  btn.id='coastBtn';
+  btn.textContent='coaster \u26f6';
+  btn.style.cssText='position:fixed;right:14px;bottom:14px;z-index:70;background:rgba(3,4,7,.65);border:1px solid #223041;color:#5c6875;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:6px 12px;cursor:pointer;opacity:.5';
+  var sty=document.createElement('style');
+  var keep=skies.map(function(id){ return 'body.coasting > #'+id; }).join(',');
+  sty.textContent='body.coasting > *{display:none!important}'+keep+',body.coasting > #coastBtn{display:block!important}body.coasting > #coastBtn{opacity:.22}';
+  document.head.appendChild(sty);
+  var wl=null;
+  function set(on){
+    document.body.classList.toggle('coasting',on);
+    btn.textContent=on?'wake \u21a9':'coaster \u26f6';
+    if(on){ try{ navigator.wakeLock&&navigator.wakeLock.request('screen').then(function(l){ wl=l; },function(){}); }catch(e){} }
+    else { try{ wl&&wl.release(); wl=null; }catch(e){} }
+  }
+  btn.onclick=function(){ set(!document.body.classList.contains('coasting')); };
+  document.body.appendChild(btn);
+})();
+</script>
+
+<script>
+(function(){
+  var skies=[];
+  function findSkies(){
+    skies=[];
+    var cs=document.querySelectorAll('body > canvas');
+    for(var i=0;i<cs.length;i++){
+      var st=cs[i].style;
+      if(st.position==='fixed'&&st.zIndex==='-1'){ st.transformOrigin='50% 56%'; skies.push(cs[i]); }
+    }
+  }
+  findSkies(); setTimeout(findSkies,1500);
+  var target=0, cur=0, have=false;
+  function onOri(e){
+    var h=null;
+    if(typeof e.webkitCompassHeading==='number') h=e.webkitCompassHeading;
+    else if(e.alpha!=null) h=360-e.alpha;
+    if(h==null||isNaN(h)) return;
+    target=h; have=true;
+  }
+  if('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute',onOri,true);
+  else addEventListener('deviceorientation',onOri,true);
+  document.addEventListener('click',function(){
+    if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){
+      DeviceOrientationEvent.requestPermission().then(function(){}).catch(function(){});
+    }
+  },{once:true});
+  function tick(){
+    var on=document.body.classList.contains('coasting');
+    if(have&&on){
+      var d=((target-cur+540)%360)-180;
+      cur=(cur+d*0.12+360)%360;
+      for(var i=0;i<skies.length;i++) skies[i].style.transform='rotate('+(-cur).toFixed(2)+'deg)';
+    } else if(!on){
+      for(var i=0;i<skies.length;i++) if(skies[i].style.transform) skies[i].style.transform='';
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
   
 </body>
 </html>
