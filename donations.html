@@ -974,6 +974,52 @@ window.cloudRedeem = async function(key, name){
 })();
 </script>
 
+<script>
+(function(){
+  var patron=localStorage.getItem('hive_patron');
+  var bar=document.createElement('div');
+  bar.style.cssText='text-align:center;margin-top:12px;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#5c6875';
+  var lad=document.querySelector('.honor');
+  var host=lad&&lad.parentNode?lad.parentNode:document.body;
+  if(!patron){
+    bar.innerHTML='the void answers to patrons \u00b7 <a href="#patronage" style="color:#3f7fc1;text-decoration:none">keep the flame burning</a>';
+    host.insertBefore(bar,lad||null);
+    return;
+  }
+  var lock=localStorage.getItem('hive_hearth_lock')||'';
+  var voidOn=localStorage.getItem('hive_fire_void')==='1';
+  function applyVoid(){ var f=document.getElementById('fire'); if(!f) return;
+    f.style.filter=voidOn?'hue-rotate(265deg) saturate(1.5) brightness(.8) contrast(1.15)':''; }
+  function paint(){
+    var bs=bar.querySelectorAll('button[data-m]');
+    for(var i=0;i<bs.length;i++){ var on=bs[i].getAttribute('data-m')===lock;
+      bs[i].style.borderColor=on?'#d9a83a':''; bs[i].style.color=on?'#d9a83a':''; }
+    var vb=bar.querySelector('#voidBtn');
+    if(vb){ vb.style.borderColor=voidOn?'#8a4fd0':''; vb.style.color=voidOn?'#8a4fd0':''; }
+  }
+  bar.innerHTML='<span style="color:#93a1b0">keeper\u2019s switch \u00b7 </span>'
+    +'<button class="btn mini" data-m="fire">red</button> '
+    +'<button class="btn mini" data-m="smoke">grey</button> '
+    +'<button class="btn mini" data-m="water">blue</button> '
+    +'<button class="btn mini" data-m="">free</button> '
+    +'<button class="btn mini" id="voidBtn">void \u25a3</button>';
+  host.insertBefore(bar,lad||null);
+  if(lock) localStorage.setItem('hive_hearth_mode',lock);
+  applyVoid(); paint();
+  setInterval(function(){ if(lock) localStorage.setItem('hive_hearth_mode',lock); },2000);
+  bar.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.id==='voidBtn'){ voidOn=!voidOn;
+      localStorage.setItem('hive_fire_void',voidOn?'1':'0'); applyVoid(); paint(); return; }
+    var m=b.getAttribute('data-m'); if(m==null) return;
+    lock=m;
+    if(m){ localStorage.setItem('hive_hearth_lock',m); localStorage.setItem('hive_hearth_mode',m); }
+    else localStorage.removeItem('hive_hearth_lock');
+    paint();
+  });
+})();
+</script>
+  
   
 </body>
 </html>
