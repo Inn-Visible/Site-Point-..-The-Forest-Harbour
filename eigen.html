@@ -280,9 +280,15 @@ requestAnimationFrame(frame);
     (function note(){ tone(PENT[Math.random()*PENT.length|0]*(Math.random()<0.3?0.5:1),0.10,2.8,'triangle');
       if(Math.random()<0.4) later(function(){ tone(PENT[Math.random()*PENT.length|0],0.05,2.2,'sine'); },220);
       later(note,1500+Math.random()*3200); })(); }
-  function rain(){ bed('highpass',420,7200,0,0.09);
-    (function pat(){ burst(1800+Math.random()*1800,0.05,0.05); later(pat,50+Math.random()*130); })();
-    (function roll(){ burst(90,0.4,2.6); later(roll,18000+Math.random()*22000); })(); }
+ 
+  function rain(){
+    bed('highpass',280,5200,0,0.055);
+    var tex=bed('bandpass',1000,2600,0.6,0.03);
+    lfo(0.37,0.015,tex.gn.gain);
+    (function pat(){ burst(500+Math.random()*600,0.02,0.16); later(pat,120+Math.random()*240); })();
+    (function roll(){ burst(80,0.32,3.2); later(roll,20000+Math.random()*25000); })();
+  }
+  
     function three03(){
     bed('lowpass',200,40,0,0.02);
     var ROOTS=[55,43.65,65.41,49], PENT=[220,261.63,293.66,329.63,392,440,523.25];
