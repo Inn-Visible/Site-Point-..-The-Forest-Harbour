@@ -263,7 +263,7 @@ requestAnimationFrame(frame);
     var r=(90-deg(alt))*SC;
     return [CX+r*Math.sin(az), CY-r*Math.cos(az), deg(alt)];
   }
-  function watch(d){ var h=d.getHours(); return (h>=5&&h<8)?'dawn':(h<17)?'noon':(h<21)?'dusk':'night'; }
+  function watch(d){ var h=d.getHours(); return (h>=5&&h<8)?'dawn':(h>=8&&h<17)?'noon':(h>=17&&h<21)?'dusk':'night'; }
   function sunPos(){
     var d=new Date(), jan=new Date(d.getFullYear(),0,0);
     var N=Math.floor((d-jan)/86400000);
