@@ -521,10 +521,10 @@ async function send(){
   var cv=document.createElement('canvas');
   cv.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none';
   document.body.appendChild(cv);
-  var g=cv.getContext('2d'), W,H, puffs=[];
+  var g=cv.getContext('2d'), W,H, clouds=[];
   function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
   addEventListener('resize',fit); fit();
-  for(var i=0;i<9;i++) puffs.push({x:Math.random(),y:Math.random()*0.7,s:0.6+Math.random()*1.2,v:0.00005+Math.random()*0.0001,b:Math.random()*7});
+  for(var i=0;i<7;i++) clouds.push({x:Math.random(),y:0.08+Math.random()*0.55,s:0.7+Math.random()*1.1,v:0.00004+Math.random()*0.00008,b:Math.random()*7});
   function fetchCC(){
     try{ fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=cloud_cover&timezone=auto')
       .then(function(r){ return r.json(); }).then(function(j){ cc=j.current.cloud_cover;
@@ -533,19 +533,24 @@ async function send(){
   function go(){ fetchCC(); setInterval(fetchCC,600000); }
   if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){ LAT=p.coords.latitude; LON=p.coords.longitude; go(); },function(){ go(); },{timeout:5000,maximumAge:600000});
   else go();
+  function puff(x,y,r,a){
+    var gr=g.createRadialGradient(x,y,r*0.15,x,y,r);
+    gr.addColorStop(0,'rgba(148,163,184,'+a.toFixed(3)+')');
+    gr.addColorStop(1,'rgba(148,163,184,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+  }
   function draw(now){
     g.clearRect(0,0,W,H);
-    var base=(cc==null?30:cc)/100*0.20;
-    if(base>0.015){
-      for(var i=0;i<puffs.length;i++){ var p=puffs[i];
-        p.x+=p.v; if(p.x>1.15) p.x=-0.15;
-        var x=p.x*W, y=p.y*H+Math.sin(now*0.0002+p.b)*6;
-        g.fillStyle='rgba(150,165,185,'+(base*(0.5+0.5*Math.sin(p.b+now*0.0001))).toFixed(3)+')';
-        g.beginPath();
-        g.ellipse(x,y,60*p.s,14*p.s,0,0,7);
-        g.ellipse(x+30*p.s,y+8*p.s,46*p.s,11*p.s,0,0,7);
-        g.ellipse(x-34*p.s,y+9*p.s,40*p.s,10*p.s,0,0,7);
-        g.fill();
+    var base=(cc==null?30:cc)/100;
+    if(base>0.06){
+      for(var i=0;i<clouds.length;i++){ var c=clouds[i];
+        c.x+=c.v; if(c.x>1.25) c.x=-0.25;
+        var x=c.x*W, y=c.y*H+Math.sin(now*0.00015+c.b)*5;
+        var a=base*0.16*(0.6+0.4*Math.sin(c.b+now*0.00008));
+        puff(x,y,70*c.s,a);
+        puff(x+55*c.s,y+10*c.s,52*c.s,a*0.8);
+        puff(x-60*c.s,y+12*c.s,46*c.s,a*0.7);
+        puff(x+10*c.s,y-14*c.s,40*c.s,a*0.6);
       }
     }
     requestAnimationFrame(draw);
@@ -553,6 +558,7 @@ async function send(){
   requestAnimationFrame(draw);
 })();
 </script>
+  
   
 </body>
 </html>
