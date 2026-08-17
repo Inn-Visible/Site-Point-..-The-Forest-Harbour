@@ -248,7 +248,7 @@ requestAnimationFrame(frame);
   var cv=document.createElement('canvas'); cv.style.cssText='flex:1;height:170px;background:#05070b;border:1px solid #17202b;display:block';
   function mk(t){ var b=document.createElement('button'); b.textContent=t; b.style.cssText='font:14px ui-monospace,Consolas,monospace;background:none;border:1px solid #223041;color:#5c6875;cursor:pointer;padding:4px 10px'; return b; }
   var pl=mk('\u2039'), pr=mk('\u203a'), sl=mk('\u263e'); sl.title='douse \u00b7 fades over a quarter hour';
-  row.appendChild(pl); row.appendChild(cv); row.appendChild(pr);
+  row.appendChild(pl); row.appendChild(cv); row.appendChild(pr); row.appendChild(sl);
   hdr.parentNode.insertBefore(row,hdr.nextSibling);
   var foot=leafIn(sec,/sit anyway|cove streams/i); if(foot) foot.style.cursor='pointer';
   var g=cv.getContext('2d'), W,H;
