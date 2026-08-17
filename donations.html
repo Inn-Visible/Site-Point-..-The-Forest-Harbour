@@ -989,6 +989,14 @@ window.cloudRedeem = async function(key, name){
   var lock=localStorage.getItem('hive_hearth_lock')||'';
   var voidOn=localStorage.getItem('hive_fire_void')==='1';
   var slider=document.querySelector('input[type=range]');
+  var real=slider?Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value'):null;
+  var pinned=null;
+  if(slider&&real){
+    Object.defineProperty(slider,'value',{
+      get:function(){ return pinned!=null?String(pinned):real.get.call(slider); },
+      set:function(v){ if(pinned==null) real.set.call(slider,v); }
+    });
+  }
   var wrap=slider?slider.parentNode:null, sig=null;
   if(slider&&wrap){
     wrap.style.position='relative';
@@ -997,20 +1005,24 @@ window.cloudRedeem = async function(key, name){
     wrap.appendChild(sig);
   }
   function placeSig(){ if(!sig||!slider) return;
-    var min=+slider.min||0, max=+slider.max||100, p=((+slider.value)-min)/(max-min);
+    var min=+slider.min||0, max=+slider.max||100, p=((+real.get.call(slider))-min)/(max-min);
     sig.style.left=(slider.offsetLeft+8+p*(slider.offsetWidth-16))+'px';
     sig.textContent=voidOn?'\u221e':(lock?'\u25aa':'');
     sig.style.color=voidOn?'#8a4fd0':'#d9a83a';
     sig.style.textShadow=voidOn?'0 0 8px rgba(138,79,208,.9)':'0 0 8px rgba(217,168,58,.8)';
   }
-  function pin(){ if(!slider) return;
+  function pin(){ if(!slider||!real) return;
     var min=+slider.min||0, max=+slider.max||100, mid=Math.round((min+max)/2);
     if(lock){
-      slider.value=(lock==='fire'?max:lock==='water'?min:mid);
+      pinned=(lock==='fire'?max:lock==='water'?min:mid);
+      real.set.call(slider,pinned);
       slider.dispatchEvent(new Event('input',{bubbles:true}));
       slider.style.pointerEvents='none'; slider.style.opacity='.85';
       localStorage.setItem('hive_hearth_mode',lock);
-    } else { slider.style.pointerEvents=''; slider.style.opacity=''; }
+    } else {
+      pinned=null;
+      slider.style.pointerEvents=''; slider.style.opacity='';
+    }
     placeSig();
   }
   function voidLook(){ var f=document.getElementById('fire'); if(!f) return;
@@ -1031,7 +1043,6 @@ window.cloudRedeem = async function(key, name){
     if(vb){ vb.style.borderColor=voidOn?'#8a4fd0':''; vb.style.color=voidOn?'#8a4fd0':''; }
   }
   pin(); voidLook(); paint();
-  setInterval(function(){ if(lock) pin(); },2000);
   addEventListener('resize',placeSig);
   bar.addEventListener('click',function(e){
     var b=e.target.closest('button'); if(!b) return;
