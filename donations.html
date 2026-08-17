@@ -955,7 +955,7 @@ window.cloudRedeem = async function(key, name){
       document.getElementById('sealIn').style.display='inline-block';
       st.textContent='the seal is poured \u00b7 copy it somewhere safe, or save it ..';
       var a=document.createElement('a');
-      a.href='data:text/plain;base64,'+s;
+      a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(s);
       a.download='innvisible-wax-seal.txt';
       a.style.cssText='color:#3f7fc1;font-size:11px;margin-left:8px;text-decoration:none';
       a.textContent='save the seal \u21a7';
@@ -965,7 +965,8 @@ window.cloudRedeem = async function(key, name){
   };
   document.getElementById('sealIn').onclick=function(){
     try{
-      var o=JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));
+      var raw=ta.value.trim(), o=null;
+      try{ o=JSON.parse(raw); }catch(e1){ o=JSON.parse(decodeURIComponent(escape(atob(raw)))); }
       var n=0; for(var k in o){ if(k.indexOf('hive_')===0){ localStorage.setItem(k,o[k]); n++; } }
       st.textContent='the seal presses \u00b7 '+n+' memories returned \u00b7 the house reloads ..';
       setTimeout(function(){ location.reload(); },900);
