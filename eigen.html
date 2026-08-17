@@ -255,7 +255,7 @@ requestAnimationFrame(frame);
   function fit(){ W=cv.width=cv.clientWidth||700; H=cv.height=170; }
   addEventListener('resize',fit); fit();
 
-  var AC=null,NB=null,master=null,SRC=[],TIM=[],cur='';
+  var AC=null,NB=null,master=null,SRC=[],TIM=[],cur='', DOUSE=null;
   function ac(){ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; }
   function nb(){ var c=ac(); if(!NB){ NB=c.createBuffer(1,c.sampleRate*2,c.sampleRate); var d=NB.getChannelData(0); for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1; } return NB; }
   function later(fn,ms){ TIM.push(setTimeout(function(){ if(cur) fn(); },ms)); }
@@ -421,11 +421,17 @@ requestAnimationFrame(frame);
     if(master){ var old=master; try{ old.gain.setTargetAtTime(0,ac().currentTime,0.2); }catch(e){}
       setTimeout(function(){ try{old.disconnect();}catch(e){} },600); master=null; }
     paintCards(); status(); }
-  function start(id,dir){ stopAll(); cur=id; var c=ac(); master=c.createGain(); master.gain.value=1; master.connect(c.destination);
+  function start(id,dir){ stopAll(); if(DOUSE){clearTimeout(DOUSE);DOUSE=null;} cur=id; var c=ac(); master=c.createGain(); master.gain.value=1; master.connect(c.destination);
     ({seaside:seaside,rain:rain,'3:03':three03})[id]();
     try{ localStorage.setItem('hive_cove',id); }catch(e){}
     slide(dir||1); paintCards(); status(); }
-  pl.onclick=function(){ var i=Math.max(0,ORDER.indexOf(cur)); start(ORDER[(i+2)%3],-1); };
+    pl.onclick=function(){ var i=Math.max(0,ORDER.indexOf(cur)); start(ORDER[(i+2)%3],-1); };
+  function douse(){ if(!cur||!master) return; var c=ac();
+    master.gain.setTargetAtTime(0.0001,c.currentTime,180);
+    if(DOUSE) clearTimeout(DOUSE);
+    DOUSE=setTimeout(function(){ DOUSE=null; stopAll(); },18*60000);
+    if(foot) foot.textContent='\u263e the cove douses over a quarter hour \u00b7 sleep well, keeper'; }
+  sl.onclick=douse;
   pr.onclick=function(){ var i=Math.max(0,ORDER.indexOf(cur)); start(ORDER[(i+1)%3],1); };
   if(foot) foot.onclick=stopAll;
   paintCards(); status();
