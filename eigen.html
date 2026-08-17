@@ -282,11 +282,22 @@ requestAnimationFrame(frame);
       later(note,1500+Math.random()*3200); })(); }
  
   function rain(){
-    bed('highpass',280,5200,0,0.055);
-    var tex=bed('bandpass',1000,2600,0.6,0.03);
-    lfo(0.37,0.015,tex.gn.gain);
-    (function pat(){ burst(500+Math.random()*600,0.02,0.16); later(pat,120+Math.random()*240); })();
-    (function roll(){ burst(80,0.32,3.2); later(roll,20000+Math.random()*25000); })();
+    var wash=bed('highpass',240,4800,0,0.05);
+    var tex=bed('bandpass',900,2400,0.6,0.028);
+    var wind=bed('bandpass',300,900,1.2,0.0);
+    (function gust(){ var c=ac(); var t=c.currentTime;
+      wash.gn.gain.setTargetAtTime(0.04+Math.random()*0.035,t,1.8);
+      tex.gn.gain.setTargetAtTime(0.02+Math.random()*0.02,t,1.5);
+      wind.gn.gain.setTargetAtTime(Math.random()<0.5?0.0:0.02+Math.random()*0.02,t,2.5);
+      wind.a.frequency.setTargetAtTime(200+Math.random()*500,t,2.0);
+      later(gust,4000+Math.random()*5000); })();
+    (function pat(){ burst(450+Math.random()*650,0.016+Math.random()*0.012,0.14+Math.random()*0.1); later(pat,110+Math.random()*260); })();
+    (function drip(){ if(Math.random()<0.6){ var c=ac(); var o=c.createOscillator(); o.type='sine'; var t=c.currentTime;
+        o.frequency.setValueAtTime(1100+Math.random()*500,t); o.frequency.exponentialRampToValueAtTime(380,t+0.09);
+        var gn=c.createGain(); gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(0.02,t+0.008); gn.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+        o.connect(gn); gn.connect(master); o.start(t); o.stop(t+0.15); }
+      later(drip,2500+Math.random()*6000); })();
+    (function roll(){ burst(70+Math.random()*40,0.26+Math.random()*0.12,2.8+Math.random()*2.2); later(roll,22000+Math.random()*30000); })();
   }
   
     function three03(){
