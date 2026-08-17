@@ -974,9 +974,9 @@ window.cloudRedeem = async function(key, name){
 })();
 </script>
 
-<script>
+  <script>
 (function(){
-    var patron=localStorage.getItem('hive_patron')||localStorage.getItem('hive_user');
+  var patron=localStorage.getItem('hive_patron')||localStorage.getItem('hive_user');
   var bar=document.createElement('div');
   bar.style.cssText='text-align:center;margin-top:12px;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#5c6875';
   var lad=document.querySelector('.honor');
@@ -988,19 +988,34 @@ window.cloudRedeem = async function(key, name){
   }
   var lock=localStorage.getItem('hive_hearth_lock')||'';
   var voidOn=localStorage.getItem('hive_fire_void')==='1';
-  function applyVoid(){ var f=document.getElementById('fire'); if(!f) return;
-    var fl='';
-    if(voidOn) fl='hue-rotate(265deg) saturate(1.5) brightness(.8) contrast(1.15)';
-    else if(lock==='water') fl='hue-rotate(190deg) saturate(1.2) brightness(.9)';
-    else if(lock==='smoke') fl='grayscale(.85) brightness(.85)';
-    f.style.filter=fl; }
-  function paint(){
-    var bs=bar.querySelectorAll('button[data-m]');
-    for(var i=0;i<bs.length;i++){ var on=bs[i].getAttribute('data-m')===lock;
-      bs[i].style.borderColor=on?'#d9a83a':''; bs[i].style.color=on?'#d9a83a':''; }
-    var vb=bar.querySelector('#voidBtn');
-    if(vb){ vb.style.borderColor=voidOn?'#8a4fd0':''; vb.style.color=voidOn?'#8a4fd0':''; }
+  var slider=document.querySelector('input[type=range]');
+  var wrap=slider?slider.parentNode:null, sig=null;
+  if(slider&&wrap){
+    wrap.style.position='relative';
+    sig=document.createElement('span');
+    sig.style.cssText='position:absolute;top:-14px;font:11px ui-monospace,Consolas,monospace;pointer-events:none;transform:translateX(-50%)';
+    wrap.appendChild(sig);
   }
+  function placeSig(){ if(!sig||!slider) return;
+    var min=+slider.min||0, max=+slider.max||100, p=((+slider.value)-min)/(max-min);
+    sig.style.left=(slider.offsetLeft+8+p*(slider.offsetWidth-16))+'px';
+    sig.textContent=voidOn?'\u221e':(lock?'\u25aa':'');
+    sig.style.color=voidOn?'#8a4fd0':'#d9a83a';
+    sig.style.textShadow=voidOn?'0 0 8px rgba(138,79,208,.9)':'0 0 8px rgba(217,168,58,.8)';
+  }
+  function pin(){ if(!slider) return;
+    var min=+slider.min||0, max=+slider.max||100, mid=Math.round((min+max)/2);
+    if(lock){
+      slider.value=(lock==='fire'?max:lock==='water'?min:mid);
+      slider.dispatchEvent(new Event('input',{bubbles:true}));
+      slider.style.pointerEvents='none'; slider.style.opacity='.85';
+      localStorage.setItem('hive_hearth_mode',lock);
+    } else { slider.style.pointerEvents=''; slider.style.opacity=''; }
+    placeSig();
+  }
+  function voidLook(){ var f=document.getElementById('fire'); if(!f) return;
+    f.style.filter=voidOn?'hue-rotate(265deg) saturate(1.5) brightness(.8) contrast(1.15)':'';
+    placeSig(); }
   bar.innerHTML='<span style="color:#93a1b0">keeper\u2019s switch \u00b7 </span>'
     +'<button class="btn mini" data-m="fire">red</button> '
     +'<button class="btn mini" data-m="smoke">grey</button> '
@@ -1008,22 +1023,27 @@ window.cloudRedeem = async function(key, name){
     +'<button class="btn mini" data-m="">free</button> '
     +'<button class="btn mini" id="voidBtn">void \u25a3</button>';
   host.insertBefore(bar,lad||null);
-  if(lock) localStorage.setItem('hive_hearth_mode',lock);
-  applyVoid(); paint();
-  setInterval(function(){ if(lock) localStorage.setItem('hive_hearth_mode',lock); },2000);
+  function paint(){
+    var bs=bar.querySelectorAll('button[data-m]');
+    for(var i=0;i<bs.length;i++){ var on=bs[i].getAttribute('data-m')===lock;
+      bs[i].style.borderColor=on?'#d9a83a':''; bs[i].style.color=on?'#d9a83a':''; }
+    var vb=bar.querySelector('#voidBtn');
+    if(vb){ vb.style.borderColor=voidOn?'#8a4fd0':''; vb.style.color=voidOn?'#8a4fd0':''; }
+  }
+  pin(); voidLook(); paint();
+  setInterval(function(){ if(lock) pin(); },2000);
+  addEventListener('resize',placeSig);
   bar.addEventListener('click',function(e){
     var b=e.target.closest('button'); if(!b) return;
     if(b.id==='voidBtn'){ voidOn=!voidOn;
-      localStorage.setItem('hive_fire_void',voidOn?'1':'0'); applyVoid(); paint(); return; }
+      localStorage.setItem('hive_fire_void',voidOn?'1':'0'); voidLook(); paint(); return; }
     var m=b.getAttribute('data-m'); if(m==null) return;
     lock=m;
-    if(m){ localStorage.setItem('hive_hearth_lock',m); localStorage.setItem('hive_hearth_mode',m); }
-        else localStorage.removeItem('hive_hearth_lock');
-    applyVoid(); paint();
+    if(m) localStorage.setItem('hive_hearth_lock',m); else localStorage.removeItem('hive_hearth_lock');
+    pin(); paint();
   });
 })();
 </script>
-  
   
 </body>
 </html>
