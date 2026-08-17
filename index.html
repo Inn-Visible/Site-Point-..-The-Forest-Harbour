@@ -225,12 +225,21 @@ requestAnimationFrame(frame);
       locTag=(Math.abs(LAT-HOME.lat)<0.5&&Math.abs(LON-HOME.lon)<0.5)?'home':'here';
     },function(){},{timeout:6000,maximumAge:300000}); }
   /* ---- the dome ---- */
+
   var cv=document.createElement('canvas'); cv.id='skyfield';
-  cv.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none;transform-origin:50% 56%';
+  cv.style.cssText='position:fixed;z-index:-1;pointer-events:none;transform-origin:50% 50%';
   document.body.appendChild(cv);
-  var g=cv.getContext('2d'), W,H,CX,CY,SC;
-  function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight; CX=W/2; CY=H*0.56; SC=Math.min(W,H)*0.5/95; }
+  var g=cv.getContext('2d'), W,H,CX,CY,SC,VW,VH;
+  function fit(){
+    VW=innerWidth; VH=innerHeight;
+    var D=Math.ceil(Math.hypot(VW,VH))+4;
+    cv.style.width=D+'px'; cv.style.height=D+'px';
+    cv.style.left=Math.round((VW-D)/2)+'px'; cv.style.top=Math.round(VH*0.56-D/2)+'px';
+    W=cv.width=D; H=cv.height=D;
+    CX=D/2; CY=D/2; SC=Math.min(VW,VH)*0.5/95;
+  }
   addEventListener('resize',fit); fit();
+ 
   function rad(d){ return d*Math.PI/180; } function deg(r){ return r*180/Math.PI; }
   function mul(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
     var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
