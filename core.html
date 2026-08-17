@@ -513,6 +513,46 @@ async function send(){
   requestAnimationFrame(tick);
 })();
 </script>
+
+<script>
+(function(){
+  var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon, cc=null;
+  var cc0=localStorage.getItem('hive_wx_cc'); if(cc0!=null&&cc0!=='') cc=+cc0;
+  var cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none';
+  document.body.appendChild(cv);
+  var g=cv.getContext('2d'), W,H, puffs=[];
+  function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight; }
+  addEventListener('resize',fit); fit();
+  for(var i=0;i<9;i++) puffs.push({x:Math.random(),y:Math.random()*0.7,s:0.6+Math.random()*1.2,v:0.00005+Math.random()*0.0001,b:Math.random()*7});
+  function fetchCC(){
+    try{ fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=cloud_cover&timezone=auto')
+      .then(function(r){ return r.json(); }).then(function(j){ cc=j.current.cloud_cover;
+        try{ localStorage.setItem('hive_wx_cc',String(cc)); }catch(e){} }).catch(function(){}); }catch(e){}
+  }
+  function go(){ fetchCC(); setInterval(fetchCC,600000); }
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){ LAT=p.coords.latitude; LON=p.coords.longitude; go(); },function(){ go(); },{timeout:5000,maximumAge:600000});
+  else go();
+  function draw(now){
+    g.clearRect(0,0,W,H);
+    var base=(cc==null?30:cc)/100*0.20;
+    if(base>0.015){
+      for(var i=0;i<puffs.length;i++){ var p=puffs[i];
+        p.x+=p.v; if(p.x>1.15) p.x=-0.15;
+        var x=p.x*W, y=p.y*H+Math.sin(now*0.0002+p.b)*6;
+        g.fillStyle='rgba(150,165,185,'+(base*(0.5+0.5*Math.sin(p.b+now*0.0001))).toFixed(3)+')';
+        g.beginPath();
+        g.ellipse(x,y,60*p.s,14*p.s,0,0,7);
+        g.ellipse(x+30*p.s,y+8*p.s,46*p.s,11*p.s,0,0,7);
+        g.ellipse(x-34*p.s,y+9*p.s,40*p.s,10*p.s,0,0,7);
+        g.fill();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
   
 </body>
 </html>
