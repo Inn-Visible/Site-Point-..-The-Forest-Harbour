@@ -270,6 +270,30 @@ function lockdoor(){
   else go();
 })();
 </script>
+
+<script>
+(function(){
+  var ZONES=[['home','America/Toronto'],['utc','UTC'],['tokyo','Asia/Tokyo'],['berlin','Europe/Berlin'],['denver','America/Denver']];
+  var el=document.createElement('div');
+  el.style.cssText='max-width:640px;margin:18px auto;padding:12px 14px;border:1px solid #223041;text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#5c6875';
+  var f=document.querySelector('footer')||document.body;
+  f.parentNode.insertBefore(el,f);
+  function glyph(h){ return (h>=6&&h<18)?'\u2600':'\u263e'; }
+  function draw(){
+    var html='<span style="color:#93a1b0">the obs deck \u00b7 world clock</span><br>';
+    html+=ZONES.map(function(z){
+      try{
+        var d=new Date();
+        var hh=+new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'numeric',hour12:false}).format(d);
+        var mm=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],minute:'2-digit'}).format(d);
+        return '<span style="margin:0 7px;color:#93a1b0">'+glyph(hh)+' '+z[0]+' <b style="color:#d9a83a">'+String(hh).padStart(2,'0')+':'+mm+'</b></span>';
+      }catch(e){ return ''; }
+    }).join('');
+    el.innerHTML=html;
+  }
+  draw(); setInterval(draw,30000);
+})();
+</script>
   
 </body>
 </html>
