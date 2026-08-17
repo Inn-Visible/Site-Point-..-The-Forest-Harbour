@@ -628,7 +628,7 @@ window.cloudRedeem = async function(key, name){
 <script>
 (function(){
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
-  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h<17)return'noon'; if(h<21)return'dusk'; return'night';}
+  function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h>=8&&h<17)return'noon'; if(h>=17&&h<21)return'dusk'; return'night';}
   var now=new Date(), S=season(now), Wt=watch(now);
   var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
   var RC={winter:'#7fb2e5',spring:'#58a36a',summer:'#d9a83a',autumn:'#c8452c'};
