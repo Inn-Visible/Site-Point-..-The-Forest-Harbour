@@ -283,12 +283,32 @@ requestAnimationFrame(frame);
   function rain(){ bed('highpass',420,7200,0,0.09);
     (function pat(){ burst(1800+Math.random()*1800,0.05,0.05); later(pat,50+Math.random()*130); })();
     (function roll(){ burst(90,0.4,2.6); later(roll,18000+Math.random()*22000); })(); }
-  function three03(){ var c=ac();
-    [55,55.5].forEach(function(fr){ var o=c.createOscillator(); o.type='sine'; o.frequency.value=fr;
-      var gn=c.createGain(); gn.gain.value=0.045; o.connect(gn); gn.connect(master); o.start(); SRC.push(o); });
+    function three03(){
     bed('lowpass',200,40,0,0.02);
-    (function tk(){ tone(1200,0.018,0.09,'sine'); later(tk,2000); })(); }
-
+    var ROOTS=[55,43.65,65.41,49], PENT=[220,261.63,293.66,329.63,392,440,523.25];
+    function kick(){ var c=ac(); var o=c.createOscillator(); o.type='sine'; var t=c.currentTime;
+      o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(38,t+0.22);
+      var gn=c.createGain(); gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(0.30,t+0.01); gn.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+      o.connect(gn); gn.connect(master); o.start(t); o.stop(t+0.35); }
+    function pad(fr,vol,dur){ [-6,6].forEach(function(ct){ var c=ac(); var o=c.createOscillator(); o.type='triangle'; o.frequency.value=fr; o.detune.value=ct;
+      var gn=c.createGain(); var t=c.currentTime;
+      gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(vol,t+0.9); gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(gn); gn.connect(master); o.start(t); o.stop(t+dur+0.1); }); }
+    function bass(fr,dur){ var c=ac(); var o=c.createOscillator(); o.type='sawtooth'; o.frequency.value=fr;
+      var fl=c.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=240;
+      var gn=c.createGain(); var t=c.currentTime;
+      gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(0.12,t+0.05); gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(fl); fl.connect(gn); gn.connect(master); o.start(t); o.stop(t+dur+0.1); }
+    var STEP=416, s=0;
+    (function tickStep(){
+      var b=Math.floor(s/8)%4, st=s%8, r=ROOTS[b], BAR=STEP*8/1000;
+      if(st===0||st===4) kick();
+      if(st===0){ bass(r,BAR); pad(r*4,0.035,BAR+0.6); pad(r*4*1.189,0.028,BAR+0.6); pad(r*4*1.498,0.028,BAR+0.6); }
+      if(st%2===1&&Math.random()<0.5) tone(PENT[Math.random()*PENT.length|0],0.05,0.5,'triangle');
+      if(st===6&&Math.random()<0.4) burst(6000,0.015,0.04);
+      s++; later(tickStep,STEP);
+    })();
+  }
   var drops=[]; for(var i=0;i<70;i++) drops.push({x:Math.random(),y:Math.random(),v:0.008+Math.random()*0.02});
   function draw(now){
     requestAnimationFrame(draw);
