@@ -395,6 +395,46 @@ async function send(){
   requestAnimationFrame(draw);
 })();
 </script>
+
+<script>
+(function(){
+  var LAT=43.9, LON=-79.0;
+  var cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none';
+  document.body.appendChild(cv);
+  var g=cv.getContext('2d'), W,H,CX,CY,SC;
+  function fit(){ W=cv.width=innerWidth; H=cv.height=innerHeight; CX=W/2; CY=H*0.56; SC=Math.min(W,H)*0.5/95; }
+  addEventListener('resize',fit); fit();
+  function rad(d){ return d*Math.PI/180; } function deg(r){ return r*180/Math.PI; }
+  function sun(){
+    var d=new Date(), jan=new Date(d.getFullYear(),0,0);
+    var N=Math.floor((d-jan)/86400000);
+    var dec=-23.44*Math.cos(rad(360/365*(N+10)));
+    var dst=d.getMonth()>2&&d.getMonth()<10;
+    var sol=d.getHours()+d.getMinutes()/60-(dst?1:0)+(LON+75)/15;
+    var HA=rad((sol-12)*15), la=rad(LAT), de=rad(dec);
+    var alt=deg(Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(HA)));
+    var az=rad(deg(Math.atan2(Math.sin(HA),Math.cos(HA)*Math.sin(la)-Math.tan(de)*Math.cos(la)))+180);
+    return {alt:alt,az:az};
+  }
+  function draw(){
+    g.clearRect(0,0,W,H);
+    var s=sun();
+    if(s.alt>-8){
+      var r=(90-Math.max(0,s.alt))*SC;
+      var x=CX+r*Math.sin(s.az), y=CY-r*Math.cos(s.az);
+      var a=s.alt>0?0.05+0.05*Math.min(1,s.alt/30):0.03;
+      var col=s.alt>10?'217,168,58':(s.alt>0?'200,120,50':'90,110,150');
+      var gr=g.createRadialGradient(x,y,0,x,y,Math.max(W,H)*0.5);
+      gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
+      gr.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=gr; g.fillRect(0,0,W,H);
+    }
+    setTimeout(function(){ requestAnimationFrame(draw); },60000);
+  }
+  draw();
+})();
+</script>
   
 </body>
 </html>
