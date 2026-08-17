@@ -1035,7 +1035,31 @@ window.cloudRedeem = async function(key, name){
   });
 })();
 </script>
-  
+
+  <script>
+(function(){
+  function addLoad(){
+    var btn=document.getElementById('sealIn');
+    if(!btn){ setTimeout(addLoad,500); return; }
+    if(document.getElementById('sealFile')) return;
+    var fi=document.createElement('input'); fi.type='file'; fi.id='sealFile'; fi.style.display='none';
+    var lb=document.createElement('button'); lb.className='btn mini'; lb.textContent='load the seal \u2912';
+    btn.parentNode.insertBefore(lb,btn); btn.parentNode.insertBefore(fi,btn);
+    lb.onclick=function(){ fi.click(); };
+    fi.onchange=function(){
+      var f=fi.files&&fi.files[0]; if(!f) return;
+      var r=new FileReader();
+      r.onload=function(){
+        var ta=document.querySelector('textarea');
+        if(ta) ta.value=String(r.result).trim();
+        btn.click();
+      };
+      r.readAsText(f);
+    };
+  }
+  addLoad();
+})();
+</script>
   
 </body>
 </html>
