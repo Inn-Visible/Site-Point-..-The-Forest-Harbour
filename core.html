@@ -396,6 +396,7 @@ async function send(){
 })();
 </script>
 
+
 <script>
 (function(){
   var LAT=43.9, LON=-79.0;
@@ -423,18 +424,25 @@ async function send(){
     if(s.alt>-8){
       var r=(90-Math.max(0,s.alt))*SC;
       var x=CX+r*Math.sin(s.az), y=CY-r*Math.cos(s.az);
-      var a=s.alt>0?0.05+0.05*Math.min(1,s.alt/30):0.03;
-      var col=s.alt>10?'217,168,58':(s.alt>0?'200,120,50':'90,110,150');
-      var gr=g.createRadialGradient(x,y,0,x,y,Math.max(W,H)*0.5);
+      var up=s.alt>0;
+      var a=up?0.10+0.08*Math.min(1,s.alt/30):0.05;
+      var col=s.alt>10?'217,168,58':(up?'200,120,50':'90,110,150');
+      var gr=g.createRadialGradient(x,y,0,x,y,Math.max(W,H)*0.45);
       gr.addColorStop(0,'rgba('+col+','+a.toFixed(3)+')');
       gr.addColorStop(1,'rgba(0,0,0,0)');
       g.fillStyle=gr; g.fillRect(0,0,W,H);
+      if(up){
+        g.fillStyle='rgba(241,208,120,0.75)';
+        g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
+        g.strokeStyle='rgba(241,208,120,0.35)';
+        g.beginPath(); g.arc(x,y,6,0,7); g.stroke();
+      }
     }
     setTimeout(function(){ requestAnimationFrame(draw); },60000);
   }
   draw();
 })();
-</script>
+</script>  
   
 </body>
 </html>
