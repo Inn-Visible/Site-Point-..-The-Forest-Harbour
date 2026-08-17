@@ -347,7 +347,7 @@ async function send(){
     var r=(90-deg(alt))*SC;
     return [CX+r*Math.sin(az), CY-r*Math.cos(az), deg(alt)];
   }
-  function watch(d){ var h=d.getHours(); return (h>=5&&h<8)?'dawn':(h<17)?'noon':(h<21)?'dusk':'night'; }
+  function watch(d){ var h=d.getHours(); return (h>=5&&h<8)?'dawn':(h>=8&&h<17)?'noon':(h>=17&&h<21)?'dusk':'night'; }
   function season(d){ var m=d.getMonth(); return (m===11||m<2)?'winter':(m<5)?'spring':(m<8)?'summer':'autumn'; }
   function draw(now){
     g.clearRect(0,0,W,H);
