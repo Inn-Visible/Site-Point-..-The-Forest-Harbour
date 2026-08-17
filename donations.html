@@ -643,7 +643,7 @@ window.cloudRedeem = async function(key, name){
   function drawCal(){
     now=new Date(); S=season(now); Wt=watch(now);
     elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
-    elP.innerHTML=WATCHES.map(function(w){ return '<i style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('');
+    elP.innerHTML=WATCHES.map(function(w){ return '<i title="'+w+'" style="display:inline-block;width:6px;height:6px;margin:0 2px;border:1px solid #5c6875;vertical-align:middle;'+(w===Wt?'background:#d9a83a;border-color:#d9a83a;box-shadow:0 0 8px rgba(217,168,58,.8)':'')+'"></i>'; }).join('')+' <span style="color:#5c6875;font-size:8px;letter-spacing:.08em">dawn\u00b7noon\u00b7dusk\u00b7night</span>';
     elLine.textContent=lines[Wt];
     elS.textContent=' \u00b7 '+seas[S];
     try{ if(typeof tints!=='undefined'&&tints&&typeof ov!=='undefined'&&ov) ov.style.background='radial-gradient(ellipse at 50% 82%, '+tints[Wt]+', transparent 72%)'; }catch(e){}
