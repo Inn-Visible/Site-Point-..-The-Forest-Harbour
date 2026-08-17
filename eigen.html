@@ -369,15 +369,7 @@ requestAnimationFrame(frame);
       g.fillText('3'+((now%2000<1000)?':':' ')+'03', W*0.44, H*0.30);
       if(now%9000<260){ g.fillStyle='rgba(255,176,0,.8)'; g.beginPath(); g.arc(W*0.18,H*0.62,1.6,0,7); g.fill(); g.beginPath(); g.arc(W*0.21,H*0.62,1.6,0,7); g.fill(); }
       g.fillStyle='rgba(0,0,0,.18)'; for(var sy=0;sy<H;sy+=3) g.fillRect(0,sy,W,1);
-    } else {
-      g.beginPath(); g.moveTo(0,0); g.lineTo(W*0.35,H*0.4); g.lineTo(W*0.35,H*0.75); g.lineTo(0,H);
-      g.moveTo(W,0); g.lineTo(W*0.65,H*0.4); g.lineTo(W*0.65,H*0.75); g.lineTo(W,H); g.stroke();
-      g.strokeRect(W*0.35,H*0.4,W*0.30,H*0.35);
-      g.fillStyle='#c9c2d0'; g.font='22px ui-monospace,Consolas,monospace';
-      g.fillText('3'+((now%2000<1000)?':':' ')+'03', W*0.44, H*0.30);
-      if(now%9000<260){ g.fillStyle='rgba(255,176,0,.8)'; g.beginPath(); g.arc(W*0.18,H*0.62,1.6,0,7); g.fill(); g.beginPath(); g.arc(W*0.21,H*0.62,1.6,0,7); g.fill(); }
-      g.fillStyle='rgba(0,0,0,.18)'; for(var sy=0;sy<H;sy+=3) g.fillRect(0,sy,W,1);
-    } else { g.fillStyle='#05070b'; g.fillRect(0,0,W,H); g.fillStyle='#5c6875'; g.font='10px ui-monospace,Consolas,monospace'; g.fillText('the cove is still',12,H/2); }
+        } else { g.fillStyle='#05070b'; g.fillRect(0,0,W,H); g.fillStyle='#5c6875'; g.font='10px ui-monospace,Consolas,monospace'; g.fillText('the cove is still',12,H/2); }
   }
   requestAnimationFrame(draw);
 
