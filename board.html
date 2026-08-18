@@ -147,7 +147,7 @@ window.hiveCloudSync = async function(roster){
     var acc=localStorage.getItem('hive_access');
     fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 quilliinn primrose \u00b7 ragewood</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#5c6875">'+(acc?('door open \u00b7 '+Math.max(0,Math.ceil((+acc-Date.now())/864e5))+'d left'):'door shut')+'</span>';
     wrap.appendChild(fr);
-    var names=Object.keys(r).sort(function(a,b){
+        var names=Object.keys(r).filter(function(n){ return n!=='__founder'; }).sort(function(a,b){
       var pa=PILLARS.indexOf(r[a].pillar), pb=PILLARS.indexOf(r[b].pillar);
       if(pa!==pb) return pa-pb;
       if((r[b].tier||1)!==(r[a].tier||1)) return (r[b].tier||1)-(r[a].tier||1);
@@ -165,7 +165,7 @@ window.hiveCloudSync = async function(roster){
            row.innerHTML='<span style="flex:1;min-width:120px;color:#e8e4d8">'+String(n).replace(/[<>&"]/g,'')+'</span>'
         +'<span style="min-width:70px">'+(it.pillar||'\u2014')+'</span>'
         +'<span style="min-width:56px;color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>'
-        +'<span style="min-width:90px;color:#5c6875">'+(inMonth(it.last)?('seen '+ago(it.last)):'outside the month')+'</span>';
+                +'<span style="min-width:90px;color:#5c6875">'+(inMonth(it.last)?('seen '+ago(it.last)):'outside the month')+'</span><span style="min-width:60px;color:#5c6875">'+(it.coins||0)+' coins</span>';
       var t=it.tier||1;
       if(t<3){
         var up=document.createElement('button');
@@ -204,7 +204,8 @@ window.hiveCloudSync = async function(roster){
       var it=r[n];
       var row=document.createElement('div');
       row.style.cssText='display:flex;gap:8px;padding:7px 6px;border-bottom:1px solid #223041;color:#93a1b0;font-size:11px;letter-spacing:.08em;flex-wrap:wrap';
-      row.innerHTML='<span style="flex:1;min-width:120px;color:#e8e4d8">'+esc(n)+'</span><span style="min-width:70px">'+esc(it.pillar||'\u2014')+'</span><span style="color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>';
+            var disp=(n==='__founder')?(it.alias||'the founder'):(String(n).slice(0,3)+'\u00b7\u00b7\u00b7'+String(n).slice(-1));
+      row.innerHTML='<span style="flex:1;min-width:120px;color:'+(n==='__founder'?'#d9a83a':'#e8e4d8')+'">'+esc(disp)+'</span><span style="min-width:70px">'+esc(it.pillar||'\u2014')+'</span><span style="color:'+(it.tier===0?'#d9a83a':it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(it.tier===0?'keeper':(TIERS[it.tier||1]||'spark'))+'</span><span style="min-width:60px;color:#5c6875">'+(it.coins||0)+' coins</span>';
       wrap.appendChild(row);
     });
   }
