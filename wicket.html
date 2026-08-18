@@ -201,6 +201,22 @@ window.hiveCloudSync = async function(roster){
   }catch(e){}
 })();
 </script>
+
+<script>
+(function(){
+  var hint=document.getElementById('holdHint');
+  if(!hint) return;
+  var taps=0, last=0;
+  hint.style.cursor='pointer';
+  hint.title='tap five times to type a word';
+  hint.addEventListener('click',function(e){
+    e.stopPropagation();
+    var n=Date.now(); taps=(n-last<900)?taps+1:1; last=n;
+    if(taps>=5){ taps=0; document.body.classList.remove('quiet');
+      hint.textContent='the rose listens for a word ..'; }
+  });
+})();
+</script>
   
 </body>
 </html>
