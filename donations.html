@@ -558,8 +558,9 @@ function redeem(){
       v=Math.max(-1,v-0.05);
       return;
     }
-    localStorage.setItem('hive_patron','1');
+       localStorage.setItem('hive_patron','1');
     if(name) localStorage.setItem('hive_name',name);
+    if(window.mintKnock) window.mintKnock();
     drops++;
     localStorage.setItem('hive_drops',String(drops));
     if(name){
@@ -1098,6 +1099,46 @@ setInterval(function(){
   var d=parseInt(localStorage.getItem('hive_drops')||'0',10);
   if(d!==lastDrops){ lastDrops=d; stampCoins(); }
 },4000);
+</script>
+
+<script>
+(function(){
+  var AN='fox wolf bear hare lynx raven crow owl wren sparrow hawk eagle heron crane toad frog newt adder viper boar stag elk moose otter seal orca whale shark ray moth bee wasp ant beetle cricket mantis spider badger marten ferret weasel coyote mouse'.split(' ');
+  function gen(){ for(;;){ var w=AN[Math.random()*AN.length|0]+AN[Math.random()*AN.length|0]+(1+Math.floor(Math.random()*98));
+    var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+    if(!r[w]) return w; } }
+  window.mintKnock=function(){
+    var w=gen(), tier=window.__paidTier||'ember', span=(tier==='keeper'?365:30);
+    var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+    var name=(localStorage.getItem('hive_name')||'').replace(/[<>&\u00b7]/g,'').slice(0,24);
+    r[w]={first:Date.now(),last:Date.now(),pillar:'',tier:1,sub:tier,subUntil:Date.now()+span*864e5,coins:0,alias:name||''};
+    localStorage.setItem('hive_roster',JSON.stringify(r));
+    if(window.hiveCloudSync) window.hiveCloudSync(r);
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(5,7,11,.94);z-index:80;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace;padding:16px';
+    ov.innerHTML='<div style="max-width:520px;border:1px solid #d9a83a;background:#0e141b;padding:22px;text-align:center;color:#93a1b0;font-size:11px;line-height:1.9;letter-spacing:.06em;max-height:90vh;overflow:auto">'
+      +'<div style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#e8e4d8;margin-bottom:10px">thank you, hand that feeds.</div>'
+      +'your coin is on the fire, and the fire remembers. you are patron of the hearth \u2014 the whole house opens to you: every page, the dono forge, the void, the pit, the cove, the slate. nothing is locked to you; the pillars are only where you plant your chair.<br><br>'
+      +'<span style="color:#d9a83a">axiom</span> \u00b7 what the house sees \u2014 sky, weather, time, the world<br>'
+      +'<span style="color:#d9a83a">eigen</span> \u00b7 what the house knows \u2014 stacks, codex, system literacy<br>'
+      +'<span style="color:#d9a83a">baseline</span> \u00b7 what the house sings \u2014 music, frequencies, comms<br>'
+      +'<span style="color:#d9a83a">keystone</span> \u00b7 what the house keeps \u2014 coin, glyphs, the ledger<br><br>'
+      +'your secret knock, minted by this purchase \u2014 write it somewhere safe:<br>'
+      +'<span style="color:#d9a83a;font-size:15px;letter-spacing:.2em">'+w+'</span><br>'
+      +(tier==='keeper'?'keeper \u00b7 a year at the fire':'ember \u00b7 a month at the fire')+'<br><br>'
+      +'<input id="aliasCard" maxlength="24" placeholder="what does the house call you? (optional)" style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:8px 10px;text-align:center"><br>'
+      +'<button id="cardOk" style="margin-top:12px;background:none;border:1px solid #d9a83a;color:#d9a83a;font-family:inherit;font-size:11px;letter-spacing:.15em;padding:9px 20px;cursor:pointer">carry it home</button>'
+      +'</div>';
+    document.body.appendChild(ov);
+    ov.querySelector('#cardOk').onclick=function(){
+      var al=(ov.querySelector('#aliasCard').value||'').replace(/[<>&\u00b7]/g,'').slice(0,24);
+      if(al){ localStorage.setItem('hive_name',al);
+        var r2={}; try{ r2=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+        if(r2[w]){ r2[w].alias=al; localStorage.setItem('hive_roster',JSON.stringify(r2)); if(window.hiveCloudSync) window.hiveCloudSync(r2); } }
+      ov.remove();
+    };
+  };
+})();
 </script>
   
 </body>
