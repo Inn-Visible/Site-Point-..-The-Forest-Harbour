@@ -166,6 +166,21 @@ window.hiveCloudSync = async function(roster){
         +'<span style="min-width:70px">'+(it.pillar||'\u2014')+'</span>'
         +'<span style="min-width:56px;color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>'
                 +'<span style="min-width:90px;color:#5c6875">'+(inMonth(it.last)?('seen '+ago(it.last)):'outside the month')+'</span><span style="min-width:60px;color:#5c6875">'+(it.coins||0)+' coins</span>';
+            var now=Date.now();
+      var sub=document.createElement('span');
+      sub.style.cssText='min-width:80px;font-size:10px;color:'+(it.exempt?'#d9a83a':(it.subUntil||0)>now?'#58a36a':'#c8452c');
+      sub.textContent=it.exempt?'exempt':(it.subUntil||0)>now?(it.sub+' \u00b7 '+Math.ceil((it.subUntil-now)/864e5)+'d'):'lapsed';
+      row.appendChild(sub);
+      [['ember',30],['keeper',365]].forEach(function(sb){
+        var b=document.createElement('button'); b.textContent='+'+sb[0];
+        b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:3px 6px;cursor:pointer';
+        b.onclick=function(){ it.sub=sb[0]; it.subUntil=now+sb[1]*864e5; r[n]=it; save(r); render(); };
+        row.appendChild(b);
+      });
+      var ex=document.createElement('button'); ex.textContent=it.exempt?'unexempt':'exempt';
+      ex.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:3px 6px;cursor:pointer';
+      ex.onclick=function(){ it.exempt=!it.exempt; r[n]=it; save(r); render(); };
+      row.appendChild(ex);
       var t=it.tier||1;
       if(t<3){
         var up=document.createElement('button');
