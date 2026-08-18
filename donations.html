@@ -1087,7 +1087,7 @@ function stampCoins(){
     var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return; }
     var key=null, rec=null;
     if(localStorage.getItem('hive_user')){ key='__founder'; rec=r[key]||{alias:'quilliinn primrose',pillar:'all',tier:0,first:Date.now()}; }
-    else if(localStorage.getItem('hive_member')){ key=localStorage.getItem('hive_name'); rec=r[key]; }
+        else if(localStorage.getItem('hive_member')){ key=localStorage.getItem('hive_word')||localStorage.getItem('hive_name'); rec=r[key]; }
     if(!key||!rec) return;
     rec.coins=parseInt(localStorage.getItem('hive_drops')||'0',10);
     rec.last=Date.now();
