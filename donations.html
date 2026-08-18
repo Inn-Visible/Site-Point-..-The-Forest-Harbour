@@ -1092,11 +1092,11 @@ function stampCoins(){
     window.hiveCloudSync(r);
   }catch(e){}
 }
-document.addEventListener('click',function(ev){
-  var b=ev.target&&ev.target.closest&&ev.target.closest('a,button'); if(!b) return;
-  var s=(b.textContent||'').toLowerCase();
-  if(b.id==='toss'||s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1) setTimeout(stampCoins,1500);
-},true);
+var lastDrops=-1;
+setInterval(function(){
+  var d=parseInt(localStorage.getItem('hive_drops')||'0',10);
+  if(d!==lastDrops){ lastDrops=d; stampCoins(); }
+},4000);
 </script>
   
 </body>
