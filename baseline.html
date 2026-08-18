@@ -261,7 +261,7 @@ addEventListener('keydown', e => {
     if(s.u==null||!navigator.onLine){ audio.pause(); houseStart(); setStatus('ON AIR \u00b7 '+s.n+(s.u==null?' \u00b7 house transmitter':' \u00b7 offline \u00b7 house transmitter')); }
     else { houseStop(); setStatus('TUNING \u00b7 '+s.f+' MHz ..'); audio.src=s.u; audio.play().catch(function(){ playing=false; setStatus('SIGNAL LOST \u00b7 '+s.n); }); } }
   function setFreq(fh){ $('rb_freq').textContent=fh.toFixed(1); var best=-1,bd=9; ST.forEach(function(s,i){ var d=Math.abs(s.f-fh); if(d<bd){bd=d;best=i;} });
-    if(best>-1&&bd<=0.4){ lock(best); }
+    if(best>-1&&bd<=0.8){ lock(best); }
     else { audio.pause(); houseStop(); playing=false; if(on) staticStart(0.03); $('rb_name').textContent='SEARCHING ..'; setStatus(fh.toFixed(1)+' MHz \u00b7 static'); cur=-1; paintPres(); } }
   function power(force){ on=(force===true)?true:!on;
     if(on){ $('rb_pwr').style.background='#d9a83a'; $('rb_pwr').style.color='#0a0d12'; setFreq(parseInt($('rb_dial').value)/10); }
@@ -271,7 +271,7 @@ addEventListener('keydown', e => {
   addEventListener('offline',function(){ if(on){ lock(HI); } });
   addEventListener('online',function(){ if(on) setStatus('back online \u00b7 sweep the dial'); });
   $('rb_pwr').onclick=function(){ power(); };
-  $('rb_dial').oninput=function(){ if(on) setFreq(parseInt(this.value)/10); };
+  $('rb_dial').onchange=function(){ if(!on) return; var el=this, fh=parseInt(el.value)/10, best=-1, bd=9;     ST.forEach(function(s,i){ var d=Math.abs(s.f-fh); if(d<bd){ bd=d; best=i; } });     if(best>-1&&bd<=1.5){ el.value=Math.round(ST[best].f*10); setFreq(ST[best].f); } };
   $('rb_vol').oninput=function(){ vol=parseFloat(this.value); audio.volume=vol; if(HN) HN.g.gain.value=0.5*vol; };
   setInterval(function(){ for(var i=0;i<bars.length;i++){ var h=(on&&playing)?(0.2+Math.random()*0.8):(on?0.08+Math.random()*0.1:0.05);
     bars[i].style.background=(on&&playing)?'rgba(217,168,58,'+(0.3+h*0.7)+')':'#223041'; bars[i].style.transform='scaleY('+h+')'; } },120);
