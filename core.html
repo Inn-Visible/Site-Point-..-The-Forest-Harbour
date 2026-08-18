@@ -616,6 +616,17 @@ async function send(){
   });
 })();
 </script>
+
+<script>
+(function(){
+  var dock=document.getElementById('rota'); if(!dock) return;
+  var old=dock.querySelector('a.btn'); if(!old) return;
+  var a=document.createElement('a'); a.className='btn'; a.href='deed.html'; a.style.marginLeft='8px';
+  a.textContent='the deed engine \u2197';
+  old.parentNode.insertBefore(a,old.nextSibling);
+})();
+</script>
+
   
 </body>
 </html>
