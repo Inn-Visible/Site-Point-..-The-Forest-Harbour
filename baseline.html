@@ -208,6 +208,78 @@ addEventListener('keydown', e => {
   f.parentNode.insertBefore(d,f);
 })();
 </script>
+
+<script>
+(function(){
+  var ST=[
+    {f:88.1, n:'DEF CON',       u:'https://ice1.somafm.com/defcon-128-mp3'},
+    {f:91.5, n:'DRONE ZONE',    u:'https://ice1.somafm.com/dronezone-128-mp3'},
+    {f:94.7, n:'GROOVE SALAD',  u:'https://ice1.somafm.com/groovesalad-128-mp3'},
+    {f:98.3, n:'SECRET AGENT',  u:'https://ice1.somafm.com/secretagent-128-mp3'},
+    {f:102.9,n:'SPACE STN',     u:'https://ice1.somafm.com/spacestation-128-mp3'},
+    {f:105.5,n:'UNDERGRND 80s', u:'https://ice1.somafm.com/u80s-128-mp3'},
+    {f:107.9,n:'HOUSE',         u:null}
+  ];
+  var HI=ST.length-1;
+  var sec=document.createElement('section');
+  sec.style.cssText='position:relative;max-width:760px;margin:34px auto;padding:22px 20px;border:2px solid #223041;outline:1px solid #17202b;background:#0a0d12;font-family:ui-monospace,Consolas,monospace;text-align:left;overflow:hidden';
+  var scan=document.createElement('div'); scan.style.cssText='position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(217,168,58,.03) 0 1px,transparent 1px 3px);mix-blend-mode:screen'; sec.appendChild(scan);
+  sec.insertAdjacentHTML('beforeend',
+    '<div style="display:flex;justify-content:space-between;align-items:center;color:#d9a83a;font-size:11px;letter-spacing:.25em">RADIO \u00b7 OS<span id="rb_pwr" style="cursor:pointer;border:1px solid #d9a83a;padding:3px 10px">PWR</span></div>'
+   +'<div style="display:flex;gap:18px;align-items:baseline;margin:16px 0 6px;flex-wrap:wrap">'
+   +'<span id="rb_freq" style="font-size:34px;color:#d9a83a;text-shadow:0 0 10px rgba(217,168,58,.6)">--.-</span><span style="font-size:10px;color:#5c6875;letter-spacing:.2em">MHz</span>'
+   +'<span id="rb_name" style="font-size:12px;color:#93a1b0;letter-spacing:.15em">RADIO OFF</span></div>'
+   +'<input id="rb_dial" type="range" min="875" max="1080" step="1" value="881" style="width:100%;accent-color:#d9a83a;margin:6px 0">'
+   +'<div id="rb_meter" style="display:flex;gap:3px;height:14px;margin:8px 0 14px"></div>'
+   +'<div id="rb_pres" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>'
+   +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="rb_vol" type="range" min="0" max="1" step="0.05" value="0.8" style="flex:1;min-width:120px;accent-color:#d9a83a"></div>'
+   +'<div id="rb_stat" style="margin-top:12px;font-size:10px;color:#5c6875;letter-spacing:.15em">the dial is dark \u00b7 press PWR</div>');
+  var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f);
+  var $=function(id){ return sec.querySelector('#'+id); };
+  var audio=new Audio(); audio.volume=0.8;
+  var on=false, cur=-1, playing=false, vol=0.8;
+  var bars=[]; for(var i=0;i<24;i++){ var b=document.createElement('div'); b.style.cssText='flex:1;background:#223041;height:100%;transform-origin:bottom'; $('rb_meter').appendChild(b); bars.push(b); }
+  var AC=null,NB=null;
+  function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; }
+  function noise(){ if(!NB){ var c=ac(); NB=c.createBuffer(1,c.sampleRate,c.sampleRate); var d=NB.getChannelData(0); for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1; } return NB; }
+  var SL=null; function staticStart(v){ staticStop(); var c=ac(),s=c.createBufferSource(); s.buffer=noise(); s.loop=true; var g=c.createGain(); g.gain.value=v; var fl=c.createBiquadFilter(); fl.type='highpass'; fl.frequency.value=700; s.connect(fl); fl.connect(g); g.connect(c.destination); s.start(); SL=s; }
+  function staticStop(){ if(SL){ try{SL.stop();}catch(e){} SL=null; } }
+  var HN=null; function houseStart(){ houseStop(); var c=ac(), g=c.createGain(); g.gain.value=0; g.connect(c.destination);
+    var o1=c.createOscillator(); o1.type='sine'; o1.frequency.value=55;
+    var o2=c.createOscillator(); o2.type='triangle'; o2.frequency.value=82.4; var g2=c.createGain(); g2.gain.value=0.4;
+    var nf=c.createBufferSource(); nf.buffer=noise(); nf.loop=true; var bp=c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=400; bp.Q.value=.6; var ng=c.createGain(); ng.gain.value=.05;
+    var lfo=c.createOscillator(); lfo.frequency.value=.07; var lg=c.createGain(); lg.gain.value=160; lfo.connect(lg); lg.connect(bp.frequency);
+    o1.connect(g); o2.connect(g2); g2.connect(g); nf.connect(bp); bp.connect(ng); ng.connect(g);
+    o1.start(); o2.start(); nf.start(); lfo.start(); g.gain.linearRampToValueAtTime(0.5*vol,c.currentTime+1.2);
+    HN={c:c,n:[o1,o2,nf,lfo],g:g}; playing=true; }
+  function houseStop(){ if(HN){ var h=HN; try{h.g.gain.linearRampToValueAtTime(0.0001,h.c.currentTime+0.4);}catch(e){} setTimeout(function(){ h.n.forEach(function(x){try{x.stop();}catch(e){}}); },500); HN=null; } }
+  function setStatus(t){ $('rb_stat').textContent=t; }
+  function paintPres(){ var w=$('rb_pres'); w.innerHTML=''; ST.forEach(function(s,i){ var b=document.createElement('button'); b.textContent=s.f+' '+s.n;
+    b.style.cssText='background:none;border:1px solid '+(i===cur?'#d9a83a':'#223041')+';color:'+(i===cur?'#d9a83a':'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.08em;padding:5px 9px;cursor:pointer';
+    b.onclick=function(){ $('rb_dial').value=Math.round(s.f*10); setFreq(s.f); }; w.appendChild(b); }); }
+  function lock(i){ if(cur===i&&playing) return; cur=i; var s=ST[i]; staticStop(); $('rb_name').textContent=s.n; paintPres();
+    if(s.u==null||!navigator.onLine){ audio.pause(); houseStart(); setStatus('ON AIR \u00b7 '+s.n+(s.u==null?' \u00b7 house transmitter':' \u00b7 offline \u00b7 house transmitter')); }
+    else { houseStop(); setStatus('TUNING \u00b7 '+s.f+' MHz ..'); audio.src=s.u; audio.play().catch(function(){ playing=false; setStatus('SIGNAL LOST \u00b7 '+s.n); }); } }
+  function setFreq(fh){ $('rb_freq').textContent=fh.toFixed(1); var best=-1,bd=9; ST.forEach(function(s,i){ var d=Math.abs(s.f-fh); if(d<bd){bd=d;best=i;} });
+    if(best>-1&&bd<=0.4){ lock(best); }
+    else { audio.pause(); houseStop(); playing=false; if(on) staticStart(0.03); $('rb_name').textContent='SEARCHING ..'; setStatus(fh.toFixed(1)+' MHz \u00b7 static'); cur=-1; paintPres(); } }
+  function power(force){ on=(force===true)?true:!on;
+    if(on){ $('rb_pwr').style.background='#d9a83a'; $('rb_pwr').style.color='#0a0d12'; setFreq(parseInt($('rb_dial').value)/10); }
+    else { audio.pause(); houseStop(); staticStop(); playing=false; $('rb_name').textContent='RADIO OFF'; $('rb_freq').textContent='--.-'; setStatus('the dial is dark \u00b7 press PWR'); $('rb_pwr').style.background='none'; $('rb_pwr').style.color='#d9a83a'; } }  
+  audio.addEventListener('playing',function(){ playing=true; setStatus('ON AIR \u00b7 '+ST[cur].n); });
+  audio.addEventListener('error',function(){ playing=false; if(on) setStatus('SIGNAL LOST \u00b7 '+(cur>-1?ST[cur].n:'')); });
+  addEventListener('offline',function(){ if(on){ lock(HI); } });
+  addEventListener('online',function(){ if(on) setStatus('back online \u00b7 sweep the dial'); });
+  $('rb_pwr').onclick=function(){ power(); };
+  $('rb_dial').oninput=function(){ if(on) setFreq(parseInt(this.value)/10); };
+  $('rb_vol').oninput=function(){ vol=parseFloat(this.value); audio.volume=vol; if(HN) HN.g.gain.value=0.5*vol; };
+  setInterval(function(){ for(var i=0;i<bars.length;i++){ var h=(on&&playing)?(0.2+Math.random()*0.8):(on?0.08+Math.random()*0.1:0.05);
+    bars[i].style.background=(on&&playing)?'rgba(217,168,58,'+(0.3+h*0.7)+')':'#223041'; bars[i].style.transform='scaleY('+h+')'; } },120);
+  paintPres();
+})();
+</script>
+
+  
   
 </body>
 </html>
