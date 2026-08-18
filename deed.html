@@ -192,6 +192,27 @@ render();
   h.appendChild(a);
 })();
 </script>
+
+
+<script>
+(function(){
+  if(!localStorage.getItem('hive_user')) return;
+  var d=document.createElement('section');
+  d.style.cssText='max-width:760px;margin:26px auto 0;padding:18px 20px;border:1px dashed #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+  d.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:10px">the dish, explained simply</div>'
+   +'<div style="font-size:11px;line-height:1.9;color:#93a1b0">'
+   +'a sandbox. no real money moves here \u2014 it is a toy that shows the house\u2019s one money rule.<br>'
+   +'\u00b7 <span style="color:#e8e4d8">the till</span> \u00b7 the season\u2019s real money (donations, purchases). type any number to play.<br>'
+   +'\u00b7 <span style="color:#d9a83a">deed</span> \u00b7 what you built and stayed: patronage, coins tossed, days in the house. deed splits the till.<br>'
+   +'\u00b7 <span style="color:#5c6875">glory</span> \u00b7 what you gamble and win: pit bouts, coin tosses. glory is light only \u2014 it never splits money.<br>'
+   +'\u00b7 <span style="color:#93a1b0">souls</span> \u00b7 test dummies. spawn a witness or a patron, watch the gold bar re-split, reset when bored.<br>'
+   +'<span style="color:#5c6875;font-style:italic">that\u2019s the whole toy. chance earns glory \u00b7 tenure earns value \u00b7 money flows in from the real economy, out through witnessed hands.</span>'
+   +'</div>';
+  var w=document.querySelector('.weld');
+  if(w&&w.parentNode) w.parentNode.insertBefore(d,w.nextSibling); else document.body.appendChild(d);
+})();
+</script>
+
   
 </body>
 </html>
