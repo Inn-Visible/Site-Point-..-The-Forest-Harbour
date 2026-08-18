@@ -80,28 +80,6 @@ requestAnimationFrame(tick);
 </script>
 
 <script>
-/* the wicket — knock, and the rose decides */
-const KEYS=['firstlight'];
-function openDoor(){
-  localStorage.setItem('hive_access',String(Date.now()+7*864e5));
-  window.__bloom=true;
-  pulseWave=0;
-  document.getElementById('stat').innerHTML=
-    'the door remembers you · <a href="eigenstack/pages.html">enter the codex \u2197</a>';
-}
-function knock(){
-  pulseWave=0;
-  const k=(document.getElementById('word').value||'').trim().toLowerCase();
-  if(!k) return;
-  if(KEYS.indexOf(k)>-1){ openDoor(); return; }
-  if(k==='keeper'&&localStorage.getItem('hive_patron')){ openDoor(); return; }
-  document.getElementById('stat').textContent='the rose does not know that word.';
-}
-document.getElementById('knock').addEventListener('click',knock);
-document.getElementById('word').addEventListener('keydown',function(e){ if(e.key==='Enter') knock(); });
-</script>
-
-<script>
 (function(){
   if(!(localStorage.getItem('hive_patron')||localStorage.getItem('hive_user'))) return;
   document.body.classList.add('quiet');
