@@ -29,7 +29,7 @@
   <h1>the house book.</h1>
   <div class="sub">· PATRONS OF THE HEARTH · EVERY ROW A BURNED KEY ·</div>
   <div class="tot" id="tot">the book is opening ..</div>
-  <table><thead><tr><th></th><th>the hand that feeds</th><th>coins tossed</th><th>first light</th></tr></thead>
+  <table><thead><tr><th></th><th>the hand that feeds</th><th>entering coinscore</th><th>first light</th></tr></thead>
   <tbody id="rows"></tbody></table>
   <div class="stamp" id="stamp"></div>
   <div style="margin-top:26px"><a href="donations.html">↩ the hearth</a></div>
@@ -58,7 +58,7 @@ function render(rows, live){
     tb.appendChild(tr);
   });
   const totSeed=rows.reduce(function(s,r){return s+(r.seed||0);},0);
-  document.getElementById('tot').innerHTML='<b>'+rows.length+'</b> patron'+(rows.length===1?'':'s')+' · <b>'+totSeed+'</b> coins tossed · the fire keeps the count';
+  document.getElementById('tot').innerHTML='<b>'+rows.length+'</b> patron'+(rows.length===1?'':'s')+' · <b>'+totSeed+'</b> entering coinscore · the fire keeps the count';
   document.getElementById('stamp').textContent = live
     ? 'witnessed live · '+new Date().toLocaleTimeString()
     : 'cached · last witnessed '+new Date(parseInt(localStorage.getItem('hive_board_when')||'0',10)).toLocaleString();
@@ -168,7 +168,7 @@ async function burnPlain(){
     var fr=document.createElement('div');
     fr.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.12em;flex-wrap:wrap';
     var acc=localStorage.getItem('hive_access');
-        fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 '+(((r['__founder']||{}).alias)||'quilliinn primrose').replace(/[<>&"]/g,'')+' \u00b7 rag\u00b7\u00b7\u00b7d</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#5c6875">'+(acc?('door open \u00b7 '+Math.max(0,Math.ceil((+acc-Date.now())/864e5))+'d left'):'door shut')+'</span>';
+        fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 '+(((r['__founder']||{}).alias)||'quilliinn primrose').replace(/[<>&"]/g,'')+' \u00b7 rag\u00b7\u00b7\u00b7d</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#d9a83a">exempt \u00b7 the door is yours</span>';
         var fhay=('quilliinn primrose '+(((r['__founder']||{}).alias)||'')+' keeper founder all').toLowerCase();
     if(!q||fhay.indexOf(q)>-1) wrap.appendChild(fr);
                var names=Object.keys(r).filter(function(n){ return n!=='__founder'; }).filter(function(n){
