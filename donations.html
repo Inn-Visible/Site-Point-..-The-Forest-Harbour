@@ -1061,6 +1061,43 @@ window.cloudRedeem = async function(key, name){
   addLoad();
 })();
 </script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
+  authDomain: "innvisible-hearth.firebaseapp.com",
+  databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
+  projectId: "innvisible-hearth",
+  storageBucket: "innvisible-hearth.firebasestorage.app",
+  messagingSenderId: "852474450672",
+  appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
+});
+const db = getDatabase(app);
+window.hiveCloudSync = async function(roster){
+  try{ for(var n in roster){ await set(ref(db,'roster/'+encodeURIComponent(n)), roster[n]); } }catch(e){}
+};
+function stampCoins(){
+  try{
+    var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return; }
+    var key=null, rec=null;
+    if(localStorage.getItem('hive_user')){ key='__founder'; rec=r[key]||{alias:'quilliinn primrose',pillar:'all',tier:0,first:Date.now()}; }
+    else if(localStorage.getItem('hive_member')){ key=localStorage.getItem('hive_name'); rec=r[key]; }
+    if(!key||!rec) return;
+    rec.coins=parseInt(localStorage.getItem('hive_drops')||'0',10);
+    rec.last=Date.now();
+    r[key]=rec;
+    localStorage.setItem('hive_roster',JSON.stringify(r));
+    window.hiveCloudSync(r);
+  }catch(e){}
+}
+document.addEventListener('click',function(ev){
+  var b=ev.target&&ev.target.closest&&ev.target.closest('a,button'); if(!b) return;
+  var s=(b.textContent||'').toLowerCase();
+  if(b.id==='toss'||s.indexOf('toss a coin')>-1||s.indexOf('toss a real coin')>-1) setTimeout(stampCoins,1500);
+},true);
+</script>
   
 </body>
 </html>
