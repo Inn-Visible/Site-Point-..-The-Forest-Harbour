@@ -1069,10 +1069,11 @@ window.cloudRedeem = async function(key, name){
 })();
 </script>
 
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-const app = initializeApp({
+let app; try{ app = initializeApp({
   apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
   authDomain: "innvisible-hearth.firebaseapp.com",
   databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
@@ -1080,26 +1081,39 @@ const app = initializeApp({
   storageBucket: "innvisible-hearth.firebasestorage.app",
   messagingSenderId: "852474450672",
   appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
-});
+}); }catch(e){ app = getApp(); }
 const db = getDatabase(app);
 var PEP='ex-umbra-lumen';
 function xorr(s){ var o=''; for(var i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^PEP.charCodeAt(i%PEP.length)); return o; }
 function kid(w){ return btoa(xorr(w)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
-        for(var lk in local){ if(lk!=='__founder' && !/^[a-z]{6,14}\d{1,2}$/.test(lk)) delete local[lk]; }
 function wordOf(k){ try{ var s=k.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var w=xorr(atob(s)); return /^[a-z]{6,14}\d{1,2}$/.test(w)?w:null; }catch(e){ return null; } }
+window.hiveCloudSync = async function(roster){
   try{ for(var n in roster){ await set(ref(db,'roster/'+((n==='__founder')?n:kid(n))), roster[n]); } }catch(e){}
 };
 async function burnPlain(){
   try{ const s2=await get(ref(db,'roster')); if(!s2.exists()) return; const v2=s2.val();
     for(var k in v2){ if(k!=='__founder' && /^[a-z]{6,14}\d{1,2}$/.test(k)) await set(ref(db,'roster/'+k), null); } }catch(e){}
 }
-burnPlain();
-  function stampCoins(){
+(async function(){
+  try{
+    const snap = await get(ref(db,'roster'));
+    var local = JSON.parse(localStorage.getItem('hive_roster'))||{};
+    if(snap.exists()){ var cloud=snap.val();
+      for(var k in cloud){ var w=(k==='__founder')?'__founder':wordOf(k); if(!w) continue;
+        if(!local[w]||(cloud[k].last||0)>(local[w].last||0)) local[w]=cloud[k]; } }
+    for(var lk in local){ if(lk!=='__founder' && !/^[a-z]{6,14}\d{1,2}$/.test(lk)) delete local[lk]; }
+    localStorage.setItem('hive_roster',JSON.stringify(local));
+    window.dispatchEvent(new CustomEvent('hive-roster-synced'));
+    await burnPlain();
+    window.hiveCloudSync(local);
+  }catch(e){}
+})();
+function stampCoins(){
   try{
     var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return; }
     var key=null, rec=null;
     if(localStorage.getItem('hive_user')){ key='__founder'; rec=r[key]||{alias:'quilliinn primrose',pillar:'all',tier:0,first:Date.now()}; }
-        else if(localStorage.getItem('hive_member')){ key=localStorage.getItem('hive_word')||localStorage.getItem('hive_name'); rec=r[key]; }
+    else if(localStorage.getItem('hive_member')){ key=localStorage.getItem('hive_word')||localStorage.getItem('hive_name'); rec=r[key]; }
     if(!key||!rec) return;
     rec.coins=parseInt(localStorage.getItem('hive_drops')||'0',10);
     rec.last=Date.now();
@@ -1114,7 +1128,7 @@ setInterval(function(){
   if(d!==lastDrops){ lastDrops=d; stampCoins(); }
 },4000);
 </script>
-
+  
 <script>
 (function(){
   var AN='fox wolf bear hare lynx raven crow owl wren sparrow hawk eagle heron crane toad frog newt adder viper boar stag elk moose otter seal orca whale shark ray moth bee wasp ant beetle cricket mantis spider badger marten ferret weasel coyote mouse'.split(' ');
