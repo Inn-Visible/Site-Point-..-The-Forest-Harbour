@@ -128,7 +128,17 @@ window.hiveCloudSync = async function(roster){
   var sec=document.createElement('section');
   sec.style.cssText='max-width:860px;margin:30px auto;padding:20px 16px;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
   sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:14px">the overseer\u2019s desk \u00b7 who stands where, who was seen when</div>';
-  var wrap=document.createElement('div'); sec.appendChild(wrap);
+    var wrap=document.createElement('div'); sec.appendChild(wrap);
+  var search=document.createElement('input');
+  search.placeholder='search the keyring \u00b7 word, name, or pillar';
+  search.style.cssText='display:block;width:100%;margin:0 0 10px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:8px 10px;letter-spacing:.08em';
+  search.oninput=function(){ q=search.value.toLowerCase(); render(); };
+  sec.insertBefore(search,wrap);
+  wrap.addEventListener('click',function(e){
+    var t=e.target, nn=t&&t.getAttribute&&t.getAttribute('data-n');
+    if(nn){ revealed[nn]=!revealed[nn]; render(); }
+  });
+  var q='', revealed={};
   var foot=document.createElement('div'); foot.style.cssText='margin-top:12px;text-align:center;font-size:10px;letter-spacing:.15em;color:#5c6875';
   foot.textContent='roster rides the cloud rail \u00b7 the house takes you at your word';
   sec.appendChild(foot);
