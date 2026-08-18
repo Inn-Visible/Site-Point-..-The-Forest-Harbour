@@ -153,14 +153,11 @@ requestAnimationFrame(tick);
   var inp=document.querySelector('input'), btn=null, bs=document.querySelectorAll('button');
   for(var i=0;i<bs.length;i++) if(/knock/i.test(bs[i].textContent||'')) btn=bs[i];
   if(!inp||!btn) return;
-        function doKnock(){
-        var r=parseWord(inp.value);
-    if(!r) return;
+         function doKnock(){
+    var r=parseWord(inp.value);
+    if(!r){ var st0=document.getElementById('stat'); if(st0) st0.textContent='the rose does not know that word.'; return; }
     if(r.role==='user'){ enter('user'); return; }
-       var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();
-        if(r.role==='user'){ enter('user'); return; }
-    var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();
-    if(rec){
+    var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();    if(rec){
       var now=Date.now(), grace=(rec.first||0)+30*864e5>now, subbed=(rec.subUntil||0)>now;
       if(!rec.exempt && !grace && !subbed){
         var st=document.getElementById('stat');
