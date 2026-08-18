@@ -209,9 +209,8 @@ const app = initializeApp({
 const db = getDatabase(app);
 var PEP='ex-umbra-lumen';
 function xorr(s){ var o=''; for(var i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^PEP.charCodeAt(i%PEP.length)); return o; }
-function kid(w){ return btoa(xorr(w)); }
-function wordOf(k){ try{ return xorr(atob(k)); }catch(e){ return null; } }
-window.hiveCloudSync = async function(roster){
+function kid(w){ return btoa(xorr(w)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function wordOf(k){ try{ var s=k.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return xorr(atob(s)); }catch(e){ return null; } }window.hiveCloudSync = async function(roster){
   try{ for(var n in roster){ await set(ref(db,'roster/'+((n==='__founder')?n:kid(n))), roster[n]); } }catch(e){}
 };
 async function burnPlain(){
