@@ -82,9 +82,9 @@ render();
 </script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-const app = initializeApp({
+let app; try{ app = initializeApp({
   apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
   authDomain: "innvisible-hearth.firebaseapp.com",
   databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
@@ -92,73 +92,74 @@ const app = initializeApp({
   storageBucket: "innvisible-hearth.firebasestorage.app",
   messagingSenderId: "852474450672",
   appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
-});
+}); }catch(e){ app = getApp(); }
 const db = getDatabase(app);
 const NEEDS=[['order',10],['saving',12],['curiosity',14],['independence',12],['idealism',16],['vengeance',8],['tranquility',8],['power',18],['honour',12],['family',14],['romance',12],['eating',6],['physical exercise',8],['social contact',8],['status',10],['acceptance',8]];
 const MODES=['insight','making sense','catalog','question framing','trait balancing','scale blending','social computation','system effects','info design','darwinian system','performance','career invention'];
 const GUARDS=['would I still believe this if no one else did?','if I were starting today, would I still invest?','am I overestimating because I\u2019m the one who noticed?'];
-var sec=document.createElement('section');
-sec.style.cssText='max-width:860px;margin:30px auto;padding:20px 16px;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
-
-  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the deed engine</div>'
- +'<div style="text-align:center;font-size:11px;color:#93a1b0;margin-bottom:8px">pick what it\u2019s for \u00b7 pick how \u00b7 answer one honesty question \u00b7 name the ask \u00b7 the price shows itself</div>'
- +'<div style="text-align:center;font-size:10px;color:#5c6875;letter-spacing:.15em;margin-bottom:14px">chance earns glory \u00b7 tenure earns value</div>';
-  
-  function chips(arr,cb){ var w=document.createElement('div'); w.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
-  arr.forEach(function(it){ var lab=Array.isArray(it)?it[0]+' \u00b7 '+it[1]:it; var b=document.createElement('button'); b.textContent=lab;
-    b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;letter-spacing:.06em;padding:5px 9px;cursor:pointer';
-    b.onclick=function(){ w.querySelectorAll('button').forEach(function(x){x.style.borderColor='#223041';x.style.color='#93a1b0';}); b.style.borderColor='#d9a83a'; b.style.color='#d9a83a'; cb(Array.isArray(it)?it[0]:it); };
-    w.appendChild(b); }); return w; }
-var selN=null, selM=null, selG=null;
-sec.appendChild(chips(NEEDS,function(v){selN=v;}));
-sec.appendChild(chips(MODES,function(v){selM=v;}));
-sec.appendChild(chips(GUARDS,function(v){selG=v;}));
-var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px';
-row.innerHTML='<input id="dAsk" placeholder="the ask \u00b7 what must be done" style="flex:1;min-width:160px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:8px 10px">'
- +'<input id="dW" type="number" min="1" value="1" style="width:70px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:8px 10px">'
- +'<button id="dGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font-family:inherit;font-size:11px;letter-spacing:.12em;padding:8px 16px;cursor:pointer">deed it</button>';
-sec.appendChild(row);
-var stat=document.createElement('div'); stat.style.cssText='font-size:10px;color:#5c6875;letter-spacing:.12em;margin-bottom:14px'; sec.appendChild(stat);
-var board=document.createElement('div'); sec.appendChild(board);
+const isU=!!localStorage.getItem('hive_user');
+const IN='background:#0a0d12;border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:9px 10px';
+const sec=document.createElement('section');
+sec.style.cssText='max-width:760px;margin:34px auto;padding:26px 22px;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+sec.innerHTML=(isU
+ ? '<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#e8e4d8;font-size:16px">the deed engine</div>'
+  +'<div style="text-align:center;font-size:9px;color:#d9a83a;letter-spacing:.3em;margin:8px 0 20px">FOUNDER \u00b7 THE HAND THAT POSTS</div>'
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+  +'<select id="dN" style="'+IN+'">'+NEEDS.map(function(n){return '<option value="'+n[0]+'">'+n[0]+' \u00b7 '+n[1]+'</option>';}).join('')+'</select>'
+  +'<select id="dM" style="'+IN+'">'+MODES.map(function(m){return '<option>'+m+'</option>';}).join('')+'</select>'
+  +'<select id="dG" style="'+IN+';max-width:280px">'+GUARDS.map(function(g2){return '<option>'+g2+'</option>';}).join('')+'</select>'
+  +'<input id="dAsk" placeholder="the ask \u00b7 what must be done" style="'+IN+';flex:1;min-width:180px">'
+  +'<input id="dW" type="number" min="1" value="1" style="'+IN+';width:64px">'
+  +'<button id="dGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font-family:inherit;font-size:11px;letter-spacing:.15em;padding:9px 18px;cursor:pointer">deed it</button>'
+  +'</div>'
+  +'<div id="dStat" style="margin-top:10px;font-size:10px;color:#5c6875;letter-spacing:.12em"></div>'
+ : '<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#e8e4d8;font-size:16px">the deed board</div>'
+  +'<div style="text-align:center;font-size:9px;color:#93a1b0;letter-spacing:.3em;margin:8px 0 20px">CITIZEN \u00b7 THE HANDS THAT CARRY</div>')
+ +'<div id="dBoard" style="margin-top:14px"></div>';
 var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f);
 function me(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||'the ferryman'; }
-row.querySelector('#dGo').onclick=async function(){
-  var ask=(row.querySelector('#dAsk').value||'').trim();
-  if(!ask||!selN||!selM||!selG){ stat.textContent='a deed needs an ask, a need, a mode, and a guard answered.'; return; }
-  var wch=Math.max(1,parseInt(row.querySelector('#dW').value||'1',10));
-  var base=10; NEEDS.forEach(function(n){ if(n[0]===selN) base=n[1]; });
-  var id=String(Date.now());
-  await set(ref(db,'rota/'+id),{ask:ask,need:selN,mode:selM,guard:selG,watches:wch,value:base*wch,poster:me(),status:'open',when:Date.now()});
-  stat.textContent='deeded \u00b7 '+(base*wch)+' deed-points on the rail.';
-  render();
-};
+if(isU){
+  sec.querySelector('#dGo').onclick=async function(){
+    var ask=(sec.querySelector('#dAsk').value||'').trim();
+    if(!ask){ sec.querySelector('#dStat').textContent='a deed needs an ask.'; return; }
+    var n=sec.querySelector('#dN').value, base=10;
+    NEEDS.forEach(function(x){ if(x[0]===n) base=x[1]; });
+    var wch=Math.max(1,parseInt(sec.querySelector('#dW').value||'1',10));
+    var id=String(Date.now());
+    await set(ref(db,'rota/'+id),{ask:ask,need:n,mode:sec.querySelector('#dM').value,guard:sec.querySelector('#dG').value,watches:wch,value:base*wch,poster:me(),status:'open',when:Date.now()});
+    sec.querySelector('#dStat').textContent='deeded \u00b7 '+(base*wch)+' deed-points on the rail.';
+    render();
+  };
+}
 async function render(){
-  board.innerHTML='';
+  var board=sec.querySelector('#dBoard'); board.innerHTML='';
   try{
     const snap=await get(ref(db,'rota'));
     var carried=0;
     if(snap.exists()){
-      var v=snap.val(), ids=Object.keys(v).sort().reverse();
-      ids.forEach(function(id){ var d=v[id];
+      var v=snap.val();
+      Object.keys(v).sort().reverse().forEach(function(id){ var d=v[id];
         if(d.status==='closed'&&d.taker===me()) carried+=d.value||0;
         var r=document.createElement('div');
-        r.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 4px;border-bottom:1px solid #223041;font-size:11px;color:#93a1b0';
-        r.innerHTML='<span style="flex:1;min-width:150px;color:#e8e4d8">'+String(d.ask).replace(/[<>&"]/g,'')+'</span>'
-          +'<span>'+d.need+' \u00b7 '+d.mode+'</span><span>'+d.watches+'\u00d7</span><span style="color:#d9a83a">'+d.value+' deed</span>'
-          +'<span style="color:#5c6875">'+d.status+(d.taker?' \u00b7 '+String(d.taker).replace(/[<>&"]/g,''):'')+'</span>';
+        r.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 2px;border-bottom:1px solid #223041;font-size:11px;color:#93a1b0';
+        r.innerHTML='<span style="flex:1;min-width:160px;color:#e8e4d8">'+String(d.ask).replace(/[<>&"]/g,'')+'</span>'
+          +'<span style="color:#5c6875">'+d.need+' \u00b7 '+d.watches+'\u00d7</span>'
+          +'<span style="color:#d9a83a">'+d.value+' deed</span>'
+          +'<span style="color:#5c6875;min-width:80px">'+d.status+(d.taker?' \u00b7 '+String(d.taker).replace(/[<>&"]/g,''):'')+'</span>';
         var b=document.createElement('button');
-        b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:3px 8px;cursor:pointer';
+        b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;letter-spacing:.08em;padding:4px 10px;cursor:pointer';
         if(d.status==='open'){ b.textContent='take'; b.onclick=async function(){ d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); }; }
         else if(d.status==='taken'&&d.taker===me()){ b.textContent='done'; b.onclick=async function(){ d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); }; }
-        else if(d.status==='awaiting'&&(d.poster===me()||localStorage.getItem('hive_user'))){ b.textContent='confirm'; b.onclick=async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); }; }
-        else { b.style.display='none'; }
+        else if(d.status==='awaiting'&&(d.poster===me()||isU)){ b.textContent='confirm'; b.onclick=async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); }; }
+        else b.style.display='none';
         r.appendChild(b); board.appendChild(r);
       });
     }
-    var c=document.createElement('div'); c.style.cssText='margin-top:10px;font-size:10px;letter-spacing:.15em;color:#5c6875';
-    c.textContent='deeds carried \u00b7 '+carried+' deed-points \u00b7 tenure earns value';
+    if(!board.children.length) board.innerHTML='<div style="padding:12px 2px;color:#5c6875;font-style:italic;font-size:11px">no deeds on the rail \u00b7 the board is quiet.</div>';
+    var c=document.createElement('div'); c.style.cssText='margin-top:14px;font-size:9px;letter-spacing:.25em;color:#5c6875;text-align:center';
+    c.textContent='DEEDS CARRIED \u00b7 '+carried+' \u00b7 TENURE EARNS VALUE';
     board.appendChild(c);
-  }catch(e){ stat.textContent='the rail is dark \u00b7 the till waits.'; }
+  }catch(e){ board.innerHTML='<div style="color:#5c6875;font-style:italic;font-size:11px">the rail is dark.</div>'; }
 }
 render();
 </script>
