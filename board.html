@@ -96,26 +96,38 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
+var PEP='ex-umbra-lumen';
+function xorr(s){ var o=''; for(var i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^PEP.charCodeAt(i%PEP.length)); return o; }
+function kid(w){ return btoa(xorr(w)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function wordOf(k){ try{ var s=k.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return xorr(atob(s)); }catch(e){ return null; } }
 window.hiveCloudSync = async function(roster){
   try{
     for(var name in roster){
-      await set(ref(db, 'roster/'+encodeURIComponent(name)), roster[name]);
+      await set(ref(db, 'roster/'+((name==='__founder')?name:kid(name))), roster[name]);
     }
   }catch(e){ /* offline or no signal — local holds */ }
 };
-
+async function burnPlain(){
+  try{
+    const s2=await get(ref(db,'roster')); if(!s2.exists()) return; const v2=s2.val();
+    for(var k in v2){ if(k!=='__founder' && /^[a-z]{6,14}\d{1,2}$/.test(k)) await set(ref(db,'roster/'+k), null); }
+  }catch(e){}
+}
 (async function(){
   try{
     const snap = await get(ref(db, 'roster'));
     if(snap.exists()){
       const cloud = snap.val();
       const local = JSON.parse(localStorage.getItem('hive_roster'))||{};
-      for(var name in cloud){
-        if(!local[name] || cloud[name].last > (local[name].last||0)) local[name] = cloud[name];
+      for(var k in cloud){
+        var w=(k==='__founder')?'__founder':wordOf(k); if(!w) continue;
+        if(!local[w] || (cloud[k].last||0) > (local[w].last||0)) local[w] = cloud[k];
       }
       localStorage.setItem('hive_roster', JSON.stringify(local));
       window.dispatchEvent(new CustomEvent('hive-roster-synced'));
     }
+    await burnPlain();
+    window.hiveCloudSync(JSON.parse(localStorage.getItem('hive_roster'))||{});
   }catch(e){ /* offline — local holds */ }
 })();
 </script>
