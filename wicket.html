@@ -140,14 +140,14 @@ requestAnimationFrame(tick);
   function roster(){ try{ return JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return {}; } }
     function stamp(name,pillar,alias){ var r=roster(); var e=r[name]||{first:Date.now(),pillar:pillar||'',tier:1};
     e.last=Date.now(); if(pillar) e.pillar=pillar; if(alias) e.alias=alias; r[name]=e; localStorage.setItem('hive_roster',JSON.stringify(r)); if(window.hiveCloudSync) window.hiveCloudSync(r); }
-  function enter(role,name,pillar){
+  function enter(role,name,pillar,alias){
     localStorage.setItem('hive_access',String(Date.now()+30*864e5));
     sessionStorage.setItem('hive_session','1');
     if(role==='user'){ localStorage.setItem('hive_user','1'); localStorage.setItem('hive_name','Quilliinn Primrose'); }
         else { localStorage.setItem('hive_member','1'); localStorage.setItem('hive_word',name);
       localStorage.setItem('hive_name',alias||name);
       localStorage.setItem('hive_pillar',pillar); if(!localStorage.getItem('hive_tier')) localStorage.setItem('hive_tier','1');
-      stamp(name,pillar); }
+      stamp(name,pillar,alias); }
     location.href='core.html';
   }
   var inp=document.querySelector('input'), btn=null, bs=document.querySelectorAll('button');
