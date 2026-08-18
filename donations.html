@@ -494,6 +494,8 @@ for(let i=0;i<10;i++){ const s=document.createElement('span'); s.className='pip'
 function witnesses(){ try{ return JSON.parse(localStorage.getItem('hive_witnesses')||'[]'); }catch(e){ return []; } }
 function renderWit(){
   const w=HOUSE_BOOK.concat(witnesses());
+  const nm=localStorage.getItem('hive_name');
+  if(nm && w.indexOf('\u25c6 '+nm)===-1) w.push('\u25c6 '+nm);
   document.getElementById('witline').textContent =
     w.length ? 'the fire remembers: '+w.slice(-6).join(' · ') : '';
 }
