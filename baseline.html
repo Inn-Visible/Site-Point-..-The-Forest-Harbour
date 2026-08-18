@@ -279,7 +279,28 @@ addEventListener('keydown', e => {
 })();
 </script>
 
-  
+  <script>
+(function(){
+  var LINES={
+    '88.1':['the pit hums \u00b7 bout 61 next','someone is backing a creature','the arena keeps the count'],
+    '91.5':['the tide turns three valleys over','rain on the cove roof','the war is quiet tonight'],
+    '94.7':['baseline sings in a minor key','the garden grows by golden angle','a loop closes somewhere'],
+    '98.3':['the ferryman counts keys in the dark','a word burns once','someone crosses, unseen'],
+    '102.9':['the sky computes \u00b7 dawn watch nears','a constellation wheels overhead','the robot dispenses one drop'],
+    '105.5':['the vault remembers every coin','tenure earns value','an old ledger page turns'],
+    '107.9':['the house keeps watch','ex umbra, lumen','the door is yours']
+  };
+  var host=document.querySelector('#rb_stat'); if(!host) return;
+  var cap=document.createElement('div');
+  cap.style.cssText='margin-top:6px;font-size:10px;color:#93a1b0;font-style:italic;letter-spacing:.08em;min-height:14px';
+  host.parentNode.insertBefore(cap,host.nextSibling);
+  setInterval(function(){
+    if((host.textContent||'').indexOf('ON AIR')<0){ cap.textContent=''; return; }
+    var f=document.querySelector('#rb_freq'), arr=LINES[f?f.textContent.trim():''];
+    cap.textContent=(arr&&arr.length)?('\u00b7 '+arr[Math.floor(Math.random()*arr.length)]):'';
+  },15000);
+})();
+</script>
   
 </body>
 </html>
