@@ -145,7 +145,7 @@ window.hiveCloudSync = async function(roster){
     var fr=document.createElement('div');
     fr.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.12em;flex-wrap:wrap';
     var acc=localStorage.getItem('hive_access');
-    fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 quilliinn primrose \u00b7 ragewood</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#5c6875">'+(acc?('door open \u00b7 '+Math.max(0,Math.ceil((+acc-Date.now())/864e5))+'d left'):'door shut')+'</span>';
+        fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 quilliinn primrose \u00b7 rag\u00b7\u00b7\u00b7d</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#5c6875">'+(acc?('door open \u00b7 '+Math.max(0,Math.ceil((+acc-Date.now())/864e5))+'d left'):'door shut')+'</span>';
     wrap.appendChild(fr);
         var names=Object.keys(r).filter(function(n){ return n!=='__founder'; }).sort(function(a,b){
       var pa=PILLARS.indexOf(r[a].pillar), pb=PILLARS.indexOf(r[b].pillar);
