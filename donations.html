@@ -576,9 +576,9 @@ function redeem(){
   };
   if(window.cloudRedeem){
     document.getElementById('stat').textContent='the fire asks the cloud ..';
-    window.cloudRedeem(k,name).then(function(r){
-      if(r==='ok') finish(true);
-      else if(r==='offline'){ KEYS.includes(k)?finish(true):finish(false,'unknown'); }
+        window.cloudRedeem(k,name).then(function(r){
+      if(r.indexOf('ok')===0){ window.__paidTier=r.slice(3)||'ember'; finish(true); }
+      else if(r==='offline'){ KEYS.includes(k)?(window.__paidTier='ember',finish(true)):finish(false,'unknown'); }
       else finish(false,r);
     });
   } else {
