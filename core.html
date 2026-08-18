@@ -559,6 +559,16 @@ async function send(){
 })();
 </script>
   
+<script>
+(function(){
+  if(!(localStorage.getItem('hive_user')||localStorage.getItem('hive_member')||localStorage.getItem('hive_patron'))) return;
+  var f=document.querySelector('footer'); if(!f) return;
+  var d=document.createElement('div');
+  d.style.cssText='margin-top:6px;font-size:11px;letter-spacing:.12em';
+  d.innerHTML='<a href="board.html" style="color:#3f7fc1;text-decoration:none">the house book \u00b7 the muster \u2197</a>';
+  f.appendChild(d);
+})();
+</script>
   
 </body>
 </html>
