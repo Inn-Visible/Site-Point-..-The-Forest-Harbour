@@ -176,5 +176,49 @@ function write(){
 render();
 </script>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
+  authDomain: "innvisible-hearth.firebaseapp.com",
+  databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
+  projectId: "innvisible-hearth",
+  storageBucket: "innvisible-hearth.firebasestorage.app",
+  messagingSenderId: "852474450672",
+  appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
+});
+const db = getDatabase(app);
+const deck=document.querySelector('.deck');
+if(deck){
+  const card=document.createElement('div');
+  card.className='card ful';
+  card.style.gridColumn='1/-1';
+  card.innerHTML='<span class="h">(\u25c6) DEEDS \u00b7 need \u2192 mode \u2192 value</span><ul id="list-deeds"></ul>';
+  deck.appendChild(card);
+  function me(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||'the ferryman'; }
+  async function render(){
+    const ul=document.getElementById('list-deeds'); ul.innerHTML='';
+    try{
+      const snap=await get(ref(db,'rota'));
+      if(!snap.exists()){ ul.innerHTML='<li class="empty">\u2014 no deeds on the rail \u2014</li>'; return; }
+      const v=snap.val();
+      Object.keys(v).sort().reverse().forEach(function(id){ const d=v[id];
+        const li=document.createElement('li');
+        const t=document.createElement('span');
+        t.textContent=d.ask+' \u00b7 '+d.need+' \u00b7 '+d.mode+' \u00b7 '+d.watches+'\u00d7 \u00b7 '+d.value+' deed \u00b7 '+d.status+(d.taker?' \u00b7 '+d.taker:'');
+        li.appendChild(t);
+        const mk=function(label,fn){ const b=document.createElement('button'); b.textContent=label; b.onclick=fn; li.appendChild(b); };
+        if(d.status==='open') mk('\u25b6 take',async function(){ d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); });
+        else if(d.status==='taken'&&d.taker===me()) mk('\u2713 done',async function(){ d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); });
+        else if(d.status==='awaiting'&&(d.poster===me()||localStorage.getItem('hive_user'))) mk('\u25c6 confirm',async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); });
+        ul.appendChild(li);
+      });
+    }catch(e){ ul.innerHTML='<li class="empty">\u2014 the rail is dark \u2014</li>'; }
+  }
+  render();
+}
+</script>
+  
 </body>
 </html>
