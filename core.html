@@ -585,6 +585,37 @@ async function send(){
   var f=document.querySelector('footer'); if(f) f.parentNode.insertBefore(d,f); else document.body.appendChild(d);
 })();
 </script>
+
+<script>
+(function(){
+  var isU=localStorage.getItem('hive_user'), isM=localStorage.getItem('hive_member');
+  if(!(isU||isM)) return;
+  var f=document.querySelector('footer'); if(!f) return;
+  var word=localStorage.getItem('hive_word');
+  var bar=document.createElement('div');
+  bar.style.cssText='text-align:center;margin-top:6px;font-size:10px;letter-spacing:.15em;color:#5c6875';
+  bar.innerHTML='<a href="#" id="rnA" style="color:#3f7fc1;text-decoration:none">rename \u00b7 what does the house call you?</a>';
+  f.parentNode.insertBefore(bar,f);
+  bar.querySelector('#rnA').addEventListener('click',function(e){
+    e.preventDefault();
+    bar.innerHTML='<input id="rnIn" maxlength="24" placeholder="the new name .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;text-align:center;letter-spacing:.08em"> <button id="rnOk" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">seal it</button>';
+    var inp=bar.querySelector('#rnIn'); inp.focus();
+    function commit(){
+      var al=(inp.value||'').replace(/[<>&\u00b7]/g,'').trim().slice(0,24);
+      if(!al) return;
+      localStorage.setItem('hive_name',al);
+      var key=isU?'__founder':word, r={};
+      try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+      if(key){ r[key]=r[key]||{first:Date.now(),pillar:isU?'all':'',tier:isU?0:1};
+        r[key].alias=al; localStorage.setItem('hive_roster',JSON.stringify(r));
+        if(window.hiveCloudSync) window.hiveCloudSync(r); }
+      bar.innerHTML='the house now calls you <span style="color:#d9a83a">'+al.replace(/[<>&"]/g,'')+'</span>';
+    }
+    bar.querySelector('#rnOk').onclick=commit;
+    inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter') commit(); });
+  });
+})();
+</script>
   
 </body>
 </html>
