@@ -156,6 +156,8 @@ requestAnimationFrame(tick);
         var r=parseWord(inp.value);
     if(!r) return;
     if(r.role==='user'){ enter('user'); return; }
+       var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();
+    if(rec&&rec.pillar){ enter('member',r.name,rec.pillar); return; }
     var p=localStorage.getItem('hive_pillar');
     if(p){ enter('member',r.name,p); return; }
     var ov=document.createElement('div');
