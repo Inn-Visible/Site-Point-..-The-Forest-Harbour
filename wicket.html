@@ -172,6 +172,35 @@ requestAnimationFrame(tick);
   inp.addEventListener('keydown', function(e){ if(e.key==='Enter') doKnock(); });
 })();
 </script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const app = initializeApp({
+  apiKey: "AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0",
+  authDomain: "innvisible-hearth.firebaseapp.com",
+  databaseURL: "https://innvisible-hearth-default-rtdb.firebaseio.com",
+  projectId: "innvisible-hearth",
+  storageBucket: "innvisible-hearth.firebasestorage.app",
+  messagingSenderId: "852474450672",
+  appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
+});
+const db = getDatabase(app);
+window.hiveCloudSync = async function(roster){
+  try{ for(var n in roster){ await set(ref(db,'roster/'+encodeURIComponent(n)), roster[n]); } }catch(e){}
+};
+(async function(){
+  try{
+    const snap = await get(ref(db,'roster'));
+    var local = JSON.parse(localStorage.getItem('hive_roster'))||{};
+    if(snap.exists()){ var cloud=snap.val();
+      for(var n in cloud){ if(!local[n]||cloud[n].last>(local[n].last||0)) local[n]=cloud[n]; } }
+    localStorage.setItem('hive_roster',JSON.stringify(local));
+    window.hiveCloudSync(local);
+  }catch(e){}
+})();
+</script>
   
 </body>
 </html>
