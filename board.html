@@ -162,7 +162,7 @@ window.hiveCloudSync = async function(roster){
       var it=r[n];
       var row=document.createElement('div');
       row.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid #223041;color:#93a1b0;font-size:11px;letter-spacing:.08em;flex-wrap:wrap';
-      row.innerHTML='<span style="flex:1;min-width:120px;color:#e8e4d8">'+n+'</span>'
+           row.innerHTML='<span style="flex:1;min-width:120px;color:#e8e4d8">'+String(n).replace(/[<>&"]/g,'')+'</span>'
         +'<span style="min-width:70px">'+(it.pillar||'\u2014')+'</span>'
         +'<span style="min-width:56px;color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>'
         +'<span style="min-width:90px;color:#5c6875">'+(inMonth(it.last)?('seen '+ago(it.last)):'outside the month')+'</span>';
