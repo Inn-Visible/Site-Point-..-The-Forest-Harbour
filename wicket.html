@@ -139,7 +139,7 @@ requestAnimationFrame(tick);
   }
   function roster(){ try{ return JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return {}; } }
   function stamp(name,pillar){ var r=roster(); var e=r[name]||{first:Date.now(),pillar:pillar||'',tier:1};
-    e.last=Date.now(); if(pillar) e.pillar=pillar; r[name]=e; localStorage.setItem('hive_roster',JSON.stringify(r)); }
+      e.last=Date.now(); if(pillar) e.pillar=pillar; r[name]=e; localStorage.setItem('hive_roster',JSON.stringify(r)); if(window.hiveCloudSync) window.hiveCloudSync(r); }
   function enter(role,name,pillar){
     localStorage.setItem('hive_access',String(Date.now()+30*864e5));
     sessionStorage.setItem('hive_session','1');
