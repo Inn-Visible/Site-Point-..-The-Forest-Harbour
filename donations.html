@@ -1082,10 +1082,19 @@ const app = initializeApp({
   appId: "1:852474450672:web:85a8bfa6a75d04ea492835"
 });
 const db = getDatabase(app);
+var PEP='ex-umbra-lumen';
+function xorr(s){ var o=''; for(var i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^PEP.charCodeAt(i%PEP.length)); return o; }
+function kid(w){ return btoa(xorr(w)); }
+function wordOf(k){ try{ return xorr(atob(k)); }catch(e){ return null; } }
 window.hiveCloudSync = async function(roster){
-  try{ for(var n in roster){ await set(ref(db,'roster/'+encodeURIComponent(n)), roster[n]); } }catch(e){}
+  try{ for(var n in roster){ await set(ref(db,'roster/'+((n==='__founder')?n:kid(n))), roster[n]); } }catch(e){}
 };
-function stampCoins(){
+async function burnPlain(){
+  try{ const s2=await get(ref(db,'roster')); if(!s2.exists()) return; const v2=s2.val();
+    for(var k in v2){ if(k!=='__founder' && /^[a-z]{6,14}\d{1,2}$/.test(k)) await set(ref(db,'roster/'+k), null); } }catch(e){}
+}
+burnPlain();
+  function stampCoins(){
   try{
     var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return; }
     var key=null, rec=null;
