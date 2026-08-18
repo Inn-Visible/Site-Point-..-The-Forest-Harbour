@@ -569,6 +569,22 @@ async function send(){
   f.appendChild(d);
 })();
 </script>
+
+<script>
+(function(){
+  if(!localStorage.getItem('hive_member')) return;
+  var w=localStorage.getItem('hive_word')||localStorage.getItem('hive_name');
+  var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+  var it=r[w]; if(!it) return;
+  var now=Date.now(), d=document.createElement('div');
+  d.style.cssText='text-align:center;margin-top:6px;font-size:10px;letter-spacing:.15em;color:#5c6875';
+  if(it.exempt) d.textContent='your circle \u00b7 exempt \u00b7 the fire keeps your chair';
+  else if((it.subUntil||0)>now) d.textContent='your circle \u00b7 '+(it.sub||'ember')+' \u00b7 '+Math.ceil((it.subUntil-now)/864e5)+'d left \u00b7 re-up by the hearth when you like';
+  else if((it.first||0)+30*864e5>now) d.textContent='your first watch \u00b7 '+Math.ceil(((it.first||0)+30*864e5-now)/864e5)+'d of grace left';
+  else d.textContent='your circle needs re-upping \u00b7 your pocket is untouched';
+  var f=document.querySelector('footer'); if(f) f.parentNode.insertBefore(d,f); else document.body.appendChild(d);
+})();
+</script>
   
 </body>
 </html>
