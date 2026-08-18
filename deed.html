@@ -171,6 +171,16 @@ render();
   if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
 })();
 </script>
+
+<script>
+(function(){
+  if(localStorage.getItem('hive_user')) return;
+  var kill=function(s){ var el=document.querySelector(s); if(el) el.style.display='none'; };
+  kill('.tillrow'); kill('#bar'); kill('#ledger'); kill('.weld');
+  var h=document.querySelector('header'); if(h) h.textContent='DEED \u00b7 THE BOARD';
+  var hook=document.querySelector('.hook'); if(hook) hook.textContent='the ferryman posts the deeds \u00b7 you carry them.';
+})();
+</script>
   
 </body>
 </html>
