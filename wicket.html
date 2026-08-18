@@ -158,9 +158,17 @@ requestAnimationFrame(tick);
     if(!r) return;
     if(r.role==='user'){ enter('user'); return; }
        var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();
-    if(rec&&rec.pillar){ enter('member',r.name,rec.pillar); return; }
-    var p=localStorage.getItem('hive_pillar');
-    if(p){ enter('member',r.name,p); return; }
+        if(r.role==='user'){ enter('user'); return; }
+    var rec=(function(){ try{ return (JSON.parse(localStorage.getItem('hive_roster'))||{})[r.name]; }catch(e){ return null; } })();
+    if(rec){
+      var now=Date.now(), grace=(rec.first||0)+30*864e5>now, subbed=(rec.subUntil||0)>now;
+      if(!rec.exempt && !grace && !subbed){
+        var st=document.getElementById('stat');
+        if(st) st.textContent='the hearth circle needs re-upping \u00b7 your pocket is untouched \u00b7 the door reopens when the circle does.';
+        return;
+      }
+    }
+    if(rec&&rec.pillar){ enter('member',r.name,rec.pillar,rec.alias); return; }
     var ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:rgba(5,7,11,.94);z-index:50;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace';
     ov.innerHTML='<div style="text-align:center;color:#93a1b0;font-size:11px;letter-spacing:.2em">which pillar do you stand under?<br><br>'
