@@ -99,9 +99,12 @@ const MODES=['insight','making sense','catalog','question framing','trait balanc
 const GUARDS=['would I still believe this if no one else did?','if I were starting today, would I still invest?','am I overestimating because I\u2019m the one who noticed?'];
 var sec=document.createElement('section');
 sec.style.cssText='max-width:860px;margin:30px auto;padding:20px 16px;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
-sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the deed engine \u00b7 need \u2192 mode \u2192 guard \u2192 value</div>'
+
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the deed engine</div>'
+ +'<div style="text-align:center;font-size:11px;color:#93a1b0;margin-bottom:8px">pick what it\u2019s for \u00b7 pick how \u00b7 answer one honesty question \u00b7 name the ask \u00b7 the price shows itself</div>'
  +'<div style="text-align:center;font-size:10px;color:#5c6875;letter-spacing:.15em;margin-bottom:14px">chance earns glory \u00b7 tenure earns value</div>';
-function chips(arr,cb){ var w=document.createElement('div'); w.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
+  
+  function chips(arr,cb){ var w=document.createElement('div'); w.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
   arr.forEach(function(it){ var lab=Array.isArray(it)?it[0]+' \u00b7 '+it[1]:it; var b=document.createElement('button'); b.textContent=lab;
     b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;letter-spacing:.06em;padding:5px 9px;cursor:pointer';
     b.onclick=function(){ w.querySelectorAll('button').forEach(function(x){x.style.borderColor='#223041';x.style.color='#93a1b0';}); b.style.borderColor='#d9a83a'; b.style.color='#d9a83a'; cb(Array.isArray(it)?it[0]:it); };
