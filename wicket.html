@@ -140,6 +140,56 @@ document.getElementById('word').addEventListener('keydown',function(e){ if(e.key
   addEventListener('mousedown',down); addEventListener('mouseup',up);
 })();
 </script>
+
+<script>
+(function(){
+  var AN='fox wolf bear hare lynx raven crow owl wren sparrow hawk eagle heron crane toad frog newt adder viper boar stag elk moose otter seal orca whale shark ray moth bee wasp ant beetle cricket mantis spider badger marten ferret weasel coyote mouse';
+  var A=AN.split(' ');
+  function parseWord(w){
+    w=(w||'').trim().toLowerCase();
+    if(!w) return null;
+    if(w==='ragewood') return {role:'user'};
+    for(var i=0;i<A.length;i++) for(var j=0;j<A.length;j++){
+      if(i===j) continue;
+      var pre=A[i]+A[j];
+      if(w.lastIndexOf(pre,0)===0){
+        var num=w.slice(pre.length);
+        if(/^\d{1,2}$/.test(num)&&num!=='00') return {role:'member',name:w};
+      }
+    }
+    return null;
+  }
+  function roster(){ try{ return JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){ return {}; } }
+  function stamp(name,pillar){ var r=roster(); var e=r[name]||{first:Date.now(),pillar:pillar||'',tier:1};
+    e.last=Date.now(); if(pillar) e.pillar=pillar; r[name]=e; localStorage.setItem('hive_roster',JSON.stringify(r)); }
+  function enter(role,name,pillar){
+    localStorage.setItem('hive_access',String(Date.now()+30*864e5));
+    sessionStorage.setItem('hive_session','1');
+    if(role==='user'){ localStorage.setItem('hive_user','1'); localStorage.setItem('hive_name','Quilliinn Primrose'); }
+    else { localStorage.setItem('hive_member','1'); localStorage.setItem('hive_name',name);
+      localStorage.setItem('hive_pillar',pillar); if(!localStorage.getItem('hive_tier')) localStorage.setItem('hive_tier','1');
+      stamp(name,pillar); }
+    location.href='core.html';
+  }
+  var inp=document.querySelector('input'), btn=null, bs=document.querySelectorAll('button');
+  for(var i=0;i<bs.length;i++) if(/knock/i.test(bs[i].textContent||'')) btn=bs[i];
+  if(!inp||!btn) return;
+  btn.addEventListener('click', function(){
+    var r=parseWord(inp.value);
+    if(!r) return;
+    if(r.role==='user'){ enter('user'); return; }
+    var p=localStorage.getItem('hive_pillar');
+    if(p){ enter('member',r.name,p); return; }
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(5,7,11,.94);z-index:50;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace';
+    ov.innerHTML='<div style="text-align:center;color:#93a1b0;font-size:11px;letter-spacing:.2em">which pillar do you stand under?<br><br>'
+      +['axiom','eigen','baseline','keystone'].map(function(x){ return '<button data-p="'+x+'" style="background:none;border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:12px;letter-spacing:.15em;padding:10px 16px;margin:4px;cursor:pointer">'+x+'</button>'; }).join('')
+      +'</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){ var p2=e.target&&e.target.getAttribute&&e.target.getAttribute('data-p'); if(p2) enter('member',r.name,p2); });
+  });
+})();
+</script>
   
 </body>
 </html>
