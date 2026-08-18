@@ -495,11 +495,14 @@ function witnesses(){ try{ return JSON.parse(localStorage.getItem('hive_witnesse
 function renderWit(){
   const w=HOUSE_BOOK.concat(witnesses());
   const nm=localStorage.getItem('hive_name');
-  if(nm && w.indexOf('\u25c6 '+nm)===-1) w.push('\u25c6 '+nm);
+  const word=localStorage.getItem('hive_word');
+  const clean=function(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); };
+  const disp=(word && nm && clean(nm)===clean(word)) ? (word.slice(0,3)+'\u00b7\u00b7\u00b7'+word.slice(-1)) : nm;
+  const dup=w.some(function(x){ return clean(x)===clean(disp||'') || (localStorage.getItem('hive_user')&&clean(x).indexOf('primrose')>-1&&clean(disp||'').indexOf('primrose')>-1); });
+  if(disp && !dup) w.push('\u25c6 '+disp);
   document.getElementById('witline').textContent =
     w.length ? 'the fire remembers: '+w.slice(-6).join(' · ') : '';
-}
-function render(){
+}function render(){
   const tot=Math.floor(drops/10), shown=tot%10;
   pips.forEach((p,i)=>p.classList.toggle('on',i<shown));
   document.getElementById('drops').textContent=String(drops);
