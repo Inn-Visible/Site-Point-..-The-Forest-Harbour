@@ -619,8 +619,9 @@ window.cloudRedeem = async function(key, name){
     const val = snap.val();
     const used = (val && typeof val==='object') ? !!val.used : (val==='used');
     if(used) return 'used';
+    const tier = (typeof val==='string'&&val!=='open')?val:((val&&val.tier)?val.tier:'ember');
     await set(r, { used:true, name:name||null, when:Date.now(), seed: parseInt(localStorage.getItem('hive_chain_h')||'0',10) });
-    return 'ok';
+    return 'ok:'+tier;
   }catch(e){ return 'offline'; }
 };
 </script>
