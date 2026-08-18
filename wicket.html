@@ -164,7 +164,8 @@ requestAnimationFrame(tick);
     var ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:rgba(5,7,11,.94);z-index:50;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace';
     ov.innerHTML='<div style="text-align:center;color:#93a1b0;font-size:11px;letter-spacing:.2em">which pillar do you stand under?<br><br>'
-      +['axiom','eigen','baseline','keystone'].map(function(x){ return '<button data-p="'+x+'" style="background:none;border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:12px;letter-spacing:.15em;padding:10px 16px;margin:4px;cursor:pointer">'+x+'</button>'; }).join('')
+         +['axiom','eigen','baseline','keystone'].map(function(x){ return '<button data-p="'+x+'" style="background:none;border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:12px;letter-spacing:.15em;padding:10px 16px;margin:4px;cursor:pointer">'+x+'</button>'; }).join('')
+      +'<br><br><input id="aliasIn" maxlength="24" placeholder="what does the house call you? (optional)" style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:8px 10px;text-align:center;letter-spacing:.08em">'
       +'</div>';
     document.body.appendChild(ov);
          ov.addEventListener('click', function(e){ var p2=e.target&&e.target.getAttribute&&e.target.getAttribute('data-p'); if(p2) enter('member',r.name,p2); });
