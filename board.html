@@ -184,6 +184,34 @@ window.hiveCloudSync = async function(roster){
   window.addEventListener('hive-roster-synced', render);
 })();
 </script>
+
+<script>
+(function(){
+  if(!(localStorage.getItem('hive_user')||localStorage.getItem('hive_member')||localStorage.getItem('hive_patron'))) return;
+  function esc(s){ return String(s).replace(/[<>&"]/g,''); }
+  var TIERS={1:'spark',2:'ember',3:'flame'};
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:860px;margin:26px auto;padding:18px 16px;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the muster \u00b7 who stands under which pillar</div>';
+  var wrap=document.createElement('div'); sec.appendChild(wrap);
+  var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f);
+  function render(){
+    var r={}; try{ r=JSON.parse(localStorage.getItem('hive_roster'))||{}; }catch(e){}
+    wrap.innerHTML='';
+    var names=Object.keys(r);
+    if(!names.length){ wrap.innerHTML='<div style="padding:8px 6px;color:#5c6875;font-style:italic;font-size:11px">no sparks yet \u00b7 the ferryman\u2019s words are standing by</div>'; return; }
+    names.sort().forEach(function(n){
+      var it=r[n];
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;gap:8px;padding:7px 6px;border-bottom:1px solid #223041;color:#93a1b0;font-size:11px;letter-spacing:.08em;flex-wrap:wrap';
+      row.innerHTML='<span style="flex:1;min-width:120px;color:#e8e4d8">'+esc(n)+'</span><span style="min-width:70px">'+esc(it.pillar||'\u2014')+'</span><span style="color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>';
+      wrap.appendChild(row);
+    });
+  }
+  render();
+  window.addEventListener('hive-roster-synced',render);
+})();
+</script>
   
 </body>
 </html>
