@@ -241,7 +241,60 @@ requestAnimationFrame(frame);
 })();
 </script>
 
-
+<script>
+(function(){
+  var KEY='hive_nook';
+  var grid=null;
+  var figs=document.querySelectorAll('.fig');
+  for(var i=0;i<figs.length;i++){ if(/reading nook cove/i.test(figs[i].textContent||'')){ grid=figs[i].parentNode.querySelector('.cove'); break; } }
+  if(!grid) return;
+  var anchors=[].slice.call(grid.querySelectorAll('a.nook'));
+  if(anchors.length<4) return;
+  var DEF=anchors.map(function(a){ return {t:a.querySelector('b').textContent, s:a.querySelector('span').textContent, u:a.href}; });
+  var cur=null;
+  try{ cur=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ cur=null; }
+  function apply(list){
+    for(var i=0;i<4;i++){
+      var d=(list&&list[i])?list[i]:DEF[i];
+      anchors[i].href=d.u; anchors[i].querySelector('b').textContent=d.t; anchors[i].querySelector('span').textContent=d.s;
+    }
+  }
+  if(cur) apply(cur);
+  if(!(localStorage.getItem('hive_patron')||localStorage.getItem('hive_user')||localStorage.getItem('hive_name'))) return;
+  var eb=document.createElement('button');
+  eb.textContent='\u270e the shelf';
+  eb.style.cssText='display:block;margin:10px auto 0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;background:none;border:1px solid #223041;color:#5c6875;cursor:pointer;padding:4px 12px';
+  grid.parentNode.insertBefore(eb,grid.nextSibling);
+  var rb=document.createElement('button');
+  rb.textContent='\u21ba house favs';
+  rb.style.cssText='display:block;margin:6px auto 0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;background:none;border:none;color:#5c6875;cursor:pointer';
+  eb.parentNode.insertBefore(rb,eb.nextSibling);
+  var editing=false;
+  eb.onclick=function(){
+    editing=!editing;
+    eb.textContent=editing?'\u2713 done':'\u270e the shelf';
+    eb.style.borderColor=editing?'#d9a83a':'#223041';
+    eb.style.color=editing?'#d9a83a':'#5c6875';
+    anchors.forEach(function(a,i){
+      a.style.outline=editing?'1px dashed #d9a83a':'';
+      a.onclick=editing?function(ev){ ev.preventDefault(); editSlot(i); }:null;
+    });
+  };
+  function editSlot(i){
+    var d=(cur&&cur[i])||DEF[i];
+    var t=prompt('slot '+(i+1)+' \u00b7 title', d.t); if(t===null) return;
+    var s=prompt('slot '+(i+1)+' \u00b7 the line beneath', d.s); if(s===null) return;
+    var u=prompt('slot '+(i+1)+' \u00b7 url \u00b7 blank = house fav', d.u); if(u===null) return;
+    u=u.trim();
+    if(u && !/^https?:\/\//i.test(u)){ alert('the shelf only holds real doors (http/https).'); return; }
+    if(!cur) cur=[null,null,null,null];
+    cur[i]=(t.trim()||s.trim()||u)?{t:t.trim()||DEF[i].t, s:s.trim()||DEF[i].s, u:u||DEF[i].u}:null;
+    localStorage.setItem(KEY,JSON.stringify(cur));
+    apply(cur);
+  }
+  rb.onclick=function(){ if(confirm('return the shelf to the house favs?')){ cur=null; localStorage.removeItem(KEY); apply(null); } };
+})();
+</script>
   
 
   
