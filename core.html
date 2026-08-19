@@ -719,6 +719,7 @@ let app; try{ app=initializeApp({
   appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
 }); }catch(e){ app=getApp(); }
 const db=getDatabase(app);
+const DBURL="https://innvisible-hearth-default-rtdb.firebaseio.com";
 (function(){ if(!localStorage.getItem('hive_user')) return; main(); })();
 async function main(){
   var GREEN='#58a36a', AMBER='#d9a83a', RED='#c8452c', DIM='#5c6875';
@@ -732,9 +733,15 @@ async function main(){
   grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px';
   sec.appendChild(grid);
   var hd=document.querySelector('header');
-  if(hd&&hd.parentNode) hd.parentNode.insertBefore(sec,hd.nextSibling);
-  else document.body.appendChild(sec);
-  async function collect(){
+  if(hd&&hd.parentNode) hd.parentNode.insertBefore(sec,hd.nextSibling); else document.body.appendChild(sec);
+  window.hiveGauge=function(reg){ (window.__hiveGauges=window.__hiveGauges||[]).push(reg); };
+  function card(label,value,sub,color){
+    return '<div style="border-left:3px solid '+color+';background:#0a0d12;padding:10px">'
+      +'<div style="font-size:9px;letter-spacing:.2em;color:'+DIM+'">'+label+'</div>'
+      +'<div style="font-size:18px;color:'+color+';margin-top:4px">'+value+'</div>'
+      +'<div style="font-size:10px;color:'+DIM+';margin-top:2px">'+sub+'</div></div>';
+  }
+  async function snapshot(){
     var g={line:navigator.onLine,rail:true,souls:0,active:0,witToday:0,open:0,house:0,taken:0,awaiting:0,flags:0,ban:0,sky:!!localStorage.getItem('hive_wx_full')};
     var day=Math.floor(Date.now()/864e5), week=Date.now()-7*864e5;
     try{ await get(ref(db,'roster')); }catch(e){ g.rail=false; }
@@ -750,28 +757,34 @@ async function main(){
     try{ const sb=await get(ref(db,'ban')); if(sb.exists()) g.ban=Object.keys(sb.val()).length; }catch(e){}
     return g;
   }
-  function card(label,value,sub,color){
-    return '<div style="border-left:3px solid '+color+';background:#0a0d12;padding:10px">'
-      +'<div style="font-size:9px;letter-spacing:.2em;color:'+DIM+'">'+label+'</div>'
-      +'<div style="font-size:18px;color:'+color+';margin-top:4px">'+value+'</div>'
-      +'<div style="font-size:10px;color:'+DIM+';margin-top:2px">'+sub+'</div></div>';
+  async function rootKeys(){ try{ const r=await fetch(DBURL+'/.json?shallow=true'); const j=await r.json(); return Object.keys(j||{}); }catch(e){ return []; } }
+  var KNOWN=['roster','witness','rota','flags','ban','keys','emberchain','housebook','contracts','slate'];
+  function builtins(S){
+    return [
+      card('rail', S.rail?'up':'dark','firebase', S.rail?GREEN:RED),
+      card('line', S.line?'on':'off','network', S.line?GREEN:RED),
+      card('souls', S.souls, S.active+' active', S.souls>0?GREEN:DIM),
+      card('witness today', S.witToday,'the pulse', S.witToday>0?GREEN:DIM),
+      card('deeds open', S.open,'house '+S.house, S.open>0?GREEN:AMBER),
+      card('in flight', S.taken+S.awaiting, S.taken+' taken \u00b7 '+S.awaiting+' await', (S.taken+S.awaiting)>0?AMBER:DIM),
+      card('watchlist', S.flags,'flags pending', S.flags>0?AMBER:GREEN),
+      card('banned', S.ban,'the ban list', S.ban>0?RED:DIM),
+      card('sky', S.sky?'cached':'none','weather', S.sky?GREEN:AMBER)
+    ];
   }
-  function paint(g){
-    var master = (!g.line||!g.rail)?RED : (g.flags>0||!g.sky)?AMBER : GREEN;
-    var mtxt = master===RED?'SYSTEM DOWN' : master===AMBER?'NEEDS EYES' : 'ALL SYSTEMS';
-    var m=document.getElementById('gr_master'); m.style.color=master; m.textContent='\u25cf '+mtxt;
-    grid.innerHTML =
-      card('rail', g.rail?'up':'dark', 'firebase', g.rail?GREEN:RED)
-     +card('line', g.line?'on':'off', 'network', g.line?GREEN:RED)
-     +card('souls', g.souls, g.active+' active', g.souls>0?GREEN:DIM)
-     +card('witness today', g.witToday, 'the pulse', g.witToday>0?GREEN:DIM)
-     +card('deeds open', g.open, 'house '+g.house, g.open>0?GREEN:AMBER)
-     +card('in flight', g.taken+g.awaiting, g.taken+' taken \u00b7 '+g.awaiting+' await', (g.taken+g.awaiting)>0?AMBER:DIM)
-     +card('watchlist', g.flags, 'flags pending', g.flags>0?AMBER:GREEN)
-     +card('banned', g.ban, 'the ban list', g.ban>0?RED:DIM)
-     +card('sky', g.sky?'cached':'none', 'weather', g.sky?GREEN:AMBER);
+  async function tick(){
+    var S=await snapshot();
+    var dials=builtins(S);
+    var regs=window.__hiveGauges||[];
+    for(var i=0;i<regs.length;i++){ try{ var d=await regs[i].collect(); dials.push(card(regs[i].label,d.value,d.sub,d.color)); }catch(e){} }
+    var ks=await rootKeys(); var unk=ks.filter(function(k){ return KNOWN.indexOf(k)<0; });
+    dials.push(card('unregistered', unk.length, unk.slice(0,4).join(', ')||'none', unk.length?AMBER:DIM));
+    var down=!S.line||!S.rail, eyes=S.flags>0||!S.sky||unk.length>0;
+    var master=down?RED:eyes?AMBER:GREEN;
+    var m=document.getElementById('gr_master'); m.style.color=master;
+    m.textContent='\u25cf '+(down?'SYSTEM DOWN':eyes?'NEEDS EYES':'ALL SYSTEMS');
+    grid.innerHTML=dials.join('');
   }
-  async function tick(){ try{ paint(await collect()); }catch(e){} }
   tick(); setInterval(tick,30000);
 }
 </script>
