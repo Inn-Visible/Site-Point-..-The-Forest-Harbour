@@ -212,7 +212,7 @@ if(deck){
         if(d.status==='open') mk('\u25b6 take',async function(){ 
           var carry=0; for(var c2 in v){ var x=v[c2]; if(x.taker===me()&&(x.status==='taken'||x.status==='awaiting')) carry++; } if(carry>=2) return;
           d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); });
-        else if(d.status==='taken'&&d.taker===me()) mk('\u2713 done',async function(){ d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); });
+                else if(d.status==='taken'&&d.taker===me()) mk('\u2713 done',async function(){ var pr=prompt('the proof \u00b7 one line, link, or artifact:'); if(pr===null) return; d.proof=String(pr).slice(0,140); d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); });
         else if(d.status==='awaiting'&&(d.poster===me()||localStorage.getItem('hive_user'))) mk('\u25c6 confirm',async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); });
         ul.appendChild(li);
       });
