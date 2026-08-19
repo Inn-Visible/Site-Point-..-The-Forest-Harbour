@@ -665,7 +665,7 @@ btn.addEventListener('pointerup',async function(){
   var nonce=await pow(k+':'+day+':'+prev);
   localStorage.setItem('hive_wit_prev',String(nonce));
   try{ await set(ref(db,'witness/'+k+'/'+day),{nonce:nonce,prev:prev,t:Date.now()}); toast('witnessed \u00b7 the house saw you'); }
-  catch(e){ toast('the rail is dark'); }
+  catch(e){ toast('rail: '+((e&&e.message)?e.message.slice(0,40):'dark')); }
   btn.textContent='witness';
 });
 btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness'; });
