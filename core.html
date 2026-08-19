@@ -708,6 +708,73 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   document.head.appendChild(st);
 })();
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+(function(){ if(!localStorage.getItem('hive_user')) return; main(); })();
+async function main(){
+  var GREEN='#58a36a', AMBER='#d9a83a', RED='#c8452c', DIM='#5c6875';
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:20px auto 0;border:1px solid #223041;background:#0e141b;padding:14px;font-family:ui-monospace,Consolas,monospace';
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px';
+  head.innerHTML='<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px">the gauge room \u00b7 house systems at a glance</span><span id="gr_master" style="font-size:10px;letter-spacing:.2em"></span>';
+  sec.appendChild(head);
+  var grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px';
+  sec.appendChild(grid);
+  var hd=document.querySelector('header');
+  if(hd&&hd.parentNode) hd.parentNode.insertBefore(sec,hd.nextSibling);
+  else document.body.appendChild(sec);
+  async function collect(){
+    var g={line:navigator.onLine,rail:true,souls:0,active:0,witToday:0,open:0,house:0,taken:0,awaiting:0,flags:0,ban:0,sky:!!localStorage.getItem('hive_wx_full')};
+    var day=Math.floor(Date.now()/864e5), week=Date.now()-7*864e5;
+    try{ await get(ref(db,'roster')); }catch(e){ g.rail=false; }
+    try{ const sr=await get(ref(db,'roster')); if(sr.exists()) g.souls=Object.keys(sr.val()).length; }catch(e){}
+    try{ const sw=await get(ref(db,'witness')); if(sw.exists()){ var wv=sw.val(), seen={};
+      for(var k in wv){ for(var d in wv[k]){ if((wv[k][d].t||0)>=week) seen[k]=1; if(d===String(day)) g.witToday++; } }
+      g.active=Object.keys(seen).length; } }catch(e){}
+    try{ const so=await get(ref(db,'rota')); if(so.exists()){ var ov=so.val();
+      for(var id in ov){ var s=ov[id].status;
+        if(s==='open'){ g.open++; if(ov[id].poster==='the house') g.house++; }
+        else if(s==='taken') g.taken++; else if(s==='awaiting') g.awaiting++; } } }catch(e){}
+    try{ const sf=await get(ref(db,'flags')); if(sf.exists()) g.flags=Object.keys(sf.val()).length; }catch(e){}
+    try{ const sb=await get(ref(db,'ban')); if(sb.exists()) g.ban=Object.keys(sb.val()).length; }catch(e){}
+    return g;
+  }
+  function card(label,value,sub,color){
+    return '<div style="border-left:3px solid '+color+';background:#0a0d12;padding:10px">'
+      +'<div style="font-size:9px;letter-spacing:.2em;color:'+DIM+'">'+label+'</div>'
+      +'<div style="font-size:18px;color:'+color+';margin-top:4px">'+value+'</div>'
+      +'<div style="font-size:10px;color:'+DIM+';margin-top:2px">'+sub+'</div></div>';
+  }
+  function paint(g){
+    var master = (!g.line||!g.rail)?RED : (g.flags>0||!g.sky)?AMBER : GREEN;
+    var mtxt = master===RED?'SYSTEM DOWN' : master===AMBER?'NEEDS EYES' : 'ALL SYSTEMS';
+    var m=document.getElementById('gr_master'); m.style.color=master; m.textContent='\u25cf '+mtxt;
+    grid.innerHTML =
+      card('rail', g.rail?'up':'dark', 'firebase', g.rail?GREEN:RED)
+     +card('line', g.line?'on':'off', 'network', g.line?GREEN:RED)
+     +card('souls', g.souls, g.active+' active', g.souls>0?GREEN:DIM)
+     +card('witness today', g.witToday, 'the pulse', g.witToday>0?GREEN:DIM)
+     +card('deeds open', g.open, 'house '+g.house, g.open>0?GREEN:AMBER)
+     +card('in flight', g.taken+g.awaiting, g.taken+' taken \u00b7 '+g.awaiting+' await', (g.taken+g.awaiting)>0?AMBER:DIM)
+     +card('watchlist', g.flags, 'flags pending', g.flags>0?AMBER:GREEN)
+     +card('banned', g.ban, 'the ban list', g.ban>0?RED:DIM)
+     +card('sky', g.sky?'cached':'none', 'weather', g.sky?GREEN:AMBER);
+  }
+  async function tick(){ try{ paint(await collect()); }catch(e){} }
+  tick(); setInterval(tick,30000);
+}
+</script>
   
 </body>
 </html>
