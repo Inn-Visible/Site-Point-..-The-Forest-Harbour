@@ -430,6 +430,26 @@ window.hiveGuard={blocked:blocked,sanitize:sanitize};
   }catch(e){}
 })();
 </script>
+
+<script>
+(function(){
+  var f=document.querySelector('footer')||document.body;
+  var s=document.createElement('section');
+  s.style.cssText='max-width:700px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+  s.innerHTML='<details style="padding:14px 18px">'
+   +'<summary style="cursor:pointer;text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;letter-spacing:.05em">the hitchhiker\u2019s guide to the rota(s) \u00b7 don\u2019t panic</summary>'
+   +'<div style="margin-top:14px;font-size:11px;line-height:1.9;color:#93a1b0">'
+   +'<span style="color:#e8e4d8">the rota is a promise-market.</span> not a casino, not a court. every line is a promise; the books are the memory.<br>'
+   +'<span style="color:#58a36a">(+) inflow</span> \u00b7 the house wants to <b>get</b> something and pays glyphs. <span style="color:#c8452c">(\u2212) outflow</span> \u00b7 the house wants to <b>give</b> something and be paid.<br>'
+   +'<span style="color:#d9a83a">(\u2713) fulfilled</span> \u00b7 both halves done, the promise lands on the books. <span style="color:#3f7fc1">(\u21c4) turned-over</span> \u00b7 handed to another hand to keep.<br>'
+   +'<span style="color:#e8e4d8">the deed law, in one breath:</span> carry at most two, finish what you lift, leave a proof-line, and a second soul confirms it. that\u2019s the whole law.<br>'
+   +'<span style="color:#e8e4d8">settle through the house.</span> deals that go around the house aren\u2019t deals \u2014 they\u2019re how markets die. the house skims a tithe and keeps the books: in = out + till, always.<br>'
+   +'<span style="color:#5c6875;font-style:italic">disclaimer \u00b7 glyphs are a house currency for a house economy. nothing here is investment advice, a security, or a promise of profit \u2014 only a promise of books that don\u2019t lie. be kind; the ferryman reads the flags. know thyself; do no harm; hold the truth.</span><br>'
+   +'<span style="color:#5c6875">the market sleeps when you do. the books don\u2019t.</span>'
+   +'</div></details>';
+  f.parentNode.insertBefore(s,f);
+})();
+</script>
   
 </body>
 </html>
