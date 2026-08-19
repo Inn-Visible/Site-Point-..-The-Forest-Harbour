@@ -234,6 +234,50 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
   chip.textContent='schema \u00b7 '+cur; apply();
 })();
 </script>
+
+
+<script>
+(function(){
+  var wrap=document.createElement('section');
+  wrap.style.cssText='max-width:700px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;padding:18px 14px;text-align:center';
+  wrap.innerHTML='<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:10px">the runway \u00b7 value in, value out, the books hold</div>';
+  var cv=document.createElement('canvas'); cv.style.cssText='width:100%;display:block';
+  wrap.appendChild(cv);
+  var tally=document.createElement('div'); tally.style.cssText='margin-top:10px;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#5c6875';
+  wrap.appendChild(tally);
+  var fig=document.createElement('div'); fig.style.cssText='margin-top:8px;font-family:Georgia,serif;font-style:italic;color:#5c6875;font-size:11px';
+  fig.textContent='fig. k1 \u2014 the runway \u00b7 every tenth drop stays \u00b7 in = out + till';
+  wrap.appendChild(fig);
+  var anchor=document.querySelector('main .dock')||document.querySelector('main')||document.body;
+  anchor.parentNode.insertBefore(wrap,anchor);
+  var g=cv.getContext('2d'), W,H, dpr=window.devicePixelRatio||1;
+  function fit(){ W=cv.clientWidth||660; H=170; cv.width=W*dpr; cv.height=H*dpr; g.setTransform(dpr,0,0,dpr,0,0); }
+  addEventListener('resize',fit);
+  var drops=[],sparks=[],inflow=0,outflow=0,till=0,idx=0,lastSpawn=0,lastT='';
+  function spawn(){ idx++; drops.push({x:-6,v:0.7+Math.random()*0.7,b:Math.random()*6,tithe:(idx%10===0),done:false}); inflow++; }
+  function loop(now){
+    g.clearRect(0,0,W,H);
+    var cx=W/2, y0=H*0.8;
+    g.strokeStyle='rgba(34,48,65,.9)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,y0+3); g.lineTo(W,y0+3); g.stroke();
+    g.strokeStyle='#d9a83a'; g.lineWidth=2;
+    g.beginPath(); g.moveTo(cx-42,y0); g.lineTo(cx-42,y0-38); g.arc(cx,y0-38,42,Math.PI,0); g.lineTo(cx+42,y0); g.stroke();
+    g.fillStyle='#d9a83a'; g.beginPath(); g.moveTo(cx-8,y0-80); g.lineTo(cx+8,y0-80); g.lineTo(cx+12,y0-64); g.lineTo(cx-12,y0-64); g.closePath(); g.fill();
+    if(now-lastSpawn>650&&drops.length<40){ lastSpawn=now; spawn(); }
+    for(var i=drops.length-1;i>=0;i--){ var d=drops[i]; d.x+=d.v;
+      var y=y0-4+Math.sin(now*0.004+d.b)*1.5;
+      if(d.tithe&&!d.done&&d.x>=cx){ d.done=true; till++; sparks.push({x:cx,y:y0-6}); drops.splice(i,1); continue; }
+      if(d.x>W+8){ outflow++; drops.splice(i,1); continue; }
+      g.fillStyle=d.tithe?'#f1d078':'#d9a83a'; g.beginPath(); g.arc(d.x,y,2.4,0,7); g.fill(); }
+    for(var s=sparks.length-1;s>=0;s--){ var p=sparks[s]; p.y-=1.1;
+      var a=Math.max(0,Math.min(1,(p.y-(y0-70))/64)); g.fillStyle='rgba(241,208,120,'+a.toFixed(2)+')';
+      g.beginPath(); g.arc(p.x,p.y,1.8,0,7); g.fill(); if(p.y<=y0-70) sparks.splice(s,1); }
+    var t='inflow '+inflow+' \u00b7 outflow '+outflow+' \u00b7 till '+till+' \u00b7 in = out + till \u2713';
+    if(t!==lastT){ lastT=t; tally.textContent=t; }
+    requestAnimationFrame(loop);
+  }
+  fit(); requestAnimationFrame(loop);
+})();
+</script>
   
 </body>
 </html>
