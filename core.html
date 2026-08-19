@@ -796,6 +796,26 @@ async function main(){
   tick(); setInterval(tick,30000);
 }
 </script>
+
+<script>
+(function(){
+  if(!localStorage.getItem('hive_user')) return;
+  var room=null;
+  document.querySelectorAll('section').forEach(function(s){ if(!room&&s.textContent.indexOf('gauge room')>-1) room=s; });
+  if(!room) return;
+  room.style.display='none';
+  var brand=document.querySelector('.brand')||document.querySelector('header');
+  brand.style.cursor='pointer';
+  brand.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation();
+    room.style.display=(room.style.display==='none')?'block':'none'; });
+  setInterval(function(){
+    var m=document.getElementById('gr_master'); if(!m) return;
+    var t=m.textContent||'';
+    var col=t.indexOf('DOWN')>-1?'#c8452c':t.indexOf('NEEDS')>-1?'#d9a83a':null;
+    if(col) brand.style.borderBottom='2px solid '+col; else brand.style.borderBottom='none';
+  },5000);
+})();
+</script>
   
 </body>
 </html>
