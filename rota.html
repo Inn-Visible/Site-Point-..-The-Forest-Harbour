@@ -411,8 +411,16 @@ var BLOCK=[
   /\bfor\s+sale\b/i, /\bbuy\s+now\b/i, /\bship(ping)?\s+to\b/i, /\bprice\s+is\b/i,
   /\b(cash\s?app|venmo|zelle|paypal\s+me|wise)\b/i,
   /\b(whats?\s?app|telegram|signal\s+me|discord\.gg|snap\s+me)\b/i,
-  /\b(sell|buy(ing)?)\s+(you|my|your|some)\b/i
-];
+  /\b(sell|buy(ing)?)\s+(you|my|your|some)\b/i,
+  /\b(private|discrete|discreet)\s+(session|time|company)\b/i,
+  /\b(cash\s?only|no\s?strings)\b/i,
+  /\b(looking\s+for|available\s+for|open\s+to)\s+(a\s+)?(good\s+time|company|fun|more)\b/i,
+  /\bcompanionship\b/i,
+  /\b(massage|spa)\s+(service|offered|available)\b/i,
+  /\b(extras|full\s+service|girlfriend\s+experience|gfe)\b/i,
+  /\b(hook\s?up|hang\s+out\s+alone)\b/i,
+  /\b(sugar\s+(daddy|baby|mama))\b/i,
+  /\b(onlyfans|patreon\s+me)\b/i];
 function blocked(t){ return BLOCK.some(function(re){ return re.test(t||''); }); }
 function sanitize(t){ return String(t||'').replace(/[<>&"]/g,'').replace(/\s+/g,' ').trim().slice(0,140); }
 window.hiveGuard={blocked:blocked,sanitize:sanitize};
@@ -449,6 +457,26 @@ window.hiveGuard={blocked:blocked,sanitize:sanitize};
    +'</div></details>';
   f.parentNode.insertBefore(s,f);
 })();
+</script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({ apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:85a8bfa6a75d04ea492835" }); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+function me(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'the ferryman':null); }
+var banned=false;
+async function check(){ try{ const s=await get(ref(db,'ban')); if(!s.exists()){banned=false;return;}
+  var v=s.val(); banned=!!v[me()]; }catch(e){}
+  if(banned){ var n=document.getElementById('banNote'); if(!n){ n=document.createElement('div'); n.id='banNote';
+    n.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99;background:#c8452c;color:#0a0d12;text-align:center;font:11px ui-monospace;padding:8px;letter-spacing:.15em';
+    n.textContent='the door is closed to this hand \u00b7 the house remembers'; document.body.appendChild(n); }
+    document.querySelectorAll('button').forEach(function(b){ if(/take|done|confirm|write|whisper/i.test(b.textContent)) b.disabled=true; });
+  } }
+check(); setInterval(check,4000);
 </script>
   
 </body>
