@@ -721,7 +721,7 @@ function lockdoor(){
 (function(){
   var b=document.createElement('button'); b.className='posbtn';
   b.style.cssText='display:inline;margin-left:10px;background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:2px 8px;cursor:pointer;vertical-align:middle';
-  function label(){ b.textContent=sessionStorage.getItem('hive_pos')?'\u2302 the cove':'\u2609 me'; }
+  function label(){ b.textContent=sessionStorage.getItem('hive_pos')?'\u2303 the cove':'\u2609 indiv.'; }
   b.onclick=function(){
     if(sessionStorage.getItem('hive_pos')){ sessionStorage.removeItem('hive_pos'); location.reload(); return; }
     if(!navigator.geolocation){ alert('no compass on this device'); return; }
