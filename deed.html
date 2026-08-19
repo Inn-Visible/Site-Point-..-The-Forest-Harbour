@@ -148,7 +148,9 @@ async function render(){
           +'<span style="color:#5c6875;min-width:80px">'+d.status+(d.taker?' \u00b7 '+String(d.taker).replace(/[<>&"]/g,''):'')+'</span>';
         var b=document.createElement('button');
         b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;letter-spacing:.08em;padding:4px 10px;cursor:pointer';
-        if(d.status==='open'){ b.textContent='take'; b.onclick=async function(){ d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); }; }
+        if(d.status==='open'){ b.textContent='take'; b.onclick=async function(){ 
+          var carry=0; for(var c2 in v){ var x=v[c2]; if(x.taker===me()&&(x.status==='taken'||x.status==='awaiting')) carry++; } if(carry>=2){ sec.querySelector('#dStat').textContent='carry limit: 2 deeds max'; return; }
+          d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); }; }
         else if(d.status==='taken'&&d.taker===me()){ b.textContent='done'; b.onclick=async function(){ d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); }; }
         else if(d.status==='awaiting'&&(d.poster===me()||isU)){ b.textContent='confirm'; b.onclick=async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); }; }
         else b.style.display='none';
@@ -193,7 +195,6 @@ render();
 })();
 </script>
 
-
 <script>
 (function(){
   if(!localStorage.getItem('hive_user')) return;
@@ -213,7 +214,7 @@ render();
 })();
 </script>
 
-  <script type="module">
+<script type="module">
 import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 let app; try{ app=initializeApp({
@@ -237,15 +238,22 @@ const POOL=[
 (async function(){
   try{
     const snap=await get(ref(db,'rota'));
-    var open=[], all={};
-    if(snap.exists()){ all=snap.val(); for(var id in all){ if(all[id].status==='open') open.push(all[id]); } }
+    var all={}, open=[];
+    if(snap.exists()){ all=snap.val(); for(var id in all){ all[id].id=id; if(all[id].status==='open') open.push(all[id]); } }
+    var week=Date.now()-7*864e5;
+    for(var i=0;i<open.length;i++){ var d=open[i];
+      if(d.poster==='the house'&&(d.when||0)<week){ d.status='expired'; await set(ref(db,'rota/'+d.id),d); } }
+    open=open.filter(function(d){return d.status==='open';});
+    var pop=0;
+    try{ const sw=await get(ref(db,'witness')); if(sw.exists()){ var wv=sw.val(), seen={};
+      for(var k in wv){ for(var dd in wv[k]){ if((wv[k][dd].t||0)>=week) seen[k]=1; } } pop=Object.keys(seen).length; } }catch(e){}
+    var target=Math.min(40,2+pop);
     var houseOpen=open.filter(function(d){return d.poster==='the house';}).length;
     var openAsks=open.map(function(d){return d.ask;});
-    if(houseOpen>=4) return;
-    for(var i=0;i<POOL.length&&houseOpen<4;i++){
-      var p=POOL[i];
-      if(openAsks.indexOf(p[0])>-1) continue;
-      await set(ref(db,'rota/'+String(Date.now())+i),{ask:p[0],need:p[1],mode:p[2],guard:'the house asks',watches:1,value:BASE[p[1]]||10,poster:'the house',status:'open',when:Date.now()});
+    if(houseOpen>=target) return;
+    for(var p=0;p<POOL.length&&houseOpen<target;p++){
+      var it=POOL[p]; if(openAsks.indexOf(it[0])>-1) continue;
+      await set(ref(db,'rota/'+String(Date.now())+p),{ask:it[0],need:it[1],mode:it[2],guard:'the house asks',watches:1,value:BASE[it[1]]||10,poster:'the house',status:'open',when:Date.now()});
       houseOpen++;
     }
   }catch(e){}
