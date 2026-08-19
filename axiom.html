@@ -682,7 +682,7 @@ function lockdoor(){
     var sec=document.createElement('section');
     sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;text-align:center';
       +'<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the wind & the weight of the sky \u00b7 maritime</div>'
-      +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:10px">READING THE HOUSE\u2019S SKY \u00b7 43.9\u00b0N 79.0\u00b0W</div>'
+     +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:10px">READING '+POSLABEL+' SKY \u00b7 '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W</div>'  
       +'<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">wind '+w+' km/h from the '+comp+' \u00b7 force '+b[0]+' \u00b7 '+b[1]+'</div>'
       +'<div style="font-size:11px;color:#5c6875;font-style:italic;margin-top:6px">'+b[2]+'</div>'
       +'<div style="font-size:12px;color:#93a1b0;margin-top:10px">the sky weighs <b style="color:#e8e4d8">'+p+' hPa</b> \u00b7 '+tr+'</div>'
@@ -716,6 +716,23 @@ function lockdoor(){
   .dock{padding:20px 14px}
 }
 </style>
+
+<script>
+(function(){
+  var b=document.createElement('button');
+  b.style.cssText='position:fixed;left:14px;bottom:14px;z-index:70;background:rgba(3,4,7,.65);border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:6px 12px;cursor:pointer;opacity:.75';
+  function label(){ b.textContent=sessionStorage.getItem('hive_pos')?'\u2302 house':'\u2609 me'; }
+  b.onclick=function(){
+    if(sessionStorage.getItem('hive_pos')){ sessionStorage.removeItem('hive_pos'); location.reload(); return; }
+    if(!navigator.geolocation){ alert('no compass on this device'); return; }
+    navigator.geolocation.getCurrentPosition(function(p){
+      sessionStorage.setItem('hive_pos',JSON.stringify({lat:p.coords.latitude,lon:p.coords.longitude}));
+      location.reload();
+    },function(){ alert('the house will keep its own sky'); },{timeout:8000});
+  };
+  label(); document.body.appendChild(b);
+})();
+</script>
   
 </body>
 </html>
