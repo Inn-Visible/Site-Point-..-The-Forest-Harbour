@@ -378,6 +378,63 @@ window.hiveGuard={blocked:blocked,sanitize:sanitize};
   }catch(e){}
 })();
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+if(localStorage.getItem('hive_user')) build();
+function build(){
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:760px;margin:26px auto 0;padding:18px 20px;border:1px dashed #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:10px">the microscope \u00b7 the house\u2019s watchlist</div>';
+  var list=document.createElement('div'); sec.appendChild(list);
+  var banbox=document.createElement('div'); banbox.style.cssText='margin-top:14px;border-top:1px solid #223041;padding-top:10px'; sec.appendChild(banbox);
+  var w=document.querySelector('.weld');
+  if(w&&w.parentNode) w.parentNode.insertBefore(sec,w.nextSibling); else document.body.appendChild(sec);
+  function mk(parent,label,fn){ var b=document.createElement('button'); b.textContent=label;
+    b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:3px 8px;cursor:pointer';
+    b.onclick=fn; parent.appendChild(b); }
+  function safe(s){ return String(s||'').replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,40)||null; }
+  async function render(){
+    list.innerHTML=''; banbox.innerHTML='';
+    try{
+      const sf=await get(ref(db,'flags'));
+      if(sf.exists()){ var fv=sf.val();
+        Object.keys(fv).forEach(function(id){ var f=fv[id];
+          var r=document.createElement('div'); r.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 2px;border-bottom:1px solid #223041;font-size:11px;color:#93a1b0';
+          r.innerHTML='<span style="flex:1;min-width:160px;color:#e8e4d8">'+String(f.ask||'').replace(/[<>&"]/g,'')+'</span>'
+            +'<span style="color:#5c6875">'+String(f.poster||'?').replace(/[<>&"]/g,'')+'</span>'
+            +'<span style="color:#c8452c">'+(f.reason||'flag')+'</span>';
+          mk(r,'dismiss',async function(){ await set(ref(db,'flags/'+id),null); render(); });
+          mk(r,'restore',async function(){ await set(ref(db,'rota/'+id+'/status'),'open'); await set(ref(db,'flags/'+id),null); render(); });
+          mk(r,'ban',async function(){ var k=safe(f.poster); if(k) await set(ref(db,'ban/'+k),{t:Date.now()}); await set(ref(db,'flags/'+id),null); render(); });
+          list.appendChild(r);
+        });
+      } else list.innerHTML='<div style="color:#5c6875;font-style:italic;font-size:11px">the slide is clean \u00b7 nothing caught.</div>';
+    }catch(e){ list.innerHTML='<div style="color:#5c6875;font-style:italic;font-size:11px">the rail is dark.</div>'; }
+    try{
+      const sb=await get(ref(db,'ban'));
+      if(sb.exists()){ var bv=sb.val();
+        var t=document.createElement('div'); t.style.cssText='font-size:10px;letter-spacing:.2em;color:#5c6875;margin-bottom:6px'; t.textContent='BANNED'; banbox.appendChild(t);
+        Object.keys(bv).forEach(function(k){
+          var r=document.createElement('div'); r.style.cssText='display:flex;gap:8px;align-items:center;padding:6px 2px;font-size:11px;color:#c8452c';
+          r.innerHTML='<span style="flex:1">'+k.replace(/[<>&"]/g,'')+'</span>';
+          mk(r,'unban',async function(){ await set(ref(db,'ban/'+k),null); render(); });
+          banbox.appendChild(r);
+        });
+      }
+    }catch(e){}
+  }
+  render();
+}
+</script>
   
 </body>
 </html>
