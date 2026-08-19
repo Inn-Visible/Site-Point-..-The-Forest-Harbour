@@ -246,6 +246,50 @@ async function burnPlain(){
   });
 })();
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+var DAY=864e5;
+function key(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'__founder':null); }
+function toast(m){ var t=document.createElement('div'); t.textContent=m;
+  t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:1000;font:11px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#d9a83a;pointer-events:none';
+  document.body.appendChild(t); setTimeout(function(){t.remove();},1600); }
+async function pow(seed){ var n=0;
+  while(true){ var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(seed+':'+n)); var b=new Uint8Array(buf);
+    if(b[0]===0&&(b[1]>>4)===0) return n; n++; } }
+async function verify(k,day,nonce,prev){ var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(k+':'+day+':'+prev+':'+nonce)); var b=new Uint8Array(buf);
+  return b[0]===0&&(b[1]>>4)===0; }
+window.hiveWitnessVerify=async function(k,day){ try{ const s=await get(ref(db,'witness/'+k+'/'+day)); if(!s.exists()) return false; const v=s.val();
+  return verify(k,day,v.nonce,v.prev); }catch(e){ return false; } };
+var btn=document.createElement('button'); btn.textContent='witness';
+btn.style.cssText='position:fixed;right:14px;bottom:44px;z-index:70;background:rgba(3,4,7,.65);border:1px solid #223041;color:#5c6875;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:6px 12px;cursor:pointer;opacity:.6';
+document.body.appendChild(btn);
+var t0=0;
+btn.addEventListener('pointerdown',function(){ t0=Date.now(); btn.textContent='hold ..'; });
+btn.addEventListener('pointerup',async function(){
+  btn.textContent='witness';
+  if(Date.now()-t0<2000){ toast('hold the witness two seconds'); return; }
+  var k=key(); if(!k){ toast('knock first'); return; }
+  var day=Math.floor(Date.now()/DAY);
+  try{ const ex=await get(ref(db,'witness/'+k+'/'+day)); if(ex.exists()){ toast('already witnessed today'); return; } }catch(e){}
+  var prev=localStorage.getItem('hive_wit_prev')||'0';
+  btn.textContent='grinding ..';
+  var nonce=await pow(k+':'+day+':'+prev);
+  localStorage.setItem('hive_wit_prev',String(nonce));
+  try{ await set(ref(db,'witness/'+k+'/'+day),{nonce:nonce,prev:prev,t:Date.now()}); toast('witnessed \u00b7 the house saw you'); }
+  catch(e){ toast('the rail is dark'); }
+  btn.textContent='witness';
+});
+btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness'; });
+</script>
   
 </body>
 </html>
