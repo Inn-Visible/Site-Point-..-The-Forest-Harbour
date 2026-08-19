@@ -359,7 +359,16 @@ var BLOCK=[
   /\bfor\s+sale\b/i, /\bbuy\s+now\b/i, /\bship(ping)?\s+to\b/i, /\bprice\s+is\b/i,
   /\b(cash\s?app|venmo|zelle|paypal\s+me|wise)\b/i,
   /\b(whats?\s?app|telegram|signal\s+me|discord\.gg|snap\s+me)\b/i,
-  /\b(sell|buy(ing)?)\s+(you|my|your|some)\b/i
+  /\b(sell|buy(ing)?)\s+(you|my|your|some)\b/i,
+  /\b(private|discrete|discreet)\s+(session|time|company)\b/i,
+  /\b(cash\s?only|no\s?strings)\b/i,
+  /\b(looking\s+for|available\s+for|open\s+to)\s+(a\s+)?(good\s+time|company|fun|more)\b/i,
+  /\bcompanionship\b/i,
+  /\b(massage|spa)\s+(service|offered|available)\b/i,
+  /\b(extras|full\s+service|girlfriend\s+experience|gfe)\b/i,
+  /\b(hook\s?up|hang\s+out\s+alone)\b/i,
+  /\b(sugar\s+(daddy|baby|mama))\b/i,
+  /\b(onlyfans|patreon\s+me)\b/i
 ];
 function blocked(t){ return BLOCK.some(function(re){ return re.test(t||''); }); }
 function sanitize(t){ return String(t||'').replace(/[<>&"]/g,'').replace(/\s+/g,' ').trim().slice(0,140); }
