@@ -655,7 +655,7 @@ function lockdoor(){
 <script>
 (function(){
   var d=document.getElementById('st_deep'); if(d) d.style.display='none';
-  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return s;}catch(e){}return{lat:43.9,lon:-79.0};})(); var LAT=HP.lat,LON=HP.lon; var POSLABEL=(sessionStorage.getItem('hive_pos'))?'YOUR':'THE HOUSE\u2019S';
+  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return s;}catch(e){}return{lat:43.9,lon:-79.0};})(); var LAT=HP.lat,LON=HP.lon; var POSLABEL=(sessionStorage.getItem('hive_pos'))?'YOUR':'THE COVE\u2019S';
   var COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   function beaufort(k){
     if(k<1)return[0,'calm','the water lies like glass'];
@@ -721,7 +721,7 @@ function lockdoor(){
 (function(){
   var b=document.createElement('button'); b.className='posbtn';
   b.style.cssText='display:inline;margin-left:10px;background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:2px 8px;cursor:pointer;vertical-align:middle';
-  function label(){ b.textContent=sessionStorage.getItem('hive_pos')?'\u2302 house':'\u2609 me'; }
+  function label(){ b.textContent=sessionStorage.getItem('hive_pos')?'\u2302 the cove':'\u2609 me'; }
   b.onclick=function(){
     if(sessionStorage.getItem('hive_pos')){ sessionStorage.removeItem('hive_pos'); location.reload(); return; }
     if(!navigator.geolocation){ alert('no compass on this device'); return; }
