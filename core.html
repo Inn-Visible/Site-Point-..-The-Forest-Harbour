@@ -753,7 +753,7 @@ async function main(){
     try{ const sb=await get(ref(db,'ban')); if(sb.exists()) g.ban=Object.keys(sb.val()).length; }catch(e){}
     return g;
   }
-  async function rootKeys(){ try{ const r=await fetch(DBURL+'/.json?shallow=true'); const j=await r.json(); return Object.keys(j||{}); }catch(e){ return []; } }
+  async function rootKeys(){ try{ const r=await fetch(DBURL+'/.json?shallow=true'); const j=await r.json(); if(j&&j.error) return []; return Object.keys(j||{}); }catch(e){ return []; } }
   var KNOWN=['roster','witness','rota','flags','ban','keys','emberchain','housebook','contracts','slate'];
   function builtins(S){ return [
     {id:'rail',label:'rail',value:S.rail?'up':'dark',sub:'firebase',color:S.rail?GREEN:RED,fix:'firebase down \u00b7 check network / status, then reload'},
