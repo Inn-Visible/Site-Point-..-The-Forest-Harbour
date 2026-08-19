@@ -12,8 +12,9 @@
   body.light{background:#f2efe6;color:#1c2430}
   header{position:fixed;top:0;left:0;right:0;z-index:2;display:flex;justify-content:space-between;
     padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none}
+  header #flash{margin-right:96px}
   body.light header{color:#6b7684}
-  canvas{position:fixed;inset:0;cursor:crosshair}
+  canvas{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0}
   #tools{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;
     display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;
     background:rgba(10,13,18,.85);border:1px solid var(--line);padding:8px;max-width:94vw}
@@ -23,27 +24,47 @@
   button:hover{border-color:var(--gold);color:var(--gold)}
   button.on{border-color:var(--gold);color:var(--gold)}
   .sw{width:22px;height:22px;border-radius:50%;padding:0}
+  #door{position:fixed;top:8px;right:12px;z-index:3;color:var(--dim);text-decoration:none;
+    font-size:11px;letter-spacing:.2em;border:1px solid var(--line);padding:6px 10px;background:rgba(10,13,18,.7)}
+  #door:hover{color:var(--gold);border-color:var(--gold)}
+  body.light #door{background:rgba(242,239,230,.8);color:#6b7684}
+  #toolsTab{position:fixed;bottom:12px;right:12px;z-index:3;display:none}
 </style>
 </head>
 <body>
 <header><span>THE SLATE</span><span id="flash">draw · share · erase · tiaga-mode</span></header>
+<a id="door" href="axiom.html">axiom ↩</a>
 <canvas id="slate"></canvas>
 <div id="tools">
   <span id="swatches" style="display:flex;gap:6px"></span>
   <input type="range" id="size" min="2" max="26" value="5" style="width:70px">
   <button id="eraseBtn" onclick="erase=!erase;paint()">erase</button>
+  <button id="textBtn" onclick="textMode=!textMode;erase=false;this.classList.toggle('on',textMode)">text</button>
+  <button id="moveBtn" onclick="moveMode=!moveMode;this.classList.toggle('on',moveMode)">move</button>
+  <button onclick="setZoom(z*1.25)">+</button>
+  <button onclick="setZoom(z/1.25)">−</button>
+  <button onclick="z=1;ox=0;oy=0;applyView()">⌂</button>
   <button onclick="undo()">undo</button>
   <button onclick="tiaga()">tiaga-shake</button>
   <button onclick="board()">board</button>
   <button onclick="png()">png</button>
   <button onclick="copy()">copy</button>
   <button onclick="share()">share</button>
+  <button onclick="hideTools()">hide</button>
 </div>
+<button id="toolsTab" onclick="showTools()">tools</button>
 <script>
 const cv=document.getElementById('slate'),x=cv.getContext('2d');
 const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8'],
            light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76']};
 let ci=0,size=5,erase=false,light=false,W,H;
+let z=1,ox=0,oy=0,moveMode=false,textMode=false,panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
+function applyView(){ cv.style.transform='translate('+ox+'px,'+oy+'px) scale('+z+')'; }
+function setZoom(nz){ nz=Math.max(1,Math.min(4,nz)); var cx=W/2,cy=H/2;
+  ox=cx-(cx-ox)*(nz/z); oy=cy-(cy-oy)*(nz/z); z=nz; if(z===1){ox=0;oy=0;} applyView(); }
+function toWorld(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/z,(e.clientY-r.top)/z]; }
+function hideTools(){ document.getElementById('tools').style.display='none'; document.getElementById('toolsTab').style.display='block'; }
+function showTools(){ document.getElementById('tools').style.display='flex'; document.getElementById('toolsTab').style.display='none'; }
 function fit(){
   const dpr=Math.min(2,window.devicePixelRatio||1);
   const old=document.createElement('canvas'); old.width=cv.width; old.height=cv.height;
@@ -77,13 +98,27 @@ function undo(){ const d=undoStack.pop(); if(!d) return; const im=new Image();
 let drawing=false,lx=0,ly=0;
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 cv.addEventListener('pointerdown',function(e){
-  drawing=true; cv.setPointerCapture(e.pointerId); pushUndo();
-  lx=e.clientX; ly=e.clientY; stroke(e.clientX,e.clientY,e.pressure,true);
+  cv.setPointerCapture(e.pointerId);
+  if(moveMode){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
+  var w=toWorld(e);
+  if(textMode){ placeText(w[0],w[1]); return; }
+  drawing=true; pushUndo(); lx=w[0]; ly=w[1]; stroke(w[0],w[1],e.pressure,true);
 });
-cv.addEventListener('pointermove',function(e){ if(drawing) stroke(e.clientX,e.clientY,e.pressure,false); });
+cv.addEventListener('pointermove',function(e){
+  if(panning){ ox=panOX+(e.clientX-panSX); oy=panOY+(e.clientY-panSY); applyView(); return; }
+  if(drawing){ var w=toWorld(e); stroke(w[0],w[1],e.pressure,false); } });
 ['pointerup','pointercancel'].forEach(function(ev){
-  cv.addEventListener(ev,function(){ if(drawing){drawing=false;save();} });
+  cv.addEventListener(ev,function(){ if(panning){panning=false;} if(drawing){drawing=false;save();} });
 });
+function placeText(wx,wy){
+  var t=prompt('the wall says..'); if(!t) return;
+  pushUndo();
+  x.globalCompositeOperation='source-over';
+  x.fillStyle=PAL[light?'light':'dark'][ci];
+  x.font=(size*4)+'px ui-monospace,Consolas,monospace';
+  x.fillText(t,wx,wy);
+  save(); flash('lettered');
+}
 function stroke(px,py,pr,dot){
   const p=(pr&&pr>0&&pr!==0.5)?pr:0.5;
   x.globalCompositeOperation=erase?'destination-out':'source-over';
@@ -98,7 +133,7 @@ function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.w
 function tiaga(){ pushUndo(); let n=0;
   const iv=setInterval(function(){ n++;
     cv.style.transform='translate('+(n%2?7:-7)+'px,0) rotate('+(n%2?1.2:-1.2)+'deg)';
-    if(n>5){ clearInterval(iv); cv.style.transform=''; clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
+    if(n>5){ clearInterval(iv); applyView(); clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
   },45); }
 function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save(); }
 function exportCanvas(){
@@ -123,7 +158,7 @@ function share(){ exportCanvas().toBlob(function(b){
   const d=localStorage.getItem('hive_slate');
   if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
-}catch(e){} paint(); })();
+}catch(e){} paint(); applyView(); })();
 </script>
 </body>
 </html>
