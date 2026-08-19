@@ -638,7 +638,7 @@ let app; try{ app=initializeApp({
 }); }catch(e){ app=getApp(); }
 const db=getDatabase(app);
 var DAY=864e5;
-function key(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'__founder':null); }
+    function key(){ var k=localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'__founder':null); return k?String(k).replace(/[.#$\[\]\/]/g,'-'):null; }
 function toast(m){ var t=document.createElement('div'); t.textContent=m;
   t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:1000;font:11px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#d9a83a;pointer-events:none';
   document.body.appendChild(t); setTimeout(function(){t.remove();},1600); }
