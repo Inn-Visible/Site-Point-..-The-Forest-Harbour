@@ -655,7 +655,7 @@ function lockdoor(){
 <script>
 (function(){
   var d=document.getElementById('st_deep'); if(d) d.style.display='none';
-  var LAT=43.9,LON=-79.0;
+  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return s;}catch(e){}return{lat:43.9,lon:-79.0};})(); var LAT=HP.lat,LON=HP.lon; var POSLABEL=(sessionStorage.getItem('hive_pos'))?'YOUR':'THE HOUSE\u2019S';
   var COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   function beaufort(k){
     if(k<1)return[0,'calm','the water lies like glass'];
