@@ -263,6 +263,45 @@ btn.addEventListener('pointerup',async function(){
 });
 btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness'; });
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+const BASE={order:10,saving:12,curiosity:14,independence:12,idealism:16,vengeance:8,tranquility:8,power:18,honour:12,family:14,romance:12,eating:6,'physical exercise':8,'social contact':8,status:10,acceptance:8};
+const POOL=[
+ ['carry the cove to someone who needs quiet','idealism','performance'],
+ ['witness the sky and name the weather in one line','curiosity','insight'],
+ ['transcribe one page of the codex into plain words','order','catalog'],
+ ['teach one person to read a contract address','idealism','info design'],
+ ['keep the radio company for one watch','social contact','performance'],
+ ['balance one line of the works ledger','saving','catalog'],
+ ['write a field note for the reading nook','curiosity','making sense'],
+ ['hold the witness for a new member','honour','social computation']
+];
+(async function(){
+  try{
+    const snap=await get(ref(db,'rota'));
+    var open=[], all={};
+    if(snap.exists()){ all=snap.val(); for(var id in all){ if(all[id].status==='open') open.push(all[id]); } }
+    var houseOpen=open.filter(function(d){return d.poster==='the house';}).length;
+    var openAsks=open.map(function(d){return d.ask;});
+    if(houseOpen>=4) return;
+    for(var i=0;i<POOL.length&&houseOpen<4;i++){
+      var p=POOL[i];
+      if(openAsks.indexOf(p[0])>-1) continue;
+      await set(ref(db,'rota/'+String(Date.now())+i),{ask:p[0],need:p[1],mode:p[2],guard:'the house asks',watches:1,value:BASE[p[1]]||10,poster:'the house',status:'open',when:Date.now()});
+      houseOpen++;
+    }
+  }catch(e){}
+})();
+</script>
   
 </body>
 </html>
