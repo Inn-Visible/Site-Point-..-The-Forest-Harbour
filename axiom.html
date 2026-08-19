@@ -92,7 +92,6 @@ function lockdoor(){
 
   <div class="molbox">
     <svg class="mol" width="260" height="220" viewBox="0 0 260 220" fill="none" stroke-linecap="round">
-      <!-- the ring bonds -->
       <g stroke="#d8dde3" stroke-width="2">
         <line x1="175" y1="110" x2="152.5" y2="71"/>
         <line x1="152.5" y1="71" x2="107.5" y2="71"/>
@@ -101,20 +100,17 @@ function lockdoor(){
         <line x1="107.5" y1="149" x2="152.5" y2="149"/>
         <line x1="152.5" y1="149" x2="175" y2="110"/>
       </g>
-      <!-- alternating double bonds -->
       <g stroke="#93a1b0" stroke-width="1.4">
         <line x1="165.1" y1="106" x2="147.6" y2="79.6"/>
         <line x1="112.4" y1="79.6" x2="94.9" y2="106"/>
         <line x1="112.4" y1="140.4" x2="147.6" y2="140.4"/>
       </g>
-      <!-- branch bonds -->
       <g stroke="#93a1b0" stroke-width="1.6">
         <line x1="175" y1="110" x2="218" y2="96"/>
         <line x1="85" y1="110" x2="42" y2="124"/>
         <line x1="152.5" y1="71" x2="165" y2="32"/>
         <line x1="107.5" y1="149" x2="95" y2="188"/>
       </g>
-      <!-- ring atoms -->
       <g stroke="#d8dde3" stroke-width="2.5" fill="#0a0d12">
         <circle cx="175" cy="110" r="7"/>
         <circle cx="152.5" cy="71" r="7"/>
@@ -123,7 +119,6 @@ function lockdoor(){
         <circle cx="107.5" cy="149" r="7"/>
         <circle cx="152.5" cy="149" r="7"/>
       </g>
-      <!-- branch atoms -->
       <g stroke="#d8dde3" stroke-width="2" fill="#0a0d12">
         <circle cx="218" cy="96" r="6"/>
         <circle cx="42" cy="124" r="6"/>
@@ -206,6 +201,62 @@ function lockdoor(){
 })();
 </script>
 
+<!-- the obs deck · first impression · schema cycler -->
+<script>
+(function(){
+  var ZONES=[['home','America/Toronto'],['utc','UTC'],['tokyo','Asia/Tokyo'],['berlin','Europe/Berlin'],['denver','America/Denver']];
+  var P={axiom:'#e8e4d8',eigen:'#58a36a',baseline:'#3f7fc1',keystone:'#d9a83a'};
+  var ORDER=['axiom','eigen','baseline','keystone'];
+  var cur=localStorage.getItem('hive_pillar_theme')||'axiom';
+  function hexA(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';}
+  var sec=document.createElement('section'); sec.id='obsdeck';
+  sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;text-align:center;font-family:ui-monospace,Consolas,monospace;position:relative;overflow:hidden';
+  var bar=document.createElement('div'); bar.style.cssText='height:3px;background:'+P[cur]+';box-shadow:0 0 12px '+hexA(P[cur],.7); sec.appendChild(bar);
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #223041';
+  head.innerHTML='<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px">the obs deck \u00b7 what the house sees</span>';
+  var chip=document.createElement('button');
+  chip.style.cssText='background:none;border:1px solid '+P[cur]+';color:'+P[cur]+';font-family:inherit;font-size:10px;letter-spacing:.2em;padding:4px 10px;cursor:pointer';
+  chip.textContent='schema \u00b7 '+cur; chip.title='tap five times to walk the pillars';
+  head.appendChild(chip); sec.appendChild(head);
+  var clocks=document.createElement('div');
+  clocks.style.cssText='display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:18px 12px';
+  sec.appendChild(clocks);
+  var m=document.querySelector('.manifesto');
+  if(m&&m.parentNode) m.parentNode.insertBefore(sec,m.nextSibling);
+  else (document.querySelector('main')||document.body).insertBefore(sec,(document.querySelector('main')||document.body).firstChild);
+  function glyph(h){ return (h>=6&&h<18)?'\u2600':'\u263e'; }
+  function draw(){
+    clocks.innerHTML=ZONES.map(function(z){
+      try{
+        var d=new Date();
+        var hh=+new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'numeric',hour12:false}).format(d);
+        var mm2=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],minute:'2-digit'}).format(d);
+        return '<span style="min-width:96px"><span style="display:block;font-size:9px;letter-spacing:.2em;color:#5c6875">'+glyph(hh)+' '+z[0].toUpperCase()+'</span><b style="display:block;margin-top:4px;font-size:17px;color:'+P[cur]+';text-shadow:0 0 10px '+hexA(P[cur],.5)+'">'+String(hh).padStart(2,'0')+':'+mm2+'</b></span>';
+      }catch(e){ return ''; }
+    }).join('');
+  }
+  draw(); setInterval(draw,30000);
+  var tint=document.createElement('div');
+  tint.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 12%, '+hexA(P[cur],0.07)+', transparent 70%)';
+  document.body.appendChild(tint);
+  var taps=0,last=0;
+  chip.addEventListener('click',function(){ var n=Date.now(); taps=(n-last<900)?taps+1:1; last=n;
+    if(taps>=5){ taps=0; cur=ORDER[(ORDER.indexOf(cur)+1)%ORDER.length]; localStorage.setItem('hive_pillar_theme',cur); apply(); } });
+  function apply(){
+    bar.style.background=P[cur]; bar.style.boxShadow='0 0 12px '+hexA(P[cur],.7);
+    chip.style.borderColor=P[cur]; chip.style.color=P[cur]; chip.textContent='schema \u00b7 '+cur;
+    tint.style.background='radial-gradient(ellipse at 50% 12%, '+hexA(P[cur],0.07)+', transparent 70%)';
+    var ring=document.querySelectorAll('.mol g')[0]; if(ring) ring.setAttribute('stroke',P[cur]);
+    var pulse=document.querySelector('.mol circle.pulse'); if(pulse) pulse.setAttribute('stroke',P[cur]);
+    draw();
+    try{ window.dispatchEvent(new CustomEvent('hive-schema',{detail:cur})); }catch(e){}
+  }
+  apply();
+})();
+</script>
+
+<!-- the sky, tucked under the deck -->
 <script>
 (function(){
   var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
@@ -217,15 +268,16 @@ function lockdoor(){
   var lines={dawn:'dawn watch \u00b7 the fire wakes hungry',noon:'noon watch \u00b7 steady burn',dusk:'dusk watch \u00b7 the tall flame',night:'night watch \u00b7 banked embers'};
   var seas={winter:'winter \u00b7 nights are long',spring:'spring \u00b7 smoky balance',summer:'summer \u00b7 the fire runs eager',autumn:'autumn \u00b7 fog leans on the pit'};
   var el=document.createElement('div');
-  el.style.cssText='max-width:640px;margin:18px auto;padding:12px 14px;border:1px solid #223041;text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#5c6875';
+  el.style.cssText='max-width:900px;margin:10px auto 0;padding:12px 14px;border:1px solid #223041;background:#0e141b;text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#5c6875';
   var elR=document.createElement('span'), elP=document.createElement('span'), elL=document.createElement('span'), elS=document.createElement('span');
   elL.style.color='#93a1b0';
   var elW=document.createElement('div'); elW.style.cssText='margin-top:8px;color:#93a1b0';
   var elB=document.createElement('div'); elB.style.cssText='margin-top:8px';
   el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
   el.appendChild(elW); el.appendChild(elB);
-  var f=document.querySelector('footer')||document.body;
-  f.parentNode.insertBefore(el,f);
+  var od=document.getElementById('obsdeck');
+  if(od&&od.parentNode) od.parentNode.insertBefore(el,od.nextSibling);
+  else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(el,f); }
   function drawCal(){
     var now=new Date(), S=season(now), Wt=watch(now);
     elR.style.color=RC[S]; elR.textContent=RUNE[S]+' ';
@@ -271,30 +323,41 @@ function lockdoor(){
 })();
 </script>
 
+<!-- xenofolders · follows the schema · workbench persists -->
 <script>
 (function(){
-  var ZONES=[['home','America/Toronto'],['utc','UTC'],['tokyo','Asia/Tokyo'],['berlin','Europe/Berlin'],['denver','America/Denver']];
-  var el=document.createElement('div');
-  el.style.cssText='max-width:640px;margin:18px auto;padding:12px 14px;border:1px solid #223041;text-align:center;font:10px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#5c6875';
-  var f=document.querySelector('footer')||document.body;
-  f.parentNode.insertBefore(el,f);
-  function glyph(h){ return (h>=6&&h<18)?'\u2600':'\u263e'; }
-  function draw(){
-    var html='<span style="color:#93a1b0">the obs deck \u00b7 world clock</span><br>';
-    html+=ZONES.map(function(z){
-      try{
-        var d=new Date();
-        var hh=+new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'numeric',hour12:false}).format(d);
-        var mm=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],minute:'2-digit'}).format(d);
-        return '<span style="margin:0 7px;color:#93a1b0">'+glyph(hh)+' '+z[0]+' <b style="color:#d9a83a">'+String(hh).padStart(2,'0')+':'+mm+'</b></span>';
-      }catch(e){ return ''; }
-    }).join('');
-    el.innerHTML=html;
-  }
-  draw(); setInterval(draw,30000);
+  var P={axiom:'#e8e4d8',eigen:'#58a36a',baseline:'#3f7fc1',keystone:'#d9a83a'};
+  var cur=localStorage.getItem('hive_pillar_theme')||'axiom';
+  function hexA(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';}
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:30px auto;border:1px solid #223041;background:#0e141b;font-family:ui-monospace,Consolas,monospace;text-align:left';
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #223041';
+  head.innerHTML='<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px">xenofolders \u00b7 software access \u21c4 workbench</span><span id="xf_schema" style="font-size:10px;letter-spacing:.2em;color:'+P[cur]+'">schema \u00b7 '+cur+'</span>';
+  sec.appendChild(head);
+  var tabs=document.createElement('div'); tabs.style.cssText='display:flex;gap:4px;padding:10px 12px 0;flex-wrap:wrap'; sec.appendChild(tabs);
+  var body=document.createElement('div'); body.style.cssText='padding:16px'; sec.appendChild(body);
+  var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f);
+  var F=['workbench','gis','cad','3d print','schematics','archive']; var curF='workbench';
+  function renderTabs(){ tabs.innerHTML=''; F.forEach(function(x){ var b=document.createElement('button'); b.textContent=x;
+    b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
+    b.onclick=function(){ curF=x; renderTabs(); renderBody(); }; tabs.appendChild(b); }); }
+  function renderBody(){ body.innerHTML='';
+    if(curF==='workbench'){ var ta=document.createElement('textarea'); ta.style.cssText='width:100%;height:160px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:10px';
+      ta.placeholder='the workbench \u00b7 drafts persist on this glass ..'; ta.value=localStorage.getItem('hive_xeno_bench')||'';
+      ta.oninput=function(){ localStorage.setItem('hive_xeno_bench',ta.value); }; body.appendChild(ta); }
+    else { var d=document.createElement('div'); d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
+      d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
+        +({gis:'our own maps \u00b7 layers, parcels, the lay of the land',cad:'our own lines \u00b7 drafts, dimensions, the house drawn true','3d print':'our own objects \u00b7 slice, infill, the house in hand',schematics:'our own circuits \u00b7 nets, nodes, the rail on paper',archive:'eigen keeps the guidebooks \u00b7 the stacks remember'})[curF];
+      body.appendChild(d); } }
+  function apply(){ cur=localStorage.getItem('hive_pillar_theme')||cur;
+    var s=head.querySelector('#xf_schema'); s.style.color=P[cur]; s.textContent='schema \u00b7 '+cur; renderTabs(); }
+  window.addEventListener('hive-schema',apply);
+  renderTabs(); renderBody();
 })();
 </script>
 
+<!-- the lantern deck · 5 taps on open glass -->
 <script>
 (function(){
   var on=localStorage.getItem('hive_pip')==='1';   var COARSE=window.matchMedia&&matchMedia('(pointer:coarse)').matches;   var PH=COARSE?{hex:'#ffb000',rgb:'255,176,0'}:{hex:'#3dff6e',rgb:'61,255,110'};
@@ -334,6 +397,5 @@ function lockdoor(){
 })();
 </script>
 
-  
 </body>
 </html>
