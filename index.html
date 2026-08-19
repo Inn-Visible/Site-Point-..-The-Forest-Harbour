@@ -411,6 +411,18 @@ requestAnimationFrame(frame);
   document.body.insertBefore(s, document.body.firstChild.nextSibling||document.body.firstChild);
 })();
 </script>
+
+<style>
+@media(max-width:700px){
+  body{overflow-x:hidden}
+  header{padding:14px 16px}
+  .cluster{width:min(400px,92vw);height:min(400px,92vw)}
+  .node svg{width:62px;height:62px}
+  .node.center svg{width:84px;height:84px}
+  input,select,textarea{font-size:16px}
+  .dock{padding:20px 14px}
+}
+</style>
  
 </body>
 </html>
