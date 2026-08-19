@@ -259,7 +259,7 @@ function lockdoor(){
 <!-- the sky, tucked under the deck -->
 <script>
 (function(){
-  var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
+  var HOME={lat:43.54,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
   function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
   function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h>=8&&h<17)return'noon'; if(h>=17&&h<21)return'dusk'; return'night';}
   var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
@@ -448,7 +448,7 @@ function lockdoor(){
   function pushHist(){ mHist.push(JSON.stringify(marks)); if(mHist.length>20) mHist.shift(); mFuture.length=0; }
   function undoMarks(){ var s=mHist.pop(); if(s==null) return; mFuture.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   function redoMarks(){ var s=mFuture.pop(); if(s==null) return; mHist.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
-  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return[s.lon,s.lat];}catch(e){}return[-79.0,43.9];})(); var HOME=HP;
+  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return[s.lon,s.lat];}catch(e){}return[-79.0,43.54];})(); var HOME=HP;
   function maxZ(){ return style==='deep'?9:18; }
   function world(z){ return 256*Math.pow(2,z); }
   function project(lon,lat,z){ var s=world(z);
@@ -655,7 +655,7 @@ function lockdoor(){
 <script>
 (function(){
   var d=document.getElementById('st_deep'); if(d) d.style.display='none';
-  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return s;}catch(e){}return{lat:43.9,lon:-79.0};})(); var LAT=HP.lat,LON=HP.lon; var POSLABEL=(sessionStorage.getItem('hive_pos'))?'YOUR':'THE COVE\u2019S';
+  var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return s;}catch(e){}return{lat:43.54,lon:-79.0};})(); var LAT=HP.lat,LON=HP.lon; var POSLABEL=(sessionStorage.getItem('hive_pos'))?'YOUR':'THE COVE\u2019S';
   var COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   function beaufort(k){
     if(k<1)return[0,'calm','the water lies like glass'];
