@@ -151,7 +151,7 @@ async function render(){
         if(d.status==='open'){ b.textContent='take'; b.onclick=async function(){ 
           var carry=0; for(var c2 in v){ var x=v[c2]; if(x.taker===me()&&(x.status==='taken'||x.status==='awaiting')) carry++; } if(carry>=2){ sec.querySelector('#dStat').textContent='carry limit: 2 deeds max'; return; }
           d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+id),d); render(); }; }
-        else if(d.status==='taken'&&d.taker===me()){ b.textContent='done'; b.onclick=async function(){ d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); }; }
+               else if(d.status==='taken'&&d.taker===me()){ b.textContent='done'; b.onclick=async function(){ var pr=prompt('the proof \u00b7 one line, link, or artifact:'); if(pr===null) return; d.proof=String(pr).slice(0,140); d.status='awaiting'; await set(ref(db,'rota/'+id),d); render(); }; }
         else if(d.status==='awaiting'&&(d.poster===me()||isU)){ b.textContent='confirm'; b.onclick=async function(){ d.status='closed'; await set(ref(db,'rota/'+id),d); render(); }; }
         else b.style.display='none';
         r.appendChild(b); board.appendChild(r);
