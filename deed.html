@@ -444,6 +444,26 @@ function build(){
   render();
 }
 </script>
+
+  <script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({ apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:85a8bfa6a75d04ea492835" }); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+function me(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'the ferryman':null); }
+var banned=false;
+async function check(){ try{ const s=await get(ref(db,'ban')); if(!s.exists()){banned=false;return;}
+  var v=s.val(); banned=!!v[me()]; }catch(e){}
+  if(banned){ var n=document.getElementById('banNote'); if(!n){ n=document.createElement('div'); n.id='banNote';
+    n.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99;background:#c8452c;color:#0a0d12;text-align:center;font:11px ui-monospace;padding:8px;letter-spacing:.15em';
+    n.textContent='the door is closed to this hand \u00b7 the house remembers'; document.body.appendChild(n); }
+    document.querySelectorAll('button').forEach(function(b){ if(/take|done|confirm|write|whisper/i.test(b.textContent)) b.disabled=true; });
+  } }
+check(); setInterval(check,4000);
+</script>
   
 </body>
 </html>
