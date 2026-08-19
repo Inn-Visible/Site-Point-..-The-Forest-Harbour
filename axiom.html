@@ -399,5 +399,68 @@ function lockdoor(){
 })();
 </script>
 
+<script>
+(function(){
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the ground \u00b7 what the house stands on</div>'
+    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">TOPOGRAPHY \u00b7 CACHED OFFLINE \u00b7 NO TELEMETRY</div>'
+    +'<div id="mapWrap" style="position:relative;width:100%;height:400px;border:1px solid #223041;overflow:hidden;background:#0a0d12">'
+    +'<canvas id="mapCv" style="width:100%;height:100%;cursor:grab"></canvas>'
+    +'<div id="mapZoom" style="position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px">'
+    +'<button style="background:rgba(10,13,18,.8);border:1px solid #223041;color:#93a1b0;width:28px;height:28px;cursor:pointer">+</button>'
+    +'<button style="background:rgba(10,13,18,.8);border:1px solid #223041;color:#93a1b0;width:28px;height:28px;cursor:pointer">−</button>'
+    +'</div>'
+    +'<div id="mapInfo" style="position:absolute;top:10px;left:10px;font-size:9px;color:#5c6875;letter-spacing:.15em"></div>'
+    +'</div>'
+    +'<div style="margin-top:10px;font-size:10px;color:#5c6875;text-align:center">tiles cached as viewed \u00b7 works offline after first load \u00b7 bathymetry next</div>';
+  var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
+  var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
+  var lat=43.9, lon=-79.0, zoom=10;
+  var dragging=false, lastX=0, lastY=0, offX=0, offY=0;
+  function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; draw(); }
+  window.addEventListener('resize',fit); setTimeout(fit,100);
+  function tileUrl(z,tx,ty){ return 'https://a.tile.opentopomap.org/'+z+'/'+tx+'/'+ty+'.png'; }
+  function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
+  function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*Math.pow(2,z)); }
+  async function loadTile(z,tx,ty){
+    var key='topo_'+z+'_'+tx+'_'+ty;
+    try{ var c=await caches.open('hive-topo'); var m=await c.match(tileUrl(z,tx,ty));
+      if(m) return m; }catch(e){}
+    try{ var r=await fetch(tileUrl(z,tx,ty));
+      if(r.ok){ try{ var c=await caches.open('hive-topo'); c.put(tileUrl(z,tx,ty),r.clone()); }catch(e){} return r; }
+    }catch(e){}
+    return null;
+  }
+  async function draw(){
+    x.clearRect(0,0,cv.width,cv.height);
+    var tx=lon2tile(lon,zoom), ty=lat2tile(lat,zoom);
+    var tiles=3, sz=256;
+    var info=document.getElementById('mapInfo');
+    if(info) info.textContent='zoom '+zoom+' \u00b7 '+tx+','+ty;
+    for(var dy=-1;dy<=1;dy++){
+      for(var dx=-1;dx<=1;dx++){
+        var r=await loadTile(zoom,tx+dx,ty+dy);
+        if(r){ var img=new Image(); img.crossOrigin='anonymous';
+          img.onload=(function(ix,iy){ return function(){
+            x.drawImage(img,(cv.width/2)+(ix-1)*sz+offX,(cv.height/2)+(iy-1)*sz+offY,sz,sz);
+          }; })(dx,dy);
+          var b=await r.blob(); img.src=URL.createObjectURL(b);
+        }
+      }
+    }
+  }
+  cv.addEventListener('pointerdown',function(e){ dragging=true; lastX=e.clientX; lastY=e.clientY; cv.style.cursor='grabbing'; });
+  cv.addEventListener('pointermove',function(e){ if(!dragging) return;
+    offX+=e.clientX-lastX; offY+=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY; draw(); });
+  ['pointerup','pointercancel'].forEach(function(ev){ cv.addEventListener(ev,function(){ dragging=false; cv.style.cursor='grab'; }); });
+  document.querySelectorAll('#mapZoom button').forEach(function(b,i){ b.onclick=function(){
+    if(i===0&&zoom<18) zoom++; else if(i===1&&zoom>3) zoom--;
+    offX=0; offY=0; draw();
+  }; });
+  draw();
+})();
+</script>
+  
 </body>
 </html>
