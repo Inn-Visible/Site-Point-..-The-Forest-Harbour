@@ -311,6 +311,88 @@ const POOL=[
   }catch(e){}
 })();
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+const BASE={order:10,saving:12,curiosity:14,independence:12,idealism:16,vengeance:8,tranquility:8,power:18,honour:12,family:14,romance:12,eating:6,'physical exercise':8,'social contact':8,status:10,acceptance:8};
+const POOLS={
+  object:['a quiet hour','a field note','a torn page','a stranger','a tool','a signal','a silence','a draft','a memory','a threshold','a door','a window','a shadow','a frequency','a compass','a ledger line','a contract','a witness','a glyph','a drop'],
+  quality:['quiet','clarity','rest','honesty','shelter','breath','patience','direction','balance','warmth','light','silence','time','space','truth','focus','depth','grace','stillness','presence'],
+  location:['the cove','the nook','the rail','the pit','the studio','the ledger','the codex','the deck','the garden','the forge','the threshold','the hearth','the watch','the ferry','the spine','the strings','the compound','the runway'],
+  action:['carry','witness','transcribe','teach','balance','hold','write','name','sketch','source','record','tune','calm','shelter','mark','measure','draft','publish','tend','guard'],
+  recipient:['a new member','the house','a stranger','the next watch','the ledger','the codex','the studio','the pit','the garden','the deck','the spine','the strings','the compound','the runway','the till','the books','the rail','the door','the hearth','the ferry']
+};
+const TEMPLATES=[
+ ['action','object','to someone who needs','quality','idealism','performance'],
+ ['witness','the sky and name the weather in one line','curiosity','insight'],
+ ['transcribe','one page of the codex into plain words','order','catalog'],
+ ['teach','someone to read a contract address','idealism','info design'],
+ ['keep','the radio company for one watch','social contact','performance'],
+ ['balance','one line of the works ledger','saving','catalog'],
+ ['write','a field note for the reading nook','curiosity','making sense'],
+ ['hold','the witness for a new member','honour','social computation'],
+ ['action','object','for','recipient','idealism','performance'],
+ ['sketch','the layout of','location','order','info design'],
+ ['source','material for','location','saving','catalog'],
+ ['record','one loop in the studio','baseline','performance'],
+ ['tune','the radio to a new frequency','curiosity','insight'],
+ ['calm','the noise in','location','tranquility','performance'],
+ ['shelter','object','from the weather','honour','performance'],
+ ['mark','the threshold at','location','order','catalog'],
+ ['measure','the depth of','location','curiosity','insight'],
+ ['draft','a contract for','recipient','independence','info design'],
+ ['publish','one page to the codex','idealism','catalog'],
+ ['tend','the garden at','location','family','performance'],
+ ['guard','the door at','location','vengeance','performance']
+];
+function fill(template){
+  var ask='';
+  for(var i=0;i<template.length;i++){
+    var slot=template[i];
+    if(POOLS[slot]){ var pool=POOLS[slot]; ask+=pool[Math.floor(Math.random()*pool.length)]; }
+    else ask+=slot;
+    if(i<template.length-1) ask+=' ';
+  }
+  return ask;
+}
+(async function(){
+  try{
+    const snap=await get(ref(db,'rota'));
+    var all={}, open=[];
+    if(snap.exists()){ all=snap.val(); for(var id in all){ all[id].id=id; if(all[id].status==='open') open.push(all[id]); } }
+    var week=Date.now()-7*864e5;
+    for(var i=0;i<open.length;i++){ var d=open[i];
+      if(d.poster==='the house'&&(d.when||0)<week){ d.status='expired'; await set(ref(db,'rota/'+d.id),d); } }
+    open=open.filter(function(d){return d.status==='open';});
+    var pop=0;
+    try{ const sw=await get(ref(db,'witness')); if(sw.exists()){ var wv=sw.val(), seen={};
+      for(var k in wv){ for(var dd in wv[k]){ if((wv[k][dd].t||0)>=week) seen[k]=1; } } pop=Object.keys(seen).length; } }catch(e){}
+    var target=Math.min(40,2+pop);
+    var houseOpen=open.filter(function(d){return d.poster==='the house';}).length;
+    var openAsks=open.map(function(d){return d.ask;});
+    if(houseOpen>=target) return;
+    var attempts=0;
+    while(houseOpen<target&&attempts<100){
+      attempts++;
+      var t=TEMPLATES[Math.floor(Math.random()*TEMPLATES.length)];
+      var ask=fill(t);
+      if(openAsks.indexOf(ask)>-1) continue;
+      var need=t[t.length-2], mode=t[t.length-1];
+      await set(ref(db,'rota/'+String(Date.now())+attempts),{ask:ask,need:need,mode:mode,guard:'the house asks',watches:1,value:BASE[need]||10,poster:'the house',status:'open',when:Date.now()});
+      openAsks.push(ask);
+      houseOpen++;
+    }
+  }catch(e){}
+})();
+</script>
   
 </body>
 </html>
