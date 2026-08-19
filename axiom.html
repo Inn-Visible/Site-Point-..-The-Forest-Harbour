@@ -337,7 +337,9 @@ function lockdoor(){
   sec.appendChild(head);
   var tabs=document.createElement('div'); tabs.style.cssText='display:flex;gap:4px;padding:10px 12px 0;flex-wrap:wrap'; sec.appendChild(tabs);
   var body=document.createElement('div'); body.style.cssText='padding:16px'; sec.appendChild(body);
-  var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f);
+    var mb=document.querySelector('.molbox');
+  if(mb&&mb.parentNode) mb.parentNode.insertBefore(sec,mb.nextSibling);
+  else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f); }
   var F=['workbench','gis','cad','3d print','schematics','archive']; var curF='workbench';
   function renderTabs(){ tabs.innerHTML=''; F.forEach(function(x){ var b=document.createElement('button'); b.textContent=x;
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
