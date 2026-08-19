@@ -8,10 +8,10 @@
   :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a}
   *{box-sizing:border-box;margin:0}
   html,body{height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,Consolas,monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,Consolas,monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;transition:background-color .5s ease}
   body.light{background:#f2efe6;color:#1c2430}
   header{position:fixed;top:0;left:0;right:0;z-index:2;display:flex;justify-content:space-between;
-    padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none}
+    padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none;transition:color .5s}
   header #flash{margin-right:96px}
   body.light header{color:#6b7684}
   canvas#slate{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0}
@@ -49,6 +49,7 @@
   <button onclick="setZoom(z/1.4)">−</button>
   <button onclick="z=1;ox=0;oy=0;applyView()">⌂</button>
   <button onclick="undo()">undo</button>
+  <button onclick="redo()">fwd</button>
   <button onclick="tiaga()">tiaga-shake</button>
   <button onclick="board()">board</button>
   <button onclick="png()">png</button>
@@ -60,8 +61,8 @@
 <script>
 const cv=document.getElementById('slate'),x=cv.getContext('2d');
 const over=document.getElementById('over'),o=over.getContext('2d');
-const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8'],
-           light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76']};
+const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8','#b07fd9','#d97fa8','#0a0d12'],
+           light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76','#6b4a8f','#a34a7a','#000000']};
 let ci=0,size=5,tsize=28,erase=false,light=false,W,H,DPR=1;
 let z=1,ox=0,oy=0,mode='draw',panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
 let sel=null,selOn=false,moving=null;
@@ -103,12 +104,14 @@ function paint(){
   document.getElementById('eraseBtn').classList.toggle('on',erase);
 }
 function flash(m){ const f=document.getElementById('flash'); f.textContent=m;
-  setTimeout(function(){f.textContent='draw \u00b7 share \u00b7 erase \u00b7 tiaga-mode';},1500); }
-const undoStack=[];
-function pushUndo(){ try{ if(undoStack.length>9) undoStack.shift(); undoStack.push(cv.toDataURL()); }catch(e){} }
-function undo(){ const d=undoStack.pop(); if(!d) return; const im=new Image();
+  setTimeout(function(){f.textContent='draw \u00b7 share \u00b7 erase \u00b7 tiaga-mode';},1800); }
+const undoStack=[],redoStack=[];
+function pushUndo(){ try{ if(undoStack.length>9) undoStack.shift(); undoStack.push(cv.toDataURL()); redoStack.length=0; }catch(e){} }
+function restore(d){ const im=new Image();
   im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height);
   x.drawImage(im,0,0,cv.width,cv.height); x.restore(); moving=null; renderOverlay(); save(); }; im.src=d; }
+function undo(){ const d=undoStack.pop(); if(!d) return; redoStack.push(cv.toDataURL()); restore(d); }
+function redo(){ const d=redoStack.pop(); if(!d) return; undoStack.push(cv.toDataURL()); restore(d); }
 let drawing=false,lx=0,ly=0;
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 cv.addEventListener('pointerdown',function(e){
@@ -186,7 +189,8 @@ function tiaga(){ pushUndo(); let n=0;
     cv.style.transform='translate('+(n%2?7:-7)+'px,0) rotate('+(n%2?1.2:-1.2)+'deg)';
     if(n>5){ clearInterval(iv); applyView(); clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
   },45); }
-function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save(); }
+function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save();
+  flash(light?'bright room \u00b7 the wall goes light \u2014 easy on the eyes':'back to the dark wall'); }
 function exportCanvas(){
   const t=document.createElement('canvas'); t.width=cv.width; t.height=cv.height;
   const c=t.getContext('2d');
