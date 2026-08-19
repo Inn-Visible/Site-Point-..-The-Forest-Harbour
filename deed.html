@@ -341,6 +341,43 @@ function fill(template){
   }catch(e){}
 })();
 </script>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({
+  apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:852474450672:web:85a8bfa6a75d04ea492835"
+}); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+var BLOCK=[
+  /https?:\/\//i, /www\./i, /\b\.com\b/i, /\b\.io\b/i, /\b\.gg\b/i, /\b\.xyz\b/i,
+  /@[a-z0-9.-]+\.[a-z]{2,}/i, /0x[0-9a-f]{20,}/i, /\+?\d[\d\s().-]{7,}/,
+  /\b(dm|pm|msg)\s+me\b/i, /\bmeet\s+(up|me)\b/i, /\bcontact\s+me\b/i, /\bhit\s+me\s+up\b/i,
+  /\bfor\s+sale\b/i, /\bbuy\s+now\b/i, /\bship(ping)?\s+to\b/i, /\bprice\s+is\b/i,
+  /\b(cash\s?app|venmo|zelle|paypal\s+me|wise)\b/i,
+  /\b(whats?\s?app|telegram|signal\s+me|discord\.gg|snap\s+me)\b/i,
+  /\b(sell|buy(ing)?)\s+(you|my|your|some)\b/i
+];
+function blocked(t){ return BLOCK.some(function(re){ return re.test(t||''); }); }
+function sanitize(t){ return String(t||'').replace(/[<>&"]/g,'').replace(/\s+/g,' ').trim().slice(0,140); }
+window.hiveGuard={blocked:blocked,sanitize:sanitize};
+(async function(){
+  try{
+    const snap=await get(ref(db,'rota'));
+    if(!snap.exists()) return;
+    const v=snap.val();
+    for(var id in v){ var d=v[id];
+      if(d.status==='open' && blocked(d.ask||'')){
+        await set(ref(db,'rota/'+id), Object.assign({},d,{status:'removed',removedBy:'guard',t2:Date.now()}));
+        await set(ref(db,'flags/'+id),{ask:d.ask,poster:d.poster,t:Date.now(),reason:'auto-guard'});
+      }
+    }
+  }catch(e){}
+})();
+</script>
   
 </body>
 </html>
