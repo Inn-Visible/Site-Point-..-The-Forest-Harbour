@@ -404,8 +404,15 @@ function lockdoor(){
   var sec=document.createElement('section');
   sec.style.cssText='max-width:900px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
   sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the ground \u00b7 what the house stands on</div>'
-    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">CACHED OFFLINE \u00b7 NO TELEMETRY</div>'
-    +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;flex-wrap:wrap"></div>'
+    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">CACHED OFFLINE \u00b7 NO TELEMETRY \u00b7 YOUR MARKS STAY PINNED</div>'
+    +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;flex-wrap:wrap"></div>'
+    +'<div id="toolRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">'
+    +'<button id="t_pan" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">pan</button>'
+    +'<button id="t_draw" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">draw</button>'
+    +'<button id="t_life" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">life</button>'
+    +'<button id="t_hide" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">hide</button>'
+    +'<button id="t_clear" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>'
+    +'</div>'
     +'<div style="position:relative;width:100%;height:420px;border:1px solid #223041;overflow:hidden;background:#0a0d12">'
     +'<canvas id="mapCv" style="width:100%;height:100%;cursor:grab"></canvas>'
     +'<div style="position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px">'
@@ -414,7 +421,7 @@ function lockdoor(){
     +'</div>'
     +'<div id="mapInfo" style="position:absolute;top:8px;left:10px;font-size:9px;color:#5c6875;letter-spacing:.15em"></div>'
     +'</div>'
-    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">tiles cached as viewed \u00b7 offline after first load \u00b7 \u00a9 OSM \u00b7 \u00a9 CARTO \u00b7 \u00a9 OpenTopoMap \u00b7 \u00a9 Esri</div>';
+    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw = doodle the world \u00b7 life = pin a sighting \u00b7 marks saved to this browser \u00b7 \u00a9 OSM \u00b7 \u00a9 CARTO \u00b7 \u00a9 OpenTopoMap \u00b7 \u00a9 Esri</div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
   var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
   var STYLE={dark:'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
@@ -422,6 +429,10 @@ function lockdoor(){
              voy:'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
              deep:'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'};
   var style='dark', zoom=12, cx=0, cy=0, IMG={}, pending={};
+  var tool='pan', showMarks=true, curStroke=null;
+  var marks={strokes:[],pins:[]};
+  try{ marks=JSON.parse(localStorage.getItem('hive_map_marks'))||{strokes:[],pins:[]}; }catch(e){}
+  function saveMarks(){ try{ localStorage.setItem('hive_map_marks',JSON.stringify(marks)); }catch(e){} }
   var HOME=[-79.0,43.9];
   function world(z){ return 256*Math.pow(2,z); }
   function project(lon,lat,z){ var s=world(z);
@@ -429,6 +440,8 @@ function lockdoor(){
   function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height;
     var p=project(HOME[0],HOME[1],zoom); cx=p[0]; cy=p[1]; draw(); }
   window.addEventListener('resize',fit); setTimeout(fit,120);
+  function screenToFrac(e){ var r=cv.getBoundingClientRect(); var sx=e.clientX-r.left, sy=e.clientY-r.top;
+    var w=world(zoom); return [(cx-cv.width/2+sx)/w,(cy-cv.height/2+sy)/w]; }
   function tileUrl(z,tx,ty){ return STYLE[style].replace('{z}',z).replace('{x}',tx).replace('{y}',ty); }
   function loadTile(z,tx,ty){ var u=tileUrl(z,tx,ty);
     return caches.open('hive-topo').then(function(c){ return c.match(u); }).catch(function(){return null;}).then(function(m){
@@ -440,6 +453,17 @@ function lockdoor(){
     loadTile(zoom,tx,ty).then(function(r){ pending[k]=false; if(!r) return;
       r.blob().then(function(b){ var img=new Image(); img.onload=function(){ IMG[k]=img; draw(); }; img.src=URL.createObjectURL(b); }); });
   }
+  function drawMarks(tlx,tly){
+    var w=world(zoom); x.lineCap='round'; x.lineJoin='round';
+    var all=curStroke?marks.strokes.concat([curStroke]):marks.strokes;
+    all.forEach(function(s){ if(!s.pts||s.pts.length<1) return;
+      x.strokeStyle='#d9a83a'; x.lineWidth=2; x.beginPath();
+      s.pts.forEach(function(p,i){ var px=p[0]*w-tlx, py=p[1]*w-tly; i?x.lineTo(px,py):x.moveTo(px,py); });
+      x.stroke(); });
+    marks.pins.forEach(function(p){ var px=p[0]*w-tlx, py=p[1]*w-tly;
+      x.fillStyle='#58a36a'; x.beginPath(); x.arc(px,py,4,0,7); x.fill();
+      x.fillStyle='#e8e4d8'; x.font='9px ui-monospace,Consolas,monospace'; x.fillText(p[2]||'',px+6,py+3); });
+  }
   function draw(){
     x.clearRect(0,0,cv.width,cv.height);
     var tlx=cx-cv.width/2, tly=cy-cv.height/2;
@@ -450,14 +474,33 @@ function lockdoor(){
       if(IMG[k]) x.drawImage(IMG[k], tx*256-tlx, ty*256-tly, 256,256);
       ensure(tx,ty);
     }
+    if(showMarks) drawMarks(tlx,tly);
     var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom;
   }
   var drag=false,lx=0,ly=0;
-  cv.addEventListener('pointerdown',function(e){ drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; });
-  cv.addEventListener('pointermove',function(e){ if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw(); });
-  ['pointerup','pointercancel'].forEach(function(ev){ cv.addEventListener(ev,function(){ drag=false; cv.style.cursor='grab'; }); });
+  cv.addEventListener('pointerdown',function(e){
+    if(tool==='draw'){ curStroke={pts:[screenToFrac(e)]}; return; }
+    if(tool==='life'){ var fr=screenToFrac(e); var lab=prompt('what lives here?');
+      if(lab){ marks.pins.push([fr[0],fr[1],String(lab).slice(0,16)]); saveMarks(); draw(); } return; }
+    drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing';
+  });
+  cv.addEventListener('pointermove',function(e){
+    if(tool==='draw'&&curStroke){ curStroke.pts.push(screenToFrac(e)); draw(); return; }
+    if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw();
+  });
+  ['pointerup','pointercancel'].forEach(function(ev){ cv.addEventListener(ev,function(){
+    if(curStroke){ marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
+    drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; }); });
   document.getElementById('zIn').onclick=function(){ if(zoom<18){ zoom++; cx*=2; cy*=2; draw(); } };
   document.getElementById('zOut').onclick=function(){ if(zoom>3){ zoom--; cx/=2; cy/=2; draw(); } };
+  function setTool(t){ tool=t; cv.style.cursor=(t==='pan')?'grab':'crosshair';
+    ['pan','draw','life'].forEach(function(k){ var b=document.getElementById('t_'+k);
+      var on=k===t; b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0'; }); }
+  document.getElementById('t_pan').onclick=function(){setTool('pan');};
+  document.getElementById('t_draw').onclick=function(){setTool('draw');};
+  document.getElementById('t_life').onclick=function(){setTool('life');};
+  document.getElementById('t_hide').onclick=function(){ showMarks=!showMarks; draw(); };
+  document.getElementById('t_clear').onclick=function(){ if(confirm('wipe your marks from the map?')){ marks={strokes:[],pins:[]}; saveMarks(); draw(); } };
   function setStyle(s){ style=s;
     Object.keys(STYLE).forEach(function(k){ var b=document.getElementById('st_'+k); if(!b) return;
       var on=k===s; b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0'; });
@@ -466,46 +509,44 @@ function lockdoor(){
   Object.keys(STYLE).forEach(function(k){ var b=document.createElement('button'); b.id='st_'+k; b.textContent=k;
     b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer';
     b.onclick=function(){ setStyle(k); }; row.appendChild(b); });
-  setStyle('dark');
+  setStyle('dark'); setTool('pan');
 })();
 </script>
 
 <script>
 (function(){
   var B=[
-    ['exosphere','700 \u2013 10,000 km','where the house leaks into space',3],
-    ['thermopause','~700 km','the exobase \u00b7 last breath of air',1],
-    ['thermosphere','80 \u2013 700 km','aurora live here \u00b7 iss orbits',3],
-    ['mesopause','~80 km','the coldest place on earth',1],
-    ['mesosphere','50 \u2013 80 km','meteors burn here',3],
-    ['stratopause','~50 km','the ceiling of ozone',1],
-    ['stratosphere','12 \u2013 50 km','the ozone layer \u00b7 jets cruise',3],
-    ['tropopause','~12 km','the k\u00e1rm\u00e1n-adjacent lid',1],
-    ['troposphere','0 \u2013 12 km','weather \u00b7 the house \u00b7 you',3]
+    ['soil','0 \u2013 0.3 m','roots \u00b7 the garden',1],
+    ['crust','0 \u2013 35 km','the house stands here',3],
+    ['moho','~35 km','crust meets mantle',1],
+    ['upper mantle','35 \u2013 670 km','slow stone rivers',3],
+    ['lower mantle','670 \u2013 2,890 km','the deep engine',3],
+    ['gutenberg','~2,890 km','the core-mantle boundary',1],
+    ['outer core','2,890 \u2013 5,150 km','liquid iron \u00b7 the magnetic field',3],
+    ['inner core','5,150 \u2013 6,371 km','a solid iron moon \u00b7 the house\u2019s heart',3]
   ];
   var sec=document.createElement('section');
   sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
-  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the sky, in bands \u00b7 atmosphere \u2192 stratosphere</div>'
-    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">EVERY LAYER THE HOUSE LOOKS THROUGH</div>'
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the ground, in bands \u00b7 lithosphere</div>'
+    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">EVERY LAYER BENEATH THE HOUSE</div>'
     +'<div style="display:flex;gap:14px;align-items:stretch">'
-    +'<div id="atCol" style="flex:0 0 150px;display:flex;flex-direction:column;border:1px solid #223041"></div>'
-    +'<div id="atRead" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px">'
-    +'<div id="atName" style="font-size:14px;color:#d9a83a;letter-spacing:.15em">troposphere</div>'
-    +'<div id="atAlt" style="font-size:11px;color:#93a1b0;margin-top:6px">0 \u2013 12 km</div>'
-    +'<div id="atFact" style="font-size:11px;color:#5c6875;margin-top:8px;font-style:italic">weather \u00b7 the house \u00b7 you</div>'
+    +'<div id="liCol" style="flex:0 0 150px;display:flex;flex-direction:column;border:1px solid #223041"></div>'
+    +'<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px">'
+    +'<div id="liName" style="font-size:14px;color:#d98a3a;letter-spacing:.15em">crust</div>'
+    +'<div id="liAlt" style="font-size:11px;color:#93a1b0;margin-top:6px">0 \u2013 35 km</div>'
+    +'<div id="liFact" style="font-size:11px;color:#5c6875;margin-top:8px;font-style:italic">the house stands here</div>'
     +'</div></div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
-  var col=document.getElementById('atCol');
+  var col=document.getElementById('liCol');
   B.forEach(function(b,i){
     var d=document.createElement('div');
-    d.style.cssText='flex:'+b[3]+' 1 0;display:flex;align-items:center;justify-content:center;font-size:9px;letter-spacing:.15em;color:#e8e4d8;cursor:pointer;border-bottom:1px solid rgba(34,48,65,.6);';
-    var t=Math.min(1,i/(B.length-1));
-    d.style.background='hsl(222,45%,'+Math.round(6+t*2)+'%)';
+    d.style.cssText='flex:'+b[3]+' 1 0;display:flex;align-items:center;justify-content:center;font-size:9px;letter-spacing:.12em;color:#e8e4d8;cursor:pointer;border-bottom:1px solid rgba(34,48,65,.6);';
+    d.style.background='hsl('+(20+i*8)+',45%,'+Math.round(8+i*3)+'%)';
     d.textContent=b[0];
     d.onmouseenter=d.onclick=function(){
-      document.getElementById('atName').textContent=b[0];
-      document.getElementById('atAlt').textContent=b[1];
-      document.getElementById('atFact').textContent=b[2];
+      document.getElementById('liName').textContent=b[0];
+      document.getElementById('liAlt').textContent=b[1];
+      document.getElementById('liFact').textContent=b[2];
     };
     col.appendChild(d);
   });
