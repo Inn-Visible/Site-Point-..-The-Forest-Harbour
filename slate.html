@@ -215,5 +215,38 @@ function share(){ exportCanvas().toBlob(function(b){
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
 }catch(e){} paint(); applyView(); })();
 </script>
+
+  <script>
+(function(){
+  var cv=document.getElementById('slate'); if(!cv) return;
+  var x=cv.getContext('2d');
+  var tools=document.getElementById('tools');
+  if(tools){ var b=document.createElement('button'); b.textContent='img';
+    b.onclick=function(){ inp.click(); };
+    tools.insertBefore(b, document.getElementById('eraseBtn')); }
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.style.display='none';
+  inp.onchange=function(){ if(inp.files&&inp.files[0]) place(inp.files[0]); inp.value=''; };
+  document.body.appendChild(inp);
+  function place(file){ var r=new FileReader();
+    r.onload=function(){ var im=new Image(); im.onload=function(){ drawImg(im); }; im.src=r.result; };
+    r.readAsDataURL(file); }
+  function drawImg(im){
+    var W=cv.clientWidth,H=cv.clientHeight;
+    var s=Math.min((W*0.7)/im.width,(H*0.7)/im.height,1);
+    var w=im.width*s,h=im.height*s;
+    x.save(); x.globalCompositeOperation='source-over';
+    x.drawImage(im,(W-w)/2,(H-h)/2,w,h); x.restore();
+    try{ localStorage.setItem('hive_slate',cv.toDataURL()); }catch(e){}
+    var f=document.getElementById('flash'); if(f){ var o=f.textContent; f.textContent='image on the wall \u00b7 lift to move it';
+      setTimeout(function(){f.textContent=o;},1600); }
+  }
+  window.addEventListener('paste',function(e){
+    var it=(e.clipboardData||window.clipboardData).items; if(!it) return;
+    for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')>-1){ var f=it[i].getAsFile();
+      if(f){ place(f); e.preventDefault(); } } }
+  });
+})();
+</script>
+  
 </body>
 </html>
