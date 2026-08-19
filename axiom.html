@@ -516,6 +516,48 @@ function lockdoor(){
 <script>
 (function(){
   var B=[
+    ['exosphere','700 \u2013 10,000 km','where the house leaks into space',3],
+    ['thermopause','~700 km','the exobase \u00b7 last breath of air',1],
+    ['thermosphere','80 \u2013 700 km','aurora live here \u00b7 iss orbits',3],
+    ['mesopause','~80 km','the coldest place on earth',1],
+    ['mesosphere','50 \u2013 80 km','meteors burn here',3],
+    ['stratopause','~50 km','the ceiling of ozone',1],
+    ['stratosphere','12 \u2013 50 km','the ozone layer \u00b7 jets cruise',3],
+    ['tropopause','~12 km','the k\u00e1rm\u00e1n-adjacent lid',1],
+    ['troposphere','0 \u2013 12 km','weather \u00b7 the house \u00b7 you',3]
+  ];
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the sky, in bands \u00b7 atmosphere \u2192 stratosphere</div>'
+    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">EVERY LAYER THE HOUSE LOOKS THROUGH</div>'
+    +'<div style="display:flex;gap:14px;align-items:stretch">'
+    +'<div id="atCol" style="flex:0 0 150px;display:flex;flex-direction:column;border:1px solid #223041"></div>'
+    +'<div id="atRead" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px">'
+    +'<div id="atName" style="font-size:14px;color:#d9a83a;letter-spacing:.15em">troposphere</div>'
+    +'<div id="atAlt" style="font-size:11px;color:#93a1b0;margin-top:6px">0 \u2013 12 km</div>'
+    +'<div id="atFact" style="font-size:11px;color:#5c6875;margin-top:8px;font-style:italic">weather \u00b7 the house \u00b7 you</div>'
+    +'</div></div>';
+  var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
+  var col=document.getElementById('atCol');
+  B.forEach(function(b,i){
+    var d=document.createElement('div');
+    d.style.cssText='flex:'+b[3]+' 1 0;display:flex;align-items:center;justify-content:center;font-size:9px;letter-spacing:.15em;color:#e8e4d8;cursor:pointer;border-bottom:1px solid rgba(34,48,65,.6);';
+    var t=Math.min(1,i/(B.length-1));
+    d.style.background='hsl(222,45%,'+Math.round(6+t*2)+'%)';
+    d.textContent=b[0];
+    d.onmouseenter=d.onclick=function(){
+      document.getElementById('atName').textContent=b[0];
+      document.getElementById('atAlt').textContent=b[1];
+      document.getElementById('atFact').textContent=b[2];
+    };
+    col.appendChild(d);
+  });
+})();
+</script>
+  
+<script>
+(function(){
+  var B=[
     ['soil','0 \u2013 0.3 m','roots \u00b7 the garden',1],
     ['crust','0 \u2013 35 km','the house stands here',3],
     ['moho','~35 km','crust meets mantle',1],
