@@ -14,7 +14,8 @@
     padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none}
   header #flash{margin-right:96px}
   body.light header{color:#6b7684}
-  canvas{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0}
+  canvas#slate{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0}
+  canvas#over{position:fixed;inset:0;pointer-events:none;transform-origin:0 0;z-index:1}
   #tools{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;
     display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;
     background:rgba(10,13,18,.85);border:1px solid var(--line);padding:8px;max-width:94vw}
@@ -35,14 +36,17 @@
 <header><span>THE SLATE</span><span id="flash">draw · share · erase · tiaga-mode</span></header>
 <a id="door" href="axiom.html">axiom ↩</a>
 <canvas id="slate"></canvas>
+<canvas id="over"></canvas>
 <div id="tools">
   <span id="swatches" style="display:flex;gap:6px"></span>
-  <input type="range" id="size" min="2" max="26" value="5" style="width:70px">
+  <input type="range" id="size" min="2" max="26" value="5" style="width:60px" title="brush">
+  <input type="range" id="tsize" min="8" max="160" value="28" style="width:60px" title="lettering">
   <button id="eraseBtn" onclick="erase=!erase;paint()">erase</button>
-  <button id="textBtn" onclick="textMode=!textMode;erase=false;this.classList.toggle('on',textMode)">text</button>
-  <button id="moveBtn" onclick="moveMode=!moveMode;this.classList.toggle('on',moveMode)">move</button>
-  <button onclick="setZoom(z*1.25)">+</button>
-  <button onclick="setZoom(z/1.25)">−</button>
+  <button id="textBtn" onclick="setMode('text')">text</button>
+  <button id="liftBtn" onclick="setMode('lift')">lift</button>
+  <button id="moveBtn" onclick="setMode('move')">move</button>
+  <button onclick="setZoom(z*1.4)">+</button>
+  <button onclick="setZoom(z/1.4)">−</button>
   <button onclick="z=1;ox=0;oy=0;applyView()">⌂</button>
   <button onclick="undo()">undo</button>
   <button onclick="tiaga()">tiaga-shake</button>
@@ -55,23 +59,32 @@
 <button id="toolsTab" onclick="showTools()">tools</button>
 <script>
 const cv=document.getElementById('slate'),x=cv.getContext('2d');
+const over=document.getElementById('over'),o=over.getContext('2d');
 const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8'],
            light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76']};
-let ci=0,size=5,erase=false,light=false,W,H;
-let z=1,ox=0,oy=0,moveMode=false,textMode=false,panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
-function applyView(){ cv.style.transform='translate('+ox+'px,'+oy+'px) scale('+z+')'; }
-function setZoom(nz){ nz=Math.max(1,Math.min(4,nz)); var cx=W/2,cy=H/2;
+let ci=0,size=5,tsize=28,erase=false,light=false,W,H,DPR=1;
+let z=1,ox=0,oy=0,mode='draw',panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
+let sel=null,selOn=false,moving=null;
+function applyView(){ var t='translate('+ox+'px,'+oy+'px) scale('+z+')'; cv.style.transform=t; over.style.transform=t; }
+function setZoom(nz){ nz=Math.max(0.5,Math.min(8,nz)); var cx=W/2,cy=H/2;
   ox=cx-(cx-ox)*(nz/z); oy=cy-(cy-oy)*(nz/z); z=nz; if(z===1){ox=0;oy=0;} applyView(); }
 function toWorld(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/z,(e.clientY-r.top)/z]; }
+function setMode(m){ mode=(mode===m)?'draw':m; erase=false;
+  document.getElementById('textBtn').classList.toggle('on',mode==='text');
+  document.getElementById('liftBtn').classList.toggle('on',mode==='lift');
+  document.getElementById('moveBtn').classList.toggle('on',mode==='move');
+  paint(); }
 function hideTools(){ document.getElementById('tools').style.display='none'; document.getElementById('toolsTab').style.display='block'; }
 function showTools(){ document.getElementById('tools').style.display='flex'; document.getElementById('toolsTab').style.display='none'; }
 function fit(){
-  const dpr=Math.min(2,window.devicePixelRatio||1);
+  DPR=Math.min(2,window.devicePixelRatio||1);
   const old=document.createElement('canvas'); old.width=cv.width; old.height=cv.height;
   if(cv.width) old.getContext('2d').drawImage(cv,0,0);
   W=innerWidth; H=innerHeight;
-  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
-  x.setTransform(dpr,0,0,dpr,0,0); x.lineCap='round'; x.lineJoin='round';
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  over.width=W*DPR; over.height=H*DPR; over.style.width=W+'px'; over.style.height=H+'px';
+  x.setTransform(DPR,0,0,DPR,0,0); x.lineCap='round'; x.lineJoin='round';
+  o.setTransform(DPR,0,0,DPR,0,0);
   if(old.width) x.drawImage(old,0,0,old.width,old.height,0,0,W,H);
 }
 addEventListener('resize',fit); fit();
@@ -81,6 +94,7 @@ PAL.dark.forEach(function(c,i){
   sw.appendChild(b);
 });
 document.getElementById('size').oninput=function(){size=+this.value;};
+document.getElementById('tsize').oninput=function(){tsize=+this.value;};
 function paint(){
   const pal=PAL[light?'light':'dark'];
   sw.querySelectorAll('.sw').forEach(function(b,i){
@@ -94,28 +108,65 @@ const undoStack=[];
 function pushUndo(){ try{ if(undoStack.length>9) undoStack.shift(); undoStack.push(cv.toDataURL()); }catch(e){} }
 function undo(){ const d=undoStack.pop(); if(!d) return; const im=new Image();
   im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height);
-  x.drawImage(im,0,0,cv.width,cv.height); x.restore(); save(); }; im.src=d; }
+  x.drawImage(im,0,0,cv.width,cv.height); x.restore(); moving=null; renderOverlay(); save(); }; im.src=d; }
 let drawing=false,lx=0,ly=0;
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 cv.addEventListener('pointerdown',function(e){
   cv.setPointerCapture(e.pointerId);
-  if(moveMode){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
   var w=toWorld(e);
-  if(textMode){ placeText(w[0],w[1]); return; }
+  if(mode==='move'){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
+  if(mode==='lift'){
+    if(moving){ stamp(); return; }
+    sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; selOn=true; return;
+  }
+  if(mode==='text'){ placeText(w[0],w[1]); return; }
   drawing=true; pushUndo(); lx=w[0]; ly=w[1]; stroke(w[0],w[1],e.pressure,true);
 });
 cv.addEventListener('pointermove',function(e){
+  var w=toWorld(e);
   if(panning){ ox=panOX+(e.clientX-panSX); oy=panOY+(e.clientY-panSY); applyView(); return; }
-  if(drawing){ var w=toWorld(e); stroke(w[0],w[1],e.pressure,false); } });
-['pointerup','pointercancel'].forEach(function(ev){
-  cv.addEventListener(ev,function(){ if(panning){panning=false;} if(drawing){drawing=false;save();} });
+  if(selOn&&sel){ sel.x1=w[0]; sel.y1=w[1]; renderOverlay(); return; }
+  if(moving){ moving.x=w[0]-moving.gx; moving.y=w[1]-moving.gy; renderOverlay(); return; }
+  if(drawing) stroke(w[0],w[1],e.pressure,false);
 });
+['pointerup','pointercancel'].forEach(function(ev){
+  cv.addEventListener(ev,function(){
+    if(panning){ panning=false; return; }
+    if(selOn){ selOn=false; lift(); return; }
+    if(drawing){ drawing=false; save(); }
+  });
+});
+function normSel(){ var a=Math.min(sel.x0,sel.x1),b=Math.min(sel.y0,sel.y1),
+  c=Math.max(sel.x0,sel.x1),d=Math.max(sel.y0,sel.y1); return {x:a,y:b,w:c-a,h:d-b}; }
+function lift(){
+  var r=normSel(); sel=null;
+  if(r.w<6||r.h<6){ renderOverlay(); return; }
+  pushUndo();
+  var dw=Math.max(1,Math.round(r.w*DPR)), dh=Math.max(1,Math.round(r.h*DPR));
+  var t=document.createElement('canvas'); t.width=dw; t.height=dh;
+  t.getContext('2d').drawImage(cv,Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh,0,0,dw,dh);
+  x.save(); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='destination-out';
+  x.fillRect(Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh); x.restore();
+  moving={img:t,w:r.w,h:r.h,x:r.x,y:r.y,gx:0,gy:0};
+  renderOverlay(); save(); flash('lifted \u00b7 tap to set it down');
+}
+function stamp(){
+  if(!moving) return;
+  x.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h);
+  moving=null; renderOverlay(); save(); flash('set down');
+}
+function renderOverlay(){
+  o.clearRect(0,0,W,H);
+  if(sel){ var r=normSel(); o.strokeStyle='#d9a83a'; o.setLineDash([4,3]); o.lineWidth=1;
+    o.strokeRect(r.x,r.y,r.w,r.h); o.setLineDash([]); }
+  if(moving){ o.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h); }
+}
 function placeText(wx,wy){
   var t=prompt('the wall says..'); if(!t) return;
   pushUndo();
   x.globalCompositeOperation='source-over';
   x.fillStyle=PAL[light?'light':'dark'][ci];
-  x.font=(size*4)+'px ui-monospace,Consolas,monospace';
+  x.font=tsize+'px ui-monospace,Consolas,monospace';
   x.fillText(t,wx,wy);
   save(); flash('lettered');
 }
