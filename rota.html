@@ -560,6 +560,38 @@ setInterval(patchRows,2000); patchRows();
   .dock{padding:20px 14px}
 }
 </style>
+
+<script type="module">
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+let app; try{ app=initializeApp({ apiKey:"AIzaSyBVmjQfXdlDBhLdSXsvkIhe2lGAH6JUFa0", authDomain:"innvisible-hearth.firebaseapp.com",
+  databaseURL:"https://innvisible-hearth-default-rtdb.firebaseio.com", projectId:"innvisible-hearth",
+  storageBucket:"innvisible-hearth.firebasestorage.app", messagingSenderId:"852474450672",
+  appId:"1:85a8bfa6a75d04ea492835" }); }catch(e){ app=getApp(); }
+const db=getDatabase(app);
+var DAY=864e5;
+function key(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||(localStorage.getItem('hive_user')?'__founder':null); }
+async function addBal(k,amt){ const r=ref(db,'drops/'+k+'/bal'); const s=await get(r);
+  await set(r,(s.exists()?+s.val():0)+amt); }
+(async function(){
+  try{
+    var k=key();
+    if(k){ var day=Math.floor(Date.now()/DAY);
+      const dr=ref(db,'drops/'+k+'/drip/'+day); const ds=await get(dr);
+      if(!ds.exists()){ await set(dr,2); await addBal(k,2); } }
+    const snap=await get(ref(db,'rota')); if(!snap.exists()) return;
+    var v=snap.val();
+    for(var id in v){ var d=v[id];
+      if(d.status==='awaiting' && (d.when||Date.now()) < Date.now()-2*DAY){
+        d.status='closed'; d.auto=true; await set(ref(db,'rota/'+id),d); }
+      if(d.status==='closed' && !d.paid && d.taker){
+        var val=+d.value||10; var pay=d.auto?Math.ceil(val/2):val; var tithe=Math.ceil(pay*0.1);
+        await addBal(d.taker, pay-tithe); await addBal('__till', tithe);
+        d.paid=true; await set(ref(db,'rota/'+id),d); }
+    }
+  }catch(e){}
+})();
+</script>
   
 </body>
 </html>
