@@ -730,17 +730,13 @@ async function main(){
   head.innerHTML='<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px">the gauge room \u00b7 house systems at a glance</span><span id="gr_master" style="font-size:10px;letter-spacing:.2em"></span>';
   sec.appendChild(head);
   var grid=document.createElement('div');
-  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px';
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px';
   sec.appendChild(grid);
   var hd=document.querySelector('header');
   if(hd&&hd.parentNode) hd.parentNode.insertBefore(sec,hd.nextSibling); else document.body.appendChild(sec);
+  grid.addEventListener('click',function(e){ var b=e.target.closest('[data-ack]'); if(!b) return;
+    localStorage.setItem('hive_ack_'+b.getAttribute('data-ack'), b.getAttribute('data-sig')); tick(); });
   window.hiveGauge=function(reg){ (window.__hiveGauges=window.__hiveGauges||[]).push(reg); };
-  function card(label,value,sub,color){
-    return '<div style="border-left:3px solid '+color+';background:#0a0d12;padding:10px">'
-      +'<div style="font-size:9px;letter-spacing:.2em;color:'+DIM+'">'+label+'</div>'
-      +'<div style="font-size:18px;color:'+color+';margin-top:4px">'+value+'</div>'
-      +'<div style="font-size:10px;color:'+DIM+';margin-top:2px">'+sub+'</div></div>';
-  }
   async function snapshot(){
     var g={line:navigator.onLine,rail:true,souls:0,active:0,witToday:0,open:0,house:0,taken:0,awaiting:0,flags:0,ban:0,sky:!!localStorage.getItem('hive_wx_full')};
     var day=Math.floor(Date.now()/864e5), week=Date.now()-7*864e5;
@@ -759,31 +755,43 @@ async function main(){
   }
   async function rootKeys(){ try{ const r=await fetch(DBURL+'/.json?shallow=true'); const j=await r.json(); return Object.keys(j||{}); }catch(e){ return []; } }
   var KNOWN=['roster','witness','rota','flags','ban','keys','emberchain','housebook','contracts','slate'];
-  function builtins(S){
-    return [
-      card('rail', S.rail?'up':'dark','firebase', S.rail?GREEN:RED),
-      card('line', S.line?'on':'off','network', S.line?GREEN:RED),
-      card('souls', S.souls, S.active+' active', S.souls>0?GREEN:DIM),
-      card('witness today', S.witToday,'the pulse', S.witToday>0?GREEN:DIM),
-      card('deeds open', S.open,'house '+S.house, S.open>0?GREEN:AMBER),
-      card('in flight', S.taken+S.awaiting, S.taken+' taken \u00b7 '+S.awaiting+' await', (S.taken+S.awaiting)>0?AMBER:DIM),
-      card('watchlist', S.flags,'flags pending', S.flags>0?AMBER:GREEN),
-      card('banned', S.ban,'the ban list', S.ban>0?RED:DIM),
-      card('sky', S.sky?'cached':'none','weather', S.sky?GREEN:AMBER)
-    ];
+  function builtins(S){ return [
+    {id:'rail',label:'rail',value:S.rail?'up':'dark',sub:'firebase',color:S.rail?GREEN:RED,fix:'firebase down \u00b7 check network / status, then reload'},
+    {id:'line',label:'line',value:S.line?'on':'off',sub:'network',color:S.line?GREEN:RED,fix:'offline \u00b7 reconnect the wire'},
+    {id:'souls',label:'souls',value:S.souls,sub:S.active+' active',color:S.souls>0?GREEN:DIM,fix:'no souls yet \u00b7 share the cove postcard, knock someone in'},
+    {id:'wit',label:'witness today',value:S.witToday,sub:'the pulse',color:S.witToday>0?GREEN:DIM,fix:'no pulse today \u00b7 hold the witness once'},
+    {id:'open',label:'deeds open',value:S.open,sub:'house '+S.house,color:S.open>0?GREEN:AMBER,fix:'board empty \u00b7 the seeder tops up on next visit'},
+    {id:'flight',label:'in flight',value:S.taken+S.awaiting,sub:S.taken+' taken \u00b7 '+S.awaiting+' await',color:(S.taken+S.awaiting)>0?AMBER:DIM,fix:'work in the air \u00b7 confirm or let auto-confirm clear it'},
+    {id:'flags',label:'watchlist',value:S.flags,sub:'flags pending',color:S.flags>0?AMBER:GREEN,fix:'open the microscope on deed \u00b7 dismiss, restore, or ban'},
+    {id:'ban',label:'banned',value:S.ban,sub:'the ban list',color:S.ban>0?RED:DIM,fix:'review the ban list on deed \u00b7 unban the reformed'},
+    {id:'sky',label:'sky',value:S.sky?'cached':'none',sub:'weather',color:S.sky?GREEN:AMBER,fix:'sky stale \u00b7 visit axiom to refresh the cache'}
+  ]; }
+  function sig(d){ return d.id+':'+d.value+':'+d.color; }
+  function isAcked(d){ return localStorage.getItem('hive_ack_'+d.id)===sig(d); }
+  function unacked(d){ return (d.color===RED||d.color===AMBER)&&!isAcked(d); }
+  function cardHtml(d){
+    var bad=(d.color===RED||d.color===AMBER), acked=bad&&isAcked(d), col=acked?DIM:d.color, extra='';
+    if(bad&&!acked) extra='<div style="font-size:9px;color:'+AMBER+';margin-top:6px;line-height:1.5">'+(d.fix||'inspect the feature')+'</div>'
+      +'<button data-ack="'+d.id+'" data-sig="'+sig(d)+'" style="margin-top:6px;background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;padding:2px 8px;cursor:pointer">ack \u00b7 mute</button>';
+    if(acked) extra='<div style="font-size:9px;color:'+DIM+';margin-top:6px">acknowledged \u00b7 watching quietly</div>';
+    return '<div style="border-left:3px solid '+col+';background:#0a0d12;padding:10px">'
+      +'<div style="font-size:9px;letter-spacing:.2em;color:'+DIM+'">'+d.label+'</div>'
+      +'<div style="font-size:18px;color:'+col+';margin-top:4px">'+d.value+'</div>'
+      +'<div style="font-size:10px;color:'+DIM+';margin-top:2px">'+d.sub+(acked?' \u00b7 ack':'')+'</div>'+extra+'</div>';
   }
   async function tick(){
     var S=await snapshot();
     var dials=builtins(S);
     var regs=window.__hiveGauges||[];
-    for(var i=0;i<regs.length;i++){ try{ var d=await regs[i].collect(); dials.push(card(regs[i].label,d.value,d.sub,d.color)); }catch(e){} }
+    for(var i=0;i<regs.length;i++){ try{ var d=await regs[i].collect(); d.id=d.id||('reg'+i); dials.push(d); }catch(e){} }
     var ks=await rootKeys(); var unk=ks.filter(function(k){ return KNOWN.indexOf(k)<0; });
-    dials.push(card('unregistered', unk.length, unk.slice(0,4).join(', ')||'none', unk.length?AMBER:DIM));
-    var down=!S.line||!S.rail, eyes=S.flags>0||!S.sky||unk.length>0;
-    var master=down?RED:eyes?AMBER:GREEN;
-    var m=document.getElementById('gr_master'); m.style.color=master;
+    dials.push({id:'unk',label:'unregistered',value:unk.length,sub:unk.slice(0,4).join(', ')||'none',color:unk.length?AMBER:DIM,fix:'new rooms seen \u00b7 add to KNOWN or hiveGauge them'});
+    var down=dials.some(function(d){ return (d.id==='rail'||d.id==='line')&&unacked(d); });
+    var eyes=dials.some(function(d){ return d.color===AMBER&&unacked(d); });
+    var m=document.getElementById('gr_master');
+    m.style.color=down?RED:eyes?AMBER:GREEN;
     m.textContent='\u25cf '+(down?'SYSTEM DOWN':eyes?'NEEDS EYES':'ALL SYSTEMS');
-    grid.innerHTML=dials.join('');
+    grid.innerHTML=dials.map(cardHtml).join('');
   }
   tick(); setInterval(tick,30000);
 }
