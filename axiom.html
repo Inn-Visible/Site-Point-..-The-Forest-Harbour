@@ -405,14 +405,18 @@ function lockdoor(){
   sec.style.cssText='max-width:900px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
   sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the ground \u00b7 what the house stands on</div>'
     +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">CACHED OFFLINE \u00b7 NO TELEMETRY \u00b7 YOUR MARKS STAY PINNED</div>'
-    +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;flex-wrap:wrap"></div>'
+    +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:6px;flex-wrap:wrap"></div>'
+    +'<div id="styleHint" style="text-align:center;font-size:9px;color:#5c6875;font-style:italic;margin-bottom:10px"></div>'
     +'<div id="toolRow" style="display:flex;gap:6px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
     +'<button id="t_pan" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">pan</button>'
     +'<button id="t_draw" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">draw</button>'
     +'<button id="t_life" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">life</button>'
     +'<button id="t_lift" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">lift</button>'
+    +'<button id="t_erase" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">erase</button>'
     +'<button id="t_hide" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">hide</button>'
     +'<button id="t_clear" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>'
+    +'<button id="m_undo" title="undo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">\u21b6</button>'
+    +'<button id="m_redo" title="redo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">\u21b7</button>'
     +'<span id="palRow" style="display:flex;gap:5px;margin-left:6px"></span>'
     +'</div>'
     +'<div style="position:relative;width:100%;height:420px;border:1px solid #223041;overflow:hidden;background:#0a0d12">'
@@ -423,13 +427,15 @@ function lockdoor(){
     +'</div>'
     +'<div id="mapInfo" style="position:absolute;top:8px;left:10px;font-size:9px;color:#5c6875;letter-spacing:.15em"></div>'
     +'</div>'
-    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw \u00b7 life \u00b7 lift = your hand on the world \u00b7 marks saved to this browser \u00b7 \u00a9 OSM \u00b7 \u00a9 CARTO \u00b7 \u00a9 OpenTopoMap \u00b7 \u00a9 Esri</div>';
+    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw \u00b7 life \u00b7 lift \u00b7 erase = your hand on the world \u00b7 \u21b6\u21b7 undo your marks \u00b7 \u00a9 OSM \u00b7 \u00a9 CARTO \u00b7 \u00a9 OpenTopoMap \u00b7 \u00a9 Esri</div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
   var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
   var STYLE={ink:'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
              night:'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
              contour:'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
              deep:'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'};
+  var HINT={ink:'the sleek chart \u00b7 no labels',night:'the night chart \u00b7 labeled',
+            contour:'the land\u2019s bones \u00b7 contours',deep:'the water\u2019s floor \u00b7 darker = deeper \u00b7 zoom out for the basin'};
   var BASEBG={ink:'#0a0d12',night:'#0a0d12',contour:'#0e141b',deep:'#06121f'};
   var PALM=['#d9a83a','#e8e4d8','#7fb2e5','#e5735a','#78dcc8'];
   var style='ink', zoom=12, cx=0, cy=0, IMG={}, pending={};
@@ -437,7 +443,11 @@ function lockdoor(){
   var liftSel=null, lifted=null;
   var marks={strokes:[],pins:[]};
   try{ marks=JSON.parse(localStorage.getItem('hive_map_marks'))||{strokes:[],pins:[]}; }catch(e){}
+  var mHist=[], mFuture=[];
   function saveMarks(){ try{ localStorage.setItem('hive_map_marks',JSON.stringify(marks)); }catch(e){} }
+  function pushHist(){ mHist.push(JSON.stringify(marks)); if(mHist.length>20) mHist.shift(); mFuture.length=0; }
+  function undoMarks(){ var s=mHist.pop(); if(s==null) return; mFuture.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
+  function redoMarks(){ var s=mFuture.pop(); if(s==null) return; mHist.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   var HOME=[-79.0,43.9];
   function maxZ(){ return style==='deep'?9:18; }
   function world(z){ return 256*Math.pow(2,z); }
@@ -489,57 +499,65 @@ function lockdoor(){
     if(showMarks) drawMarks(tlx,tly);
     var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom;
   }
-  function commitLift(){ if(!lifted) return;
+  function commitLift(){ if(!lifted) return; pushHist();
     lifted.s.forEach(function(i){ marks.strokes[i].pts=marks.strokes[i].pts.map(function(p){return [p[0]+lifted.ox,p[1]+lifted.oy];}); });
     lifted.p.forEach(function(i){ marks.pins[i][0]+=lifted.ox; marks.pins[i][1]+=lifted.oy; });
     lifted=null; saveMarks(); }
   function startLift(e){ var r=cv.getBoundingClientRect();
     liftSel={x0:e.clientX-r.left,y0:e.clientY-r.top,x1:e.clientX-r.left,y1:e.clientY-r.top}; }
   function endLift(){ if(!liftSel) return;
-    var r=cv.getBoundingClientRect(); var w=world(zoom); var tlx=cx-cv.width/2, tly=cy-cv.height/2;
+    var w=world(zoom); var tlx=cx-cv.width/2, tly=cy-cv.height/2;
     var fx0=(tlx+Math.min(liftSel.x0,liftSel.x1))/w, fx1=(tlx+Math.max(liftSel.x0,liftSel.x1))/w;
     var fy0=(tly+Math.min(liftSel.y0,liftSel.y1))/w, fy1=(tly+Math.max(liftSel.y0,liftSel.y1))/w;
     liftSel=null;
     var sI=[],pI=[];
     marks.strokes.forEach(function(s,i){ if(s.pts.every(function(p){return p[0]>=fx0&&p[0]<=fx1&&p[1]>=fy0&&p[1]<=fy1;})) sI.push(i); });
     marks.pins.forEach(function(p,i){ if(p[0]>=fx0&&p[0]<=fx1&&p[1]>=fy0&&p[1]<=fy1) pI.push(i); });
-    if(sI.length||pI.length){ var g=screenToFracLast; lifted={s:sI,p:pI,ox:0,oy:0,gx:g[0],gy:g[1]}; }
+    if(sI.length||pI.length){ lifted={s:sI,p:pI,ox:0,oy:0,gx:lastFrac[0],gy:lastFrac[1]}; }
   }
-  var screenToFracLast=[0,0];
-  var drag=false,lx=0,ly=0;
-  cv.addEventListener('pointerdown',function(e){ screenToFracLast=screenToFrac(e);
+  var lastFrac=[0,0], drag=false, lx=0, ly=0;
+  cv.addEventListener('pointerdown',function(e){ lastFrac=screenToFrac(e);
     if(tool==='lift'){ if(lifted){ commitLift(); draw(); } else startLift(e); return; }
-    if(tool==='draw'){ curStroke={c:PALM[drawColor],pts:[screenToFrac(e)]}; return; }
-    if(tool==='life'){ var fr=screenToFrac(e); var th=10/world(zoom); var hit=-1;
-      marks.pins.forEach(function(p,i){ if(Math.abs(p[0]-fr[0])<th&&Math.abs(p[1]-fr[1])<th) hit=i; });
-      if(hit>-1){ var nl=prompt('rename (blank removes):',marks.pins[hit][2]||'');
-        if(nl===null) return; if(nl==='') marks.pins.splice(hit,1); else marks.pins[hit][2]=String(nl).slice(0,16);
+    if(tool==='erase'){ var th=12/world(zoom);
+      for(var pi=marks.pins.length-1;pi>=0;pi--){ var pp=marks.pins[pi];
+        if(Math.abs(pp[0]-lastFrac[0])<th&&Math.abs(pp[1]-lastFrac[1])<th){ pushHist(); marks.pins.splice(pi,1); saveMarks(); draw(); return; } }
+      for(var si=marks.strokes.length-1;si>=0;si--){ var st=marks.strokes[si];
+        if(st.pts.some(function(pt){ return Math.abs(pt[0]-lastFrac[0])<th&&Math.abs(pt[1]-lastFrac[1])<th; })){ pushHist(); marks.strokes.splice(si,1); saveMarks(); draw(); return; } }
+      return; }
+    if(tool==='draw'){ curStroke={c:PALM[drawColor],pts:[lastFrac]}; return; }
+    if(tool==='life'){ var fr=lastFrac; var th2=10/world(zoom); var hit=-1;
+      marks.pins.forEach(function(p,i){ if(Math.abs(p[0]-fr[0])<th2&&Math.abs(p[1]-fr[1])<th2) hit=i; });
+      if(hit>-1){ pushHist(); var nl=prompt('rename (blank removes):',marks.pins[hit][2]||'');
+        if(nl===null){ mHist.pop(); } else if(nl==='') marks.pins.splice(hit,1); else marks.pins[hit][2]=String(nl).slice(0,16);
         saveMarks(); draw(); return; }
-      var lab=prompt('what lives here?'); if(lab){ marks.pins.push([fr[0],fr[1],String(lab).slice(0,16)]); saveMarks(); draw(); } return; }
+      var lab=prompt('what lives here?'); if(lab){ pushHist(); marks.pins.push([fr[0],fr[1],String(lab).slice(0,16)]); saveMarks(); draw(); } return; }
     drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing';
   });
-  cv.addEventListener('pointermove',function(e){ screenToFracLast=screenToFrac(e);
+  cv.addEventListener('pointermove',function(e){ lastFrac=screenToFrac(e);
     if(tool==='lift'&&liftSel){ var r=cv.getBoundingClientRect(); liftSel.x1=e.clientX-r.left; liftSel.y1=e.clientY-r.top; draw(); return; }
-    if(tool==='lift'&&lifted){ lifted.ox=screenToFracLast[0]-lifted.gx; lifted.oy=screenToFracLast[1]-lifted.gy; draw(); return; }
-    if(tool==='draw'&&curStroke){ curStroke.pts.push(screenToFrac(e)); draw(); return; }
+    if(tool==='lift'&&lifted){ lifted.ox=lastFrac[0]-lifted.gx; lifted.oy=lastFrac[1]-lifted.gy; draw(); return; }
+    if(tool==='draw'&&curStroke){ curStroke.pts.push(lastFrac); draw(); return; }
     if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw();
   });
   ['pointerup','pointercancel'].forEach(function(ev){ cv.addEventListener(ev,function(){
     if(tool==='lift'&&liftSel){ endLift(); draw(); }
-    if(curStroke){ marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
+    if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; }); });
   document.getElementById('zIn').onclick=function(){ if(zoom<maxZ()){ zoom++; cx*=2; cy*=2; draw(); } };
   document.getElementById('zOut').onclick=function(){ if(zoom>3){ zoom--; cx/=2; cy/=2; draw(); } };
+  document.getElementById('m_undo').onclick=undoMarks;
+  document.getElementById('m_redo').onclick=redoMarks;
   function setTool(t){ tool=t; cv.style.cursor=(t==='pan')?'grab':'crosshair'; lifted=null; liftSel=null;
-    ['pan','draw','life','lift'].forEach(function(k){ var b=document.getElementById('t_'+k);
+    ['pan','draw','life','lift','erase'].forEach(function(k){ var b=document.getElementById('t_'+k);
       var on=k===t; b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0'; }); draw(); }
-  ['pan','draw','life','lift'].forEach(function(k){ document.getElementById('t_'+k).onclick=function(){setTool(k);}; });
+  ['pan','draw','life','lift','erase'].forEach(function(k){ document.getElementById('t_'+k).onclick=function(){setTool(k);}; });
   document.getElementById('t_hide').onclick=function(){ showMarks=!showMarks; draw(); };
-  document.getElementById('t_clear').onclick=function(){ if(confirm('wipe your marks from the map?')){ marks={strokes:[],pins:[]}; saveMarks(); draw(); } };
+  document.getElementById('t_clear').onclick=function(){ if(confirm('wipe your marks from the map?')){ pushHist(); marks={strokes:[],pins:[]}; saveMarks(); draw(); } };
   var pr=document.getElementById('palRow');
   PALM.forEach(function(c,i){ var b=document.createElement('button'); b.style.cssText='width:16px;height:16px;border-radius:50%;border:1px solid #223041;cursor:pointer;padding:0;background:'+c;
     b.onclick=function(){ drawColor=i; }; pr.appendChild(b); });
   function setStyle(s){ style=s; if(zoom>maxZ()){ zoom=maxZ(); var p=project(HOME[0],HOME[1],zoom); cx=p[0]; cy=p[1]; }
+    var h=document.getElementById('styleHint'); if(h) h.textContent=HINT[s]||'';
     Object.keys(STYLE).forEach(function(k){ var b=document.getElementById('st_'+k); if(!b) return;
       var on=k===s; b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0'; });
     draw(); }
