@@ -218,7 +218,7 @@ requestAnimationFrame(frame);
 <script>
 (function(){
   /* ---- location: home until the keeper says otherwise ---- */
-  var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon, locTag='home', asked=false;
+  var HOME={lat:43.54,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon, locTag='home', asked=false;
   function acquire(){ if(asked||!navigator.geolocation) return; asked=true;
     navigator.geolocation.getCurrentPosition(function(p){
       LAT=p.coords.latitude; LON=p.coords.longitude;
