@@ -49,7 +49,7 @@
   <input type="range" id="tsize" min="8" max="160" value="28" style="width:60px" title="lettering">
   <button id="eraseBtn" onclick="erase=!erase;paint()">erase</button>
   <button id="textBtn" onclick="setMode('text')">text</button>
-  <button id="liftBtn" onclick="setMode('lift')" title="grab one thing">lift</button>
+  <button id="liftBtn" onclick="setMode('lift')" title="tap = grab one · drag = box lift">lift</button>
   <button id="moveBtn" onclick="setMode('move')">move</button>
   <button onclick="setZoom(z*1.4)">+</button>
   <button onclick="setZoom(z/1.4)">−</button>
@@ -71,7 +71,7 @@ const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8','#b07fd9','#d
            light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76','#6b4a8f','#a34a7a','#000000']};
 let ci=0,size=5,tsize=28,erase=false,light=false,W,H,DPR=1;
 let z=1,ox=0,oy=0,mode='draw',panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
-let sel=null,selOn=false,moving=null;
+let sel=null,selOn=false,moving=null,liftDownWorld=null;
 function applyView(){ var t='translate('+ox+'px,'+oy+'px) scale('+z+')'; cv.style.transform=t; over.style.transform=t; }
 function setZoom(nz){ nz=Math.max(0.5,Math.min(8,nz)); var cx=W/2,cy=H/2;
   ox=cx-(cx-ox)*(nz/z); oy=cy-(cy-oy)*(nz/z); z=nz; if(z===1){ox=0;oy=0;} applyView(); }
@@ -126,6 +126,7 @@ cv.addEventListener('pointerdown',function(e){
   if(mode==='move'){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
   if(mode==='lift'){
     if(moving){ stamp(); return; }
+    liftDownWorld=w;
     sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; selOn=true; return;
   }
   if(mode==='text'){ placeText(w[0],w[1]); return; }
@@ -141,85 +142,39 @@ cv.addEventListener('pointermove',function(e){
 ['pointerup','pointercancel'].forEach(function(ev){
   cv.addEventListener(ev,function(){
     if(panning){ panning=false; return; }
-    if(selOn){ selOn=false; lift(); return; }
+    if(selOn){ selOn=false;
+      var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
+      if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
+      else lift();
+      return; }
     if(drawing){ drawing=false; save(); }
   });
 });
-function normSel(){ var a=Math.min(sel.x0,sel.x1),b=Math.min(sel.y0,sel.y1),
-  c=Math.max(sel.x0,sel.x1),d=Math.max(sel.y0,sel.y1); return {x:a,y:b,w:c-a,h:d-b}; }
-function lift(){
-  var r=normSel(); sel=null;
-  if(r.w<6||r.h<6){ renderOverlay(); return; }
+function grabAt(wx,wy){
+  var dx=Math.round(wx*DPR), dy=Math.round(wy*DPR);
+  var Wd=cv.width, Hd=cv.height;
+  if(dx<0||dy<0||dx>=Wd||dy>=Hd) return false;
+  var img; try{ img=x.getImageData(0,0,Wd,Hd); }catch(e){ return false; }
+  var d=img.data, i0=(dy*Wd+dx)*4;
+  if(d[i0+3]<12) return false;
+  var visited=new Uint8Array(Wd*Hd);
+  var stack=[dy*Wd+dx]; visited[dy*Wd+dx]=1;
+  var minX=dx,maxX=dx,minY=dy,maxY=dy, pts=[];
+  while(stack.length){
+    var p=stack.pop(), px=p%Wd, py=(p-px)/Wd;
+    pts.push(p);
+    if(px<minX)minX=px; if(px>maxX)maxX=px; if(py<minY)minY=py; if(py>maxY)maxY=py;
+    if(px>0&&!visited[p-1]&&d[(p-1)*4+3]>=12){visited[p-1]=1;stack.push(p-1);}
+    if(px<Wd-1&&!visited[p+1]&&d[(p+1)*4+3]>=12){visited[p+1]=1;stack.push(p+1);}
+    if(py>0&&!visited[p-Wd]&&d[(p-Wd)*4+3]>=12){visited[p-Wd]=1;stack.push(p-Wd);}
+    if(py<Hd-1&&!visited[p+Wd]&&d[(p+Wd)*4+3]>=12){visited[p+Wd]=1;stack.push(p+Wd);}
+  }
+  if(pts.length<4) return false;
   pushUndo();
-  var dw=Math.max(1,Math.round(r.w*DPR)), dh=Math.max(1,Math.round(r.h*DPR));
-  var t=document.createElement('canvas'); t.width=dw; t.height=dh;
-  t.getContext('2d').drawImage(cv,Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh,0,0,dw,dh);
-  x.save(); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='destination-out';
-  x.fillRect(Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh); x.restore();
-  moving={img:t,w:r.w,h:r.h,x:r.x,y:r.y,gx:0,gy:0};
-  renderOverlay(); save(); flash('lifted \u00b7 tap to set it down');
-}
-function stamp(){
-  if(!moving) return;
-  x.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h);
-  moving=null; renderOverlay(); save(); flash('set down');
-}
-function renderOverlay(){
-  o.clearRect(0,0,W,H);
-  if(sel){ var r=normSel(); o.strokeStyle='#d9a83a'; o.setLineDash([4,3]); o.lineWidth=1;
-    o.strokeRect(r.x,r.y,r.w,r.h); o.setLineDash([]); }
-  if(moving){ o.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h); }
-}
-function placeText(wx,wy){
-  var t=prompt('the wall says..'); if(!t) return;
-  pushUndo();
-  x.globalCompositeOperation='source-over';
-  x.fillStyle=PAL[light?'light':'dark'][ci];
-  x.font=tsize+'px ui-monospace,Consolas,monospace';
-  x.fillText(t,wx,wy);
-  save(); flash('lettered');
-}
-function stroke(px,py,pr,dot){
-  const p=(pr&&pr>0&&pr!==0.5)?pr:0.5;
-  x.globalCompositeOperation=erase?'destination-out':'source-over';
-  x.strokeStyle=PAL[light?'light':'dark'][ci];
-  x.lineWidth=erase?size*3:size*(0.6+p*1.4);
-  x.beginPath(); x.moveTo(lx,ly); x.lineTo(px+(dot?0.01:0),py+(dot?0.01:0)); x.stroke();
-  lx=px; ly=py;
-}
-function save(){ try{ localStorage.setItem('hive_slate',cv.toDataURL());
-  localStorage.setItem('hive_slate_mode',light?'1':'0'); }catch(e){} }
-function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); save(); }
-function tiaga(){ pushUndo(); let n=0;
-  const iv=setInterval(function(){ n++;
-    cv.style.transform='translate('+(n%2?7:-7)+'px,0) rotate('+(n%2?1.2:-1.2)+'deg)';
-    if(n>5){ clearInterval(iv); applyView(); clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
-  },45); }
-function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save();
-  flash(light?'bright room \u00b7 the wall goes light \u2014 easy on the eyes':'back to the dark wall'); }
-function exportCanvas(){
-  const t=document.createElement('canvas'); t.width=cv.width; t.height=cv.height;
-  const c=t.getContext('2d');
-  c.fillStyle=light?'#f2efe6':'#0a0d12'; c.fillRect(0,0,t.width,t.height);
-  c.drawImage(cv,0,0); return t;
-}
-function png(){ exportCanvas().toBlob(function(b){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='slate.png'; a.click();
-  setTimeout(function(){URL.revokeObjectURL(a.href);},2000); flash('png saved'); }); }
-function copy(){ exportCanvas().toBlob(function(b){
-  try{ navigator.clipboard.write([new ClipboardItem({'image/png':b})])
-    .then(function(){flash('copied to clipboard');},function(){flash('copy blocked');});
-  }catch(e){ flash('copy blocked'); } }); }
-function share(){ exportCanvas().toBlob(function(b){
-  const f=new File([b],'slate.png',{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f],title:'the slate'});
-  else png(); }); }
-(function(){ try{
-  if(localStorage.getItem('hive_slate_mode')==='1'){ light=true; document.body.classList.add('light'); }
-  const d=localStorage.getItem('hive_slate');
-  if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
-    x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
-}catch(e){} paint(); applyView(); })();
-</script>
-</body>
-</html>
+  var bw=maxX-minX+1, bh=maxY-minY+1;
+  var t=document.createElement('canvas'); t.width=bw; t.height=bh;
+  var tc=t.getContext('2d'), timg=tc.createImageData(bw,bh);
+  for(var k=0;k<pts.length;k++){ var p2=pts[k], qx=p2%Wd, qy=(p2-qx)/Wd;
+    var sx=qx-minX, sy=qy-minY, si=(sy*bw+sx)*4, di=p2*4;
+    timg.data[si]=d[di]; timg.data[si+1]=d[di+1]; timg.data[si+2]=d[di+2]; timg.data[si+3]=d[di+3];
+   
