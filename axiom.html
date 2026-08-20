@@ -739,6 +739,27 @@ function lockdoor(){
   var t=setInterval(function(){ if(attach()) clearInterval(t); },600);
 })();
 </script>
+
+<style>
+@media(max-width:700px){
+  #mapCv{height:min(420px,60vh)}
+  #toolRow{gap:4px}
+  #toolRow button{padding:6px 8px;font-size:9px}
+  #stRow{gap:4px}
+  #stRow button{padding:4px 8px;font-size:9px}
+}
+@media(orientation:landscape) and (max-width:900px){
+  #mapCv{height:min(420px,75vh)}
+}
+</style>
+<script>
+(function(){
+  var cv=document.getElementById('mapCv');
+  if(!cv) return;
+  cv.style.touchAction='none';
+  cv.addEventListener('touchmove',function(e){ e.preventDefault(); },{passive:false});
+})();
+</script>
   
 </body>
 </html>
