@@ -127,8 +127,9 @@ cv.addEventListener('pointerdown',function(e){
   cv.setPointerCapture(e.pointerId);
   var w=toWorld(e);
   if(mode==='move'){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
-  if(mode==='lift'){
-    if(moving){ stamp(); return; }
+    if(mode==='lift'){
+    if(moving){ holdMoving=true; moving.gx=w[0]-moving.x; moving.gy=w[1]-moving.y; return; }
+    if(grabAt(w[0],w[1])){ holdMoving=true; return; }
     liftDownWorld=w;
     sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; selOn=true; return;
   }
