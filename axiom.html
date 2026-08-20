@@ -572,8 +572,9 @@ function lockdoor(){
     else if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
-    cv.addEventListener('pointercancel',function(e){
-    if(tool==='lift'&&liftSel){ endLift(e); draw(); }
+      cv.addEventListener('pointercancel',function(e){
+    if(holdLift){ holdLift=false; commitLift(); draw(); }
+    else if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
   document.getElementById('zIn').onclick=function(){ if(zoom<maxZ()){ zoom++; cx*=2; cy*=2; draw(); } };
