@@ -6,7 +6,7 @@
 <title>the slate — draw · share · erase</title>
 <style>
   :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a}
-  *{box-sizing:border-box;margin:0}
+  *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font-family:ui-monospace,Consolas,monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;transition:background-color .5s ease}
   body.light{background:#f2efe6;color:#1c2430}
@@ -14,11 +14,11 @@
     padding:10px 16px;font-size:11px;letter-spacing:.25em;color:var(--dim);pointer-events:none;transition:color .5s}
   header #flash{margin-right:96px}
   body.light header{color:#6b7684}
-  canvas#slate{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0}
-  canvas#over{position:fixed;inset:0;pointer-events:none;transform-origin:0 0;z-index:1}
+  canvas#slate{position:fixed;inset:0;cursor:crosshair;transform-origin:0 0;touch-action:none}
+  canvas#over{position:fixed;inset:0;pointer-events:none;transform-origin:0 0;z-index:1;touch-action:none}
   #tools{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;
     display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;
-    background:rgba(10,13,18,.85);border:1px solid var(--line);padding:8px;max-width:94vw}
+    background:rgba(10,13,18,.85);border:1px solid var(--line);padding:8px;max-width:94vw;max-height:46vh;overflow-y:auto}
   body.light #tools{background:rgba(242,239,230,.9);border-color:#c9c2b2}
   button{background:none;border:1px solid var(--line);color:var(--dim);font-family:inherit;
     font-size:10px;letter-spacing:.08em;padding:6px 9px;cursor:pointer}
@@ -30,6 +30,12 @@
   #door:hover{color:var(--gold);border-color:var(--gold)}
   body.light #door{background:rgba(242,239,230,.8);color:#6b7684}
   #toolsTab{position:fixed;bottom:12px;right:12px;z-index:3;display:none}
+  @media(max-width:700px){
+    button{padding:10px 12px;font-size:11px}
+    input[type=range]{width:52px}
+    #tools{gap:5px;padding:6px;bottom:8px}
+    header{padding:8px 12px}
+  }
 </style>
 </head>
 <body>
@@ -43,7 +49,7 @@
   <input type="range" id="tsize" min="8" max="160" value="28" style="width:60px" title="lettering">
   <button id="eraseBtn" onclick="erase=!erase;paint()">erase</button>
   <button id="textBtn" onclick="setMode('text')">text</button>
-  <button id="liftBtn" onclick="setMode('lift')">lift</button>
+  <button id="liftBtn" onclick="setMode('lift')" title="grab one thing">lift</button>
   <button id="moveBtn" onclick="setMode('move')">move</button>
   <button onclick="setZoom(z*1.4)">+</button>
   <button onclick="setZoom(z/1.4)">−</button>
@@ -88,7 +94,7 @@ function fit(){
   o.setTransform(DPR,0,0,DPR,0,0);
   if(old.width) x.drawImage(old,0,0,old.width,old.height,0,0,W,H);
 }
-addEventListener('resize',fit); fit();
+addEventListener('resize',fit); addEventListener('orientationchange',function(){setTimeout(fit,150);}); fit();
 const sw=document.getElementById('swatches');
 PAL.dark.forEach(function(c,i){
   const b=document.createElement('button'); b.className='sw'; b.onclick=function(){ci=i;erase=false;paint();};
@@ -215,50 +221,5 @@ function share(){ exportCanvas().toBlob(function(b){
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
 }catch(e){} paint(); applyView(); })();
 </script>
-
-  <script>
-(function(){
-  var cv=document.getElementById('slate'); if(!cv) return;
-  var x=cv.getContext('2d');
-  var tools=document.getElementById('tools');
-  if(tools){ var b=document.createElement('button'); b.textContent='img';
-    b.onclick=function(){ inp.click(); };
-    tools.insertBefore(b, document.getElementById('eraseBtn')); }
-  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.style.display='none';
-  inp.onchange=function(){ if(inp.files&&inp.files[0]) place(inp.files[0]); inp.value=''; };
-  document.body.appendChild(inp);
-  function place(file){ var r=new FileReader();
-    r.onload=function(){ var im=new Image(); im.onload=function(){ drawImg(im); }; im.src=r.result; };
-    r.readAsDataURL(file); }
-  function drawImg(im){
-    var W=cv.clientWidth,H=cv.clientHeight;
-    var s=Math.min((W*0.7)/im.width,(H*0.7)/im.height,1);
-    var w=im.width*s,h=im.height*s;
-    x.save(); x.globalCompositeOperation='source-over';
-    x.drawImage(im,(W-w)/2,(H-h)/2,w,h); x.restore();
-    try{ localStorage.setItem('hive_slate',cv.toDataURL()); }catch(e){}
-    var f=document.getElementById('flash'); if(f){ var o=f.textContent; f.textContent='image on the wall \u00b7 lift to move it';
-      setTimeout(function(){f.textContent=o;},1600); }
-  }
-  window.addEventListener('paste',function(e){
-    var it=(e.clipboardData||window.clipboardData).items; if(!it) return;
-    for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')>-1){ var f=it[i].getAsFile();
-      if(f){ place(f); e.preventDefault(); } } }
-  });
-})();
-</script>
-
-<style>
-@media(max-width:700px){
-  body{overflow-x:hidden}
-  header{padding:14px 16px}
-  .cluster{width:min(400px,92vw);height:min(400px,92vw)}
-  .node svg{width:62px;height:62px}
-  .node.center svg{width:84px;height:84px}
-  input,select,textarea{font-size:16px}
-  .dock{padding:20px 14px}
-}
-</style>
-  
 </body>
 </html>
