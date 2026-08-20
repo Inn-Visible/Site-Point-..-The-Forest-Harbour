@@ -72,7 +72,7 @@ const PAL={dark:['#e8e4d8','#d9a83a','#7fb2e5','#e5735a','#78dcc8','#b07fd9','#d
            light:['#1c2430','#8a6a1f','#2c5c8f','#a33c2a','#2a8a76','#6b4a8f','#a34a7a','#000000']};
 let ci=0,size=5,tsize=28,erase=false,light=false,W,H,DPR=1;
 let z=1,ox=0,oy=0,mode='draw',panning=false,panSX=0,panSY=0,panOX=0,panOY=0;
-let sel=null,selOn=false,moving=null,liftDownWorld=null;
+let sel=null,selOn=false,moving=null,liftDownWorld=null,holdMoving=false;
 function applyView(){ var t='translate('+ox+'px,'+oy+'px) scale('+z+')'; cv.style.transform=t; over.style.transform=t; }
 function setZoom(nz){ nz=Math.max(0.5,Math.min(8,nz)); var cx=W/2,cy=H/2;
   ox=cx-(cx-ox)*(nz/z); oy=cy-(cy-oy)*(nz/z); z=nz; if(z===1){ox=0;oy=0;} applyView(); }
