@@ -33,6 +33,10 @@
   .string .note{color:var(--blue);font-size:13px;width:16px;text-align:right}
   .wire{flex:1;border-radius:3px;position:relative;
     background:linear-gradient(90deg,transparent,#3f7fc1 10%,#9cc4e8 50%,#3f7fc1 90%,transparent)}
+   .wire::after{content:"";position:absolute;inset:0;border-radius:3px;opacity:0;transition:opacity .9s ease;
+    background:linear-gradient(90deg,transparent,var(--pc,#3f7fc1) 10%,var(--pcore,#9cc4e8) 50%,var(--pc,#3f7fc1) 90%,transparent);
+    box-shadow:0 0 8px var(--pc),0 0 22px var(--pc),0 0 46px var(--pcg,rgba(63,127,193,.4))}
+  .wire.lit::after{opacity:1;transition:opacity .04s}
   .string:nth-child(1) .wire{height:6px}
   .string:nth-child(2) .wire{height:5px}
   .string:nth-child(3) .wire{height:4px}
