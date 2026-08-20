@@ -153,9 +153,9 @@ function audio(){
   if(AC.state === 'suspended') AC.resume();
   return AC;
 }
-function pluckGlow(){
+  function pluckGlow(){
   const cur = localStorage.getItem('hive_pillar_theme') || 'baseline';
-  const C = {axiom:'#e8e4d8', eigen:'#58a36a', baseline:'#7fb2e5', keystone:'#d9a83a'};
+  const C = {axiom:'#f2efe2', eigen:'#5ce389', baseline:'#63c4ff', keystone:'#ffb547'};
   return C[cur] || C.baseline;
 }
 
