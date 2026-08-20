@@ -568,7 +568,10 @@ function lockdoor(){
     if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
-  cv.addEventListener('pointercancel',function(){ drag=false; liftSel=null; });
+    cv.addEventListener('pointercancel',function(e){
+    if(tool==='lift'&&liftSel){ endLift(e); draw(); }
+    if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
+    drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
   document.getElementById('zIn').onclick=function(){ if(zoom<maxZ()){ zoom++; cx*=2; cy*=2; draw(); } };
   document.getElementById('zOut').onclick=function(){ if(zoom>3){ zoom--; cx/=2; cy/=2; draw(); } };
   document.getElementById('m_undo').onclick=undoMarks;
