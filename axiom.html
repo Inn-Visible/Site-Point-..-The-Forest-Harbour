@@ -371,14 +371,14 @@ function lockdoor(){
 <!-- the lantern deck · 5 taps on open glass -->
 <script>
 (function(){
-  var on=localStorage.getItem('hive_pip')==='1';   var COARSE=window.matchMedia&&matchMedia('(pointer:coarse)').matches;   var PH=COARSE?{hex:'#ffb000',rgb:'255,176,0'}:{hex:'#e8e4d8',rgb:'232,228,216'};
+    var on=localStorage.getItem('hive_pip')==='1';   var PH={hex:'#e8e4d8',rgb:'232,228,216'};
   var wash=null, scan=null;
   function build(){
     var st=document.createElement('style');
     st.textContent='body.pip{animation:pipflick 5s infinite}@keyframes pipflick{0%,91%,94%,98%,100%{opacity:1}92%{opacity:.85}96%{opacity:.93}}';
     document.head.appendChild(st);
     wash=document.createElement('div');
-    wash.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:998;background:'+PH.hex+';mix-blend-mode:color;opacity:.5';
+        wash.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:998;background:'+PH.hex+';mix-blend-mode:color;opacity:.14';
     scan=document.createElement('div');
     scan.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 45%,transparent 58%,rgba(0,0,0,.55))';
   }
