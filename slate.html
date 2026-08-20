@@ -64,6 +64,7 @@
   <button onclick="hideTools()">hide</button>
 </div>
 <button id="toolsTab" onclick="showTools()">tools</button>
+
 <script>
 const cv=document.getElementById('slate'),x=cv.getContext('2d');
 const over=document.getElementById('over'),o=over.getContext('2d');
@@ -141,17 +142,16 @@ cv.addEventListener('pointermove',function(e){
   if(moving){ moving.x=w[0]-moving.gx; moving.y=w[1]-moving.gy; renderOverlay(); return; }
   if(drawing) stroke(w[0],w[1],e.pressure,false);
 });
-['pointerup','pointercancel'].forEach(function(ev){
-  cv.addEventListener(ev,function(){
-    if(panning){ panning=false; return; }
-    if(selOn){ selOn=false;
-      var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
-      if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
-      else lift();
-      return; }
-    if(drawing){ drawing=false; save(); }
-  });
+cv.addEventListener('pointerup',function(e){
+  if(panning){ panning=false; return; }
+  if(selOn){ selOn=false;
+    var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
+    if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
+    else lift();
+    return; }
+  if(drawing){ drawing=false; save(); }
 });
+cv.addEventListener('pointercancel',function(){ panning=false; drawing=false; selOn=false; sel=null; });
 function grabAt(wx,wy){
   var dx=Math.round(wx*DPR), dy=Math.round(wy*DPR);
   var Wd=cv.width, Hd=cv.height;
@@ -171,7 +171,7 @@ function grabAt(wx,wy){
     if(py>0&&!visited[p-Wd]&&d[(p-Wd)*4+3]>=12){visited[p-Wd]=1;stack.push(p-Wd);}
     if(py<Hd-1&&!visited[p+Wd]&&d[(p+Wd)*4+3]>=12){visited[p+Wd]=1;stack.push(p+Wd);}
   }
-    if(pts.length<4) return false;
+  if(pts.length<4) return false;
   if(pts.length>30000){ flash('too connected \u00b7 drag a box instead'); return false; }
   pushUndo();
   var bw=maxX-minX+1, bh=maxY-minY+1;
@@ -180,7 +180,7 @@ function grabAt(wx,wy){
   for(var k=0;k<pts.length;k++){ var p2=pts[k], qx=p2%Wd, qy=(p2-qx)/Wd;
     var sx=qx-minX, sy=qy-minY, si=(sy*bw+sx)*4, di=p2*4;
     timg.data[si]=d[di]; timg.data[si+1]=d[di+1]; timg.data[si+2]=d[di+2]; timg.data[si+3]=d[di+3];
-        d[di+3]=0;
+    d[di+3]=0;
   }
   tc.putImageData(timg,0,0);
   x.putImageData(img,0,0);
@@ -264,5 +264,6 @@ function share(){ exportCanvas().toBlob(function(b){
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
 }catch(e){} paint(); applyView(); })();
 </script>
+  
 </body>
 </html>
