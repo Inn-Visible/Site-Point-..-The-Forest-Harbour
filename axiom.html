@@ -62,6 +62,15 @@
   footer b{color:var(--ink)}
   footer a{color:var(--blue);text-decoration:none}
   footer a:hover{color:var(--ink)}
+  @media(max-width:700px){
+    body{overflow-x:hidden}
+    header{padding:14px 16px}
+    .cluster{width:min(400px,92vw);height:min(400px,92vw)}
+    .node svg{width:62px;height:62px}
+    .node.center svg{width:84px;height:84px}
+    input,select,textarea{font-size:16px}
+    .dock{padding:20px 14px}
+  }
 </style>
 </head>
 <body>
@@ -184,7 +193,7 @@ function lockdoor(){
   <b><a href="eigen.html">EIGEN DYNAMICS</a></b> |
   <b><a href="baseline.html">BASELINE EVOLUTIONS</a></b> |
   <b><a href="keystone.html">KEYSTONE SOLUTIONS</a></b><br>
-  An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  An Inn.Visible Initiative · "Know Thyself; Do No Harm; Hold The Truth."<br>
   <a href="index.html?gate">the hive entrance ↗</a> · <a href="#" onclick="lockdoor();return false">lock the door</a>
 </footer>
 
@@ -399,6 +408,7 @@ function lockdoor(){
 })();
 </script>
 
+<!-- the ground · what the house stands on -->
 <script>
 (function(){
   var sec=document.createElement('section');
@@ -408,7 +418,7 @@ function lockdoor(){
     +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:6px;flex-wrap:wrap"></div>'
     +'<div id="styleHint" style="text-align:center;font-size:9px;color:#5c6875;font-style:italic;margin-bottom:10px"></div>'
     +'<div id="toolRow" style="display:flex;gap:6px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
-   +'<button id="t_pan" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">glide</button>'
+    +'<button id="t_pan" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">glide</button>'
     +'<button id="t_draw" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">draw</button>'
     +'<button id="t_life" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">life</button>'
     +'<button id="t_lift" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">lift</button>'
@@ -430,7 +440,7 @@ function lockdoor(){
     +'</div>'
     +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw · life · lift · erase = your hand on the world · tap lift = grab one · ↶↷ undo · © OSM · © CARTO · © OpenTopoMap · © Esri</div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
-   var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
+  var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
   cv.style.touchAction='none';
   cv.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
   cv.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
@@ -523,10 +533,6 @@ function lockdoor(){
     var r=cv.getBoundingClientRect();
     liftSel=null;
     if(small){ grabOne(screenToFrac(e)); return; }
-    var w=world(zoom); var tlx=cx-cv.width/2, tly=cy-cv.height/2;
-    var fx0=(tlx+Math.min(liftStart?liftStart[0]:0,screenToFrac(e)[0]))/w; // fallback
-    // recompute from stored box via lastFrac not available; use selection captured in draw coords
-    // (box path) — reconstruct using current pointer and start
     var sF=liftStart||screenToFrac(e), eF=screenToFrac(e);
     var a=Math.min(sF[0],eF[0]),b=Math.min(sF[1],eF[1]),c=Math.max(sF[0],eF[0]),d=Math.max(sF[1],eF[1]);
     var sI=[],pI=[];
@@ -535,7 +541,7 @@ function lockdoor(){
     if(sI.length||pI.length){ lifted={s:sI,p:pI,ox:0,oy:0,gx:eF[0],gy:eF[1]}; }
     liftStart=null; }
   var lastFrac=[0,0], drag=false, lx=0, ly=0;
-    cv.addEventListener('pointerdown',function(e){ e.preventDefault(); lastFrac=screenToFrac(e);
+  cv.addEventListener('pointerdown',function(e){ e.preventDefault(); lastFrac=screenToFrac(e);
     if(tool==='lift'){ if(lifted){ commitLift(); draw(); } else startLift(e); return; }
     if(tool==='erase'){ var th=12/world(zoom);
       for(var pi=marks.pins.length-1;pi>=0;pi--){ var pp=marks.pins[pi];
@@ -558,10 +564,11 @@ function lockdoor(){
     if(tool==='draw'&&curStroke){ curStroke.pts.push(lastFrac); draw(); return; }
     if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw();
   });
-  ['pointerup','pointercancel'].forEach(function(ev){ cv.addEventListener(ev,function(e){
+  cv.addEventListener('pointerup',function(e){
     if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
-    drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; }); });
+    drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
+  cv.addEventListener('pointercancel',function(){ drag=false; liftSel=null; });
   document.getElementById('zIn').onclick=function(){ if(zoom<maxZ()){ zoom++; cx*=2; cy*=2; draw(); } };
   document.getElementById('zOut').onclick=function(){ if(zoom>3){ zoom--; cx/=2; cy/=2; draw(); } };
   document.getElementById('m_undo').onclick=undoMarks;
@@ -593,7 +600,6 @@ function lockdoor(){
   setStyle('ink'); setTool('pan');
 })();
 </script>
-  
 
 <script>
 (function(){
@@ -636,7 +642,7 @@ function lockdoor(){
   });
 })();
 </script>
-  
+
 <script>
 (function(){
   var B=[
@@ -706,7 +712,7 @@ function lockdoor(){
     var b=beaufort(w); var tr=trend(p);
     var sec=document.createElement('section');
     sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;text-align:center';
-      +'<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the wind & the weight of the sky \u00b7 maritime</div>'
+    sec.innerHTML='<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the wind & the weight of the sky \u00b7 maritime</div>'
      +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:10px">READING '+POSLABEL+' SKY \u00b7 '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W</div>'  
       +'<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">wind '+w+' km/h from the '+comp+' \u00b7 force '+b[0]+' \u00b7 '+b[1]+'</div>'
       +'<div style="font-size:11px;color:#5c6875;font-style:italic;margin-top:6px">'+b[2]+'</div>'
@@ -729,18 +735,6 @@ function lockdoor(){
   d.innerHTML='<a href="rules.html" style="color:#3f7fc1;text-decoration:none">the house rules \u00b7 every hand holds the house \u2197</a>';
   f.appendChild(d); })();
 </script>
-
-<style>
-@media(max-width:700px){
-  body{overflow-x:hidden}
-  header{padding:14px 16px}
-  .cluster{width:min(400px,92vw);height:min(400px,92vw)}
-  .node svg{width:62px;height:62px}
-  .node.center svg{width:84px;height:84px}
-  input,select,textarea{font-size:16px}
-  .dock{padding:20px 14px}
-}
-</style>
 
 <script>
 (function(){
@@ -777,14 +771,6 @@ function lockdoor(){
   #mapCv{height:min(420px,75vh)}
 }
 </style>
-<script>
-(function(){
-  var cv=document.getElementById('mapCv');
-  if(!cv) return;
-  cv.style.touchAction='none';
-  cv.addEventListener('touchmove',function(e){ e.preventDefault(); },{passive:false});
-})();
-</script>
-  
+
 </body>
 </html>
