@@ -250,7 +250,7 @@ setInterval(function(){
   var SYM={axiom:'⚙',eigen:'📚',baseline:'🎵',keystone:'📊',all:'◆'};
   var CAP={axiom:'the supply chain',eigen:'the library',baseline:'the studio',keystone:'the books',all:'the whole house'};
   var names=Object.keys(r);
-  if(!names.length){ wrap.innerHTML='<div style="padding:8px 6px;color:#5c6875;font-style:italic;font-size:11px">no sparks yet · the ferryman's words are standing by</div>'; return; }
+  if(!names.length){ wrap.innerHTML='<div style="padding:8px 6px;color:#5c6875;font-style:italic;font-size:11px">no sparks yet \u00b7 the ferryman\u2019s words are standing by</div>'; return; }
   names.sort().forEach(function(n){
     var it=r[n];
     var row=document.createElement('div');
