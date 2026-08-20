@@ -145,6 +145,7 @@ cv.addEventListener('pointermove',function(e){
 });
 cv.addEventListener('pointerup',function(e){
   if(panning){ panning=false; return; }
+  if(holdMoving){ holdMoving=false; stamp(); return; }
   if(selOn){ selOn=false;
     var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
     if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
@@ -152,7 +153,7 @@ cv.addEventListener('pointerup',function(e){
     return; }
   if(drawing){ drawing=false; save(); }
 });
-cv.addEventListener('pointercancel',function(e){
+  cv.addEventListener('pointercancel',function(e){
   if(panning){ panning=false; return; }
   if(selOn){ selOn=false;
     var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
