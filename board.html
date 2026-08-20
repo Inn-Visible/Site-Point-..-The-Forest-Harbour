@@ -76,7 +76,7 @@ try{
   render(rows,true);
 }catch(e){
   try{ render(JSON.parse(localStorage.getItem('hive_board_cache')||'[]'),false); }catch(e2){
-    document.getElementById('tot').textContent='the book is closed (offline) — no cached witness yet.';
+    document.getElementById('tot').innerHTML='the book is kept for the house \u00b7 <a href="index.html?gate" style="color:#3f7fc1">knock at the wicket</a> to come aboard';
   }
 }
 </script>
