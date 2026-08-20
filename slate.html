@@ -169,7 +169,8 @@ function grabAt(wx,wy){
     if(py>0&&!visited[p-Wd]&&d[(p-Wd)*4+3]>=12){visited[p-Wd]=1;stack.push(p-Wd);}
     if(py<Hd-1&&!visited[p+Wd]&&d[(p+Wd)*4+3]>=12){visited[p+Wd]=1;stack.push(p+Wd);}
   }
-  if(pts.length<4) return false;
+    if(pts.length<4) return false;
+  if(pts.length>30000){ flash('too connected \u00b7 drag a box instead'); return false; }
   pushUndo();
   var bw=maxX-minX+1, bh=maxY-minY+1;
   var t=document.createElement('canvas'); t.width=bw; t.height=bh;
