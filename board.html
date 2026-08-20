@@ -175,7 +175,7 @@ setInterval(function(){
     var fr=document.createElement('div');
     fr.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.12em;flex-wrap:wrap';
     var acc=localStorage.getItem('hive_access');
-        fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 '+(((r['__founder']||{}).alias)||'quilliinn primrose').replace(/[<>&"]/g,'')+' \u00b7 rag\u00b7\u00b7\u00b7d</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#d9a83a">exempt \u00b7 the door is yours</span>';
+             fr.innerHTML='<span style="flex:1;min-width:120px">\u25c6 the keeper</span><span style="min-width:70px">all</span><span style="min-width:56px">keeper</span><span style="color:#d9a83a">exempt \u00b7 the door is yours</span>';
         var fhay=('quilliinn primrose '+(((r['__founder']||{}).alias)||'')+' keeper founder all').toLowerCase();
     if(!q||fhay.indexOf(q)>-1) wrap.appendChild(fr);
                var names=Object.keys(r).filter(function(n){ return n!=='__founder'; }).filter(function(n){
@@ -255,7 +255,7 @@ setInterval(function(){
     var it=r[n];
     var row=document.createElement('div');
     row.style.cssText='display:flex;gap:8px;padding:7px 6px;border-bottom:1px solid #223041;color:#93a1b0;font-size:11px;letter-spacing:.08em;flex-wrap:wrap';
-    var name=it.alias||(n==='__founder'?'the founder':String(n).slice(0,3)+'···'+String(n).slice(-1));
+        var name=(n==='__founder')?'the keeper':(it.alias||String(n).slice(0,3)+'\u00b7\u00b7\u00b7'+String(n).slice(-1));
     var sym=SYM[it.pillar||'']||'·';
     var cap=CAP[it.pillar||'']||'';
     row.innerHTML='<span style="flex:1;min-width:120px;color:'+(n==='__founder'?'#d9a83a':'#e8e4d8')+'">'+sym+' '+esc(name)+'</span><span style="min-width:70px;color:#5c6875;font-style:italic">'+esc(cap)+'</span><span style="color:'+(it.tier===0?'#d9a83a':it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(it.tier===0?'keeper':(TIERS[it.tier||1]||'spark'))+'</span><span style="min-width:60px;color:#5c6875">'+(it.coins||0)+' coins</span>';
