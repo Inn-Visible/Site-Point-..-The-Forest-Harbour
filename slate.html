@@ -178,8 +178,9 @@ function grabAt(wx,wy){
   for(var k=0;k<pts.length;k++){ var p2=pts[k], qx=p2%Wd, qy=(p2-qx)/Wd;
     var sx=qx-minX, sy=qy-minY, si=(sy*bw+sx)*4, di=p2*4;
     timg.data[si]=d[di]; timg.data[si+1]=d[di+1]; timg.data[si+2]=d[di+2]; timg.data[si+3]=d[di+3];
-    d[di+3]=0;
+        d[di+3]=0;
   }
+  tc.putImageData(timg,0,0);
   x.putImageData(img,0,0);
   moving={img:t,w:bw/DPR,h:bh/DPR,x:minX/DPR,y:minY/DPR,gx:wx-(minX/DPR),gy:wy-(minY/DPR)};
   renderOverlay(); save(); flash('grabbed \u00b7 tap to set it down');
