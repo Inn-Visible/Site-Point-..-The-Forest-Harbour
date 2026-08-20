@@ -454,7 +454,7 @@ function lockdoor(){
   var PALM=['#d9a83a','#e8e4d8','#7fb2e5','#e5735a','#78dcc8'];
   var style='ink', zoom=12, cx=0, cy=0, IMG={}, pending={}, landscape=false;
   var tool='pan', showMarks=true, curStroke=null, drawColor=0;
-  var liftSel=null, lifted=null, liftStart=null;
+  var liftSel=null, lifted=null, liftStart=null, holdLift=false;
   var marks={strokes:[],pins:[]};
   try{ marks=JSON.parse(localStorage.getItem('hive_map_marks'))||{strokes:[],pins:[]}; }catch(e){}
   var mHist=[], mFuture=[];
