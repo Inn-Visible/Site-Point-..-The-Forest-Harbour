@@ -238,9 +238,11 @@ function lockdoor(){
   function draw(){
     clocks.innerHTML=ZONES.map(function(z){
       try{
-        var d=new Date();
-        var hh=+new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'numeric',hour12:false}).format(d);
-        var mm2=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],minute:'2-digit'}).format(d);
+              var d=new Date();
+        var pf=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(d);
+        var hh='00',mm2='00';
+               pf.formatToParts(d).forEach(function(p){ if(p.type==='hour')hh=p.value; if(p.type==='minute')mm2=p.value; });
+        hh=+hh;
                 return '<span style="min-width:110px"><span style="display:block;font-size:9px;letter-spacing:.2em;color:#5c6875">'+glyph(hh)+' '+z[0].toUpperCase()+'</span><b style="display:block;margin-top:4px;font-size:17px;white-space:nowrap;color:'+P[cur]+';text-shadow:0 0 10px '+hexA(P[cur],.5)+'">'+String(hh).padStart(2,'0')+':'+mm2+'</b></span>';
       }catch(e){ return ''; }
     }).join('');
