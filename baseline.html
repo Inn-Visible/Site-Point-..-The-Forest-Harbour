@@ -53,6 +53,11 @@
   .posrow{display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .posrow button{background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:4px 10px;cursor:pointer}
   .posrow span{color:#5c6875;font-size:10px;letter-spacing:.15em}
+   .neckhelp{margin-top:14px;color:#5c6875;font-size:10.5px;letter-spacing:.08em;
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center}
+  .neckhelp b{color:#93a1b0;font-weight:600}
+  .neckhelp kbd{border:1px solid #223041;border-bottom-width:2px;border-radius:3px;padding:1px 5px;
+    font-family:inherit;font-size:9px;color:#93a1b0;background:#0e141b}
   .string:nth-child(1) .wire{height:6px}
   .string:nth-child(2) .wire{height:5px}
   .string:nth-child(3) .wire{height:4px}
@@ -119,7 +124,11 @@ function lockdoor(){
       <span id="fretRead" style="color:#93a1b0"></span>
     </div>
     <div id="rows"></div>
-    <div class="wallnote">click · tap a fret · keys 1-4 = open strings — the neck is live</div>
+        <div class="neckhelp">
+      <span><b>tap</b> a fret · it blooms & sings</span>
+      <span><b>keys</b> = the neck · rows are strings <kbd>Q</kbd><kbd>A</kbd><kbd>Z</kbd><kbd>1</kbd> (open), columns climb frets</span>
+      <span class="nh-mobile"><b>◀ ▶</b> walks the neck on small glass</span>
+    </div>
   </div>
 
   <section class="dock">
@@ -258,7 +267,25 @@ buildRows(); setPos(0);
 document.getElementById('posDn').onclick=function(){ setPos(pos-1); };
 document.getElementById('posUp').onclick=function(){ setPos(pos+1); };
 addEventListener('resize',function(){ clearTimeout(rz); rz=setTimeout(function(){ setPos(pos); },150); });
-addEventListener('keydown',function(e){ if(e.repeat) return; var i=['1','2','3','4'].indexOf(e.key); if(i>-1) hit(strings[i]); });
+var KEYS={
+ 'q':[0,0],'w':[0,1],'e':[0,2],'r':[0,3],'t':[0,4],'y':[0,5],'u':[0,6],'i':[0,7],'o':[0,8],'p':[0,9],'[':[0,10],']':[0,11],'\\':[0,12],
+ 'a':[1,0],'s':[1,1],'d':[1,2],'f':[1,3],'g':[1,4],'h':[1,5],'j':[1,6],'k':[1,7],'l':[1,8],';':[1,9],"'":[1,10],
+ 'z':[2,0],'x':[2,1],'c':[2,2],'v':[2,3],'b':[2,4],'n':[2,5],'m':[2,6],',':[2,7],'.':[2,8],'/':[2,9],
+ '1':[3,0],'2':[3,1],'3':[3,2],'4':[3,3],'5':[3,4],'6':[3,5],'7':[3,6],'8':[3,7],'9':[3,8],'0':[3,9],'-':[3,10],'=':[3,11]
+};
+function ensureVisible(fr){ if(isWide()) return; if(fr<pos) setPos(fr); else if(fr>pos+WIN-1) setPos(fr-(WIN-1)); }
+function playFret(si,fr){ var row=strings[si]; if(!row) return; ensureVisible(fr);
+  var f=parseFloat(row.dataset.f)*Math.pow(2,fr/12); pluck(f); var c=pluckGlow();
+  if(fr===0){ row.querySelectorAll('.wire').forEach(function(w){ glow(w,c); }); }
+  else { var cell=row.querySelector('.fret[data-fret="'+fr+'"]'); if(cell) glow(cell.querySelector('.wire'),c); }
+  var rd=document.getElementById('fretRead');
+  if(rd) rd.textContent=row.querySelector('.inlay').textContent+' \u00b7 '+(fr===0?'open':'fret '+fr)+' \u00b7 '+noteName(f); }
+addEventListener('keydown',function(e){
+  if(e.repeat) return;
+  var t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA')) return;
+  var k=e.key.length===1?e.key.toLowerCase():e.key;
+  var m=KEYS[k]; if(m){ e.preventDefault(); playFret(m[0],m[1]); }
+});
 </script>
 
 <script>
