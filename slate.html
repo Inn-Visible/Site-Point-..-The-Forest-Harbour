@@ -177,4 +177,88 @@ function grabAt(wx,wy){
   for(var k=0;k<pts.length;k++){ var p2=pts[k], qx=p2%Wd, qy=(p2-qx)/Wd;
     var sx=qx-minX, sy=qy-minY, si=(sy*bw+sx)*4, di=p2*4;
     timg.data[si]=d[di]; timg.data[si+1]=d[di+1]; timg.data[si+2]=d[di+2]; timg.data[si+3]=d[di+3];
-   
+    d[di+3]=0;
+  }
+  x.putImageData(img,0,0);
+  moving={img:t,w:bw/DPR,h:bh/DPR,x:minX/DPR,y:minY/DPR,gx:wx-(minX/DPR),gy:wy-(minY/DPR)};
+  renderOverlay(); save(); flash('grabbed \u00b7 tap to set it down');
+  return true;
+}
+function normSel(){ var a=Math.min(sel.x0,sel.x1),b=Math.min(sel.y0,sel.y1),
+  c=Math.max(sel.x0,sel.x1),d=Math.max(sel.y0,sel.y1); return {x:a,y:b,w:c-a,h:d-b}; }
+function lift(){
+  var r=normSel(); sel=null;
+  if(r.w<6||r.h<6){ renderOverlay(); return; }
+  pushUndo();
+  var dw=Math.max(1,Math.round(r.w*DPR)), dh=Math.max(1,Math.round(r.h*DPR));
+  var t=document.createElement('canvas'); t.width=dw; t.height=dh;
+  t.getContext('2d').drawImage(cv,Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh,0,0,dw,dh);
+  x.save(); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='destination-out';
+  x.fillRect(Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh); x.restore();
+  moving={img:t,w:r.w,h:r.h,x:r.x,y:r.y,gx:0,gy:0};
+  renderOverlay(); save(); flash('lifted \u00b7 tap to set it down');
+}
+function stamp(){
+  if(!moving) return;
+  x.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h);
+  moving=null; renderOverlay(); save(); flash('set down');
+}
+function renderOverlay(){
+  o.clearRect(0,0,W,H);
+  if(sel){ var r=normSel(); o.strokeStyle='#d9a83a'; o.setLineDash([4,3]); o.lineWidth=1;
+    o.strokeRect(r.x,r.y,r.w,r.h); o.setLineDash([]); }
+  if(moving){ o.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h); }
+}
+function placeText(wx,wy){
+  var t=prompt('the wall says..'); if(!t) return;
+  pushUndo();
+  x.globalCompositeOperation='source-over';
+  x.fillStyle=PAL[light?'light':'dark'][ci];
+  x.font=tsize+'px ui-monospace,Consolas,monospace';
+  x.fillText(t,wx,wy);
+  save(); flash('lettered');
+}
+function stroke(px,py,pr,dot){
+  const p=(pr&&pr>0&&pr!==0.5)?pr:0.5;
+  x.globalCompositeOperation=erase?'destination-out':'source-over';
+  x.strokeStyle=PAL[light?'light':'dark'][ci];
+  x.lineWidth=erase?size*3:size*(0.6+p*1.4);
+  x.beginPath(); x.moveTo(lx,ly); x.lineTo(px+(dot?0.01:0),py+(dot?0.01:0)); x.stroke();
+  lx=px; ly=py;
+}
+function save(){ try{ localStorage.setItem('hive_slate',cv.toDataURL());
+  localStorage.setItem('hive_slate_mode',light?'1':'0'); }catch(e){} }
+function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); save(); }
+function tiaga(){ pushUndo(); let n=0;
+  const iv=setInterval(function(){ n++;
+    cv.style.transform='translate('+(n%2?7:-7)+'px,0) rotate('+(n%2?1.2:-1.2)+'deg)';
+    if(n>5){ clearInterval(iv); applyView(); clearAll(); flash('shaken clear \u00b7 etch-a-sketch law'); }
+  },45); }
+function board(){ light=!light; document.body.classList.toggle('light',light); paint(); save();
+  flash(light?'bright room \u00b7 the wall goes light \u2014 easy on the eyes':'back to the dark wall'); }
+function exportCanvas(){
+  const t=document.createElement('canvas'); t.width=cv.width; t.height=cv.height;
+  const c=t.getContext('2d');
+  c.fillStyle=light?'#f2efe6':'#0a0d12'; c.fillRect(0,0,t.width,t.height);
+  c.drawImage(cv,0,0); return t;
+}
+function png(){ exportCanvas().toBlob(function(b){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='slate.png'; a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000); flash('png saved'); }); }
+function copy(){ exportCanvas().toBlob(function(b){
+  try{ navigator.clipboard.write([new ClipboardItem({'image/png':b})])
+    .then(function(){flash('copied to clipboard');},function(){flash('copy blocked');});
+  }catch(e){ flash('copy blocked'); } }); }
+function share(){ exportCanvas().toBlob(function(b){
+  const f=new File([b],'slate.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f],title:'the slate'});
+  else png(); }); }
+(function(){ try{
+  if(localStorage.getItem('hive_slate_mode')==='1'){ light=true; document.body.classList.add('light'); }
+  const d=localStorage.getItem('hive_slate');
+  if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
+    x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
+}catch(e){} paint(); applyView(); })();
+</script>
+</body>
+</html>
