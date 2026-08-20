@@ -430,7 +430,10 @@ function lockdoor(){
     +'</div>'
     +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw · life · lift · erase = your hand on the world · tap lift = grab one · ↶↷ undo · © OSM · © CARTO · © OpenTopoMap · © Esri</div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
-  var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
+   var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
+  cv.style.touchAction='none';
+  cv.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+  cv.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
   var STYLE={ink:'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
              night:'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
              contour:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
@@ -532,7 +535,7 @@ function lockdoor(){
     if(sI.length||pI.length){ lifted={s:sI,p:pI,ox:0,oy:0,gx:eF[0],gy:eF[1]}; }
     liftStart=null; }
   var lastFrac=[0,0], drag=false, lx=0, ly=0;
-  cv.addEventListener('pointerdown',function(e){ lastFrac=screenToFrac(e);
+    cv.addEventListener('pointerdown',function(e){ e.preventDefault(); lastFrac=screenToFrac(e);
     if(tool==='lift'){ if(lifted){ commitLift(); draw(); } else startLift(e); return; }
     if(tool==='erase'){ var th=12/world(zoom);
       for(var pi=marks.pins.length-1;pi>=0;pi--){ var pp=marks.pins[pi];
