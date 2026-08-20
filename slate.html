@@ -122,6 +122,7 @@ function redo(){ const d=redoStack.pop(); if(!d) return; undoStack.push(cv.toDat
 let drawing=false,lx=0,ly=0;
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 cv.addEventListener('pointerdown',function(e){
+  e.preventDefault();
   cv.setPointerCapture(e.pointerId);
   var w=toWorld(e);
   if(mode==='move'){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
