@@ -95,6 +95,7 @@ function fit(){
   if(old.width) x.drawImage(old,0,0,old.width,old.height,0,0,W,H);
 }
 addEventListener('resize',fit); addEventListener('orientationchange',function(){setTimeout(fit,150);}); fit();
+cv.style.touchAction='none'; over.style.touchAction='none';
 const sw=document.getElementById('swatches');
 PAL.dark.forEach(function(c,i){
   const b=document.createElement('button'); b.className='sw'; b.onclick=function(){ci=i;erase=false;paint();};
