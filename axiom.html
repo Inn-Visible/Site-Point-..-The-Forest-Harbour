@@ -542,7 +542,10 @@ function lockdoor(){
     liftStart=null; }
   var lastFrac=[0,0], drag=false, lx=0, ly=0;
   cv.addEventListener('pointerdown',function(e){ e.preventDefault(); lastFrac=screenToFrac(e);
-    if(tool==='lift'){ if(lifted){ commitLift(); draw(); } else startLift(e); return; }
+        if(tool==='lift'){
+      if(lifted){ holdLift=true; lifted.gx=lastFrac[0]-lifted.ox; lifted.gy=lastFrac[1]-lifted.oy; return; }
+      if(grabOne(lastFrac)){ holdLift=true; return; }
+      startLift(e); return; }
     if(tool==='erase'){ var th=12/world(zoom);
       for(var pi=marks.pins.length-1;pi>=0;pi--){ var pp=marks.pins[pi];
         if(Math.abs(pp[0]-lastFrac[0])<th&&Math.abs(pp[1]-lastFrac[1])<th){ pushHist(); marks.pins.splice(pi,1); saveMarks(); draw(); return; } }
