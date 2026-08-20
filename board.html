@@ -75,10 +75,11 @@ try{
   localStorage.setItem('hive_board_when',String(Date.now()));
   render(rows,true);
 }catch(e){
-  try{ render(JSON.parse(localStorage.getItem('hive_board_cache')||'[]'),false); }catch(e2){
-    document.getElementById('tot').innerHTML='the book is kept for the house \u00b7 <a href="index.html?gate" style="color:#3f7fc1">knock at the wicket</a> to come aboard';
-  }
-}
+   try{ var c=JSON.parse(localStorage.getItem('hive_board_cache')||'[]');
+    if(!c.length && !(localStorage.getItem('hive_user')||localStorage.getItem('hive_member')||localStorage.getItem('hive_patron'))){
+      document.getElementById('tot').innerHTML='the book is kept for the house \u00b7 <a href="index.html?gate" style="color:#3f7fc1">knock at the wicket</a> to come aboard';
+    } else render(c,false);
+  }catch(e2){
 </script>
 
 <script type="module">
