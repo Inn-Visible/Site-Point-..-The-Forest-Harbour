@@ -151,7 +151,15 @@ cv.addEventListener('pointerup',function(e){
     return; }
   if(drawing){ drawing=false; save(); }
 });
-cv.addEventListener('pointercancel',function(){ panning=false; drawing=false; selOn=false; sel=null; });
+cv.addEventListener('pointercancel',function(e){
+  if(panning){ panning=false; return; }
+  if(selOn){ selOn=false;
+    var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
+    if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
+    else lift();
+    return; }
+  if(drawing){ drawing=false; save(); }
+});
 function grabAt(wx,wy){
   var dx=Math.round(wx*DPR), dy=Math.round(wy*DPR);
   var Wd=cv.width, Hd=cv.height;
