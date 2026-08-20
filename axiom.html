@@ -567,8 +567,9 @@ function lockdoor(){
     if(tool==='draw'&&curStroke){ curStroke.pts.push(lastFrac); draw(); return; }
     if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw();
   });
-  cv.addEventListener('pointerup',function(e){
-    if(tool==='lift'&&liftSel){ endLift(e); draw(); }
+   cv.addEventListener('pointerup',function(e){
+    if(holdLift){ holdLift=false; commitLift(); draw(); }
+    else if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
     cv.addEventListener('pointercancel',function(e){
