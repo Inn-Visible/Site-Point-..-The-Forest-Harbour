@@ -37,6 +37,22 @@
     background:linear-gradient(90deg,transparent,var(--pc,#3f7fc1) 10%,var(--pcore,#9cc4e8) 50%,var(--pc,#3f7fc1) 90%,transparent);
     box-shadow:0 0 8px var(--pc),0 0 22px var(--pc),0 0 46px var(--pcg,rgba(63,127,193,.4))}
   .wire.lit::after{opacity:1;transition:opacity .04s}
+   .board{flex:1;display:flex;position:relative}
+  .fret{flex:1;position:relative;display:flex;align-items:center;cursor:pointer;
+    border-right:2px solid #1a2430;height:36px;touch-action:manipulation}
+  .fret:last-child{border-right:none}
+  .fret[data-fret="0"]{border-left:3px solid #d8dde3}
+  .fret .wire{flex:none;width:100%;border-radius:0;
+    background:linear-gradient(90deg,#2f6ba8,#9cc4e8 50%,#2f6ba8)}
+  .fret.mark::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:7px;height:7px;border-radius:50%;background:#18222e}
+  .fret.mark12::before{content:"";position:absolute;left:50%;top:27%;transform:translate(-50%,-50%);
+    width:7px;height:7px;border-radius:50%;background:#18222e}
+  .fret.mark12::after{content:"";position:absolute;left:50%;top:73%;transform:translate(-50%,-50%);
+    width:7px;height:7px;border-radius:50%;background:#18222e}
+  .posrow{display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .posrow button{background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;padding:4px 10px;cursor:pointer}
+  .posrow span{color:#5c6875;font-size:10px;letter-spacing:.15em}
   .string:nth-child(1) .wire{height:6px}
   .string:nth-child(2) .wire{height:5px}
   .string:nth-child(3) .wire{height:4px}
