@@ -221,10 +221,10 @@ function hit(s){
 }
 strings.forEach(s => {
   s.addEventListener('pointerdown', () => hit(s));
-  s.querySelector('.wire').addEventListener('animationend', () => {
+    s.querySelector('.wire').addEventListener('animationend', () => {
     const w = s.querySelector('.wire');
     w.classList.remove('buzz');
-    w.style.boxShadow = '';
+    w.classList.remove('lit');
   });
 });
 addEventListener('keydown', e => {
