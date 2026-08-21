@@ -182,7 +182,7 @@ let drive=null;
 function driveCurve(k){ const n=1024,c=new Float32Array(n);
   for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1;
     const y=Math.tanh(k*x)+0.35*Math.tanh(k*3*x); c[i]=y/1.35; } return c; }
-function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(1.6); drive.oversample='2x'; } return drive; }
+function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(3.0); drive.oversample='2x'; } return drive; }
 
 let NB=null;
 function noiseBuf(a){ if(!NB){ NB=a.createBuffer(1,a.sampleRate*0.1,a.sampleRate);
