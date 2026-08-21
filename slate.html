@@ -129,8 +129,8 @@ cv.addEventListener('pointerdown',function(e){
   var w=toWorld(e);
   if(mode==='move'){ panning=true; panSX=e.clientX; panSY=e.clientY; panOX=ox; panOY=oy; return; }
     if(mode==='lift'){
-    if(moving){ holdMoving=true; moving.gx=w[0]-moving.x; moving.gy=w[1]-moving.y; return; }
-    if(grabAt(w[0],w[1])){ holdMoving=true; return; }
+    if(moving){ moving.x=w[0]-moving.gx; moving.y=w[1]-moving.gy; stamp(); return; }
+    if(grabAt(w[0],w[1])){ return; }
     liftDownWorld=w;
     sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; selOn=true; return;
   }
@@ -146,7 +146,7 @@ cv.addEventListener('pointermove',function(e){
 });
 cv.addEventListener('pointerup',function(e){
   if(panning){ panning=false; return; }
-  if(holdMoving){ holdMoving=false; stamp(); return; }
+  if(holdMoving){ holdMoving=false; return; }
   if(selOn){ selOn=false;
     var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
     if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
@@ -156,7 +156,7 @@ cv.addEventListener('pointerup',function(e){
 });
   cv.addEventListener('pointercancel',function(e){
   if(panning){ panning=false; return; }
-    if(holdMoving){ holdMoving=false; stamp(); return; }
+    if(holdMoving){ holdMoving=false; return; }
     if(selOn){ selOn=false;
     var tiny=Math.abs(sel.x1-sel.x0)<6&&Math.abs(sel.y1-sel.y0)<6;
     if(tiny){ var dw=liftDownWorld; sel=null; if(dw) grabAt(dw[0],dw[1]); }
