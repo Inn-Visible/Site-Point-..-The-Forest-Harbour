@@ -816,6 +816,27 @@ function lockdoor(){
   else m.insertBefore(sec,m.firstChild);
 })();
 </script>
+
+<script>
+(function(){
+  var all=document.querySelectorAll('*'), head=null;
+  for(var i=0;i<all.length;i++){ if((all[i].textContent||'').trim()==='the supply chain'){ head=all[i]; break; } }
+  if(!head) return;
+  var box=head.closest('section,div');
+  var win=document.createElement('div');
+  win.style.cssText='display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px';
+  [['the get-going kit','$60'],['field flash drive','$25'],['insignia sticker sheet','$12']].forEach(function(it){
+    var a=document.createElement('a'); a.href='shop.html';
+    a.style.cssText='border:1px dashed #223041;color:#93a1b0;font-size:10px;letter-spacing:.1em;padding:8px 12px;text-decoration:none';
+    a.innerHTML='<span style="color:#e8e4d8">'+it[0]+'</span> \u00b7 <span style="color:#d9a83a">'+it[1]+' \u2197</span>';
+    win.appendChild(a);
+  });
+  var door=document.createElement('a');
+  door.href='shop.html'; door.textContent='enter the supply store \u2197';
+  door.style.cssText='display:block;width:max-content;margin:14px auto 0;border:1px solid #d9a83a;color:#d9a83a;font-size:11px;letter-spacing:.2em;padding:9px 18px;text-decoration:none';
+  box.appendChild(win); box.appendChild(door);
+})();
+</script>
   
 </body>
 </html>
