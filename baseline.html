@@ -181,7 +181,7 @@ function pluckGlow(){ const cur=localStorage.getItem('hive_pillar_theme')||'base
 let drive=null;
 function driveCurve(k){ const n=1024,c=new Float32Array(n);
   for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1; c[i]=Math.tanh(x*k)/Math.tanh(k); } return c; }
-function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(2.6); drive.oversample='2x'; } return drive; }
+function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(2.0); drive.oversample='2x'; } return drive; }
 
 function pluck(f){
   const a=audio(), t=a.currentTime;
