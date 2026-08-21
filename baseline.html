@@ -194,22 +194,19 @@ function pluck(f){
   const g=a.createGain(), lp=a.createBiquadFilter();
   lp.type='lowpass';
   let parts;
-  if(currentVoice==='bass'){
-    // bass guitar from hell: resonant picked bloom, hard bite, pick clack
-        const hi=f>80;
-    lp.Q.value=hi?3:9;
-    lp.frequency.setValueAtTime(Math.max(2600,f*20),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(700,f*6),t+0.45);
+   if(currentVoice==='bass'){
+    // clean picked bass: solid fundamental, gentle growl, no boing no wobble
+    lp.Q.value=0.8;
+    lp.frequency.setValueAtTime(Math.max(2200,f*12),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(600,f*5),t+0.6);
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(f<60?0.8:0.55,t+0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+1.4);
-           parts=hi
-      ?[[f,'sawtooth',.6],[f*1.003,'sawtooth',.3],[f*2,'sawtooth',.3],[f*3,'square',.15],[f*4,'sawtooth',.1]]
-      :[[f,'sawtooth',.6],[f*1.006,'sawtooth',.35],[f,'square',.25],[f*2,'sawtooth',.3],[f*3,'square',.2],[f*4,'sawtooth',.08]];
+    g.gain.exponentialRampToValueAtTime(f<60?0.75:0.5,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.6);
+    parts=[[f,'sawtooth',.5],[f,'sine',.5],[f*2,'sine',.25],[f*3,'sine',.12]];
     const pk=a.createBufferSource(); pk.buffer=noiseBuf(a);
-    const pf=a.createBiquadFilter(); pf.type='bandpass'; pf.frequency.value=1800; pf.Q.value=1.2;
-    const pg=a.createGain(); pg.gain.setValueAtTime(0.45,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.04);
-    pk.connect(pf); pf.connect(pg); pg.connect(lp); pk.start(t); pk.stop(t+0.05);
+    const pf=a.createBiquadFilter(); pf.type='bandpass'; pf.frequency.value=1600; pf.Q.value=1;
+    const pg=a.createGain(); pg.gain.setValueAtTime(0.25,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
+    pk.connect(pf); pf.connect(pg); pg.connect(lp); pk.start(t); pk.stop(t+0.04);
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(260,f*4),t+1.6);
