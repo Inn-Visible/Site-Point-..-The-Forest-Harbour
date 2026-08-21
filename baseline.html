@@ -195,17 +195,17 @@ function pluck(f){
   lp.type='lowpass';
   let parts;
    if(currentVoice==='bass'){
-    // clean picked bass: solid fundamental, gentle growl, no boing no wobble
-    lp.Q.value=0.8;
-    lp.frequency.setValueAtTime(Math.max(2200,f*12),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(600,f*5),t+0.6);
+    // final: warm picked bass · no drive, no fog, no boing
+    lp.Q.value=0;
+    lp.frequency.setValueAtTime(Math.max(3000,f*16),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(1200,f*8),t+0.5);
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(f<60?0.75:0.5,t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+1.6);
-    parts=[[f,'sawtooth',.5],[f,'sine',.5],[f*2,'sine',.25],[f*3,'sine',.12]];
+    g.gain.exponentialRampToValueAtTime(f<60?0.7:0.45,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.5);
+    parts=[[f,'sine',.7],[f,'sawtooth',.35],[f*2,'sawtooth',.22],[f*3,'sawtooth',.12],[f*4,'sine',.07]];
     const pk=a.createBufferSource(); pk.buffer=noiseBuf(a);
     const pf=a.createBiquadFilter(); pf.type='bandpass'; pf.frequency.value=1600; pf.Q.value=1;
-    const pg=a.createGain(); pg.gain.setValueAtTime(0.25,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
+    const pg=a.createGain(); pg.gain.setValueAtTime(0.2,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
     pk.connect(pf); pf.connect(pg); pg.connect(lp); pk.start(t); pk.stop(t+0.04);
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
@@ -235,7 +235,7 @@ function pluck(f){
   cg.gain.setValueAtTime(0.04,t);
   cg.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
   ck.connect(cg); cg.connect(lp); ck.start(t); ck.stop(t+0.06);
-  if(currentVoice==='bass'){ g.connect(driveNode(a)); drive.connect(lp); } else { g.connect(lp); }
+   g.connect(lp);
   lp.connect(comp);
 }
   
