@@ -169,11 +169,20 @@ function grabAt(wx,wy){
   var Wd=cv.width, Hd=cv.height;
   if(dx<0||dy<0||dx>=Wd||dy>=Hd) return false;
   var img; try{ img=x.getImageData(0,0,Wd,Hd); }catch(e){ return false; }
-  var d=img.data, i0=(dy*Wd+dx)*4;
-  if(d[i0+3]<12) return false;
+  var d=img.data;
+  // nearest-ink search: taps no longer need to be pixel-perfect
+  var sx=dx, sy=dy, found=false, R=16;
+  for(var r=0;r<=R&&!found;r++){
+    for(var yy=-r;yy<=r&&!found;yy++){ for(var xx=-r;xx<=r&&!found;xx++){
+      if(Math.max(Math.abs(xx),Math.abs(yy))!==r) continue;
+      var X=dx+xx, Y=dy+yy;
+      if(X<0||Y<0||X>=Wd||Y>=Hd) continue;
+      if(d[(Y*Wd+X)*4+3]>=12){ sx=X; sy=Y; found=true; }
+    }} }
+  if(!found){ flash('missed \u00b7 tap on the ink'); return false; }
   var visited=new Uint8Array(Wd*Hd);
-  var stack=[dy*Wd+dx]; visited[dy*Wd+dx]=1;
-  var minX=dx,maxX=dx,minY=dy,maxY=dy, pts=[];
+  var stack=[sy*Wd+sx]; visited[sy*Wd+sx]=1;
+  var minX=sx,maxX=sx,minY=sy,maxY=sy, pts=[];
   while(stack.length){
     var p=stack.pop(), px=p%Wd, py=(p-px)/Wd;
     pts.push(p);
@@ -184,13 +193,13 @@ function grabAt(wx,wy){
     if(py<Hd-1&&!visited[p+Wd]&&d[(p+Wd)*4+3]>=12){visited[p+Wd]=1;stack.push(p+Wd);}
   }
   if(pts.length<4) return false;
-  if(pts.length>30000){ flash('too connected \u00b7 drag a box instead'); return false; }
+  if(pts.length>400000){ flash('too connected \u00b7 drag a box instead'); return false; }
   pushUndo();
   var bw=maxX-minX+1, bh=maxY-minY+1;
   var t=document.createElement('canvas'); t.width=bw; t.height=bh;
   var tc=t.getContext('2d'), timg=tc.createImageData(bw,bh);
   for(var k=0;k<pts.length;k++){ var p2=pts[k], qx=p2%Wd, qy=(p2-qx)/Wd;
-    var sx=qx-minX, sy=qy-minY, si=(sy*bw+sx)*4, di=p2*4;
+    var sX=qx-minX, sY=qy-minY, si=(sY*bw+sX)*4, di=p2*4;
     timg.data[si]=d[di]; timg.data[si+1]=d[di+1]; timg.data[si+2]=d[di+2]; timg.data[si+3]=d[di+3];
     d[di+3]=0;
   }
