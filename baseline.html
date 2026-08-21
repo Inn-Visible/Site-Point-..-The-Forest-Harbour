@@ -190,13 +190,13 @@ function pluck(f){
   lp.type='lowpass';
   let parts;
   if(currentVoice==='bass'){
-    // gnarly deep electric: saw growl + sine body + felt sub, driven, dark ceiling
-    lp.frequency.setValueAtTime(Math.max(900,f*8),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(180,f*3),t+1.4);
+    // punchy driven P-bass: clear pitch, thick mids, zero sub-bass mud
+    lp.frequency.setValueAtTime(Math.max(1400,f*12),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(350,f*5),t+1.4);
     g.gain.setValueAtTime(0.0001,t);
     g.gain.exponentialRampToValueAtTime(f<60?0.8:0.5,t+0.01);
     g.gain.exponentialRampToValueAtTime(0.0001,t+2.4);
-    parts=[[f,'sawtooth',.45],[f,'sine',.9],[f/2,'sine',.6],[f*2,'sine',.14],[f*3,'sine',.07]];
+    parts=[[f,'sawtooth',.55],[f,'square',.15],[f,'sine',.4],[f*2,'sine',.2]];
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(260,f*4),t+1.6);
@@ -218,7 +218,6 @@ function pluck(f){
   }
   for(const p of parts){ const o=a.createOscillator(), og=a.createGain();
     o.type=p[1]; o.frequency.value=p[0]; og.gain.value=p[2]; o.connect(og); og.connect(g); o.start(t); o.stop(t+2.7); }
-  // near-silent round transient (the pop is gone)
   const ck=a.createOscillator(), cg=a.createGain();
   ck.type='sine';
   ck.frequency.setValueAtTime(Math.min(500,f*4),t);
@@ -229,6 +228,7 @@ function pluck(f){
   if(currentVoice==='bass'){ g.connect(driveNode(a)); drive.connect(lp); } else { g.connect(lp); }
   lp.connect(comp);
 }
+  
 const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 function noteName(f){ const m=Math.round(69+12*Math.log2(f/440)); return NOTE_NAMES[((m%12)+12)%12]; }
 function glow(w,c){ const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
