@@ -144,7 +144,6 @@ function lockdoor(){
     
       <div class="nook"><b>youtube · quillinn</b><span>the honey tapes · 11 videos &amp; counting · visual static &amp; low frequencies</span><br><a href="https://youtube.com/@Honey_Smudge" target="_blank">@Honey_Smudge ↗</a></div>
       
-      >
       <div class="nook"><b>instagram · the author</b><span>pages, spines &amp; marginalia</span><br><a href="https://instagram.com/steady_evenfall" target="_blank">@steady_evenfall ↗</a></div>
       <div class="nook"><b>discord · the hearth</b><span>quiet rooms, low talk, open door</span><br><a href="https://discord.gg/7k2sNHS3n" target="_blank">join the hearth ↗</a></div>
     </div>
@@ -180,13 +179,8 @@ function pluckGlow(){ const cur=localStorage.getItem('hive_pillar_theme')||'base
   const C={axiom:'#f2efe2',eigen:'#5ce389',baseline:'#63c4ff',keystone:'#ffb547'}; return C[cur]||C.baseline; }
 let drive=null;
 function driveCurve(k){ const n=1024,c=new Float32Array(n);
-  for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1;
-    const y=Math.tanh(k*x)+0.35*Math.tanh(k*3*x); c[i]=y/1.35; } return c; }
-function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(3.0); drive.oversample='2x'; } return drive; }
-
-let NB=null;
-function noiseBuf(a){ if(!NB){ NB=a.createBuffer(1,a.sampleRate*0.1,a.sampleRate);
-  const d=NB.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; } return NB; }
+  for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1; c[i]=Math.tanh(x*k)/Math.tanh(k); } return c; }
+function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(2.6); drive.oversample='2x'; } return drive; }
   
 function pluck(f){
   const a=audio(), t=a.currentTime;
@@ -194,19 +188,14 @@ function pluck(f){
   const g=a.createGain(), lp=a.createBiquadFilter();
   lp.type='lowpass';
   let parts;
-    if(currentVoice==='bass'){
-    // goth bass: deep clean floor + grinded top
-    lp.Q.value=1;
-    lp.frequency.setValueAtTime(Math.max(2400,f*14),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(800,f*6),t+0.5);
+  if(currentVoice==='bass'){
+    // gnarly deep electric: saw growl + sine body + felt sub, driven, dark ceiling
+    lp.frequency.setValueAtTime(Math.max(900,f*8),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(180,f*3),t+1.4);
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(f<60?0.75:0.5,t+0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+1.6);
-    parts=[[f,'sine',.65],[f,'sawtooth',.4],[f*2,'sawtooth',.2],[f*3,'sawtooth',.1],[f*4,'sine',.06]];
-    const pk=a.createBufferSource(); pk.buffer=noiseBuf(a);
-    const pf=a.createBiquadFilter(); pf.type='bandpass'; pf.frequency.value=1600; pf.Q.value=1;
-    const pg=a.createGain(); pg.gain.setValueAtTime(0.25,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
-    pk.connect(pf); pf.connect(pg); pg.connect(lp); pk.start(t); pk.stop(t+0.04);
+    g.gain.exponentialRampToValueAtTime(f<60?0.8:0.5,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+2.4);
+    parts=[[f,'sawtooth',.45],[f,'sine',.9],[f/2,'sine',.6],[f*2,'sine',.14],[f*3,'sine',.07]];
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(260,f*4),t+1.6);
@@ -235,12 +224,7 @@ function pluck(f){
   cg.gain.setValueAtTime(0.04,t);
   cg.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
   ck.connect(cg); cg.connect(lp); ck.start(t); ck.stop(t+0.06);
-     if(currentVoice==='bass'){
-    g.connect(lp);
-    const hp=a.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=220;
-    const dg=a.createGain(); dg.gain.value=0.45;
-    g.connect(hp); hp.connect(driveNode(a)); drive.connect(dg); dg.connect(lp);
-  } else { g.connect(lp); }
+  if(currentVoice==='bass'){ g.connect(driveNode(a)); drive.connect(lp); } else { g.connect(lp); }
   lp.connect(comp);
 }
   
