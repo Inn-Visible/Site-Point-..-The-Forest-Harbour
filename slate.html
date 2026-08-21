@@ -275,6 +275,42 @@ function share(){ exportCanvas().toBlob(function(b){
   if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
 }catch(e){} paint(); applyView(); })();
+
+  function pasteImage(img){
+  pushUndo();
+  var vw=W/z, vh=H/z, cx=(W/2-ox)/z, cy=(H/2-oy)/z;
+  var s=Math.min((vw*0.6)/img.width,(vh*0.6)/img.height,1);
+  var w=img.width*s, h=img.height*s;
+  x.globalCompositeOperation='source-over';
+  x.drawImage(img,cx-w/2,cy-h/2,w,h);
+  save(); flash('pasted onto the wall');
+}
+function fromBlob(b){ if(!b) return; var u=URL.createObjectURL(b); var im=new Image();
+  im.onload=function(){ pasteImage(im); setTimeout(function(){URL.revokeObjectURL(u);},2000); }; im.src=u; }
+function pasteClip(){
+  if(navigator.clipboard&&navigator.clipboard.read){
+    navigator.clipboard.read().then(function(items){
+      var done=false;
+      items.forEach(function(it){ if(done) return;
+        var ty=it.types.filter(function(t){return t.indexOf('image')===0;})[0];
+        if(ty){ done=true; it.getType(ty).then(fromBlob); } });
+      if(!done) flash('no image on the clipboard');
+    },function(){ flash('paste blocked \u00b7 ctrl+v it'); });
+  } else flash('use ctrl+v here');
+}
+addEventListener('paste',function(e){
+  var cd=e.clipboardData; if(!cd) return;
+  if(cd.items){ for(var i=0;i<cd.items.length;i++){
+    if(cd.items[i].kind==='file'&&cd.items[i].type.indexOf('image')===0){
+      fromBlob(cd.items[i].getAsFile()); e.preventDefault(); return; } } }
+  var txt=cd.getData&&cd.getData('text');
+  if(txt){ pushUndo(); var cx=(W/2-ox)/z, cy=(H/2-oy)/z;
+    x.globalCompositeOperation='source-over';
+    x.fillStyle=PAL[light?'light':'dark'][ci];
+    x.font=tsize+'px ui-monospace,Consolas,monospace';
+    x.fillText(txt,cx,cy); save(); flash('lettered from clipboard'); e.preventDefault(); }
+});
+  
 </script>
   
 </body>
