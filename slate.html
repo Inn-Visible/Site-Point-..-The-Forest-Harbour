@@ -232,6 +232,7 @@ function lift(){ var r=normSel(); sel=null; liftBox(r,false); }
 function stamp(){
   if(!moving) return;
   x.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h);
+  if(moving.zone) textZones.push({x:moving.x,y:moving.y,w:moving.w,h:moving.h});
   moving=null; renderOverlay(); save(); flash('set down');
 }
 function renderOverlay(){
