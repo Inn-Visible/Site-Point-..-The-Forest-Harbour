@@ -196,7 +196,7 @@ function pluck(f){
   let parts;
   if(currentVoice==='bass'){
     // bass guitar from hell: resonant picked bloom, hard bite, pick clack
-    lp.Q.value=7;
+    lp.Q.value=9;
     lp.frequency.setValueAtTime(Math.max(2600,f*20),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(700,f*6),t+0.45);
     g.gain.setValueAtTime(0.0001,t);
