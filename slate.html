@@ -168,7 +168,11 @@ cv.addEventListener('pointerup',function(e){
 function grabAt(wx,wy){
   var dx=Math.round(wx*DPR), dy=Math.round(wy*DPR);
   var Wd=cv.width, Hd=cv.height;
-  if(dx<0||dy<0||dx>=Wd||dy>=Hd) return false;
+    if(dx<0||dy<0||dx>=Wd||dy>=Hd) return false;
+  for(var zi=textZones.length-1;zi>=0;zi--){ var zn=textZones[zi];
+    if(wx>=zn.x&&wx<=zn.x+zn.w&&wy>=zn.y&&wy<=zn.y+zn.h){
+      textZones.splice(zi,1);
+      return liftBox({x:zn.x,y:zn.y,w:zn.w,h:zn.h},true); } }
   var img; try{ img=x.getImageData(0,0,Wd,Hd); }catch(e){ return false; }
   var d=img.data;
   // nearest-ink search: taps no longer need to be pixel-perfect
