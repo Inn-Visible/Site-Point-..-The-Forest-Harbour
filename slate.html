@@ -212,18 +212,19 @@ function grabAt(wx,wy){
 }
 function normSel(){ var a=Math.min(sel.x0,sel.x1),b=Math.min(sel.y0,sel.y1),
   c=Math.max(sel.x0,sel.x1),d=Math.max(sel.y0,sel.y1); return {x:a,y:b,w:c-a,h:d-b}; }
-function lift(){
-  var r=normSel(); sel=null;
-  if(r.w<6||r.h<6){ renderOverlay(); return; }
+function liftBox(r,isZone){
+  if(r.w<6||r.h<6){ renderOverlay(); return false; }
   pushUndo();
   var dw=Math.max(1,Math.round(r.w*DPR)), dh=Math.max(1,Math.round(r.h*DPR));
   var t=document.createElement('canvas'); t.width=dw; t.height=dh;
   t.getContext('2d').drawImage(cv,Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh,0,0,dw,dh);
   x.save(); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='destination-out';
   x.fillRect(Math.round(r.x*DPR),Math.round(r.y*DPR),dw,dh); x.restore();
-  moving={img:t,w:r.w,h:r.h,x:r.x,y:r.y,gx:0,gy:0};
-  renderOverlay(); save(); flash('lifted \u00b7 tap to set it down');
+  moving={img:t,w:r.w,h:r.h,x:r.x,y:r.y,gx:0,gy:0,zone:isZone?1:0};
+  renderOverlay(); save(); flash('grabbed \u00b7 tap to set it down');
+  return true;
 }
+function lift(){ var r=normSel(); sel=null; liftBox(r,false); }
 function stamp(){
   if(!moving) return;
   x.drawImage(moving.img,moving.x,moving.y,moving.w,moving.h);
