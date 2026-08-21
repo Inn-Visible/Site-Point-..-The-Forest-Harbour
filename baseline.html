@@ -180,23 +180,28 @@ function pluckGlow(){ const cur=localStorage.getItem('hive_pillar_theme')||'base
   const C={axiom:'#f2efe2',eigen:'#5ce389',baseline:'#63c4ff',keystone:'#ffb547'}; return C[cur]||C.baseline; }
 let drive=null;
 function driveCurve(k){ const n=1024,c=new Float32Array(n);
-  for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1; c[i]=Math.tanh(x*k)/Math.tanh(k); } return c; }
+  for(let i=0;i<n;i++){ const x=(i/(n-1))*2-1;
+    const y=Math.tanh(k*x)+0.35*Math.tanh(k*3*x); c[i]=y/1.35; } return c; }
 function driveNode(a){ if(!drive){ drive=a.createWaveShaper(); drive.curve=driveCurve(2.0); drive.oversample='2x'; } return drive; }
 
+let NB=null;
+function noiseBuf(a){ if(!NB){ NB=a.createBuffer(1,a.sampleRate*0.1,a.sampleRate);
+  const d=NB.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; } return NB; }
+  
 function pluck(f){
-  const a=audio(), t=a.currentTime;
-  if(!comp){ comp=a.createDynamicsCompressor(); comp.connect(a.destination); }
-  const g=a.createGain(), lp=a.createBiquadFilter();
-  lp.type='lowpass';
-  let parts;
-    if(currentVoice==='bass'){
-    // laptop-readable gnarl: short tail, bright ceiling, harmonics carry the pitch
-    lp.frequency.setValueAtTime(Math.max(1800,f*14),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(500,f*6),t+1.0);
+  if(currentVoice==='bass'){
+    // bass guitar from hell: resonant picked bloom, hard bite, pick clack
+    lp.Q.value=7;
+    lp.frequency.setValueAtTime(Math.max(2600,f*20),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(300,f*4),t+0.35);
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(f<60?0.7:0.5,t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+1.1);
-    parts=[[f,'sawtooth',.5],[f,'square',.12],[f,'sine',.35],[f*2,'sine',.35],[f*3,'sine',.22],[f*4,'sine',.12]];
+    g.gain.exponentialRampToValueAtTime(f<60?0.8:0.55,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.4);
+    parts=[[f,'sawtooth',.6],[f*1.006,'sawtooth',.35],[f,'square',.25],[f*2,'sawtooth',.25],[f*3,'square',.12]];
+    const pk=a.createBufferSource(); pk.buffer=noiseBuf(a);
+    const pf=a.createBiquadFilter(); pf.type='bandpass'; pf.frequency.value=1800; pf.Q.value=1.2;
+    const pg=a.createGain(); pg.gain.setValueAtTime(0.35,t); pg.gain.exponentialRampToValueAtTime(0.0001,t+0.04);
+    pk.connect(pf); pf.connect(pg); pg.connect(lp); pk.start(t); pk.stop(t+0.05);
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(260,f*4),t+1.6);
