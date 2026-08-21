@@ -189,14 +189,14 @@ function pluck(f){
   const g=a.createGain(), lp=a.createBiquadFilter();
   lp.type='lowpass';
   let parts;
-  if(currentVoice==='bass'){
-    // punchy driven P-bass: clear pitch, thick mids, zero sub-bass mud
-    lp.frequency.setValueAtTime(Math.max(1400,f*12),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(350,f*5),t+1.4);
+    if(currentVoice==='bass'){
+    // laptop-readable gnarl: short tail, bright ceiling, harmonics carry the pitch
+    lp.frequency.setValueAtTime(Math.max(1800,f*14),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(500,f*6),t+1.0);
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(f<60?0.8:0.5,t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+2.4);
-    parts=[[f,'sawtooth',.55],[f,'square',.15],[f,'sine',.4],[f*2,'sine',.2]];
+    g.gain.exponentialRampToValueAtTime(f<60?0.7:0.5,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.1);
+    parts=[[f,'sawtooth',.5],[f,'square',.12],[f,'sine',.35],[f*2,'sine',.35],[f*3,'sine',.22],[f*4,'sine',.12]];
   } else if(currentVoice==='uke'){
     lp.frequency.setValueAtTime(Math.max(1500,f*10),t);
     lp.frequency.exponentialRampToValueAtTime(Math.max(260,f*4),t+1.6);
