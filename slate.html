@@ -292,7 +292,7 @@ function share(){ exportCanvas().toBlob(function(b){
   const d=localStorage.getItem('hive_slate');
   if(d){ const im=new Image(); im.onload=function(){ x.save(); x.setTransform(1,0,0,1,0,0);
     x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
-}catch(e){} paint(); applyView(); })();
+}catch(e){} try{ textZones=JSON.parse(localStorage.getItem('hive_slate_zones')||'[]'); }catch(e){ textZones=[]; } paint(); applyView(); })();
 
   function pasteImage(img){
   pushUndo();
