@@ -240,8 +240,9 @@ function placeText(wx,wy){
   pushUndo();
   x.globalCompositeOperation='source-over';
   x.fillStyle=PAL[light?'light':'dark'][ci];
-  x.font=tsize+'px ui-monospace,Consolas,monospace';
-  x.fillText(t,wx,wy);
+    x.fillText(t,wx,wy);
+  var wdt=x.measureText(t).width;
+  textZones.push({x:wx-6,y:wy-tsize*1.15,w:wdt+12,h:tsize*1.5});
   save(); flash('lettered');
 }
 function stroke(px,py,pr,dot){
