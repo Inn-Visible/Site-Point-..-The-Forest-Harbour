@@ -124,9 +124,10 @@ function lockdoor(){
       <span id="fretRead" style="color:#93a1b0"></span>
     </div>
     <div id="rows"></div>
-        <div class="neckhelp">
+           <div class="neckhelp">
       <span><b>tap</b> a fret · it blooms & sings</span>
       <span><b>keys</b> = the neck · <kbd>Z</kbd><kbd>A</kbd><kbd>Q</kbd><kbd>1</kbd> = open E·A·D·G (low→high), columns climb frets</span>
+      <span><b>⇧</b> reaches frets 10–12 on the low strings</span>
       <span class="nh-mobile"><b>◀ ▶</b> walks the neck on small glass</span>
     </div>
   </div>
@@ -271,7 +272,7 @@ var KEYS={
  'z':[0,0],'x':[0,1],'c':[0,2],'v':[0,3],'b':[0,4],'n':[0,5],'m':[0,6],',':[0,7],'.':[0,8],'/':[0,9],
  'a':[1,0],'s':[1,1],'d':[1,2],'f':[1,3],'g':[1,4],'h':[1,5],'j':[1,6],'k':[1,7],'l':[1,8],';':[1,9],"'":[1,10],
  'q':[2,0],'w':[2,1],'e':[2,2],'r':[2,3],'t':[2,4],'y':[2,5],'u':[2,6],'i':[2,7],'o':[2,8],'p':[2,9],'[':[2,10],']':[2,11],'\\':[2,12],
- '1':[3,0],'2':[3,1],'3':[3,2],'4':[3,3],'5':[3,4],'6':[3,5],'7':[3,6],'8':[3,7],'9':[3,8],'0':[3,9],'-':[3,10],'=':[3,11]
+ '1':[3,0],'2':[3,1],'3':[3,2],'4':[3,3],'5':[3,4],'6':[3,5],'7':[3,6],'8':[3,7],'9':[3,8],'0':[3,9],'-':[3,10],'=':[3,11],'`':[3,12]
 };
 function ensureVisible(fr){ if(isWide()) return; if(fr<pos) setPos(fr); else if(fr>pos+WIN-1) setPos(fr-(WIN-1)); }
 function playFret(si,fr){ var row=strings[si]; if(!row) return; ensureVisible(fr);
@@ -284,6 +285,7 @@ addEventListener('keydown',function(e){
   if(e.repeat) return;
   var t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA')) return;
   var k=e.key.length===1?e.key.toLowerCase():e.key;
+  if(e.shiftKey){ var b=KEYS[k]; if(b&&b[1]<=2){ e.preventDefault(); playFret(b[0],b[1]+10); return; } }
   var m=KEYS[k]; if(m){ e.preventDefault(); playFret(m[0],m[1]); }
 });
 </script>
