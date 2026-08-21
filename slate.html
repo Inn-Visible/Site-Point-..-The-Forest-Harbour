@@ -260,7 +260,8 @@ function stroke(px,py,pr,dot){
   lx=px; ly=py;
 }
 function save(){ try{ localStorage.setItem('hive_slate',cv.toDataURL());
-  localStorage.setItem('hive_slate_mode',light?'1':'0'); }catch(e){} }
+  localStorage.setItem('hive_slate_mode',light?'1':'0');
+  localStorage.setItem('hive_slate_zones',JSON.stringify(textZones)); }catch(e){} }
 function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); save(); }
 function tiaga(){ pushUndo(); let n=0;
   const iv=setInterval(function(){ n++;
