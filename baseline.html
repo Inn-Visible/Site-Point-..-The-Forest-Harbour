@@ -189,6 +189,11 @@ function noiseBuf(a){ if(!NB){ NB=a.createBuffer(1,a.sampleRate*0.1,a.sampleRate
   const d=NB.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; } return NB; }
   
 function pluck(f){
+  const a=audio(), t=a.currentTime;
+  if(!comp){ comp=a.createDynamicsCompressor(); comp.connect(a.destination); }
+  const g=a.createGain(), lp=a.createBiquadFilter();
+  lp.type='lowpass';
+  let parts;
   if(currentVoice==='bass'){
     // bass guitar from hell: resonant picked bloom, hard bite, pick clack
     lp.Q.value=7;
