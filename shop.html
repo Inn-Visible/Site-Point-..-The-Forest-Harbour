@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Supply Store | Inn.Visible</title>
+<style>
+  :root{
+    --bg:#0a0d12; --panel:#0e141b; --line:#223041;
+    --ink:#e8e4d8; --dim:#93a1b0; --gold:#d9a83a; --blue:#3f7fc1; --green:#58a36a; --bone:#e8e4d8;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 140px,
+               linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/180px 100%}
+  header{display:flex;justify-content:space-between;align-items:center;
+    padding:18px 44px;border-bottom:1px solid var(--line)}
+  .brand{font-size:16px;letter-spacing:.35em;color:var(--bone)}
+  .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
+  .back:hover{color:var(--ink)}
+  main{max-width:960px;margin:0 auto;padding:56px 24px 0}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.4vw,23px);text-align:center}
+  .terms{margin:14px auto 0;max-width:640px;text-align:center;color:var(--dim);
+    font-size:11px;letter-spacing:.08em;line-height:1.9;border:1px solid var(--line);
+    background:var(--panel);padding:12px 16px}
+  .terms b{color:var(--gold);font-weight:600}
+  section{margin:52px auto 0}
+  .fig{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;
+    color:var(--dim);font-family:var(--serif);font-style:italic;font-size:14px;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+  .fig b{font-family:var(--mono);font-style:normal;font-size:12px;letter-spacing:.25em}
+  .shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.shelf{grid-template-columns:1fr} header{padding:14px 16px}}
+  .card{border:1px dashed var(--line);background:var(--panel);padding:16px;
+    display:flex;flex-direction:column;gap:10px}
+  .card h3{font-size:12px;letter-spacing:.12em;color:var(--ink)}
+  .card p{color:var(--dim);font-size:11px;line-height:1.7;flex:1}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .price{color:var(--gold);font-size:13px;letter-spacing:.08em}
+  .tag{color:#5c6875;font-size:9px;letter-spacing:.18em}
+  .buy{border:1px solid var(--gold);color:var(--gold);text-decoration:none;
+    font-size:10px;letter-spacing:.15em;padding:7px 12px;white-space:nowrap}
+  .buy:hover{background:var(--gold);color:#0a0d12}
+  .card.svc{border-style:solid;border-color:var(--line)}
+  footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 16px;text-align:center;
+    color:var(--dim);font-size:11px;letter-spacing:.12em;line-height:2.1}
+  footer a{color:var(--blue);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">AXIOM · THE SUPPLY STORE</div>
+  <a class="back" href="axiom.html">the house ↩</a>
+</header>
+
+<main>
+  <p class="hook">everything you can hold. source, build, verify, deploy.</p>
+  <div class="terms">
+    <b>how buying works</b> · payments run on stripe · digital lands in your inbox the same breath ·
+    physical ships in drop order · <b>pre-orders fund the run</b> — nothing is stocked until it is sold ·
+    the ledger keeps the count · ex umbra, lumen
+  </div>
+
+  <!-- swap every BUY href for your stripe payment link / gumroad url -->
+
+  <section>
+    <div class="fig"><b style="color:var(--bone)">AXIOM</b> the get-going supply store · physical · pre-order drops</div>
+    <div class="shelf">
+      <div class="card"><h3>the get-going kit</h3>
+        <p>a starter bench bundle for people who ship. sourced parts, verified builds, the whole ritual in a box.</p>
+        <div class="row"><span class="price">$60</span><span class="tag">drop 01 · pre-order</span></div>
+        <div class="row"><a class="buy" href="https://buy.stripe.com/REPLACE">pre-order ↗</a></div></div>
+      <div class="card"><h3>field flash drive</h3>
+        <p>the hive on glass. offline copies of the guides, the loops, the ledger templates. no signal required.</p>
+        <div class="row"><span class="price">$25</span><span class="tag">drop 01 · pre-order</span></div>
+        <div class="row"><a class="buy" href="https://buy.stripe.com/REPLACE">pre-order ↗</a></div></div>
+      <div class="card"><h3>insignia sticker sheet</h3>
+        <p>inn.visible insignia · matte · weatherproof · four pillars, one sheet.</p>
+        <div class="row"><span class="price">$12</span><span class="tag">drop 01 · pre-order</span></div>
+        <div class="row"><a class="buy" href="https://buy.stripe.com/REPLACE">pre-order ↗</a></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="fig"><b style="color:var(--green)">EIGEN</b> the book shelf · digital · instant</div>
+    <div class="shelf">
+      <div class="card"><h3>the codex, vol. i</h3>
+        <p>the manuals that remember. pdf + epub, lettered like marginalia.</p>
+        <div class="row"><span class="price">$18</span><span class="tag">instant</span></div>
+        <div class="row"><a class="buy" href="https://REPLACE.gumroad.com/l/codex-1">buy ↗</a></div></div>
+      <div class="card"><h3>deployment field guide</h3>
+        <p>source, build, verify, deploy — the whole ritual, written down so it holds.</p>
+        <div class="row"><span class="price">$24</span><span class="tag">instant</span></div>
+        <div class="row"><a class="buy" href="https://REPLACE.gumroad.com/l/field-guide">buy ↗</a></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="fig"><b style="color:var(--blue)">BASELINE</b> press & tapes · digital · instant</div>
+    <div class="shelf">
+      <div class="card"><h3>loop pack i</h3>
+        <p>eight low-end loops, 24-bit. one voice, one synth, no presets.</p>
+        <div class="row"><span class="price">$12</span><span class="tag">instant</span></div>
+        <div class="row"><a class="buy" href="https://REPLACE.gumroad.com/l/loops-1">buy ↗</a></div></div>
+      <div class="card"><h3>the wall, printed</h3>
+        <p>the fretboard as a poster. a2, matte, glows under blacklight (probably).</p>
+        <div class="row"><span class="price">$25</span><span class="tag">drop 01 · pre-order</span></div>
+        <div class="row"><a class="buy" href="https://buy.stripe.com/REPLACE">pre-order ↗</a></div></div>
+      <div class="card"><h3>tab sheets</h3>
+        <p>come as you are · a forest · otherside — slate-annotated, print-ready.</p>
+        <div class="row"><span class="price">$8</span><span class="tag">instant</span></div>
+        <div class="row"><a class="buy" href="https://REPLACE.gumroad.com/l/tabs-1">buy ↗</a></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="fig"><b style="color:var(--gold)">KEYSTONE</b> the quiet desk · service · the backbone</div>
+    <div class="shelf">
+      <div class="card svc"><h3>ledger retainer</h3>
+        <p>books kept, templates that hold, monthly close. records that don't lie. three slots per season.</p>
+        <div class="row"><span class="price">$400/mo</span><span class="tag">2 slots open</span></div>
+        <div class="row"><a class="buy" href="mailto:REPLACE@innvisible.org?subject=ledger%20retainer">book a slot ↗</a></div></div>
+      <div class="card svc"><h3>ledger rescue</h3>
+        <p>one-off cleanup of a messy quarter. reconciled, categorized, reconciled again.</p>
+        <div class="row"><span class="price">$150</span><span class="tag">one-off</span></div>
+        <div class="row"><a class="buy" href="mailto:REPLACE@innvisible.org?subject=ledger%20rescue">book ↗</a></div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  an inn.visible initiative · “Know Thyself; Do No Harm; Hold The Truth.”<br>
+  <a href="axiom.html">axiom</a> · <a href="eigen.html">eigen</a> · <a href="baseline.html">baseline</a> · <a href="keystone.html">keystone</a>
+</footer>
+
+</body>
+</html>
