@@ -70,31 +70,45 @@
     the ledger keeps the count · ex umbra, lumen
   </div>
 
-    <section>
-    <div class="fig"><b style="color:var(--bone)">AXIOM</b> season 01 · the deck ladder · micro → macro</div>
-    <div class="shelf">
-      <div class="card"><h3>the deck codex · the plan</h3>
-        <p>schematics, bom, case files, build ritual. full scratch to overpowered, lettered so it holds.</p>
-        <div class="row"><span class="price">$18</span><span class="tag">lettering · instant soon</span></div>
-        <div class="row"><a class="wait" href="https://discord.gg/7k2sNHS3n" target="_blank">notify · hearth ↗</a></div></div>
-      <div class="card"><h3>the seed · micro</h3>
-        <p>deck in a tin. e-ink terminal, pi zero, battery, pre-flashed sd, printed case. the first portable wall.</p>
-        <div class="row"><span class="price">$90</span><span class="tag">drop 01 · run of 10</span></div>
-        <div class="row"><a class="wait" href="https://discord.gg/7k2sNHS3n" target="_blank">drop list · hearth ↗</a></div></div>
-      <div class="card"><h3>the stride · scratch</h3>
-        <p>full scratch kit. mechanical plate, pi 5, ips glass, screw-together case, printed field guide. you build it; we source it.</p>
-        <div class="row"><span class="price">$240</span><span class="tag">drop 02 · queued</span></div>
-        <div class="row"><a class="wait" href="https://discord.gg/7k2sNHS3n" target="_blank">drop list · hearth ↗</a></div></div>
-      <div class="card"><h3>insignia sticker sheet · add-on</h3>
-        <p>inn.visible insignia · matte · weatherproof · four pillars, one sheet. rides along with any deck.</p>
-        <div class="row"><span class="price">$12</span><span class="tag">drop 01 · funding soon</span></div>
-        <div class="row"><a class="wait" href="https://discord.gg/7k2sNHS3n" target="_blank">drop list · hearth ↗</a></div></div>
+     <section>
+    <div class="s1">
+      <div class="s1-in">THE INVISIBLE INITIATIVE</div>
+      <h2 class="s1-h">season 01 · full scratch → overpowered</h2>
+      <div class="s1-rule"></div>
+      <svg class="s1-sig" width="140" height="140" viewBox="0 0 200 200">
+        <g stroke="#d9a83a" stroke-width="1.4" fill="none" opacity=".9">
+          <path d="M100 22 L34 152 L166 152 Z"/>
+          <path d="M100 22 L100 108 M34 152 L100 108 M166 152 L100 108 M34 152 L166 152"/>
+        </g>
+        <g fill="#d9a83a">
+          <circle cx="100" cy="22" r="4"/><circle cx="34" cy="152" r="4"/>
+          <circle cx="166" cy="152" r="4"/><circle cx="100" cy="108" r="3.4"/>
+        </g>
+      </svg>
+      <p class="s1-m">four rungs, one ladder. the plan writes itself, the kit builds the plan, the flagship crowns the kit.</p>
     </div>
-    <div class="card svc" style="margin-top:14px"><h3>the sovereign · macro</h3>
-      <p>the overpowered flagship, built to order. laptop-class board, milled case, lettered serial plate. three per season — deposit first, and the build log is yours.</p>
-      <div class="row"><span class="price">$650</span><span class="tag">built to order · 3 per season</span></div>
-      <div class="row"><a class="wait" href="https://discord.gg/7k2sNHS3n" target="_blank">commission list · hearth ↗</a></div></div>
+    <div class="fig"><b style="color:var(--bone)">AXIOM</b> season 01 · the deck ladder · micro → macro</div>
+    <div class="shelf" id="hw-shelf"></div>
+    <div id="hw-flag" style="margin-top:14px"></div>
   </section>
+  <script>
+  (function(){
+    var shelf=document.getElementById('hw-shelf'), flag=document.getElementById('hw-flag');
+    function card(d){
+      return '<div class="card"><h3>'+d.title+'</h3><p>'+d.desc+'</p>'+
+        '<div class="row"><span class="price">'+d.price+'</span><span class="tag">'+d.tag+'</span></div>'+
+        '<div class="row"><a class="wait" href="'+d.href+'" target="_blank">'+d.label+'</a></div></div>';
+    }
+    fetch('archive/hardware.json').then(function(r){return r.json();}).then(function(d){
+      shelf.innerHTML=d.map(card).join('');
+    });
+    fetch('archive/flagship.json').then(function(r){return r.json();}).then(function(d){
+      flag.innerHTML='<div class="card svc"><h3>'+d.title+'</h3><p>'+d.desc+'</p>'+
+        '<div class="row"><span class="price">'+d.price+'</span><span class="tag">'+d.tag+'</span></div>'+
+        '<div class="row"><a class="wait" href="'+d.href+'" target="_blank">'+d.label+'</a></div></div>';
+    });
+  })();
+  </script>
 
     <section>
     <div class="fig"><b style="color:var(--green)">EIGEN</b> the book shelf · knowledge · instant</div>
