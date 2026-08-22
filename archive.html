@@ -18,67 +18,84 @@
   .brand{font-size:15px;letter-spacing:.35em}
   .back{color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:.15em}
   .back:hover{color:var(--ink)}
-  main{max-width:960px;margin:0 auto;padding:56px 24px 0}
-  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.2vw,21px);text-align:center;color:var(--dim)}
-  .key{margin:14px auto 0;max-width:700px;text-align:center;font-size:10px;letter-spacing:.18em;color:var(--mut);line-height:2.1}
-  .lv{color:var(--green)} .dr{color:var(--gold)} .lt{color:var(--blue)} .st{color:var(--bone)} .in{color:var(--mut)}
-  section{margin:48px auto 0}
-  .fig{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
-  .fig b{font-size:12px;letter-spacing:.25em}
-  .fig i{font-family:var(--serif);font-size:13px;color:var(--dim)}
-  table{width:100%;border-collapse:collapse;font-size:11px}
-  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
-  th{color:var(--dim);letter-spacing:.15em;font-weight:600}
-  td{color:var(--dim);line-height:1.7}
-  td b{color:var(--ink);font-weight:600}
-  a{color:var(--blue);text-decoration:none} a:hover{color:var(--ink)}
-  footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 16px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.12em;line-height:2.1}
-  @media(max-width:760px){header{padding:14px 16px} table{font-size:10px}}
+  main{max-width:960px;margin:0 auto;padding:44px 24px 0}
+  .hook{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2.2vw,20px);text-align:center;color:var(--dim)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:22px 0 8px}
+  .bar input{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:9px 12px;width:260px}
+  .bar input:focus{outline:none;border-color:var(--dim)}
+  .chip{border:1px solid var(--line);color:var(--dim);background:none;font-family:var(--mono);
+    font-size:10px;letter-spacing:.15em;padding:9px 12px;cursor:pointer}
+  .chip.on{border-color:var(--gold);color:var(--gold)}
+  #count{text-align:center;font-size:9px;letter-spacing:.2em;color:var(--mut);margin:10px 0 26px}
+  .note{border:1px dashed var(--line);border-left:2px solid var(--mut);background:var(--panel);
+    padding:14px 16px;margin-bottom:12px}
+  .note.axiom{border-left-color:var(--bone)} .note.eigen{border-left-color:var(--green)}
+  .note.baseline{border-left-color:var(--blue)} .note.keystone{border-left-color:var(--gold)}
+  .meta{display:flex;gap:14px;align-items:baseline;margin-bottom:8px}
+  .pil{font-size:9px;letter-spacing:.25em}
+  .axiom .pil{color:var(--bone)} .eigen .pil{color:var(--green)}
+  .baseline .pil{color:var(--blue)} .keystone .pil{color:var(--gold)}
+  .dt,.nid{font-size:9px;letter-spacing:.12em;color:var(--mut)}
+  .ttl{display:block;font-size:12px;letter-spacing:.1em;margin-bottom:8px}
+  .note p{color:var(--dim);font-size:11px;line-height:1.8}
+  .tags{margin-top:8px;font-size:9px;letter-spacing:.12em;color:var(--mut)}
+  .roots{margin-top:8px;font-size:10px;color:var(--dim)}
+  .roots a{color:var(--blue);text-decoration:none} .roots a:hover{color:var(--ink)}
+  footer{margin-top:56px;border-top:1px solid var(--line);padding:24px 16px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.12em;line-height:2.1}
+  @media(max-width:760px){header{padding:14px 16px}.bar input{width:100%}}
 </style>
 </head>
 <body>
 <header><div class="brand">THE ARCHIVE</div><a class="back" href="index.html">the house ↩</a></header>
 <main>
-<p class="hook">everything the house touches, rooted. the memory that keeps the count.</p>
-<div class="key">phases tell the truth · <span class="lv">live</span> = shipping · <span class="dr">drop</span> = funding soon · <span class="lt">lettering</span> = being written · <span class="st">setup</span> = sourcing · <span class="in">internal</span> = house-only</div>
-
-<section>
-  <div class="fig"><b style="color:var(--bone)">AXIOM</b><i>the bench · matter &amp; drops</i></div>
-  <table>
-    <tr><th>entry</th><th>phase</th><th>next action</th></tr>
-    <tr><td><b>aquaponics</b></td><td class="st">setup</td><td>source the pump</td></tr>
-    <tr><td><b>the get-going kit</b> · $60</td><td class="dr">drop 01</td><td>cost the run, set the size</td></tr>
-    <tr><td><b>field flash drive</b> · $25</td><td class="dr">drop 01</td><td>bundle the content, buy ten drives</td></tr>
-    <tr><td><b>insignia sticker sheet</b> · $12</td><td class="dr">drop 01</td><td>sample order (art already exists)</td></tr>
-  </table>
-</section>
-
-<section>
-  <div class="fig"><b style="color:var(--green)">EIGEN</b><i>the shelf · knowledge &amp; letters</i></div>
-  <table>
-    <tr><th>entry</th><th>phase</th><th>next action</th></tr>
-    <tr><td><b>the songbook, vol. i</b> · $8 · <a href="https://innvisible.gumroad.com/l/songbookvolumei">gumroad ↗</a></td><td class="lv">live</td><td>post two pages where bassists live</td></tr>
-    <tr><td><b>deployment field guide</b> · $24 · <a href="https://innvisible.gumroad.com/l/ylwxju">gumroad ↗</a></td><td class="lv">live</td><td>post the ritual where makers live</td></tr>
-    <tr><td><b>the codex, vol. i</b> · $18</td><td class="lt">lettering</td><td>after the guide breathes</td></tr>
-  </table>
-</section>
-
-<section>
-  <div class="fig"><b style="color:var(--blue)">BASELINE</b><i>the low end · culture &amp; gear</i></div>
-  <table>
-    <tr><th>entry</th><th>phase</th><th>next action</th></tr>
-    <tr><td><b>the wall</b> · <a href="baseline.html">play it ↗</a></td><td class="lv">live</td><td>perform ghost walk on the radio</td></tr>
-    <tr><td><b>fm radio</b> · <a href="fm.html">whisper ↗</a></td><td class="lv">live</td><td>the études, aired free</td></tr>
-    <tr><td><b>loop pack i</b></td><td class="in">free culture</td><td>record eight; give them away</td></tr>
-    <tr><td><b>the wall, as hardware</b> · drop 00</td><td class="lt">design log</td><td>one hearth update per week</td></tr>
-  </table>
-</section>
-
-<section>
-  <div class="fig"><b style="color:var(--gold)">KEYSTONE</b><i>the desk · books &amp; backbone</i></div>
-  <table>
-    <tr><th>entry</th><th>phase</th><th>next action</th></tr>
-    <tr><td><b>ledger rescue / retainer</b> · <a href="shop.html">doors ↗</a></td><td class="lv">live</td><td>warm leads only; first rescue = first testimonial</td></tr>
-    <tr><td><b>ledger templates</b></td><td class="in">internal</td><td>productize into eigen, later</td></tr>
-  </table>
-</section>
+  <p class="hook">the house's pull system. save from any pillar, pull from any pillar.</p>
+  <div class="bar">
+    <input id="q" type="text" placeholder="pull: search titles, bodies, #tags…" autocomplete="off">
+    <button class="chip on" data-p="all">all</button>
+    <button class="chip" data-p="axiom">axiom</button>
+    <button class="chip" data-p="eigen">eigen</button>
+    <button class="chip" data-p="baseline">baseline</button>
+    <button class="chip" data-p="keystone">keystone</button>
+  </div>
+  <div id="count"></div>
+  <div id="list"></div>
+</main>
+<footer>to save a note: edit archive/notes.json · new object at the top · commit. the archive pulls it instantly.</footer>
+<script src="sig.js" defer></script>
+<script>
+(function(){
+  var NOTES=[], q='', pil='all';
+  var list=document.getElementById('list'), count=document.getElementById('count');
+  function render(){
+    list.innerHTML=''; var shown=0;
+    NOTES.forEach(function(n){
+      if(pil!=='all' && n.pillar!==pil) return;
+      var hay=(n.id+' '+n.title+' '+n.body+' '+(n.tags||[]).join(' ')).toLowerCase();
+      if(q && hay.indexOf(q)<0) return;
+      shown++;
+      var c=document.createElement('div'); c.className='note '+n.pillar; c.id='n-'+n.id;
+      var m=document.createElement('div'); m.className='meta';
+      m.innerHTML='<span class="pil">'+n.pillar+'</span><span class="dt">'+(n.date||'')+'</span><span class="nid">'+n.id+'</span>';
+      var h=document.createElement('b'); h.className='ttl'; h.textContent=n.title;
+      var b=document.createElement('p'); b.textContent=n.body;
+      c.appendChild(m); c.appendChild(h); c.appendChild(b);
+      if(n.tags&&n.tags.length){var t=document.createElement('div');t.className='tags';t.textContent='# '+n.tags.join('  # ');c.appendChild(t);}
+      if(n.roots&&n.roots.length){var r=document.createElement('div');r.className='roots';
+        r.innerHTML='roots: '+n.roots.map(function(x){return '<a href="#n-'+x+'">'+x+'</a>';}).join(' · ');c.appendChild(r);}
+      list.appendChild(c);
+    });
+    count.textContent=shown+' note'+(shown===1?'':'s')+' pulled';
+  }
+  document.getElementById('q').addEventListener('input',function(){q=this.value.toLowerCase();render();});
+  var chips=document.querySelectorAll('.chip');
+  chips.forEach(function(ch){ ch.addEventListener('click',function(){
+    chips.forEach(function(x){x.classList.remove('on');}); ch.classList.add('on');
+    pil=ch.getAttribute('data-p'); render();
+  });});
+  fetch('archive/notes.json').then(function(r){return r.json();}).then(function(d){NOTES=d;render();})
+    .catch(function(){count.textContent='the archive is quiet. (notes.json missing)';});
+})();
+</script>
+</body>
+</html>
