@@ -116,6 +116,7 @@
         var s=localStorage.getItem('arc.slate'); var btn=this;
         if(!s){ btn.textContent='slate quiet'; setTimeout(function(){btn.textContent='pull from slate';},1500); return; }
         var o=JSON.parse(s);
+          if(o.img) PENDING_IMG=o.img;
         d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value=o.body||'';
         localStorage.removeItem('arc.slate'); btn.textContent='pulled ✓';
       };
