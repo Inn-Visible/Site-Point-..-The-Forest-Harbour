@@ -79,7 +79,7 @@
     the ledger keeps the count · ex umbra, lumen
   </div>
 
-     <section>
+      <section>
     <div class="s1">
       <div class="s1-in">THE INVISIBLE INITIATIVE</div>
       <h2 class="s1-h">season 01 · full scratch → overpowered</h2>
@@ -96,26 +96,78 @@
       </svg>
       <p class="s1-m">four rungs, one ladder. the plan writes itself, the kit builds the plan, the flagship crowns the kit.</p>
     </div>
-    <div class="fig"><b style="color:var(--bone)">AXIOM</b> season 01 · the deck ladder · micro → macro</div>
-    <div class="shelf" id="hw-shelf"></div>
+    <div class="fig"><b style="color:var(--bone)">AXIOM</b> the deck bucket · every part, any pricepoint</div>
+    <style>
+      .bk-bar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+      .bk-chip{border:1px solid var(--line);color:var(--dim);background:none;font-family:var(--mono);font-size:9px;letter-spacing:.15em;padding:6px 10px;cursor:pointer}
+      .bk-chip.on{border-color:var(--gold);color:var(--gold)}
+      .bk-row{display:flex;gap:10px;align-items:baseline;border:1px dashed var(--line);background:var(--panel);padding:9px 12px;margin-bottom:6px;font-size:11px;flex-wrap:wrap}
+      .bk-name{color:var(--ink);letter-spacing:.08em;flex:1}
+      .bk-note{color:var(--mut);font-size:9px;letter-spacing:.08em;width:100%}
+      .bk-cat{color:var(--mut);font-size:9px;letter-spacing:.15em}
+      .bk-price{color:var(--gold);width:44px;text-align:right}
+      .bk-add{border:1px solid var(--line);color:var(--dim);background:none;font-family:var(--mono);font-size:10px;padding:2px 8px;cursor:pointer}
+      .bk-add:hover{border-color:var(--gold);color:var(--gold)}
+      .bk-bucket{border:1px solid var(--line);background:var(--panel);padding:14px 16px;margin-top:16px}
+      .bk-bucket h4{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:10px}
+      .bk-li{display:flex;gap:10px;font-size:10px;color:var(--dim);margin-bottom:6px;letter-spacing:.08em}
+      .bk-li .rm{color:var(--mut);cursor:pointer;margin-left:auto}
+      .bk-li .rm:hover{color:#e5735a}
+      .bk-tot{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;font-size:12px;color:var(--ink);letter-spacing:.1em}
+      .bk-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+    </style>
+    <div class="bk-bar" id="bk-tiers"></div>
+    <div class="bk-bar" id="bk-cats"></div>
+    <div id="bk-list"></div>
+    <div class="bk-bucket">
+      <h4>YOUR BUCKET</h4>
+      <div class="bk-act"><button class="bk-chip" data-fill="micro">fill micro</button><button class="bk-chip" data-fill="scratch">fill scratch</button><button class="bk-chip" data-fill="macro">fill macro</button><button class="bk-chip" data-clear="1">clear</button></div>
+      <div id="bk-items" style="margin-top:12px"></div>
+      <div class="bk-tot" id="bk-tot">your deck · $0</div>
+      <div class="bk-act"><button class="buy" id="bk-copy">copy bom ↗</button><span class="tag">paste it in the hearth — the house sources &amp; kits it</span></div>
+    </div>
     <div id="hw-flag" style="margin-top:14px"></div>
   </section>
   <script>
   (function(){
-    var shelf=document.getElementById('hw-shelf'), flag=document.getElementById('hw-flag');
-    function card(d){
-      return '<div class="card"><h3>'+d.title+'</h3><p>'+d.desc+'</p>'+
-        '<div class="row"><span class="price">'+d.price+'</span><span class="tag">'+d.tag+'</span></div>'+
-        '<div class="row"><a class="wait" href="'+d.href+'" target="_blank">'+d.label+'</a></div></div>';
-    }
-    fetch('archive/hardware.json').then(function(r){return r.json();}).then(function(d){
-      shelf.innerHTML=d.map(card).join('');
-    });
+    var PARTS=[],tier='micro',cat='all',bucket=[];
+    var T=['micro','scratch','macro'],C=['compute','display','power','case','input','storage','bonds','skin'];
+    function chips(el,items,cur,fn){ el.innerHTML=''; items.forEach(function(v){
+      var b=document.createElement('button'); b.className='bk-chip'+(v===cur?' on':''); b.textContent=v;
+      b.onclick=function(){ fn(v); }; el.appendChild(b); }); }
+    function renderChips(){
+      chips(document.getElementById('bk-tiers'),['all'].concat(T),tier,function(v){tier=v;renderChips();renderList();});
+      chips(document.getElementById('bk-cats'),['all'].concat(C),cat,function(v){cat=v;renderChips();renderList();}); }
+    function renderList(){ var el=document.getElementById('bk-list'); el.innerHTML='';
+      PARTS.forEach(function(p){ if(tier!=='all'&&p.tiers.indexOf(tier)<0) return; if(cat!=='all'&&p.cat!==cat) return;
+        var r=document.createElement('div'); r.className='bk-row';
+        r.innerHTML='<span class="bk-name">'+p.name+'</span><span class="bk-note">'+p.note+'</span><span class="bk-cat">'+p.cat+'</span><span class="bk-price">$'+p.price+'</span>';
+        var a=document.createElement('button'); a.className='bk-add'; a.textContent='+';
+        a.onclick=function(){ bucket.push(p.id); renderB(); };
+        r.appendChild(a); el.appendChild(r); }); }
+    function renderB(){ var el=document.getElementById('bk-items'); el.innerHTML=''; var tot=0;
+      bucket.forEach(function(id,i){ var p=PARTS.filter(function(x){return x.id===id;})[0]; if(!p) return; tot+=p.price;
+        var li=document.createElement('div'); li.className='bk-li';
+        li.innerHTML='<span>'+p.name+'</span><span>$'+p.price+'</span>';
+        var rm=document.createElement('span'); rm.className='rm'; rm.textContent='×';
+        rm.onclick=function(){ bucket.splice(i,1); renderB(); };
+        li.appendChild(rm); el.appendChild(li); });
+      document.getElementById('bk-tot').textContent='your deck · $'+tot+' · '+tier; }
+    document.querySelectorAll('[data-fill]').forEach(function(b){ b.onclick=function(){ var t=b.getAttribute('data-fill');
+      bucket=[]; C.forEach(function(c){ var opts=PARTS.filter(function(p){return p.cat===c&&p.tiers.indexOf(t)>=0;});
+        if(opts.length){ opts.sort(function(a,b2){return a.price-b2.price;}); bucket.push(opts[0].id); } });
+      renderB(); }; });
+    document.querySelector('[data-clear]').onclick=function(){ bucket=[]; renderB(); };
+    document.getElementById('bk-copy').onclick=function(){ var lines=['deck bom · '+tier], tot=0, s=this;
+      bucket.forEach(function(id){ var p=PARTS.filter(function(x){return x.id===id;})[0]; if(!p) return; tot+=p.price; lines.push('- '+p.name+' $'+p.price); });
+      lines.push('total $'+tot); lines.push('· the house sources & kits it · hearth ↗');
+      navigator.clipboard.writeText(lines.join('\n')); s.textContent='copied ✓';
+      setTimeout(function(){s.textContent='copy bom ↗';},1500); };
+    fetch('archive/parts.json').then(function(r){return r.json();}).then(function(d){ PARTS=d; renderChips(); renderList(); renderB(); });
     fetch('archive/flagship.json').then(function(r){return r.json();}).then(function(d){
-      flag.innerHTML='<div class="card svc"><h3>'+d.title+'</h3><p>'+d.desc+'</p>'+
+      document.getElementById('hw-flag').innerHTML='<div class="card svc"><h3>'+d.title+'</h3><p>'+d.desc+'</p>'+
         '<div class="row"><span class="price">'+d.price+'</span><span class="tag">'+d.tag+'</span></div>'+
-        '<div class="row"><a class="wait" href="'+d.href+'" target="_blank">'+d.label+'</a></div></div>';
-    });
+        '<div class="row"><a class="wait" href="'+d.href+'" target="_blank">'+d.label+'</a></div></div>'; });
   })();
   </script>
 
