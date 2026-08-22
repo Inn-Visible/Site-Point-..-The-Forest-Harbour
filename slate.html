@@ -296,10 +296,31 @@ function share(){ exportCanvas().toBlob(function(b){
   const f=new File([b],'slate.png',{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f],title:'the slate'});
   else png(); }); }
+function inkShot(){
+  var src=exportCanvas();
+  var sc=0.25, s=document.createElement('canvas');
+  s.width=Math.max(1,Math.round(cv.width*sc)); s.height=Math.max(1,Math.round(cv.height*sc));
+  var c=s.getContext('2d'); c.drawImage(cv,0,0,s.width,s.height);
+  var d=c.getImageData(0,0,s.width,s.height).data;
+  var a=s.width,b=s.height,m=-1,n=-1;
+  for(var y=0;y<s.height;y++){ for(var q=0;q<s.width;q++){
+    if(d[(y*s.width+q)*4+3]>=12){ if(q<a)a=q; if(q>m)m=q; if(y<b)b=y; if(y>n)n=y; } } }
+  if(m<0) return null;
+  var pad=24;
+  var rx=Math.max(0,a/sc-pad), ry=Math.max(0,b/sc-pad);
+  var rw=Math.min(src.width,(m+1)/sc+pad)-rx, rh=Math.min(src.height,(n+1)/sc+pad)-ry;
+  if(rw<8||rh<8) return null;
+  var f=Math.min(1,900/rw);
+  var t=document.createElement('canvas'); t.width=Math.round(rw*f); t.height=Math.round(rh*f);
+  var tc=t.getContext('2d'); tc.fillStyle=light?'#f2efe6':'#0a0d12'; tc.fillRect(0,0,t.width,t.height);
+  tc.drawImage(src,rx,ry,rw,rh,0,0,t.width,t.height);
+  return t.toDataURL('image/png');
+}
 function toArchive(){
   var lines=textZones.filter(function(z){return z.text;}).map(function(z){return z.text;});
-  if(!lines.length){ flash('no lettering to send'); return; }
-  localStorage.setItem('arc.slate', JSON.stringify({title:'slate \u00b7 '+new Date().toISOString().slice(0,10), body:lines.join('\n')}));
+  var img=inkShot();
+  if(!lines.length&&!img){ flash('nothing to send'); return; }
+  localStorage.setItem('arc.slate', JSON.stringify({title:'slate \u00b7 '+new Date().toISOString().slice(0,10), body:lines.join('\n'), img:img}));
   flash('sent \u00b7 pull it in the archive');
 }
 (function(){ try{
