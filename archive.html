@@ -111,6 +111,13 @@
           title:t||'bench note', body:b, tags:['bench'], local:true});
         saveLocal(); render(); d.querySelector('#nt').value=''; d.querySelector('#nb').value='';
       };
+        d.querySelector('#ns').onclick=function(){
+        var s=localStorage.getItem('arc.slate'); var btn=this;
+        if(!s){ btn.textContent='slate quiet'; setTimeout(function(){btn.textContent='pull from slate';},1500); return; }
+        var o=JSON.parse(s);
+        d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value=o.body||'';
+        localStorage.removeItem('arc.slate'); btn.textContent='pulled ✓';
+      };
     }
     if(pil==='eigen'){
       var r=document.createElement('div'); r.className='drop room';
