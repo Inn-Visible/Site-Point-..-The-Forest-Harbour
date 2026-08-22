@@ -333,8 +333,11 @@ addEventListener('paste',function(e){
   if(txt){ pushUndo(); var cx=(W/2-ox)/z, cy=(H/2-oy)/z;
     x.globalCompositeOperation='source-over';
     x.fillStyle=PAL[light?'light':'dark'][ci];
-    x.font=tsize+'px ui-monospace,Consolas,monospace';
-    x.fillText(txt,cx,cy); save(); flash('lettered from clipboard'); e.preventDefault(); }
+      x.font=tsize+'px ui-monospace,Consolas,monospace';
+    x.fillText(txt,cx,cy);
+    var wdt=x.measureText(txt).width;
+    textZones.push({x:cx-6,y:cy-tsize*1.15,w:wdt+12,h:tsize*1.5,text:txt});
+    save(); flash('lettered from clipboard'); e.preventDefault(); }
 });
   
 </script>
