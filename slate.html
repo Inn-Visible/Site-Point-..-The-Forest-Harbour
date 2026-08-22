@@ -296,6 +296,12 @@ function share(){ exportCanvas().toBlob(function(b){
   const f=new File([b],'slate.png',{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f],title:'the slate'});
   else png(); }); }
+function toArchive(){
+  var lines=textZones.filter(function(z){return z.text;}).map(function(z){return z.text;});
+  if(!lines.length){ flash('no lettering to send'); return; }
+  localStorage.setItem('arc.slate', JSON.stringify({title:'slate \u00b7 '+new Date().toISOString().slice(0,10), body:lines.join('\n')}));
+  flash('sent \u00b7 pull it in the archive');
+}
 (function(){ try{
   if(localStorage.getItem('hive_slate_mode')==='1'){ light=true; document.body.classList.add('light'); }
   const d=localStorage.getItem('hive_slate');
