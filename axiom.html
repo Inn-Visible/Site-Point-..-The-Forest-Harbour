@@ -839,6 +839,37 @@ function lockdoor(){
 </script>
 
 <script src="sig.js" defer></script>
+
+<script>
+(function(){
+  /* season banner */
+  var mn=document.querySelector('main')||document.body;
+  var ban=document.createElement('div');
+  ban.style.cssText='max-width:960px;margin:26px auto 0;padding:10px 14px;border:1px dashed #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.25em;text-align:center';
+  ban.textContent='SEASON 01 \u00b7 FULL SCRATCH \u2192 OVERPOWERED CYBERDECKS';
+  mn.insertBefore(ban, mn.firstChild);
+  /* bench bridge */
+  var pad=document.querySelector('textarea')||document.querySelector('[contenteditable="true"]');
+  var host=mn;
+  if(!pad){
+    pad=document.createElement('textarea');
+    pad.placeholder='bench scratch\u2026';
+    pad.style.cssText='display:block;width:100%;max-width:960px;min-height:90px;margin:26px auto 0;background:#0e141b;border:1px dashed #223041;color:#e8e4d8;font:11px ui-monospace,Consolas,monospace;padding:10px;line-height:1.7';
+    host.appendChild(pad);
+  }
+  var bar=document.createElement('div');
+  bar.style.cssText='max-width:960px;margin:8px auto 0;display:flex;gap:10px;align-items:center';
+  bar.innerHTML='<button id="axSend" style="border:1px solid #d9a83a;color:#d9a83a;background:none;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">\u2192 archive</button><span id="axMsg" style="font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#5c6875"></span>';
+  pad.parentElement.insertBefore(bar, pad.nextSibling);
+  bar.querySelector('#axSend').onclick=function(){
+    var t=(pad.value!==undefined?pad.value:pad.innerText)||''; t=t.trim();
+    var msg=bar.querySelector('#axMsg');
+    if(!t){ msg.textContent='scratch is quiet'; return; }
+    localStorage.setItem('arc.slate', JSON.stringify({title:'axiom bench \u00b7 '+new Date().toISOString().slice(0,10), body:t}));
+    msg.textContent='sent \u00b7 pull it in the archive';
+  };
+})();
+</script>
   
 </body>
 </html>
