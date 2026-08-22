@@ -1,0 +1,22 @@
+[
+  {"id":"c1","name":"pi zero 2 w","cat":"compute","tiers":["micro","scratch"],"price":18,"note":"the drawer computer"},
+  {"id":"c2","name":"pi 5 · 4gb","cat":"compute","tiers":["scratch","macro"],"price":85,"note":"real terminals"},
+  {"id":"c3","name":"donor laptop board","cat":"compute","tiers":["macro"],"price":40,"note":"thrifted · the sovereign's heart"},
+  {"id":"d1","name":"2.9in e-ink","cat":"display","tiers":["micro"],"price":14,"note":"sunlight-readable · slow & calm"},
+  {"id":"d2","name":"5in ips","cat":"display","tiers":["scratch"],"price":45,"note":"glass for the stride"},
+  {"id":"d3","name":"7in ips","cat":"display","tiers":["macro"],"price":70,"note":"overpowered glass"},
+  {"id":"w1","name":"18650 + holder","cat":"power","tiers":["micro","scratch"],"price":9,"note":"one cell, one evening"},
+  {"id":"w2","name":"20k mah bank","cat":"power","tiers":["macro"],"price":35,"note":"days, not hours"},
+  {"id":"k1","name":"tin case","cat":"case","tiers":["micro"],"price":5,"note":"the classic · altoids law"},
+  {"id":"k2","name":"screw-together case","cat":"case","tiers":["scratch"],"price":25,"note":"no glue, no regrets"},
+  {"id":"k3","name":"milled case","cat":"case","tiers":["macro"],"price":120,"note":"serial plate rides here"},
+  {"id":"i1","name":"travel keys · handwired 12","cat":"input","tiers":["micro"],"price":20,"note":"chords, not keyboards"},
+  {"id":"i2","name":"mech plate · 40%","cat":"input","tiers":["scratch"],"price":60,"note":"the stride's hands"},
+  {"id":"i3","name":"mech board · 75%","cat":"input","tiers":["macro"],"price":110,"note":"thock included"},
+  {"id":"s1","name":"32gb sd · raw","cat":"storage","tiers":["micro","scratch","macro"],"price":8,"note":"blank matter"},
+  {"id":"s2","name":"deck-ready sd · flashed","cat":"storage","tiers":["micro","scratch","macro"],"price":25,"note":"the spark · offline hive copies"},
+  {"id":"s3","name":"nvme 256gb","cat":"storage","tiers":["macro"],"price":40,"note":"the sovereign's library"},
+  {"id":"b1","name":"wire + switch kit","cat":"bonds","tiers":["micro","scratch"],"price":6,"note":"the holding"},
+  {"id":"b2","name":"harness kit","cat":"bonds","tiers":["macro"],"price":15,"note":"clean veins"},
+  {"id":"x1","name":"insignia sheet","cat":"skin","tiers":["micro","scratch","macro"],"price":12,"note":"four pillars, one sheet"}
+]
