@@ -1,0 +1,8 @@
+[
+  {"id":"ax-001","pillar":"axiom","date":"2026-08-22","title":"aquaponics · pump sourcing","tags":["aquaponics","sourcing"],"body":"need submersible ~200-400 L/h. candidates: local pet store vs aliexpress. rule of three suppliers. bench date before buy."},
+  {"id":"ax-002","pillar":"axiom","date":"2026-08-22","title":"get-going kit · costing sheet","tags":["drop01","costing"],"body":"parts list + unit cost. run size 10. pre-order $60. target: parts under $22 or the run waits."},
+  {"id":"ax-003","pillar":"axiom","date":"2026-08-22","title":"sticker sheet · vendor","tags":["drop01","vendor"],"body":"stickermule, matte weatherproof. order ONE sample first. art already exists (tetra + pillars)."},
+  {"id":"ei-001","pillar":"eigen","date":"2026-08-22","title":"codex vol. i · scrap pile","tags":["codex"],"body":"marginalia voice, lettered like a field manual. chapters: tools, joints, finishes, naming.","roots":["ax-002","bl-001"]},
+  {"id":"bl-001","pillar":"baseline","date":"2026-08-22","title":"wall hardware · design log 0","tags":["drop00","midi"],"body":"4 strings x 12 frets matrix, usb-c hid midi. first question: capacitive vs hall effect."},
+  {"id":"ks-001","pillar":"keystone","date":"2026-08-22","title":"ledger template · chart of accounts","tags":["template"],"body":"tabs: ledger, close, summary. owner summary = three bullets max. productize into eigen later."}
+]
