@@ -170,11 +170,14 @@
     count.textContent=shown+' note'+(shown===1?'':'s')+' pulled';
   }
 
-  list.addEventListener('click',function(e){
-    if(!e.target.classList.contains('cpy')) return;
-    var id=e.target.getAttribute('data-id');
+    list.addEventListener('click',function(e){
+    var id=e.target.getAttribute&&e.target.getAttribute('data-id'); if(!id) return;
     var n=LOCAL.filter(function(x){return x.id===id;})[0]; if(!n) return;
+    if(e.target.classList.contains('svgbtn')){
+      var a=document.createElement('a'); a.href=n.img; a.download=id+'.png'; a.click(); return; }
+    if(!e.target.classList.contains('cpy')) return;
     var o={id:n.id,pillar:n.pillar,date:n.date,title:n.title,tags:n.tags,body:n.body};
+    if(n.img) o.img='archive/img/'+id+'.png';
     navigator.clipboard.writeText(JSON.stringify(o)).then(function(){ e.target.textContent='copied ✓'; });
   });
 
