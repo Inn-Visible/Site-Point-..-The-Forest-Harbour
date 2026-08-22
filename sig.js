@@ -1,5 +1,5 @@
 (function(){
- var t='\u00a9 '+new Date().getFullYear()+' The Inn.Visible Foundation \u00b7 all rights reserved \u00b7 Know Thyself; Do No Harm; Hold The Truth.';
+ var t='\u00a9 '+new Date().getFullYear()+' The Inn.Visible Foundation \u00b7 all rights reserved';
   var el=document.createElement('div'); el.textContent=t;
   var f=document.querySelector('footer');
   if(f){ el.style.cssText='margin-top:10px;font-size:10px;letter-spacing:.15em;color:#5c6875';
