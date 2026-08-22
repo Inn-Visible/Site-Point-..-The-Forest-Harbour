@@ -90,6 +90,7 @@
 (function(){
   var NOTES=[], q='', pil='all';
   var LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]');
+    var PENDING_IMG=null;
   var list=document.getElementById('list'), count=document.getElementById('count'), tools=document.getElementById('tools');
   function saveLocal(){ localStorage.setItem('arc.local', JSON.stringify(LOCAL)); }
 
