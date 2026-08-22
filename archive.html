@@ -155,7 +155,12 @@
     if(n.tags&&n.tags.length){var tg=document.createElement('div');tg.className='tags';tg.textContent='# '+n.tags.join('  # ');c.appendChild(tg);}
     if(n.roots&&n.roots.length){var r=document.createElement('div');r.className='roots';
       r.innerHTML='roots: '+n.roots.map(function(x){return '<a href="#n-'+x+'">'+x+'</a>';}).join(' · ');c.appendChild(r);}
-    if(n.local){var cp=document.createElement('button');cp.className='btn cpy';cp.textContent='copy json';cp.setAttribute('data-id',n.id);c.appendChild(cp);}
+        if(n.local){
+      var cp=document.createElement('button'); cp.className='btn cpy'; cp.textContent='copy json';
+      cp.setAttribute('data-id',n.id); c.appendChild(cp);
+      if(n.img){ var sp=document.createElement('button'); sp.className='btn svgbtn'; sp.textContent='save png';
+        sp.setAttribute('data-id',n.id); sp.style.marginLeft='8px'; c.appendChild(sp); }
+    }
     return c;
   }
 
