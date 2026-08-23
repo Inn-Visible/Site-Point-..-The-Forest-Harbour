@@ -583,12 +583,21 @@ addEventListener('keydown',function(e){
 
 <script>
 (function(){
-  /* the music box · add a track: {name:'..', bpm:66, notes:[[midi,beats],...]} */
-  var TRACKS=[
-    {name:'\u00e9tude 0 \u00b7 the box warms up', bpm:66,
-     notes:[[76,1],[79,1],[81,1],[79,1],[76,1],[74,1],[72,2],[74,1],[76,1],[74,1],[72,1],[69,2],[67,2],[69,2],[72,4]]}
+  /* the music box · pop a disc in, let it play */
+  var DISCS=[
+    {id:'vol1', name:'vol. i \u00b7 the wall \u00e9tudes', col:'#d9a83a', tracks:[
+      {name:'01 the ground', bpm:90, notes:[[28,1],[28,1],[35,1],[28,1],[40,1],[28,1],[28,1],[40,2]]},
+      {name:'02 ghost walk', bpm:84, notes:[[33,1],['x',1],[33,1],['x',1],[38,1],['x',1],[40,1],['x',1]]},
+      {name:'03 coaster', bpm:76, notes:[[36,1],[40,1],[36,1],[40,1],[36,1],[40,1],[36,1],[40,2]]},
+      {name:'04 low tide', bpm:72, notes:[[38,1],[38,1],[36,1],[38,1],[40,2],[38,2]]},
+      {name:'05 ruin walk', bpm:100, notes:[[31,1],[31,1],[38,1],[31,1],[43,1],[31,1],[31,1],[43,2]]},
+      {name:'06 hearth light', bpm:66, notes:[[28,2],[35,2],[39,2],[28,2],[35,2],[39,3]]},
+      {name:'07 tiaga', bpm:132, notes:[[33,1],[33,1],['x',1],[33,1],[45,2],['x',1],[33,2]]},
+      {name:'08 ex umbra', bpm:60, notes:[[28,2],[35,2],[31,2],[38,2],[28,4]]}
+    ]},
+    {id:'vol2', name:'vol. ii \u00b7 the nether room', col:'#c8452c', soon:true}
   ];
-  var AC=null, timer=null, cur=-1;
+  var AC=null, timers=[], cur=-1, nowPlaying='';
   function ctx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
   function pluck(ac,midi,t){
     var f=440*Math.pow(2,(midi-69)/12);
@@ -603,35 +612,51 @@ addEventListener('keydown',function(e){
     g2.gain.exponentialRampToValueAtTime(0.0001,t+1.1);
     o2.connect(g2); g2.connect(ac.destination); o2.start(t); o2.stop(t+1.2);
   }
-  function stop(){ if(timer) clearTimeout(timer); timer=null; cur=-1;
-    if(AC){ try{AC.close();}catch(e){} AC=null; } rows(); }
-  function play(i){
-    stop(); var tr=TRACKS[i], ac=ctx(), spb=60/tr.bpm, t=ac.currentTime+0.15;
-    cur=i; rows();
-    tr.notes.forEach(function(n){ pluck(ac,n[0],t); t+=spb*n[1]; });
-    timer=setTimeout(stop,(t-ac.currentTime+0.6)*1000);
+  function thump(ac,t){
+    var o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(90,t); o.frequency.exponentialRampToValueAtTime(45,t+0.08);
+    g.gain.setValueAtTime(0.3,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.1);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+0.12);
   }
+  function stop(){ timers.forEach(clearTimeout); timers=[]; cur=-1; nowPlaying='';
+    if(AC){ try{AC.close();}catch(e){} AC=null; } ui(); }
+  function play(di){
+    stop(); cur=di; var d=DISCS[di], ac=ctx(), t=ac.currentTime+0.25;
+    d.tracks.forEach(function(tr){
+      var ms=(t-ac.currentTime)*1000;
+      timers.push(setTimeout(function(){ nowPlaying='\u25b8 '+tr.name; ui(); },ms));
+      tr.notes.forEach(function(n){ if(n[0]==='x') thump(ac,t); else pluck(ac,n[0],t); t+=60/tr.bpm*n[1]; });
+      t+=0.9;
+    });
+    timers.push(setTimeout(stop,(t-ac.currentTime+1)*1000));
+    ui();
+  }
+  var st=document.createElement('style');
+  st.textContent='@keyframes hxspin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(st);
   var sec=document.createElement('section');
   sec.style.cssText='max-width:640px;margin:40px auto 0;border:1px solid #223041;background:#0e141b;padding:18px 16px;text-align:left';
-  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the music box \u00b7 press a volume, let it play</div>'+
-    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">the house sings its own sheets</div>'+
-    '<div style="text-align:center;margin-top:12px;font-size:10px;letter-spacing:.15em"><a href="shop.html" style="color:#3f7fc1;text-decoration:none">heard enough? the sheets live on the eigen shelf \u2197</a></div>';
-  var list=document.createElement('div'); sec.appendChild(list);
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the music box \u00b7 pop a disc in, let it play</div>'+
+    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">the house sings its own sheets</div>'+
+    '<div style="text-align:center;margin-bottom:14px"><a href="shop.html" style="color:#3f7fc1;text-decoration:none;font-size:10px;letter-spacing:.15em">heard enough? the sheets live on the eigen shelf \u2197</a></div>'+
+    '<div id="hxSlot" style="display:flex;gap:14px;align-items:center;justify-content:center;margin-bottom:14px;min-height:64px"></div>'+
+    '<div id="hxRow" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>';
   (document.querySelector('main')||document.body).appendChild(sec);
-  function rows(){
-    list.innerHTML='';
-    TRACKS.forEach(function(tr,i){
-      var r=document.createElement('div');
-      r.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #223041;font-size:11px;letter-spacing:.08em;color:'+(cur===i?'#d9a83a':'#93a1b0');
-      r.innerHTML='<span style="flex:1">'+(cur===i?'\u25b8 ':'')+tr.name+'</span>';
+  var slot=sec.querySelector('#hxSlot'), row=sec.querySelector('#hxRow');
+  function ui(){
+    row.innerHTML='';
+    DISCS.forEach(function(d,i){
       var b=document.createElement('button');
-      b.textContent=cur===i?'stop':'press';
-      b.style.cssText='background:none;border:1px solid '+(cur===i?'#d9a83a':'#223041')+';color:'+(cur===i?'#d9a83a':'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:4px 10px;cursor:pointer';
-      b.onclick=function(){ cur===i?stop():play(i); };
-      r.appendChild(b); list.appendChild(r);
+      b.style.cssText='display:flex;gap:8px;align-items:center;background:none;border:1px solid '+(cur===i?d.col:'#223041')+';color:'+(cur===i?d.col:(d.soon?'#5c6875':'#93a1b0'))+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:7px 12px;cursor:'+(d.soon?'default':'pointer');
+      b.innerHTML='<span style="width:12px;height:12px;border-radius:50%;border:2px solid '+d.col+';display:inline-block"></span>'+(cur===i?'eject \u00b7 ':'')+d.name+(d.soon?' \u00b7 letters soon':'');
+      if(!d.soon) b.onclick=function(){ cur===i?stop():play(i); };
+      row.appendChild(b);
     });
+    slot.innerHTML= cur<0 ? '<span style="font-size:10px;color:#5c6875;letter-spacing:.15em">the slot is empty \u00b7 the box hums quietly</span>'
+      : '<span style="width:52px;height:52px;border-radius:50%;border:1px solid '+DISCS[cur].col+';background:radial-gradient(circle,#0a0d12 0 20%,'+DISCS[cur].col+' 21% 30%,#0e141b 31% 100%);animation:hxspin 4s linear infinite"></span>'+
+        '<span style="font-size:11px;color:'+DISCS[cur].col+';letter-spacing:.1em">'+(nowPlaying||'spinning up \u2026')+'</span>';
   }
-  rows();
+  ui();
 })();
 </script>
   
