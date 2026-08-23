@@ -235,7 +235,7 @@ setInterval(function(){
       var it=r[n];
       var row=document.createElement('div');
       row.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid #223041;color:#93a1b0;font-size:11px;letter-spacing:.08em;flex-wrap:wrap';
-      var shown=revealed[n]?String(n):(String(n).slice(0,3)+'\u00b7\u00b7\u00b7'+String(n).slice(-1));       row.innerHTML='<span data-n="'+String(n).replace(/"/g,'')+'" title="tap to '+(revealed[n]?'mask':'reveal')+'" style="flex:1;min-width:120px;color:#e8e4d8;cursor:pointer">'+shown.replace(/[<>&"]/g,'')+'</span>'
+            var shown=revealed[n]?String(n):((it.alias||'')||(String(n).slice(0,3)+'\u00b7\u00b7\u00b7'+String(n).slice(-1)));      row.innerHTML='<span data-n="'+String(n).replace(/"/g,'')+'" title="tap to '+(revealed[n]?'mask':'reveal')+'" style="flex:1;min-width:120px;color:#e8e4d8;cursor:pointer">'+shown.replace(/[<>&"]/g,'')+'</span>'
         +'<span style="min-width:70px">'+(it.pillar||'\u2014')+'</span>'
         +'<span style="min-width:56px;color:'+(it.tier===3?'#d9a83a':it.tier===2?'#c8452c':'#58a36a')+'">'+(TIERS[it.tier||1]||'spark')+'</span>'
                 +'<span style="min-width:90px;color:#5c6875">'+(inMonth(it.last)?('seen '+ago(it.last)):'outside the month')+'</span><span style="min-width:60px;color:#5c6875">'+(it.coins||0)+' coins</span>';
