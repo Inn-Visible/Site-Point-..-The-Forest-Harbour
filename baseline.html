@@ -631,7 +631,7 @@ addEventListener('keydown',function(e){
     trs.forEach(function(tr){
       var ms=(t-ac.currentTime)*1000;
       timers.push(setTimeout(function(){ nowPlaying='\u25b8 '+tr.name; ui(); },ms));
-      tr.notes.forEach(function(n){ if(n[0]==='x') thump(ac,t); else pluck(ac,n[0],t); t+=60/tr.bpm*n[1]; });
+      tr.notes.forEach(function(n){ if(n[0]==='x') thump(ac,t); else pluck(ac,n[0]+sh,t); t+=60/tr.bpm*n[1]; });
       t+=0.9;
     });
     if(locked&&TEASE>0) timers.push(setTimeout(function(){ nowPlaying='the rest ships with the book \u00b7 eigen shelf \u2197'; ui(); },(t-ac.currentTime)*1000));
