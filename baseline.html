@@ -580,6 +580,60 @@ addEventListener('keydown',function(e){
 </script>
 
 <script src="sig.js" defer></script>
+
+<script>
+(function(){
+  /* the music box · add a track: {name:'..', bpm:66, notes:[[midi,beats],...]} */
+  var TRACKS=[
+    {name:'\u00e9tude 0 \u00b7 the box warms up', bpm:66,
+     notes:[[76,1],[79,1],[81,1],[79,1],[76,1],[74,1],[72,2],[74,1],[76,1],[74,1],[72,1],[69,2],[67,2],[69,2],[72,4]]}
+  ];
+  var AC=null, timer=null, cur=-1;
+  function ctx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+  function pluck(ac,midi,t){
+    var f=440*Math.pow(2,(midi-69)/12);
+    var o=ac.createOscillator(), g=ac.createGain();
+    o.type='triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.9);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+2);
+    var o2=ac.createOscillator(), g2=ac.createGain();
+    o2.type='sine'; o2.frequency.value=f*2;
+    g2.gain.setValueAtTime(0,t); g2.gain.linearRampToValueAtTime(0.06,t+0.008);
+    g2.gain.exponentialRampToValueAtTime(0.0001,t+1.1);
+    o2.connect(g2); g2.connect(ac.destination); o2.start(t); o2.stop(t+1.2);
+  }
+  function stop(){ if(timer) clearTimeout(timer); timer=null; cur=-1;
+    if(AC){ try{AC.close();}catch(e){} AC=null; } rows(); }
+  function play(i){
+    stop(); var tr=TRACKS[i], ac=ctx(), spb=60/tr.bpm, t=ac.currentTime+0.15;
+    cur=i; rows();
+    tr.notes.forEach(function(n){ pluck(ac,n[0],t); t+=spb*n[1]; });
+    timer=setTimeout(stop,(t-ac.currentTime+0.6)*1000);
+  }
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:640px;margin:40px auto 0;border:1px solid #223041;background:#0e141b;padding:18px 16px;text-align:left';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the music box \u00b7 press a volume, let it play</div>'+
+    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:14px">the house sings its own sheets</div>'+
+    '<div style="text-align:center;margin-top:12px;font-size:10px;letter-spacing:.15em"><a href="shop.html" style="color:#3f7fc1;text-decoration:none">heard enough? the sheets live on the eigen shelf \u2197</a></div>';
+  var list=document.createElement('div'); sec.appendChild(list);
+  (document.querySelector('main')||document.body).appendChild(sec);
+  function rows(){
+    list.innerHTML='';
+    TRACKS.forEach(function(tr,i){
+      var r=document.createElement('div');
+      r.style.cssText='display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #223041;font-size:11px;letter-spacing:.08em;color:'+(cur===i?'#d9a83a':'#93a1b0');
+      r.innerHTML='<span style="flex:1">'+(cur===i?'\u25b8 ':'')+tr.name+'</span>';
+      var b=document.createElement('button');
+      b.textContent=cur===i?'stop':'press';
+      b.style.cssText='background:none;border:1px solid '+(cur===i?'#d9a83a':'#223041')+';color:'+(cur===i?'#d9a83a':'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:4px 10px;cursor:pointer';
+      b.onclick=function(){ cur===i?stop():play(i); };
+      r.appendChild(b); list.appendChild(r);
+    });
+  }
+  rows();
+})();
+</script>
   
 </body>
 </html>
