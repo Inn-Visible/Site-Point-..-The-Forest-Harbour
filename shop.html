@@ -142,9 +142,12 @@
       PARTS.forEach(function(p){ if(tier!=='all'&&p.tiers.indexOf(tier)<0) return; if(cat!=='all'&&p.cat!==cat) return;
         var r=document.createElement('div'); r.className='bk-row';
         r.innerHTML='<span class="bk-name">'+p.name+'</span><span class="bk-note">'+p.note+'</span><span class="bk-cat">'+p.cat+'</span><span class="bk-price">$'+p.price+'</span>';
-        var a=document.createElement('button'); a.className='bk-add'; a.textContent='+';
+               var a=document.createElement('button'); a.className='bk-add'; a.textContent='+';
         a.onclick=function(){ bucket.push(p.id); renderB(); };
-        r.appendChild(a); el.appendChild(r); }); }
+        r.appendChild(a);
+        if(p.src){ var sl=document.createElement('a'); sl.className='bk-add'; sl.style.textDecoration='none';
+          sl.href=p.src; sl.target='_blank'; sl.textContent='src \u2197'; r.appendChild(sl); }
+        el.appendChild(r); }); }
     function renderB(){ var el=document.getElementById('bk-items'); el.innerHTML=''; var tot=0;
       bucket.forEach(function(id,i){ var p=PARTS.filter(function(x){return x.id===id;})[0]; if(!p) return; tot+=p.price;
         var li=document.createElement('div'); li.className='bk-li';
