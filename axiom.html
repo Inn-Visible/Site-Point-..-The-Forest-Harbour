@@ -873,6 +873,31 @@ function lockdoor(){
   };
 })();
 </script>
+
+<script>
+(function(){
+  function host(){
+    var ds=document.querySelectorAll('div');
+    for(var i=0;i<ds.length;i++){
+      if(ds[i].getAttribute('data-ax')) return ds[i];
+      var cs=getComputedStyle(ds[i]);
+      if(cs.borderTopStyle==='dashed'&&(ds[i].textContent.indexOf('slot is poured')>-1||ds[i].textContent.indexOf('stacks remember')>-1)) return ds[i];
+    }
+    return null;
+  }
+  function fill(){
+    var h=host(); if(!h) return;
+    h.setAttribute('data-ax','1');
+    h.innerHTML='<iframe src="archive.html" title="the archive" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
+  }
+  var cands=document.querySelectorAll('button,a,div');
+  for(var i=0;i<cands.length;i++){
+    if((cands[i].textContent||'').trim()==='archive'){
+      cands[i].addEventListener('click',function(){ setTimeout(fill,30); });
+    }
+  }
+})();
+</script>
   
 </body>
 </html>
