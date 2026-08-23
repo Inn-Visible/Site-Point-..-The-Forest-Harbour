@@ -583,7 +583,10 @@ addEventListener('keydown',function(e){
 
 <script>
 (function(){
-  /* the music box · pop a disc in, let it play */
+  /* the music box · the jukebox is public, the disc is treasure */
+  var WORD='candles';
+  var TEASE=2; /* strangers hear this many tracks · set 0 for silence */
+  function unlocked(){ return localStorage.getItem('hive_disc_vol1')==='1'; }
   var DISCS=[
     {id:'vol1', name:'vol. i \u00b7 the wall \u00e9tudes', col:'#d9a83a', tracks:[
       {name:'01 the ground', bpm:90, notes:[[28,1],[28,1],[35,1],[28,1],[40,1],[28,1],[28,1],[40,2]]},
@@ -622,12 +625,15 @@ addEventListener('keydown',function(e){
     if(AC){ try{AC.close();}catch(e){} AC=null; } ui(); }
   function play(di){
     stop(); cur=di; var d=DISCS[di], ac=ctx(), t=ac.currentTime+0.25;
-    d.tracks.forEach(function(tr){
+    var locked=(d.id==='vol1')&&!unlocked();
+    var trs=locked?d.tracks.slice(0,TEASE):d.tracks;
+    trs.forEach(function(tr){
       var ms=(t-ac.currentTime)*1000;
       timers.push(setTimeout(function(){ nowPlaying='\u25b8 '+tr.name; ui(); },ms));
       tr.notes.forEach(function(n){ if(n[0]==='x') thump(ac,t); else pluck(ac,n[0],t); t+=60/tr.bpm*n[1]; });
       t+=0.9;
     });
+    if(locked&&TEASE>0) timers.push(setTimeout(function(){ nowPlaying='the rest ships with the book \u00b7 eigen shelf \u2197'; ui(); },(t-ac.currentTime)*1000));
     timers.push(setTimeout(stop,(t-ac.currentTime+1)*1000));
     ui();
   }
@@ -637,18 +643,31 @@ addEventListener('keydown',function(e){
   var sec=document.createElement('section');
   sec.style.cssText='max-width:640px;margin:40px auto 0;border:1px solid #223041;background:#0e141b;padding:18px 16px;text-align:left';
   sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the music box \u00b7 pop a disc in, let it play</div>'+
-    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">the house sings its own sheets</div>'+
-    '<div style="text-align:center;margin-bottom:14px"><a href="shop.html" style="color:#3f7fc1;text-decoration:none;font-size:10px;letter-spacing:.15em">heard enough? the sheets live on the eigen shelf \u2197</a></div>'+
+    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">the jukebox is public \u00b7 the disc is treasure</div>'+
+    '<div style="text-align:center;margin-bottom:14px"><a href="shop.html" style="color:#3f7fc1;text-decoration:none;font-size:10px;letter-spacing:.15em">the discs ship with the books \u00b7 eigen shelf \u2197</a></div>'+
     '<div id="hxSlot" style="display:flex;gap:14px;align-items:center;justify-content:center;margin-bottom:14px;min-height:64px"></div>'+
     '<div id="hxRow" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>';
   (document.querySelector('main')||document.body).appendChild(sec);
   var slot=sec.querySelector('#hxSlot'), row=sec.querySelector('#hxRow');
+  var wr=document.createElement('div');
+  wr.style.cssText='margin-top:12px;text-align:center';
+  sec.appendChild(wr);
+  function wordRow(){
+    if(unlocked()){ wr.innerHTML='<span style="color:#d9a83a;font-size:10px;letter-spacing:.15em">the disc is yours \u00b7 spin it whenever</span>'; return; }
+    wr.innerHTML='<input id="hxWord" placeholder="own the book? the disc word .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;letter-spacing:.1em;text-align:center"> <button id="hxOk" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">insert</button>';
+    wr.querySelector('#hxOk').onclick=function(){
+      var v=(wr.querySelector('#hxWord').value||'').trim().toLowerCase();
+      if(v===WORD){ localStorage.setItem('hive_disc_vol1','1'); wordRow(); ui(); }
+      else wr.querySelector('#hxWord').value='';
+    };
+  }
   function ui(){
     row.innerHTML='';
     DISCS.forEach(function(d,i){
+      var locked=(d.id==='vol1')&&!unlocked();
       var b=document.createElement('button');
       b.style.cssText='display:flex;gap:8px;align-items:center;background:none;border:1px solid '+(cur===i?d.col:'#223041')+';color:'+(cur===i?d.col:(d.soon?'#5c6875':'#93a1b0'))+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:7px 12px;cursor:'+(d.soon?'default':'pointer');
-      b.innerHTML='<span style="width:12px;height:12px;border-radius:50%;border:2px solid '+d.col+';display:inline-block"></span>'+(cur===i?'eject \u00b7 ':'')+d.name+(d.soon?' \u00b7 letters soon':'');
+      b.innerHTML='<span style="width:12px;height:12px;border-radius:50%;border:2px solid '+d.col+';display:inline-block"></span>'+(cur===i?'eject \u00b7 ':'')+d.name+(d.soon?' \u00b7 letters soon':(locked?' \u00b7 teaser':''));
       if(!d.soon) b.onclick=function(){ cur===i?stop():play(i); };
       row.appendChild(b);
     });
@@ -656,7 +675,7 @@ addEventListener('keydown',function(e){
       : '<span style="width:52px;height:52px;border-radius:50%;border:1px solid '+DISCS[cur].col+';background:radial-gradient(circle,#0a0d12 0 20%,'+DISCS[cur].col+' 21% 30%,#0e141b 31% 100%);animation:hxspin 4s linear infinite"></span>'+
         '<span style="font-size:11px;color:'+DISCS[cur].col+';letter-spacing:.1em">'+(nowPlaying||'spinning up \u2026')+'</span>';
   }
-  ui();
+  wordRow(); ui();
 })();
 </script>
   
