@@ -627,6 +627,7 @@ addEventListener('keydown',function(e){
     stop(); cur=di; var d=DISCS[di], ac=ctx(), t=ac.currentTime+0.25;
     var locked=(d.id==='vol1')&&!unlocked();
     var trs=locked?d.tracks.slice(0,TEASE):d.tracks;
+    var sh=24; /* the box sings two octaves up · small speakers can't carry bass */
     trs.forEach(function(tr){
       var ms=(t-ac.currentTime)*1000;
       timers.push(setTimeout(function(){ nowPlaying='\u25b8 '+tr.name; ui(); },ms));
