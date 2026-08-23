@@ -898,6 +898,40 @@ function lockdoor(){
   }
 })();
 </script>
+
+<script>
+(function(){
+  function pad(){
+    var ts=document.querySelectorAll('textarea');
+    for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent) return ts[i]; }
+    return null;
+  }
+  function ensure(){
+    if(document.getElementById('wbArc')) return;
+    var p=pad(); if(!p) return;
+    var b=document.createElement('button'); b.id='wbArc';
+    b.textContent='\u2192 archive';
+    b.style.cssText='display:block;margin-top:10px;background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer';
+    p.insertAdjacentElement('afterend',b);
+    b.onclick=push;
+  }
+  function push(){
+    var p=pad(); if(!p) return;
+    var txt=(p.value||'').trim(); if(!txt) return;
+    var title=(txt.split('\n')[0]||'').replace(/^[\[\]#>\-\s]+/,'').replace(/[\[\]#>\-\s]+$/,'').slice(0,60)||'bench note';
+    var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
+    LOCAL.unshift({id:'ax-W'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
+      title:title, body:txt, tags:['bench'], local:true});
+    localStorage.setItem('arc.local',JSON.stringify(LOCAL));
+    var b=document.getElementById('wbArc'); if(b){ b.textContent='dropped \u2713'; setTimeout(function(){ b.textContent='\u2192 archive'; },1400); }
+    var cands=document.querySelectorAll('button,a,div');
+    for(var i=0;i<cands.length;i++){ if((cands[i].textContent||'').trim()==='archive'){ cands[i].click(); break; } }
+  }
+  setInterval(ensure,600);
+  document.addEventListener('click',function(){ setTimeout(ensure,60); });
+  ensure();
+})();
+</script>
   
 </body>
 </html>
