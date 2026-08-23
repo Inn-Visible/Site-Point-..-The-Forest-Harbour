@@ -583,10 +583,10 @@ addEventListener('keydown',function(e){
 
 <script>
 (function(){
-  /* the music box · the jukebox is public, the disc is treasure */
-  var WORD='candles';
-  var TEASE=2; /* strangers hear this many tracks · set 0 for silence */
-  function unlocked(){ return localStorage.getItem('hive_disc_vol1')==='1'; }
+  /* the music box · the jukebox is public, the discs are treasure */
+  var WORDS={vol1:'candles',vol2:'umbra',vol3:'lumen'};
+  var TEASE=2;
+  function unlocked(id){ return localStorage.getItem('hive_disc_'+id)==='1'; }
   var DISCS=[
     {id:'vol1', name:'vol. i \u00b7 the wall \u00e9tudes', col:'#d9a83a', tracks:[
       {name:'01 the ground', bpm:90, notes:[[28,1],[28,1],[35,1],[28,1],[40,1],[28,1],[28,1],[40,2]]},
@@ -598,7 +598,26 @@ addEventListener('keydown',function(e){
       {name:'07 tiaga', bpm:132, notes:[[33,1],[33,1],['x',1],[33,1],[45,2],['x',1],[33,2]]},
       {name:'08 ex umbra', bpm:60, notes:[[28,2],[35,2],[31,2],[38,2],[28,4]]}
     ]},
-       {id:'vol2', name:'vol. ii \u00b7 the umbra \u00e9tudes', col:'#c8452c', soon:true}
+    {id:'vol2', name:'vol. ii \u00b7 the umbra \u00e9tudes', col:'#c8452c', tracks:[
+      {name:'01 the cellar', bpm:60, notes:[[28,1],[28,1],['x',1],[28,1],[29,1],[28,1],[35,2]]},
+      {name:'02 ash walk', bpm:84, notes:[[33,1],['x',1],[33,1],['x',1],[36,1],['x',1],[35,1],['x',1]]},
+      {name:'03 coal ride', bpm:76, notes:[[36,1],[39,1],[36,1],[39,1],[36,1],[39,1],[36,1],[39,2]]},
+      {name:'04 black tide', bpm:66, notes:[[33,1],[33,1],[38,1],[36,1],[38,1],[40,2],[38,2]]},
+      {name:'05 grave walk', bpm:96, notes:[[31,1],[31,1],[36,1],[31,1],[41,1],[31,1],[31,1],[41,2]]},
+      {name:'06 cold hearth', bpm:66, notes:[[28,2],[35,2],[38,2],[28,2],[35,2],[38,3]]},
+      {name:'07 shake the dark', bpm:132, notes:[[33,1],[33,1],['x',1],[33,1],[43,2],['x',1],[33,2]]},
+      {name:'08 umbra keeps', bpm:60, notes:[[28,2],[35,2],[29,2],[37,2],[28,4]]}
+    ]},
+    {id:'vol3', name:'vol. iii \u00b7 the lumen \u00e9tudes', col:'#e8e4d8', tracks:[
+      {name:'01 first light', bpm:70, notes:[[31,2],[38,2],[40,2],[31,2],[38,2],[40,3]]},
+      {name:'02 bright walk', bpm:84, notes:[[36,1],['x',1],[36,1],['x',1],[38,1],['x',1],[40,1],['x',1]]},
+      {name:'03 sun ride', bpm:76, notes:[[41,1],[40,1],[41,1],[40,1],[41,1],[40,1],[41,1],[40,2]]},
+      {name:'04 high tide', bpm:72, notes:[[45,1],[45,1],[38,1],[45,1],[41,2],[45,2]]},
+      {name:'05 roof walk', bpm:100, notes:[[31,1],[31,1],[40,1],[31,1],[45,1],[31,1],[31,1],[45,2]]},
+      {name:'06 morning hold', bpm:66, notes:[[28,2],[35,2],[39,2],[28,2],[35,2],[39,3]]},
+      {name:'07 tiaga, unshaken', bpm:100, notes:[[33,1],[33,1],['x',1],[33,1],[37,2],['x',1],[33,2]]},
+      {name:'08 lumen', bpm:60, notes:[[28,2],[36,2],[31,2],[38,2],[43,4]]}
+    ]}
   ];
   var AC=null, timers=[], cur=-1, nowPlaying='';
   function ctx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
@@ -625,9 +644,9 @@ addEventListener('keydown',function(e){
     if(AC){ try{AC.close();}catch(e){} AC=null; } ui(); }
   function play(di){
     stop(); cur=di; var d=DISCS[di], ac=ctx(), t=ac.currentTime+0.25;
-    var locked=(d.id==='vol1')&&!unlocked();
+    var sh=24;
+    var locked=!unlocked(d.id);
     var trs=locked?d.tracks.slice(0,TEASE):d.tracks;
-    var sh=24; /* the box sings two octaves up · small speakers can't carry bass */
     trs.forEach(function(tr){
       var ms=(t-ac.currentTime)*1000;
       timers.push(setTimeout(function(){ nowPlaying='\u25b8 '+tr.name; ui(); },ms));
@@ -644,7 +663,7 @@ addEventListener('keydown',function(e){
   var sec=document.createElement('section');
   sec.style.cssText='max-width:640px;margin:40px auto 0;border:1px solid #223041;background:#0e141b;padding:18px 16px;text-align:left';
   sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the music box \u00b7 pop a disc in, let it play</div>'+
-    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">the jukebox is public \u00b7 the disc is treasure</div>'+
+    '<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">the jukebox is public \u00b7 the discs are treasure</div>'+
     '<div style="text-align:center;margin-bottom:14px"><a href="shop.html" style="color:#3f7fc1;text-decoration:none;font-size:10px;letter-spacing:.15em">the discs ship with the books \u00b7 eigen shelf \u2197</a></div>'+
     '<div id="hxSlot" style="display:flex;gap:14px;align-items:center;justify-content:center;margin-bottom:14px;min-height:64px"></div>'+
     '<div id="hxRow" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>';
@@ -653,23 +672,26 @@ addEventListener('keydown',function(e){
   var wr=document.createElement('div');
   wr.style.cssText='margin-top:12px;text-align:center';
   sec.appendChild(wr);
+  function owned(){ return DISCS.filter(function(d){ return unlocked(d.id); }).map(function(d){ return d.name.split('\u00b7')[0].trim(); }); }
   function wordRow(){
-    if(unlocked()){ wr.innerHTML='<span style="color:#d9a83a;font-size:10px;letter-spacing:.15em">the disc is yours \u00b7 spin it whenever</span>'; return; }
-    wr.innerHTML='<input id="hxWord" placeholder="own the book? the disc word .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;letter-spacing:.1em;text-align:center"> <button id="hxOk" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">insert</button>';
+    var ow=owned();
+    if(ow.length===DISCS.length){ wr.innerHTML='<span style="color:#d9a83a;font-size:10px;letter-spacing:.15em">all three discs are yours \u00b7 the circle spins</span>'; return; }
+    wr.innerHTML=(ow.length?'<div style="margin-bottom:8px;color:#d9a83a;font-size:10px;letter-spacing:.15em">'+ow.join(' + ')+' \u00b7 yours</div>':'')+
+      '<input id="hxWord" placeholder="own a book? its disc word .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;letter-spacing:.1em;text-align:center"> <button id="hxOk" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">insert</button>';
     wr.querySelector('#hxOk').onclick=function(){
       var v=(wr.querySelector('#hxWord').value||'').trim().toLowerCase();
-      if(v===WORD){ localStorage.setItem('hive_disc_vol1','1'); wordRow(); ui(); }
-      else wr.querySelector('#hxWord').value='';
+      for(var id in WORDS){ if(v===WORDS[id]){ localStorage.setItem('hive_disc_'+id,'1'); wordRow(); ui(); return; } }
+      wr.querySelector('#hxWord').value='';
     };
   }
   function ui(){
     row.innerHTML='';
     DISCS.forEach(function(d,i){
-      var locked=(d.id==='vol1')&&!unlocked();
+      var locked=!unlocked(d.id);
       var b=document.createElement('button');
-      b.style.cssText='display:flex;gap:8px;align-items:center;background:none;border:1px solid '+(cur===i?d.col:'#223041')+';color:'+(cur===i?d.col:(d.soon?'#5c6875':'#93a1b0'))+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:7px 12px;cursor:'+(d.soon?'default':'pointer');
-      b.innerHTML='<span style="width:12px;height:12px;border-radius:50%;border:2px solid '+d.col+';display:inline-block"></span>'+(cur===i?'eject \u00b7 ':'')+d.name+(d.soon?' \u00b7 letters soon':(locked?' \u00b7 teaser':''));
-      if(!d.soon) b.onclick=function(){ cur===i?stop():play(i); };
+      b.style.cssText='display:flex;gap:8px;align-items:center;background:none;border:1px solid '+(cur===i?d.col:'#223041')+';color:'+(cur===i?d.col:'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:7px 12px;cursor:pointer';
+      b.innerHTML='<span style="width:12px;height:12px;border-radius:50%;border:2px solid '+d.col+';display:inline-block"></span>'+(cur===i?'eject \u00b7 ':'')+d.name+(locked?' \u00b7 teaser':'');
+      b.onclick=function(){ cur===i?stop():play(i); };
       row.appendChild(b);
     });
     slot.innerHTML= cur<0 ? '<span style="font-size:10px;color:#5c6875;letter-spacing:.15em">the slot is empty \u00b7 the box hums quietly</span>'
