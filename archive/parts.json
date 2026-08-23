@@ -18,5 +18,6 @@
   {"id":"s3","name":"nvme 256gb","cat":"storage","tiers":["macro"],"price":40,"note":"the sovereign's library"},
   {"id":"b1","name":"wire + switch kit","cat":"bonds","tiers":["micro","scratch"],"price":6,"note":"the holding"},
   {"id":"b2","name":"harness kit","cat":"bonds","tiers":["macro"],"price":15,"note":"clean veins"},
-  {"id":"x1","name":"insignia sheet","cat":"skin","tiers":["micro","scratch","macro"],"price":12,"note":"four pillars, one sheet"}
+  {"id":"x1","name":"insignia sheet","cat":"skin","tiers":["micro","scratch","macro"],"price":12,"note":"four pillars, one sheet"},
+  {"id":"c1","name":"pi zero 2 w","cat":"compute","tiers":["micro","scratch"],"price":18,"note":"the drawer computer","src":"https://YOUR_AFFILIATE_LINK"}
 ]
