@@ -60,11 +60,15 @@ function render(rows, live){
   });
   const totSeed=rows.reduce(function(s,r){return s+(r.seed||0);},0);
   document.getElementById('tot').innerHTML='<b>'+rows.length+'</b> supporter'+(rows.length===1?'':'s')+' · <b>'+totSeed+'</b> coins brought in · the fire keeps the count';
-    var st=document.getElementById('stamp');
-  if(live) st.textContent = 'witnessed live · '+new Date().toLocaleTimeString();
-  else { st.textContent = 'cached · last witnessed '+new Date(parseInt(localStorage.getItem('hive_board_when')||'0',10)).toLocaleString()+' · tap to refresh';
+   var st=document.getElementById('stamp');
+  if(live){
+    st.textContent='witnessed live \u00b7 '+new Date().toLocaleTimeString();
+    st.style.color=''; st.style.cursor=''; st.onclick=null; st.title='';
+  } else {
+    st.textContent='cached \u00b7 last witnessed '+new Date(parseInt(localStorage.getItem('hive_board_when')||'0',10)).toLocaleString();
     st.style.cursor='pointer'; st.style.color='#d9a83a';
-    st.onclick=function(){ localStorage.removeItem('hive_board_cache'); localStorage.removeItem('hive_board_when'); location.reload(); };
+    st.title='tap to force a fresh witness';
+    st.onclick=function(){ location.reload(); };
   }
 if(!aboard){ document.getElementById('tot').innerHTML=DOOR; }
 async function pull(){
