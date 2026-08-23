@@ -894,27 +894,45 @@ function lockdoor(){
     for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent) return ts[i]; }
     return null;
   }
-    function ensure(){
+  function ensure(){
     var olds=document.querySelectorAll('button,a');
-    for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='\u2192 archive') olds[o].remove(); }
+    for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='→ archive') olds[o].remove(); }
     if(document.getElementById('wbArc')) return;
     var p=pad(); if(!p) return;
     var b=document.createElement('button'); b.id='wbArc';
-    b.textContent='\u2192 archive';
+    b.textContent='→ archive';
     b.style.cssText='display:block;margin-top:10px;background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer';
     p.insertAdjacentElement('afterend',b);
-    b.onclick=push;
+    b.onclick=preview;
   }
-  function push(){
-    var p=pad(); if(!p) return;
-    var txt=(p.value||'').trim(); if(!txt) return;
+  function parse(){
+    var p=pad(); var txt=((p&&p.value)||'').trim();
+    if(!txt) return null;
     var title=(txt.split('\n')[0]||'').replace(/^[\[\]#>\-\s]+/,'').replace(/[\[\]#>\-\s]+$/,'').slice(0,60)||'bench note';
+    return {txt:txt,title:title};
+  }
+  function preview(){
+    var d=parse(); if(!d) return;
+    var old=document.getElementById('wbPrev'); if(old){ old.remove(); return; }
+    var box=document.createElement('div'); box.id='wbPrev';
+    box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid #e8e4d8;background:#0e141b;padding:14px 16px';
+    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview · how it lands in the archive</div>'+
+      '<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">axiom</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local · unpushed</span></div>'+
+      '<b style="display:block;font-size:12px;letter-spacing:.1em;margin:8px 0">'+d.title.replace(/[<>&"]/g,'')+'</b>'+
+      '<p style="white-space:pre-wrap;color:#93a1b0;font-size:11px;line-height:1.8;margin:0">'+d.txt.replace(/[<>&"]/g,'')+'</p>'+
+      '<div style="margin-top:8px;font-size:9px;letter-spacing:.12em;color:#5c6875"># bench</div>'+
+      '<div style="margin-top:12px;display:flex;gap:8px"><button id="wbGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send it ↦</button>'+
+      '<button id="wbNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
+    document.getElementById('wbArc').insertAdjacentElement('afterend',box);
+    box.querySelector('#wbGo').onclick=function(){ send(d); box.remove(); };
+    box.querySelector('#wbNo').onclick=function(){ box.remove(); };
+  }
+  function send(d){
     var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
     LOCAL.unshift({id:'ax-W'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
-      title:title, body:txt, tags:['bench'], local:true});
+      title:d.title, body:d.txt, tags:['bench'], local:true});
     localStorage.setItem('arc.local',JSON.stringify(LOCAL));
-    var b=document.getElementById('wbArc'); if(b){ b.textContent='dropped \u2713'; setTimeout(function(){ b.textContent='\u2192 archive'; },1400); }
-    var cands=document.querySelectorAll('button,a,div');
+    var cands=document.querySelectorAll('button,a');
     for(var i=0;i<cands.length;i++){ if((cands[i].textContent||'').trim()==='archive'){ cands[i].click(); break; } }
   }
   setInterval(ensure,600);
