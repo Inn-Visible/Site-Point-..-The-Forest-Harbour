@@ -148,7 +148,7 @@
     var m=document.createElement('div'); m.className='meta';
     m.innerHTML='<span class="pil">'+n.pillar+'</span><span class="dt">'+(n.date||'')+'</span><span class="nid">'+n.id+'</span>'+(n.local?'<span class="loc">local · unpushed</span>':'');
     var h=document.createElement('b'); h.className='ttl'; h.textContent=n.title;
-       var b=document.createElement('p'); b.textContent=n.body; b.style.whiteSpace='pre-wrap';
+           var b=document.createElement('p'); b.textContent=n.body; b.style.whiteSpace='pre-wrap';
        c.appendChild(m); c.appendChild(h); c.appendChild(b);
     if(n.img){ var im=document.createElement('img'); im.src=n.img;
       im.style.cssText='max-width:100%;margin-top:10px;border:1px solid #223041'; c.appendChild(im); }
