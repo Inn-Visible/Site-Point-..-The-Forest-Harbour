@@ -906,7 +906,9 @@ function lockdoor(){
     for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent) return ts[i]; }
     return null;
   }
-  function ensure(){
+    function ensure(){
+    var olds=document.querySelectorAll('button,a');
+    for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='\u2192 archive') olds[o].remove(); }
     if(document.getElementById('wbArc')) return;
     var p=pad(); if(!p) return;
     var b=document.createElement('button'); b.id='wbArc';
