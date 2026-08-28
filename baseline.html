@@ -920,7 +920,7 @@ addEventListener('keydown',function(e){
     pb.textContent='\ud83d\udd8b the shelf';
     pb.style.cssText='display:block;margin:12px auto 0;background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer';
     pb.onclick=function(){ editing=!editing; editI=-1; render(); };
-    best.appendChild(pb);
+       (box.parentElement||best).appendChild(pb);
   }
   function start(d){ DATA=d; render(); }
   var local=localStorage.getItem('hive_socials');
