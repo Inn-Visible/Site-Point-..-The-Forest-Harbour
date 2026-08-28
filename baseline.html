@@ -732,16 +732,18 @@ addEventListener('keydown',function(e){
   au.addEventListener('playing',function(){ clearTimeout(timer); if(cur) now('now spinning \u00b7 '+cur[0]); });
   au.addEventListener('error',function(){ if(stopping) return; mi++; tryUrl(); });
   function playList(urls,label){ cur=[label,urls]; mi=0; tryUrl(); }
+  function quiet(el){ el.addEventListener('click',function(e){ e.stopPropagation(); }); }
   CH.forEach(function(c){
     var b=document.createElement('button'); b.textContent=c[0];
     b.style.cssText='background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;cursor:pointer';
-    b.onclick=function(){ playList(c[1],c[0]); };
+    b.addEventListener('click',function(e){ e.stopPropagation(); playList(c[1],c[0]); });
     rowEl.appendChild(b);
   });
   var f=document.createElement('a');
   f.href='https://open.spotify.com/playlist/37i9dQZF1E8O6HeSqa7VRe'; f.target='_blank';
   f.textContent='108.0 the forge \u2197'; f.title='spotify locks its audio \u00b7 the door opens outside';
   f.style.cssText='border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none';
+  f.addEventListener('click',function(e){ e.stopPropagation(); });
   rowEl.appendChild(f);
   var spk=document.createElement('div');
   spk.style.cssText='margin-top:12px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap';
@@ -749,22 +751,29 @@ addEventListener('keydown',function(e){
   spk.innerHTML='<button id="rsStop" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">\u25a0 still</button>'+
     '<input id="rsVol" type="range" min="0" max="100" value="70" style="width:90px">'+
     '<span id="rsNow" style="font-size:9px;letter-spacing:.15em;color:#93a1b0">the dial is dark</span>';
+  quiet(spk);
   spk.querySelector('#rsVol').oninput=function(){ au.volume=this.value/100; };
   spk.querySelector('#rsStop').onclick=function(){ stopping=true; clearTimeout(timer); au.pause(); au.removeAttribute('src'); au.load(); now('the dial is dark'); setTimeout(function(){ stopping=false; },100); };
   var cred=document.createElement('div');
   cred.style.cssText='margin-top:8px;text-align:center;font-size:9px;letter-spacing:.15em;color:#5c6875';
   cred.innerHTML='world streams by <a href="https://somafm.com" target="_blank" style="color:#3f7fc1;text-decoration:none">somafm</a> \u00b7 radio paradise \u00b7 fip \u00b7 donor-supported \u00b7 keep them alive';
   spk.parentNode.insertBefore(cred,spk.nextSibling);
+  quiet(cred);
   var tape=document.createElement('div');
   tape.style.cssText='margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap';
   cred.parentNode.insertBefore(tape,cred.nextSibling);
+  quiet(tape);
+  function isPlat(u){ return /spotify\.com|youtube\.com|youtu\.be|soundcloud\.com|bandcamp\.com/i.test(u); }
   function drawTape(){
     var u=localStorage.getItem('hive_tape')||'';
     if(u){
       tape.innerHTML='<button id="tpPlay" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;cursor:pointer">\u25b6 your tape</button>'+
         '<a href="'+u+'" target="_blank" style="border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none">\u2302 open \u2197</a>'+
         '<button id="tapeNo" style="background:none;border:1px solid #223041;color:#5c6875;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">rewind</button>';
-      tape.querySelector('#tpPlay').onclick=function(){ playList([u],'your tape'); };
+      tape.querySelector('#tpPlay').onclick=function(){
+        if(isPlat(u)){ window.open(u,'_blank'); now('that tape lives outside \u00b7 opened \u2197'); }
+        else playList([u],'your tape');
+      };
       tape.querySelector('#tapeNo').onclick=function(){ localStorage.removeItem('hive_tape'); drawTape(); };
     } else {
       tape.innerHTML='<input id="tapeIn" placeholder="paste a tape \u00b7 stream / mp3 / spotify .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;width:220px;max-width:70vw">'+
@@ -773,7 +782,8 @@ addEventListener('keydown',function(e){
         var v=(tape.querySelector('#tapeIn').value||'').trim();
         if(!/^https?:\/\//.test(v)) return;
         localStorage.setItem('hive_tape',v); drawTape();
-        if(/\.(mp3|ogg|oga|aac|m4a)(\?|$)/i.test(v)||/somafm|icecast|radio|stream/i.test(v)) playList([v],'your tape');
+        if(isPlat(v)) now('kept as a door \u00b7 the platform locks its audio');
+        else if(/\.(mp3|ogg|oga|aac|m4a)(\?|$)/i.test(v)||/somafm|icecast|radio|stream/i.test(v)) playList([v],'your tape');
       };
     }
   }
