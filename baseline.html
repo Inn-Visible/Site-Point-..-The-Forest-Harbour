@@ -833,6 +833,97 @@ addEventListener('keydown',function(e){
 #tapeRow a,#tapeRow button{border-color:#1a2634!important;color:#5c6875!important}
 #tapeRow #tpPlay{border-color:#24425f!important;color:#6f9cc4!important}
 </style>
+
+<script>
+(function(){
+  function esc(s){ return String(s||'').replace(/[<>&"]/g,''); }
+  var best=null, all=document.querySelectorAll('div,section');
+  for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
+    if(t.indexOf('socials / entertainment')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
+  if(!best) return;
+  var divs=best.querySelectorAll('div'), cards=[];
+  for(var i=0;i<divs.length;i++){ if(getComputedStyle(divs[i]).borderTopStyle==='dashed') cards.push(divs[i]); }
+  if(!cards.length) return;
+  var box=cards[0].parentNode;
+  var DEF=[];
+  cards.forEach(function(c){
+    var a=c.querySelector('a'), b=c.querySelector('b')||c.firstElementChild;
+    var t=b?b.textContent.trim():'', l=a?a.textContent.replace(/\u2197/g,'').trim():'';
+    var n=c.textContent.replace(t,'').replace(l,'').replace(/\u2197/g,'').trim();
+    DEF.push({t:t,n:n,u:a?a.href:'',l:l});
+  });
+  var DATA=DEF.slice(), editI=-1, editing=false;
+  var founder=localStorage.getItem('hive_user')==='1';
+  function save(){ localStorage.setItem('hive_socials',JSON.stringify(DATA)); }
+  function card(d,i){
+    var c=document.createElement('div');
+    c.style.cssText='border:1px dashed #223041;background:rgba(3,4,7,.4);padding:14px;text-align:left';
+    c.innerHTML='<b style="display:block;color:#e8e4d8;font-size:12px;letter-spacing:.1em;margin-bottom:8px">'+esc(d.t)+'</b>'+
+      '<div style="color:#93a1b0;font-size:11px;line-height:1.8;margin-bottom:8px">'+esc(d.n)+'</div>'+
+      (d.u?'<a href="'+esc(d.u)+'" target="_blank" style="color:#3f7fc1;font-size:11px;text-decoration:none">'+esc(d.l||d.u)+' \u2197</a>':'')+
+      (editing?'<div style="margin-top:10px;display:flex;gap:6px"><button data-e="'+i+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;padding:4px 8px;cursor:pointer">edit</button><button data-x="'+i+'" style="background:none;border:1px solid #c8452c;color:#c8452c;font:9px ui-monospace,Consolas,monospace;padding:4px 8px;cursor:pointer">remove</button></div>':'');
+    return c;
+  }
+  function bar(){
+    var e=document.createElement('div');
+    e.style.cssText='margin-top:12px;border:1px dashed #223041;padding:12px;text-align:center';
+    var ins='background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 8px;width:170px;max-width:90vw';
+    e.innerHTML='<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px">'+
+      '<input id="sT" placeholder="title \u00b7 youtube \u00b7 quillinn" style="'+ins+'">'+
+      '<input id="sN" placeholder="the line .." style="'+ins+'">'+
+      '<input id="sL" placeholder="link label \u00b7 @handle" style="'+ins+'">'+
+      '<input id="sU" placeholder="https:// .." style="'+ins+'"></div>'+
+      '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">'+
+      '<button id="sAdd" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">'+(editI>-1?'save it':'add it')+'</button>'+
+      '<button id="sCpy" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">copy json</button>'+
+      '<button id="sDone" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">done</button></div>'+
+      '<div style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em">lives in this browser until copy json \u2192 socials.json \u2192 commit = rooted for all</div>';
+    box.appendChild(e);
+    e.querySelector('#sAdd').onclick=function(){
+      var t=e.querySelector('#sT').value.trim(), n=e.querySelector('#sN').value.trim(),
+          l=e.querySelector('#sL').value.trim(), u=e.querySelector('#sU').value.trim();
+      if(!t) return;
+      if(u&&!/^https?:\/\//.test(u)) return;
+      if(editI>-1){ DATA[editI]={t:t,n:n,u:u,l:l}; editI=-1; } else DATA.push({t:t,n:n,u:u,l:l});
+      save(); render();
+    };
+    e.querySelector('#sCpy').onclick=function(){
+      navigator.clipboard.writeText(JSON.stringify(DATA,null,1)).then(function(){ e.querySelector('#sCpy').textContent='copied \u2713'; });
+    };
+    e.querySelector('#sDone').onclick=function(){ editing=false; editI=-1; render(); };
+  }
+  function render(){
+    box.innerHTML='';
+    var g=document.createElement('div');
+    g.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px';
+    DATA.forEach(function(d,i){ g.appendChild(card(d,i)); });
+    box.appendChild(g);
+    if(editing) bar();
+  }
+  box.addEventListener('click',function(e){
+    var ei=e.target.getAttribute&&e.target.getAttribute('data-e');
+    var xi=e.target.getAttribute&&e.target.getAttribute('data-x');
+    if(ei==null&&xi==null) return;
+    if(xi!=null){ DATA.splice(+xi,1); editI=-1; save(); render(); return; }
+    editI=+ei; render();
+    var d=DATA[editI];
+    box.querySelector('#sT').value=d.t; box.querySelector('#sN').value=d.n;
+    box.querySelector('#sL').value=d.l||''; box.querySelector('#sU').value=d.u||'';
+  });
+  if(founder){
+    var pb=document.createElement('button');
+    pb.textContent='\ud83d\udd8b the shelf';
+    pb.style.cssText='display:block;margin:12px auto 0;background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer';
+    pb.onclick=function(){ editing=!editing; editI=-1; render(); };
+    best.appendChild(pb);
+  }
+  function start(d){ DATA=d; render(); }
+  var local=localStorage.getItem('hive_socials');
+  if(local){ try{ start(JSON.parse(local)); }catch(e){ start(DEF); } }
+  else fetch('socials.json').then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ start(j&&j.length?j:DEF); }).catch(function(){ start(DEF); });
+})();
+</script>
   
 </body>
 </html>
