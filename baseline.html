@@ -704,213 +704,117 @@ addEventListener('keydown',function(e){
 
 <script>
 (function(){
-  var au=new Audio(); 
-  au.preload='none'; 
-  au.volume=.7;
-
+  var au=new Audio(); au.preload='none'; au.volume=.7;
   var CH=[
-    ['wrld · metal',[
-      'https://ice1.somafm.com/metal-128-mp3',
-      'https://ice2.somafm.com/metal-128-mp3',
-      'https://ice4.somafm.com/metal-128-mp3'
-    ]],
-    ['wrld · chill',[
-      'https://ice1.somafm.com/groovesalad-128-mp3',
-      'https://ice2.somafm.com/groovesalad-128-mp3',
-      'https://ice4.somafm.com/groovesalad-128-mp3'
-    ]],
-    ['wrld · drone',[
-      'https://ice1.somafm.com/dronezone-128-mp3',
-      'https://ice2.somafm.com/dronezone-128-mp3',
-      'https://ice4.somafm.com/dronezone-128-mp3'
-    ]],
-    ['wrld · paradise',[
-      'https://stream.radioparadise.com/mp3-192'
-    ]],
-    ['wrld · fip',[
-      'https://icecast.radiofrance.fr/fip-midfi.mp3'
-    ]]
+    ['wrld \u00b7 metal',['https://ice1.somafm.com/metal-128-mp3','https://ice2.somafm.com/metal-128-mp3','https://ice4.somafm.com/metal-128-mp3']],
+    ['wrld \u00b7 chill',['https://ice1.somafm.com/groovesalad-128-mp3','https://ice2.somafm.com/groovesalad-128-mp3','https://ice4.somafm.com/groovesalad-128-mp3']],
+    ['wrld \u00b7 drone',['https://ice1.somafm.com/dronezone-128-mp3','https://ice2.somafm.com/dronezone-128-mp3','https://ice4.somafm.com/dronezone-128-mp3']],
+    ['wrld \u00b7 paradise',['https://stream.radioparadise.com/mp3-192']],
+    ['wrld \u00b7 fip',['https://icecast.radiofrance.fr/fip-midfi.mp3']]
   ];
-
   var cur=null, mi=0, timer=null, stopping=false;
-
-  function findRadioRow(){
-    var all=document.querySelectorAll('button,div,span,a');
-    for(var i=0;i<all.length;i++){
-      var t=(all[i].textContent||'').toLowerCase();
-      if(t.indexOf('88.1 the pit')>-1 && t.length<60){
-        return all[i].parentElement;
-      }
-    }
-    return null;
-  }
-
-  function now(t){
-    var n=document.getElementById('rsNow');
-    if(n) n.textContent=t;
-  }
-
+  function now(t){ var n=document.getElementById('rsNow'); if(n) n.textContent=t; }
   function tryUrl(){
     if(!cur) return;
-    if(mi>=cur[1].length){
-      now('the stream refuses · try another');
-      return;
-    }
-
-    now('tuning · '+cur[0]+' · door '+(mi+1)+'/'+cur[1].length);
+    if(mi>=cur[1].length){ now('the stream refuses \u00b7 try another'); return; }
+    now('tuning \u00b7 '+cur[0]+' \u00b7 door '+(mi+1)+'/'+cur[1].length);
     au.src=cur[1][mi];
-
-    au.play().catch(function(){
-      if(!stopping){
-        mi++;
-        tryUrl();
-      }
-    });
-
+    au.play().catch(function(){ if(!stopping){ mi++; tryUrl(); } });
     clearTimeout(timer);
-    timer=setTimeout(function(){
-      if(au.paused && !stopping){
-        mi++;
-        tryUrl();
-      }
-    },8000);
+    timer=setTimeout(function(){ if(au.paused&&!stopping){ mi++; tryUrl(); } },8000);
   }
-
-  au.addEventListener('playing',function(){
-    clearTimeout(timer);
-    if(cur) now('now spinning · '+cur[0]);
-  });
-
-  au.addEventListener('error',function(){
-    if(stopping) return;
-    mi++;
-    tryUrl();
-  });
-
-  function playList(urls,label){
-    stopping=false;
-    cur=[label,urls];
-    mi=0;
-    tryUrl();
+  au.addEventListener('playing',function(){ clearTimeout(timer); if(cur) now('now spinning \u00b7 '+cur[0]); });
+  au.addEventListener('error',function(){ if(stopping) return; mi++; tryUrl(); });
+  function playList(urls,label){ stopping=false; cur=[label,urls]; mi=0; tryUrl(); }
+  function findRadioRow(){
+    var all=document.querySelectorAll('button,div,span,a');
+    for(var i=0;i<all.length;i++){ var t=(all[i].textContent||'').toLowerCase();
+      if(t.indexOf('88.1 the pit')>-1&&t.length<60) return all[i].parentElement; }
+    return null;
   }
+  function playable(u){ return /\.(mp3|ogg|oga|aac|m4a)(\?|$)/i.test(u)||/somafm|icecast|radio|stream/i.test(u); }
 
-  function playable(u){
-    return /\.(mp3|ogg|oga|aac|m4a)(\?|$)/i.test(u) || /somafm|icecast|radio|stream/i.test(u);
+  /* the world's lightshow \u00b7 mirrored \u00b7 blue */
+  var N=28, vals=[], tgts=[], lastT=0;
+  for(var i=0;i<N;i++){ vals.push(0); tgts.push(0); }
+  function tick(ts){
+    requestAnimationFrame(tick);
+    var cv=document.getElementById('wvCv'); if(!cv) return;
+    if(cv.width!==cv.clientWidth||cv.height!==64){ cv.width=cv.clientWidth||300; cv.height=64; }
+    var playing=!au.paused&&!au.ended&&!!cur;
+    if(ts-lastT>90){ lastT=ts; for(var i=0;i<N;i++){ tgts[i]=playing?(0.12+Math.random()*0.88):0; } }
+    var cx=cv.getContext('2d');
+    cx.clearRect(0,0,cv.width,cv.height);
+    var bw=cv.width/N, mid=cv.height/2;
+    for(var i=0;i<N;i++){
+      vals[i]+=(tgts[i]-vals[i])*0.22;
+      var h=vals[i]*(mid-3), x=i*bw+bw*0.22, w=bw*0.56;
+      cx.fillStyle='rgba(63,127,193,'+(0.2+vals[i]*0.8).toFixed(2)+')';
+      cx.fillRect(x,mid-h,w,h);
+      cx.fillRect(x,mid,w,h);
+    }
+    cx.fillStyle='rgba(127,178,229,.45)';
+    cx.fillRect(0,mid-0.5,cv.width,1);
   }
+  requestAnimationFrame(tick);
 
   function mount(){
     if(document.getElementById('radioOS')) return;
-
-    var row=findRadioRow();
-    if(!row) return;
-
-    var panel=document.createElement('div');
-    panel.id='radioOS';
+    var row=findRadioRow(); if(!row) return;
+    var panel=document.createElement('div'); panel.id='radioOS';
     panel.style.cssText='margin-top:12px;border-top:1px solid #223041;padding-top:12px;text-align:center';
-
-    panel.innerHTML=
+    panel.innerHTML='<canvas id="wvCv" style="width:100%;height:64px;display:block;margin:0 0 10px"></canvas>'+
       '<div id="worldRow" style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap"></div>'+
       '<div style="margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">'+
-        '<button id="rsStop" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">■ still</button>'+
-        '<input id="rsVol" type="range" min="0" max="100" value="'+Math.round(au.volume*100)+'" style="width:90px">'+
-        '<span id="rsNow" style="font-size:9px;letter-spacing:.15em;color:#93a1b0">the dial is dark</span>'+
-      '</div>'+
-      '<div style="margin-top:8px;font-size:9px;letter-spacing:.15em;color:#5c6875">world streams by <a href="https://somafm.com" target="_blank" style="color:#3f7fc1;text-decoration:none">somafm</a> · radio paradise · fip</div>'+
+        '<button id="rsStop" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">\u25a0 still</button>'+
+        '<input id="rsVol" type="range" min="0" max="100" value="70" style="width:90px">'+
+        '<span id="rsNow" style="font-size:9px;letter-spacing:.15em;color:#93a1b0">the dial is dark</span></div>'+
+      '<div style="margin-top:8px;font-size:9px;letter-spacing:.15em;color:#5c6875">world streams by <a href="https://somafm.com" target="_blank" style="color:#3f7fc1;text-decoration:none">somafm</a> \u00b7 radio paradise \u00b7 fip \u00b7 donor-supported \u00b7 keep them alive</div>'+
       '<div id="tapeRow" style="margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap"></div>';
-
     row.parentNode.insertBefore(panel,row.nextSibling);
-
     var world=panel.querySelector('#worldRow');
-
     CH.forEach(function(c){
-      var b=document.createElement('button');
-      b.textContent=c[0];
+      var b=document.createElement('button'); b.textContent=c[0];
       b.style.cssText='background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;cursor:pointer';
-      b.onclick=function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-        playList(c[1],c[0]);
-      };
+      b.onclick=function(e){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation(); playList(c[1],c[0]); };
       world.appendChild(b);
     });
-
     var f=document.createElement('a');
-    f.href='https://open.spotify.com/playlist/37i9dQZF1E8O6HeSqa7VRe';
-    f.target='_blank';
-    f.textContent='108.0 the forge ↗';
-    f.title='Spotify opens outside; it cannot play as raw audio here.';
+    f.href='https://open.spotify.com/playlist/37i9dQZF1E8O6HeSqa7VRe'; f.target='_blank';
+    f.textContent='108.0 the forge \u2197'; f.title='spotify locks its audio \u00b7 the door opens outside';
     f.style.cssText='border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none';
     world.appendChild(f);
-
     panel.querySelector('#rsVol').oninput=function(){ au.volume=this.value/100; };
-
-    panel.querySelector('#rsStop').onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      stopping=true;
-      clearTimeout(timer);
-      au.pause();
-      au.removeAttribute('src');
-      au.load();
-      now('the dial is dark');
-      setTimeout(function(){ stopping=false; },100);
-    };
-
+    panel.querySelector('#rsStop').onclick=function(e){ e.preventDefault(); e.stopPropagation(); stopping=true; clearTimeout(timer); au.pause(); au.removeAttribute('src'); au.load(); now('the dial is dark'); setTimeout(function(){ stopping=false; },100); };
     drawTape();
   }
-
   function drawTape(){
-    var tape=document.getElementById('tapeRow');
-    if(!tape) return;
-
+    var tape=document.getElementById('tapeRow'); if(!tape) return;
     var u=localStorage.getItem('hive_tape')||'';
-
     if(u){
       if(playable(u)){
-        tape.innerHTML=
-          '<button id="tpPlay" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;cursor:pointer">▶ your tape</button>'+
-          '<a href="'+u+'" target="_blank" style="border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none">open ↗</a>'+
+        tape.innerHTML='<button id="tpPlay" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;cursor:pointer">\u25b6 your tape</button>'+
+          '<a href="'+u+'" target="_blank" style="border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none">open \u2197</a>'+
           '<button id="tapeNo" style="background:none;border:1px solid #223041;color:#5c6875;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">rewind</button>';
-
-        tape.querySelector('#tpPlay').onclick=function(e){
-          e.preventDefault();
-          e.stopPropagation();
-          playList([u],'your tape');
-        };
+        tape.querySelector('#tpPlay').onclick=function(e){ e.preventDefault(); e.stopPropagation(); playList([u],'your tape'); };
       } else {
-        tape.innerHTML=
-          '<a href="'+u+'" target="_blank" style="border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none">⌂ your tape ↗</a>'+
+        tape.innerHTML='<a href="'+u+'" target="_blank" style="border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 10px;text-decoration:none">\u2302 your tape \u2197</a>'+
           '<span style="font-size:9px;color:#5c6875;letter-spacing:.12em">external only</span>'+
           '<button id="tapeNo" style="background:none;border:1px solid #223041;color:#5c6875;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">rewind</button>';
       }
-
-      tape.querySelector('#tapeNo').onclick=function(){
-        localStorage.removeItem('hive_tape');
-        drawTape();
-      };
+      tape.querySelector('#tapeNo').onclick=function(){ localStorage.removeItem('hive_tape'); drawTape(); };
     } else {
-      tape.innerHTML=
-        '<input id="tapeIn" placeholder="paste stream/mp3, or spotify/youtube as external .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;width:260px;max-width:70vw">'+
+      tape.innerHTML='<input id="tapeIn" placeholder="paste stream / mp3 \u00b7 spotify / yt open outside .." style="background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;width:240px;max-width:70vw">'+
         '<button id="tapeOk" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 10px;cursor:pointer">load it</button>';
-
-      tape.querySelector('#tapeOk').onclick=function(e){
-        e.preventDefault();
-        e.stopPropagation();
+      tape.querySelector('#tapeOk').onclick=function(e){ e.preventDefault(); e.stopPropagation();
         var v=(tape.querySelector('#tapeIn').value||'').trim();
         if(!/^https?:\/\//.test(v)) return;
-        localStorage.setItem('hive_tape',v);
-        drawTape();
-        if(playable(v)) playList([v],'your tape');
-      };
+        localStorage.setItem('hive_tape',v); drawTape();
+        if(playable(v)) playList([v],'your tape'); };
     }
   }
-
   mount();
-
-  setInterval(function(){
-    if(!document.getElementById('radioOS')) mount();
-  },800);
+  setInterval(function(){ if(!document.getElementById('radioOS')) mount(); },800);
 })();
 </script>
   
