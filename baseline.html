@@ -836,7 +836,7 @@ addEventListener('keydown',function(e){
 
 <script>
 (function(){
-  function esc(s){ return String(s||'').replace(/[<>&"]/g,''); }
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   var best=null, all=document.querySelectorAll('div,section');
   for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
     if(t.indexOf('socials / entertainment')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
@@ -897,8 +897,9 @@ addEventListener('keydown',function(e){
     };
     e.querySelector('#sDone').onclick=function(){ editing=false; editI=-1; render(); };
   }
-  function render(){
+    function render(){
     box.innerHTML='';
+    box.style.display='block';
     var g=document.createElement('div');
     g.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px';
     DATA.forEach(function(d,i){ g.appendChild(card(d,i)); });
