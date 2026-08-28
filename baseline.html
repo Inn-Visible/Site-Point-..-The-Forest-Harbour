@@ -841,8 +841,13 @@ addEventListener('keydown',function(e){
   for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
     if(t.indexOf('socials / entertainment')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
   if(!best) return;
-  var divs=best.querySelectorAll('div'), cards=[];
-  for(var i=0;i<divs.length;i++){ if(getComputedStyle(divs[i]).borderTopStyle==='dashed') cards.push(divs[i]); }
+    var scope=best, cards=[];
+  while(scope&&scope!==document.body){
+    var divs=scope.querySelectorAll('div');
+    for(var i=0;i<divs.length;i++){ if(getComputedStyle(divs[i]).borderTopStyle==='dashed') cards.push(divs[i]); }
+    if(cards.length) break;
+    scope=scope.parentElement;
+  }
   if(!cards.length) return;
   var box=cards[0].parentNode;
   var DEF=[];
