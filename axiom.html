@@ -508,8 +508,10 @@ function lockdoor(){
     var x0=Math.floor(tlx/256), x1=Math.floor((tlx+cv.width)/256);
     var y0=Math.floor(tly/256), y1=Math.floor((tly+cv.height)/256);
     for(var ty=y0;ty<=y1;ty++) for(var tx=x0;tx<=x1;tx++){
-      var k=style+'_'+zoom+'_'+tx+'_'+ty;
-      if(IMG[k]) x.drawImage(IMG[k], tx*256-tlx, ty*256-tly, 256,256);
+         var k=style+'_'+zoom+'_'+tx+'_'+ty;
+      if(IMG[k]){ if(style==='night'){ try{ x.filter='invert(1) hue-rotate(180deg) brightness(.82) saturate(.4)'; }catch(e){} }
+        x.drawImage(IMG[k], tx*256-tlx, ty*256-tly, 256,256);
+        try{ x.filter='none'; }catch(e){} }
       ensure(tx,ty);
     }
     if(showMarks) drawMarks(tlx,tly);
