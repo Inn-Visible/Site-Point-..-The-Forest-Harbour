@@ -925,11 +925,14 @@ addEventListener('keydown',function(e){
     pb.onclick=function(){ editing=!editing; editI=-1; render(); };
        (box.parentElement||best).appendChild(pb);
   }
-  function start(d){ DATA=d; render(); }
-  var local=localStorage.getItem('hive_socials');
-  if(local){ try{ start(JSON.parse(local)); }catch(e){ start(DEF); } }
-  else fetch('socials.json').then(function(r){ return r.ok?r.json():null; })
-    .then(function(j){ start(j&&j.length?j:DEF); }).catch(function(){ start(DEF); });
+   function start(d){ DATA=d; render(); }
+  function load(){
+    var local=localStorage.getItem('hive_socials');
+    if(local){ try{ start(JSON.parse(local)); return; }catch(e){} }
+    fetch('socials.json').then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ start(j&&j.length?j:DEF); }).catch(function(){ start(DEF); });
+  }
+  load();
 })();
 </script>
   
