@@ -935,6 +935,59 @@ addEventListener('keydown',function(e){
   load();
 })();
 </script>
+
+<script>
+(function(){
+  var PC='#3f7fc1';
+  function esc(s){ return String(s||'').replace(/[<>&"]/g,''); }
+  var best=null, all=document.querySelectorAll('div,section');
+  for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
+    if(t.indexOf('play the wall anyway')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
+  var hostEl=best;
+  if(hostEl){ while(hostEl.parentElement&&hostEl.parentElement!==document.body&&hostEl.parentElement.tagName!=='MAIN') hostEl=hostEl.parentElement; }
+  var wrap=document.createElement('section');
+  wrap.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace';
+  wrap.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:10px">the baseline bench \u00b7 scratch persists on this glass</div>';
+  var ta=document.createElement('textarea');
+  ta.placeholder='bench scratch\u2026 loops, nodes, drips ..';
+  ta.style.cssText='width:100%;height:120px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:11px ui-monospace,Consolas,monospace;padding:10px;line-height:1.7';
+  ta.value=localStorage.getItem('hive_bench_baseline')||'';
+  ta.oninput=function(){ localStorage.setItem('hive_bench_baseline',ta.value); };
+  wrap.appendChild(ta);
+  var b=document.createElement('button'); b.textContent='\u2192 archive';
+  b.style.cssText='display:block;margin-top:10px;background:none;border:1px solid '+PC+';color:'+PC+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer';
+  wrap.appendChild(b);
+  if(hostEl&&hostEl.parentNode) hostEl.parentNode.insertBefore(wrap,hostEl.nextSibling);
+  else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(wrap,f); }
+  function parse(){ var txt=(ta.value||'').trim(); if(!txt) return null;
+    var title=(txt.split('\n')[0]||'').replace(/^[\[\]#>\-\s]+/,'').replace(/[\[\]#>\-\s]+$/,'').slice(0,60)||'bench note';
+    return {txt:txt,title:title}; }
+  function preview(){
+    var d=parse(); if(!d) return;
+    var old=document.getElementById('blPrev'); if(old){ old.remove(); return; }
+    var box=document.createElement('div'); box.id='blPrev';
+    box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid '+PC+';background:#0e141b;padding:14px 16px';
+    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview \u00b7 how it lands in the archive</div>'+
+      '<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">baseline</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local \u00b7 unpushed</span></div>'+
+      '<b style="display:block;font-size:12px;letter-spacing:.1em;margin:8px 0">'+esc(d.title)+'</b>'+
+      '<p style="white-space:pre-wrap;color:#93a1b0;font-size:11px;line-height:1.8;margin:0">'+esc(d.txt)+'</p>'+
+      '<div style="margin-top:8px;font-size:9px;letter-spacing:.12em;color:#5c6875"># bench</div>'+
+      '<div style="margin-top:12px;display:flex;gap:8px"><button id="blGo" style="background:none;border:1px solid '+PC+';color:'+PC+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send it \u21a6</button>'+
+      '<button id="blNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
+    wrap.appendChild(box);
+    box.querySelector('#blGo').onclick=function(){ send(d);
+      box.innerHTML='<div style="font-size:10px;letter-spacing:.15em;color:#58a36a">dropped \u2713 \u00b7 <a href="archive.html" style="color:'+PC+';text-decoration:none">pull it in the archive \u2197</a></div>'; };
+    box.querySelector('#blNo').onclick=function(){ box.remove(); };
+  }
+  function send(d){
+    var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
+    LOCAL.unshift({id:'bl-W'+Date.now(), pillar:'baseline', date:new Date().toISOString().slice(0,10),
+      title:d.title, body:d.txt, tags:['bench'], local:true});
+    localStorage.setItem('arc.local',JSON.stringify(LOCAL));
+  }
+  b.onclick=preview;
+})();
+</script>
   
 </body>
 </html>
