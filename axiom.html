@@ -860,7 +860,7 @@ function lockdoor(){
     for(var i=0;i<ds.length;i++){
       if(ds[i].getAttribute('data-ax')) return ds[i];
       var cs=getComputedStyle(ds[i]);
-      if(cs.borderTopStyle==='dashed'&&(ds[i].textContent.indexOf('slot is poured')>-1||ds[i].textContent.indexOf('stacks remember')>-1)) return ds[i];
+           if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1) return ds[i];
     }
     return null;
   }
