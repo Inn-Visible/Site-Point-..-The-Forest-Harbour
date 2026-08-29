@@ -893,8 +893,18 @@ addEventListener('keydown',function(e){
       if(editI>-1){ DATA[editI]={t:t,n:n,u:u,l:l}; editI=-1; } else DATA.push({t:t,n:n,u:u,l:l});
       save(); render();
     };
-    e.querySelector('#sCpy').onclick=function(){
-      navigator.clipboard.writeText(JSON.stringify(DATA,null,1)).then(function(){ e.querySelector('#sCpy').textContent='copied \u2713'; });
+       e.querySelector('#sCpy').onclick=function(){
+      var txt=JSON.stringify(DATA,null,1);
+      function ok(){ e.querySelector('#sCpy').textContent='copied \u2713'; }
+      function fallback(){
+        var ta=document.createElement('textarea'); ta.value=txt;
+        ta.style.cssText='position:fixed;left:8px;bottom:8px;width:80vw;height:120px;z-index:99';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try{ document.execCommand('copy'); ok(); }catch(err){}
+        setTimeout(function(){ ta.remove(); },2000);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok).catch(fallback); }
+      else fallback();
     };
       e.querySelector('#sRst').onclick=function(){ if(!confirm('back to the rooted shelf? local edits leave this browser.')) return; localStorage.removeItem('hive_socials'); editI=-1; load(); };
     e.querySelector('#sDone').onclick=function(){ editing=false; editI=-1; render(); };
