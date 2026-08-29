@@ -463,7 +463,7 @@ function lockdoor(){
   function undoMarks(){ var s=mHist.pop(); if(s==null) return; mFuture.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   function redoMarks(){ var s=mFuture.pop(); if(s==null) return; mHist.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return[s.lon,s.lat];}catch(e){}return[-79.0,43.54];})(); var HOME=HP;
-  function maxZ(){ return style==='deep'?9:18; }
+    function maxZ(){ return style==='deep'?9:(style==='ink'?16:18); }
   function world(z){ return 256*Math.pow(2,z); }
   function project(lon,lat,z){ var s=world(z);
     return [(lon+180)/360*s, (1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*s]; }
