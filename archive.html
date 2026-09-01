@@ -163,18 +163,45 @@
     }
   }
 
+   function stitchBook(cb){
+    var pages=[]; try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
+    pages=pages.filter(function(p){return !!p;});
+    if(!pages.length){ cb(null); return; }
+    var gap=10, loaded=0, dims=[], imgs=pages.map(function(p){ var im=new Image(); im.src=p; return im; });
+    imgs.forEach(function(im,i){ im.onload=function(){ dims[i]={w:im.width,h:im.height}; loaded++;
+      if(loaded===imgs.length){
+        var W=Math.max.apply(null,dims.map(function(d){return d.w;}));
+        var Hh=dims.reduce(function(s,d){return s+d.h;},0)+gap*(pages.length-1);
+        var out=document.createElement('canvas'); out.width=W; out.height=Hh;
+        var c=out.getContext('2d'); c.fillStyle='#0a0d12'; c.fillRect(0,0,W,Hh);
+        var y=0; dims.forEach(function(d,i){ c.drawImage(imgs[i],0,y); y+=d.h+gap; });
+        cb(out.toDataURL());
+      } }; });
+  }
   function showSlatePreview(o, d){
     var pv=document.getElementById('slatePreview');
     pv.style.display='block';
     pv.innerHTML='<div style="font-size:9px;letter-spacing:.2em;color:#3f7fc1;margin-bottom:6px">from the slate</div>'+
       '<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">'+clean(o.title||'slate')+'</div>'+
       (o.img?'<img src="'+o.img+'" alt="slate preview">':'')+
-      '<div class="prevBody">'+clean(o.body||'(no text on the wall)')+'</div>'+
-      '<button class="btn" id="useSlate" style="margin-top:8px;border-color:#3f7fc1;color:#3f7fc1">drop this into the note</button>';
-    pv.querySelector('#useSlate').onclick=function(){
+      '<div class="prevBody" style="color:#5c6875;font-style:italic">'+(o.body?('wall lettering: '+clean(o.body)):'(no lettering \u00b7 the drawing carries it)')+'</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+
+      '<button class="btn" id="usePage" style="border-color:#3f7fc1;color:#3f7fc1">drop page</button>'+
+      '<button class="btn" id="useBook" style="border-color:#3f7fc1;color:#3f7fc1">drop whole book</button>'+
+      '</div>';
+    pv.querySelector('#usePage').onclick=function(){
       if(o.img) PENDING_IMG=o.img;
-      d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value=o.body||'';
+      d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value='';
       pv.style.display='none';
+    };
+    pv.querySelector('#useBook').onclick=function(){
+      stitchBook(function(img){
+        if(!img){ var b=pv.querySelector('#useBook'); b.textContent='book empty'; setTimeout(function(){b.textContent='drop whole book';},1500); return; }
+        PENDING_IMG=img;
+        var n=(JSON.parse(localStorage.getItem('hive_slate_book')||'[]').filter(function(p){return !!p;})).length;
+        d.querySelector('#nt').value='slate \u00b7 the whole book \u00b7 '+n+' page'+(n===1?'':'s'); d.querySelector('#nb').value='';
+        pv.style.display='none';
+      });
     };
   }
 
