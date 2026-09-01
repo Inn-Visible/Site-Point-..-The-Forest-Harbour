@@ -973,6 +973,21 @@ function lockdoor(){
     for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent) return ts[i]; }
     return null;
   }
+  function leaves(){
+    try{ return JSON.parse(localStorage.getItem('hive_xeno_pages')||'{}'); }catch(e){ return {}; }
+  }
+  function curLeafNum(){ return parseInt(localStorage.getItem('hive_xeno_page')||'1',10); }
+  function clean(s){ return String(s).replace(/[<>&"]/g,''); }
+  function titleOf(txt,fb){
+    var t=(txt.split('\n')[0]||'').replace(/^[\[\]#>\-\s]+/,'').replace(/[\[\]#>\-\s]+$/,'').slice(0,60);
+    return t||fb;
+  }
+  function bookBody(){
+    var pg=leaves(), ks=Object.keys(pg).map(function(k){return +k;}).sort(function(a,b){return a-b;});
+    var parts=[];
+    ks.forEach(function(k){ var t=(pg[k]||'').trim(); if(t) parts.push('[leaf '+k+']\n'+t); });
+    return {n:parts.length, body:parts.join('\n\n')};
+  }
   function ensure(){
     var olds=document.querySelectorAll('button,a');
     for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='\u2192 archive') olds[o].remove(); }
@@ -984,32 +999,34 @@ function lockdoor(){
     p.insertAdjacentElement('afterend',b);
     b.onclick=preview;
   }
-  function parse(){
-    var p=pad(); var txt=((p&&p.value)||'').trim();
-    if(!txt) return null;
-    var title=(txt.split('\n')[0]||'').replace(/^[\[\]#>\-\s]+/,'').replace(/[\[\]#>\-\s]+$/,'').slice(0,60)||'bench note';
-    return {txt:txt,title:title};
-  }
   function preview(){
-    var d=parse(); if(!d) return;
     var old=document.getElementById('wbPrev'); if(old){ old.remove(); return; }
+    var p=pad(); var leafTxt=((p&&p.value)||'').trim();
+    var bk=bookBody();
+    if(!leafTxt && !bk.body) return;
+    var n=curLeafNum();
     var box=document.createElement('div'); box.id='wbPrev';
     box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid #e8e4d8;background:#0e141b;padding:14px 16px';
-    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview \u00b7 how it lands in the archive</div>'+
-      '<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">axiom</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local \u00b7 unpushed</span></div>'+
-      '<b style="display:block;font-size:12px;letter-spacing:.1em;margin:8px 0">'+d.title.replace(/[<>&"]/g,'')+'</b>'+
-      '<p style="white-space:pre-wrap;color:#93a1b0;font-size:11px;line-height:1.8;margin:0">'+d.txt.replace(/[<>&"]/g,'')+'</p>'+
-      '<div style="margin-top:8px;font-size:9px;letter-spacing:.12em;color:#5c6875"># bench</div>'+
-      '<div style="margin-top:12px;display:flex;gap:8px"><button id="wbGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send it \u21e6</button>'+
-      '<button id="wbNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
+    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview \u00b7 how it lands in the archive</div>'
+      +'<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">axiom</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local \u00b7 unpushed</span></div>'
+      +(leafTxt?('<b style="display:block;font-size:12px;letter-spacing:.1em;margin:8px 0">'+clean(titleOf(leafTxt,'bench note'))+'</b>'
+        +'<p style="white-space:pre-wrap;color:#93a1b0;font-size:11px;line-height:1.8;margin:0;max-height:140px;overflow:hidden">'+clean(leafTxt)+'</p>'
+        +'<div style="margin-top:8px;font-size:9px;letter-spacing:.12em;color:#5c6875"># bench \u00b7 leaf '+n+'</div>')
+        :'<div style="margin:8px 0;font-size:10px;color:#5c6875;font-style:italic">leaf '+n+' is blank \u2014 the book still has ink.</div>')
+      +(bk.body?('<div style="margin-top:10px;font-size:9px;letter-spacing:.12em;color:#93a1b0">the whole book \u00b7 '+bk.n+' inked leaf'+(bk.n===1?'':'s')+'</div>'):'')
+      +'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'
+      +(leafTxt?'<button id="wbLeaf" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send leaf '+n+' \u21e6</button>':'')
+      +(bk.body?'<button id="wbBook" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send whole book \u21e6</button>':'')
+      +'<button id="wbNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
     document.getElementById('wbArc').insertAdjacentElement('afterend',box);
-    box.querySelector('#wbGo').onclick=function(){ send(d); box.remove(); };
+    var bl=box.querySelector('#wbLeaf'); if(bl) bl.onclick=function(){ send(titleOf(leafTxt,'bench note'),leafTxt,['bench','leaf-'+n]); box.remove(); };
+    var bb=box.querySelector('#wbBook'); if(bb) bb.onclick=function(){ send('workbench \u00b7 the whole book \u00b7 '+bk.n+' page'+(bk.n===1?'':'s'),bk.body,['bench','book']); box.remove(); };
     box.querySelector('#wbNo').onclick=function(){ box.remove(); };
   }
-  function send(d){
+  function send(title,body,tags){
     var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
     LOCAL.unshift({id:'ax-W'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
-      title:d.title, body:d.txt, tags:['bench'], local:true});
+      title:title, body:body, tags:tags, local:true});
     localStorage.setItem('arc.local',JSON.stringify(LOCAL));
     var cands=document.querySelectorAll('button,a');
     for(var i=0;i<cands.length;i++){ if((cands[i].textContent||'').trim()==='archive'){ cands[i].click(); break; } }
