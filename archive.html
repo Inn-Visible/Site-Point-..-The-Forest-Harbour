@@ -67,6 +67,10 @@
   .roots{margin-top:8px;font-size:10px;color:var(--dim)}
   .roots a{color:var(--blue);text-decoration:none} .roots a:hover{color:var(--ink)}
   .cpy{margin-top:10px}
+  /* slate preview */
+  #slatePreview{margin-top:10px;border:1px solid var(--blue);background:rgba(63,127,193,0.08);padding:10px;display:none}
+  #slatePreview img{max-width:100%;max-height:200px;border:1px solid var(--line);margin:6px 0}
+  #slatePreview .prevBody{color:var(--dim);font-size:10px;white-space:pre-wrap;line-height:1.5;max-height:100px;overflow:auto;margin:6px 0}
   footer{margin-top:56px;border-top:1px solid var(--line);padding:24px 16px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.12em;line-height:2.1}
   @media(max-width:760px){header{padding:14px 16px}.bar input{width:100%}}
 </style>
@@ -106,7 +110,9 @@
         '<textarea id="nb" placeholder="the note…"></textarea>'+
                '<div class="row"><button class="btn" id="nd">drop it</button>'+
         '<button class="btn" id="ns">pull from slate</button>'+
-        '<span class="hint">lives in this browser until you copy json + commit</span></div>';
+        '<button class="btn" id="np" style="border-color:#3f7fc1;color:#3f7fc1">preview</button>'+
+        '<span class="hint">lives in this browser until you copy json + commit</span></div>'+
+        '<div id="slatePreview"></div>';
       tools.appendChild(d);
       d.querySelector('#nd').onclick=function(){
         var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
@@ -116,23 +122,25 @@
         PENDING_IMG=null;
         saveLocal(); render(); d.querySelector('#nt').value=''; d.querySelector('#nb').value='';
       };
-            d.querySelector('#ns').onclick=function(){
-        var s=localStorage.getItem('arc.slate'); var btn=this; var o=null;
-        if(s){ try{ o=JSON.parse(s); }catch(e){ o=null; } }
-        if(!o){
-          for(var i=0;i<LOCAL.length;i++){
-            var n=LOCAL[i];
-            if(n.pillar==='axiom' && ((n.tags||[]).join(' ').indexOf('slate')>-1 || /^slate\b/.test(n.title||''))){
-              o={title:n.title, body:n.body, img:n.img}; break;
-            }
-          }
-        }
-        if(!o){ btn.textContent='slate quiet'; setTimeout(function(){btn.textContent='pull from slate';},1500); return; }
-        if(o.img) PENDING_IMG=o.img;
-        d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value=o.body||'';
-        if(s) localStorage.removeItem('arc.slate');
-        btn.textContent='pulled \u2713'; setTimeout(function(){btn.textContent='pull from slate';},1500);
-      }; 
+        d.querySelector('#ns').onclick=function(){
+        var s=localStorage.getItem('arc.slate'); var btn=this;
+        if(!s){ btn.textContent='slate quiet'; setTimeout(function(){btn.textContent='pull from slate';},1500); return; }
+        var o=JSON.parse(s);
+        showSlatePreview(o, d);
+        btn.textContent='pulled \u2713';
+        setTimeout(function(){btn.textContent='pull from slate';},1500);
+      };
+      d.querySelector('#np').onclick=function(){
+        var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
+        if(!t&&!b&&!PENDING_IMG){ flash(d,'nothing to preview'); return; }
+        var pv=document.getElementById('slatePreview');
+        pv.style.display='block';
+        pv.innerHTML='<div style="font-size:9px;letter-spacing:.2em;color:#5c6875;margin-bottom:6px">how it will render</div>'+
+          '<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">'+clean(t||'bench note')+'</div>'+
+          (PENDING_IMG?'<img src="'+PENDING_IMG+'" alt="preview">':'')+
+          '<div class="prevBody">'+clean(b||'(no body)')+'</div>'+
+          '<div style="font-size:9px;color:#5c6875;margin-top:6px">drop it to save \u00b7 copy json to commit</div>';
+      };
     }
     if(pil==='eigen'){
       var r=document.createElement('div'); r.className='drop room';
@@ -153,6 +161,21 @@
       t.innerHTML='<b>[tbd]</b> · music sessions · the booth opens later';
       tools.appendChild(t);
     }
+  }
+
+  function showSlatePreview(o, d){
+    var pv=document.getElementById('slatePreview');
+    pv.style.display='block';
+    pv.innerHTML='<div style="font-size:9px;letter-spacing:.2em;color:#3f7fc1;margin-bottom:6px">from the slate</div>'+
+      '<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">'+clean(o.title||'slate')+'</div>'+
+      (o.img?'<img src="'+o.img+'" alt="slate preview">':'')+
+      '<div class="prevBody">'+clean(o.body||'(no text on the wall)')+'</div>'+
+      '<button class="btn" id="useSlate" style="margin-top:8px;border-color:#3f7fc1;color:#3f7fc1">drop this into the note</button>';
+    pv.querySelector('#useSlate').onclick=function(){
+      if(o.img) PENDING_IMG=o.img;
+      d.querySelector('#nt').value=o.title||''; d.querySelector('#nb').value=o.body||'';
+      pv.style.display='none';
+    };
   }
 
   function card(n){
@@ -189,6 +212,8 @@
     }
     return c;
   }
+
+  function clean(s){ return String(s).replace(/[<>&"]/g,''); }
 
   function render(){
     list.innerHTML=''; var shown=0;
