@@ -385,7 +385,7 @@ addEventListener('paste',function(e){
   try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
   if(!pages||!pages.length) pages=[null];
   var bar=document.createElement('div');
-  bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap';
+   bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;position:relative;z-index:9999;pointer-events:auto';
    cv.parentNode.insertBefore(bar,cv.nextSibling);
   ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'].forEach(function(ev){
     bar.addEventListener(ev,function(e){ e.stopPropagation(); },true);
