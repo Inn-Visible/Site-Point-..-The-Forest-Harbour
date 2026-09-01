@@ -419,45 +419,67 @@ addEventListener('paste',function(e){
 
 <script>
 (function(){
-  var best=null, all=document.querySelectorAll('div,section');
-  for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
-    if(t.indexOf('the slate')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
-   var scope=best, cv=null;
-  while(scope&&scope!==document.body){ cv=scope.querySelector('canvas'); if(cv) break; scope=scope.parentElement; }
-  if(!cv) cv=document.querySelector('canvas');
-  if(!cv) return;
+  var cv=document.querySelector('canvas#slate'); if(!cv) return;
+  var KEY='hive_slate_book', CURKEY='hive_slate_cur';
   var pages=[], cur=0, bookScope='page';
-  try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
+  try{ pages=JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ pages=[]; }
+  cur=parseInt(localStorage.getItem(CURKEY)||'0',10)||0;
   if(!pages||!pages.length) pages=[null];
-  var bar=document.createElement('div');
-    bar.id='nbBar';
+  if(cur>=pages.length) cur=0;
+  var hasInk=pages.some(function(p){return !!p;});
+  if(!hasInk){ var leg=localStorage.getItem('hive_slate'); if(leg) pages[0]=leg; }
+
+  var bar=document.createElement('div'); bar.id='nbBar';
   bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;position:relative;z-index:9999;pointer-events:none';
-   cv.parentNode.insertBefore(bar,cv.nextSibling);
+  cv.parentNode.insertBefore(bar,cv.nextSibling);
   ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'].forEach(function(ev){
     bar.addEventListener(ev,function(e){ e.stopPropagation(); },true);
   });
   function warn(t){ var w=bar.querySelector('#nbWarn'); if(w) w.textContent=t; }
-  function persist(){ try{ localStorage.setItem('hive_slate_book',JSON.stringify(pages)); warn(''); }catch(e){ warn('the book is too heavy for this glass'); } }
+  function snap(){
+    try{
+      var max=1200, s=Math.min(1,max/Math.max(cv.width,cv.height));
+      if(s>=1) return cv.toDataURL();
+      var t=document.createElement('canvas'); t.width=Math.round(cv.width*s); t.height=Math.round(cv.height*s);
+      t.getContext('2d').drawImage(cv,0,0,t.width,t.height); return t.toDataURL();
+    }catch(e){ return null; }
+  }
+  function persist(){ try{ localStorage.setItem(KEY,JSON.stringify(pages)); localStorage.setItem(CURKEY,String(cur)); warn(''); }
+    catch(e){ warn('the book is too heavy for this glass'); } }
   function clearCv(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); }
-  function saveCur(){ try{ pages[cur]=cv.toDataURL(); }catch(e){} }
-  function load(i){ clearCv(); if(pages[i]){ var im=new Image(); im.onload=function(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0); x.drawImage(im,0,0); x.restore(); }; im.src=pages[i]; } }
+  function drawData(d){ var im=new Image(); im.onload=function(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0);
+    x.clearRect(0,0,cv.width,cv.height); x.drawImage(im,0,0,cv.width,cv.height); x.restore(); }; im.src=d; }
+  function load(i){ clearCv(); if(pages[i]) drawData(pages[i]); }
+  function commitCur(){ pages[cur]=snap(); }
+
+  var syncT=null;
+  function syncPage(){ if(syncT) return; syncT=setTimeout(function(){ syncT=null; commitCur(); persist(); },400); }
+  if(typeof window.save==='function'){ var base=window.save; window.save=function(){ base(); syncPage(); }; }
+
+  setTimeout(function(){ if(pages[cur]) drawData(pages[cur]); persist(); },200);
+
   function note(title,img){
     var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
     LOCAL.unshift({id:'ax-S'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10), title:title, body:'', tags:['slate'], img:img, local:true});
     localStorage.setItem('arc.local',JSON.stringify(LOCAL));
   }
   function sendBook(){
-    var n=pages.length, gap=10, done=0;
-    var out=document.createElement('canvas'); out.width=cv.width; out.height=(cv.height+gap)*n-gap;
-    var ox=out.getContext('2d'); ox.fillStyle='#0a0d12'; ox.fillRect(0,0,out.width,out.height);
+    commitCur(); var n=pages.length, gap=10, done=0;
+    var src=new Image();
+    var out=document.createElement('canvas');
     function finish(){ note('slate \u00b7 the whole book \u00b7 '+n+' pages', out.toDataURL()); warn('dropped \u2713'); }
-    pages.forEach(function(p,i){ var y=i*(cv.height+gap);
-      if(!p){ done++; if(done===n) finish(); return; }
-      var im=new Image(); im.onload=function(){ ox.drawImage(im,0,y); done++; if(done===n) finish(); }; im.src=p; });
+    function lay(i){ if(i>=n){ finish(); return; }
+      if(!pages[i]){ drawGap(i); lay(i+1); return; }
+      var im=new Image(); im.onload=function(){ var y=i*(cv.height+gap);
+        out.getContext('2d').drawImage(im,0,y,cv.width,cv.height); drawGap(i); lay(i+1); }; im.src=pages[i]; }
+    function drawGap(i){}
+    out.width=cv.width; out.height=(cv.height+gap)*n-gap;
+    out.getContext('2d').fillStyle='#0a0d12'; out.getContext('2d').fillRect(0,0,out.width,out.height);
+    lay(0);
   }
   function shake(){ if(bookScope==='page'){ pages[cur]=null; } else { for(var i=0;i<pages.length;i++) pages[i]=null; }
     clearCv(); persist(); warn(bookScope==='page'?'page shaken':'the whole book, shaken'); }
-  function send(){ saveCur();
+  function send(){ commitCur();
     if(bookScope==='page'){ note('slate \u00b7 page '+(cur+1)+' of '+pages.length, pages[cur]); warn('dropped \u2713'); }
     else sendBook();
     persist(); }
@@ -471,12 +493,12 @@ addEventListener('paste',function(e){
     h+='<button id="nbShake" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">\u27e2 shake</button>';
     h+='<button id="nbSend" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">send \u21a6</button>';
     h+='<span id="nbWarn" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span>';
-        bar.innerHTML=h;
+    bar.innerHTML=h;
     bar.querySelectorAll('button').forEach(function(b){ b.style.pointerEvents='auto'; });
     var chips=bar.querySelectorAll('[data-p]');
-    for(var i=0;i<chips.length;i++) chips[i].onclick=function(){ saveCur(); cur=+this.getAttribute('data-p'); load(cur); render(); persist(); };
-    bar.querySelector('#nbAdd').onclick=function(){ saveCur(); pages.push(null); cur=pages.length-1; clearCv(); render(); persist(); };
-    var del=bar.querySelector('#nbDel'); if(del) del.onclick=function(){ pages.splice(cur,1); if(!pages.length) pages=[null]; cur=Math.min(cur,pages.length-1); load(cur); render(); persist(); };
+    for(var i=0;i<chips.length;i++) chips[i].onclick=function(){ commitCur(); cur=+this.getAttribute('data-p'); load(cur); render(); persist(); };
+    bar.querySelector('#nbAdd').onclick=function(){ commitCur(); pages.push(null); cur=pages.length-1; clearCv(); render(); persist(); };
+    var del=bar.querySelector('#nbDel'); if(del) del.onclick=function(){ commitCur(); pages.splice(cur,1); if(!pages.length) pages=[null]; cur=Math.min(cur,pages.length-1); load(cur); render(); persist(); };
     bar.querySelector('#nbScope').onclick=function(){ bookScope=bookScope==='page'?'book':'page'; render(); };
     bar.querySelector('#nbShake').onclick=shake;
     bar.querySelector('#nbSend').onclick=send;
