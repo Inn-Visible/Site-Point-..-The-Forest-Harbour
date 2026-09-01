@@ -371,6 +371,69 @@ addEventListener('paste',function(e){
 </script>
 
 <script src="sig.js" defer></script>
+
+<script>
+(function(){
+  var best=null, all=document.querySelectorAll('div,section');
+  for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
+    if(t.indexOf('the slate')>-1){ if(!best||t.length<best.textContent.length) best=all[i]; } }
+   var scope=best, cv=null;
+  while(scope&&scope!==document.body){ cv=scope.querySelector('canvas'); if(cv) break; scope=scope.parentElement; }
+  if(!cv) cv=document.querySelector('canvas');
+  if(!cv) return;
+  var pages=[], cur=0, bookScope='page';
+  try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
+  if(!pages||!pages.length) pages=[null];
+  var bar=document.createElement('div');
+  bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap';
+  cv.parentNode.insertBefore(bar,cv.nextSibling);
+  function warn(t){ var w=bar.querySelector('#nbWarn'); if(w) w.textContent=t; }
+  function persist(){ try{ localStorage.setItem('hive_slate_book',JSON.stringify(pages)); warn(''); }catch(e){ warn('the book is too heavy for this glass'); } }
+  function clearCv(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); }
+  function saveCur(){ try{ pages[cur]=cv.toDataURL(); }catch(e){} }
+  function load(i){ clearCv(); if(pages[i]){ var im=new Image(); im.onload=function(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0); x.drawImage(im,0,0); x.restore(); }; im.src=pages[i]; } }
+  function note(title,img){
+    var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
+    LOCAL.unshift({id:'ax-S'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10), title:title, body:'', tags:['slate'], img:img, local:true});
+    localStorage.setItem('arc.local',JSON.stringify(LOCAL));
+  }
+  function sendBook(){
+    var n=pages.length, gap=10, done=0;
+    var out=document.createElement('canvas'); out.width=cv.width; out.height=(cv.height+gap)*n-gap;
+    var ox=out.getContext('2d'); ox.fillStyle='#0a0d12'; ox.fillRect(0,0,out.width,out.height);
+    function finish(){ note('slate \u00b7 the whole book \u00b7 '+n+' pages', out.toDataURL()); warn('dropped \u2713'); }
+    pages.forEach(function(p,i){ var y=i*(cv.height+gap);
+      if(!p){ done++; if(done===n) finish(); return; }
+      var im=new Image(); im.onload=function(){ ox.drawImage(im,0,y); done++; if(done===n) finish(); }; im.src=p; });
+  }
+  function shake(){ if(bookScope==='page'){ pages[cur]=null; } else { for(var i=0;i<pages.length;i++) pages[i]=null; }
+    clearCv(); persist(); warn(bookScope==='page'?'page shaken':'the whole book, shaken'); }
+  function send(){ saveCur();
+    if(bookScope==='page'){ note('slate \u00b7 page '+(cur+1)+' of '+pages.length, pages[cur]); warn('dropped \u2713'); }
+    else sendBook();
+    persist(); }
+  function render(){
+    var h='';
+    for(var i=0;i<pages.length;i++)
+      h+='<button data-p="'+i+'" style="background:none;border:1px solid '+(i===cur?'#d9a83a':'#223041')+';color:'+(i===cur?'#d9a83a':'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">'+(i+1)+'</button>';
+    h+='<button id="nbAdd" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">+ page</button>';
+    if(pages.length>1) h+='<button id="nbDel" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">\u00d7 page</button>';
+    h+='<button id="nbScope" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">scope \u00b7 '+bookScope+'</button>';
+    h+='<button id="nbShake" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">\u27e2 shake</button>';
+    h+='<button id="nbSend" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">send \u21a6</button>';
+    h+='<span id="nbWarn" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span>';
+    bar.innerHTML=h;
+    var chips=bar.querySelectorAll('[data-p]');
+    for(var i=0;i<chips.length;i++) chips[i].onclick=function(){ saveCur(); cur=+this.getAttribute('data-p'); load(cur); render(); persist(); };
+    bar.querySelector('#nbAdd').onclick=function(){ saveCur(); pages.push(null); cur=pages.length-1; clearCv(); render(); persist(); };
+    var del=bar.querySelector('#nbDel'); if(del) del.onclick=function(){ pages.splice(cur,1); if(!pages.length) pages=[null]; cur=Math.min(cur,pages.length-1); load(cur); render(); persist(); };
+    bar.querySelector('#nbScope').onclick=function(){ bookScope=bookScope==='page'?'book':'page'; render(); };
+    bar.querySelector('#nbShake').onclick=shake;
+    bar.querySelector('#nbSend').onclick=send;
+  }
+  render();
+})();
+</script>
   
 </body>
 </html>
