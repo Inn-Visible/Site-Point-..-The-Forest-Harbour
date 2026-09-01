@@ -30,6 +30,12 @@
   #door:hover{color:var(--gold);border-color:var(--gold)}
   body.light #door{background:rgba(242,239,230,.8);color:#6b7684}
   #toolsTab{position:fixed;bottom:12px;right:12px;z-index:3;display:none}
+  #previewModal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px}
+  #previewBox{background:var(--bg);border:1px solid var(--gold);padding:20px;max-width:90vw;max-height:90vh;overflow:auto;text-align:center}
+  #previewBox img{max-width:100%;max-height:50vh;border:1px solid var(--line);margin:10px 0}
+  #previewBox .lines{color:var(--dim);font-size:11px;line-height:1.6;white-space:pre-wrap;text-align:left;margin:10px 0;max-height:20vh;overflow:auto}
+  #previewBox .btns{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  #previewBox button{background:none;border:1px solid var(--gold);color:var(--gold);font:10px ui-monospace;padding:8px 16px;cursor:pointer}
   @media(max-width:700px){
     button{padding:10px 12px;font-size:11px}
     input[type=range]{width:52px}
@@ -66,6 +72,19 @@
   <button onclick="hideTools()">hide</button>
 </div>
 <button id="toolsTab" onclick="showTools()">tools</button>
+
+<div id="previewModal">
+  <div id="previewBox">
+    <div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">preview · what the archive will see</div>
+    <div id="prevTitle" style="font-size:12px;color:var(--gold);margin-bottom:8px"></div>
+    <div id="prevImg"></div>
+    <div id="prevLines" class="lines"></div>
+    <div class="btns">
+      <button onclick="confirmArchive()">send ✓</button>
+      <button onclick="closePreview()">keep drawing</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const cv=document.getElementById('slate'),x=cv.getContext('2d');
@@ -183,7 +202,6 @@ function grabAt(wx,wy){
       return liftBox({x:zn.x,y:zn.y,w:zn.w,h:zn.h},true); } }
   var img; try{ img=x.getImageData(0,0,Wd,Hd); }catch(e){ return false; }
   var d=img.data;
-  // nearest-ink search: taps no longer need to be pixel-perfect
   var sx=dx, sy=dy, found=false, R=16;
   for(var r=0;r<=R&&!found;r++){
     for(var yy=-r;yy<=r&&!found;yy++){ for(var xx=-r;xx<=r&&!found;xx++){
@@ -268,9 +286,20 @@ function stroke(px,py,pr,dot){
   x.beginPath(); x.moveTo(lx,ly); x.lineTo(px+(dot?0.01:0),py+(dot?0.01:0)); x.stroke();
   lx=px; ly=py;
 }
+var mirrorTimer=null;
+function mirrorSlate(){
+  if(mirrorTimer) return;
+  mirrorTimer=setTimeout(function(){
+    mirrorTimer=null;
+    var lines=textZones.filter(function(z){return z.text;}).map(function(z){return z.text;});
+    var img=inkShot();
+    if(!lines.length&&!img) return;
+    try{ localStorage.setItem('arc.slate', JSON.stringify({title:'slate \u00b7 '+new Date().toISOString().slice(0,10), body:lines.join('\n'), img:img})); }catch(e){}
+  },300);
+}
 function save(){ try{ localStorage.setItem('hive_slate',cv.toDataURL());
   localStorage.setItem('hive_slate_mode',light?'1':'0');
-  localStorage.setItem('hive_slate_zones',JSON.stringify(textZones)); }catch(e){} }
+  localStorage.setItem('hive_slate_zones',JSON.stringify(textZones)); mirrorSlate(); }catch(e){} }
 function clearAll(){ x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); save(); }
 function tiaga(){ pushUndo(); let n=0;
   const iv=setInterval(function(){ n++;
@@ -320,8 +349,24 @@ function toArchive(){
   var lines=textZones.filter(function(z){return z.text;}).map(function(z){return z.text;});
   var img=inkShot();
   if(!lines.length&&!img){ flash('nothing to send'); return; }
-  localStorage.setItem('arc.slate', JSON.stringify({title:'slate \u00b7 '+new Date().toISOString().slice(0,10), body:lines.join('\n'), img:img}));
+  var title='slate \u00b7 '+new Date().toISOString().slice(0,10);
+  var body=lines.join('\n');
+  document.getElementById('prevTitle').textContent=title;
+  document.getElementById('prevImg').innerHTML=img?'<img src="'+img+'" alt="preview">':'';
+  document.getElementById('prevLines').textContent=body||'(no text on the wall)';
+  document.getElementById('previewModal').style.display='flex';
+  window._pendingArchive={title:title,body:body,img:img};
+}
+function confirmArchive(){
+  var p=window._pendingArchive;
+  if(!p){ closePreview(); return; }
+  localStorage.setItem('arc.slate', JSON.stringify({title:p.title, body:p.body, img:p.img}));
   flash('sent \u00b7 pull it in the archive');
+  closePreview();
+}
+function closePreview(){
+  document.getElementById('previewModal').style.display='none';
+  window._pendingArchive=null;
 }
 (function(){ try{
   if(localStorage.getItem('hive_slate_mode')==='1'){ light=true; document.body.classList.add('light'); }
