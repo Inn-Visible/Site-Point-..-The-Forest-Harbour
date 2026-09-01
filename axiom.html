@@ -332,7 +332,7 @@ function lockdoor(){
 })();
 </script>
 
-<!-- xenofolders · follows the schema · workbench persists -->
+<!-- xenofolders · follows the schema · workbench persists with pages & sizing -->
 <script>
 (function(){
     if(window.self!==window.top) return;
@@ -351,13 +351,89 @@ function lockdoor(){
   if(mb&&mb.parentNode) mb.parentNode.insertBefore(sec,mb.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f); }
   var F=['workbench','gis','cad','3d print','schematics','archive']; var curF='workbench';
+  
+  // Page system state
+  var curPage = parseInt(localStorage.getItem('hive_xeno_page')||'1',10);
+  var fontSize = parseInt(localStorage.getItem('hive_xeno_font')||'11',10);
+  var unfolded = localStorage.getItem('hive_xeno_unfolded')==='1';
+  
+  function getPages(){
+    try{ return JSON.parse(localStorage.getItem('hive_xeno_pages')||'{}'); }catch(e){ return {}; }
+  }
+  function savePages(p){ localStorage.setItem('hive_xeno_pages',JSON.stringify(p)); }
+  function getPageContent(){
+    var pages = getPages();
+    return pages[curPage] || '';
+  }
+  function setPageContent(txt){
+    var pages = getPages();
+    pages[curPage] = txt;
+    savePages(pages);
+  }
+  function totalPages(){
+    var pages = getPages();
+    return Math.max(1, Object.keys(pages).length);
+  }
+  
   function renderTabs(){ tabs.innerHTML=''; F.forEach(function(x){ var b=document.createElement('button'); b.textContent=x;
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
     b.onclick=function(){ curF=x; renderTabs(); renderBody(); }; tabs.appendChild(b); }); }
+    
   function renderBody(){ body.innerHTML='';
-    if(curF==='workbench'){ var ta=document.createElement('textarea'); ta.style.cssText='width:100%;height:160px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:11px;padding:10px';
-      ta.placeholder='the workbench \u00b7 drafts persist on this glass ..'; ta.value=localStorage.getItem('hive_xeno_bench')||'';
-      ta.oninput=function(){ localStorage.setItem('hive_xeno_bench',ta.value); }; body.appendChild(ta); }
+    if(curF==='workbench'){
+      // Page nav
+      var nav=document.createElement('div');
+      nav.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap';
+      nav.innerHTML='<button id="pg_prev" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2039 leaf</button>'
+        +'<span id="pg_label" style="font-size:10px;color:#93a1b0;letter-spacing:.1em">leaf '+curPage+' / '+totalPages()+'</span>'
+        +'<button id="pg_next" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">leaf \u203a</button>'
+        +'<button id="pg_new" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">+ leaf</button>'
+        +'<button id="sz_minus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer;margin-left:auto">A\u2212</button>'
+        +'<span id="sz_label" style="font-size:9px;color:#5c6875">'+fontSize+'px</span>'
+        +'<button id="sz_plus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">A+</button>'
+        +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>';
+      body.appendChild(nav);
+      
+      var ta=document.createElement('textarea');
+      ta.style.cssText='width:100%;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:'+fontSize+'px;padding:10px;line-height:1.6;'+(unfolded?'height:70vh':'height:'+(Math.max(160,fontSize*10))+'px');
+      ta.placeholder='the workbench \u00b7 leaf '+curPage+' \u00b7 drafts persist on this glass ..';
+      ta.value=getPageContent();
+      ta.oninput=function(){ setPageContent(ta.value); };
+      body.appendChild(ta);
+      
+      // Wire up controls
+      document.getElementById('pg_prev').onclick=function(){
+        if(curPage>1){ curPage--; localStorage.setItem('hive_xeno_page',String(curPage)); renderBody(); }
+      };
+      document.getElementById('pg_next').onclick=function(){
+        var max=totalPages();
+        if(curPage<max){ curPage++; localStorage.setItem('hive_xeno_page',String(curPage)); renderBody(); }
+      };
+      document.getElementById('pg_new').onclick=function(){
+        var pages=getPages();
+        var newPage=Object.keys(pages).length+1;
+        pages[newPage]='';
+        savePages(pages);
+        curPage=newPage;
+        localStorage.setItem('hive_xeno_page',String(curPage));
+        renderBody();
+      };
+      document.getElementById('sz_minus').onclick=function(){
+        fontSize=Math.max(9,fontSize-1);
+        localStorage.setItem('hive_xeno_font',String(fontSize));
+        renderBody();
+      };
+      document.getElementById('sz_plus').onclick=function(){
+        fontSize=Math.min(20,fontSize+1);
+        localStorage.setItem('hive_xeno_font',String(fontSize));
+        renderBody();
+      };
+      document.getElementById('unfold_btn').onclick=function(){
+        unfolded=!unfolded;
+        localStorage.setItem('hive_xeno_unfolded',unfolded?'1':'0');
+        renderBody();
+      };
+    }
     else { var d=document.createElement('div'); d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
       d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
         +({gis:'our own maps \u00b7 layers, parcels, the lay of the land',cad:'our own lines \u00b7 drafts, dimensions, the house drawn true','3d print':'our own objects \u00b7 slice, infill, the house in hand',schematics:'our own circuits \u00b7 nets, nodes, the rail on paper',archive:'eigen keeps the guidebooks \u00b7 the stacks remember'})[curF];
@@ -414,8 +490,8 @@ function lockdoor(){
 (function(){
   var sec=document.createElement('section');
   sec.style.cssText='max-width:900px;margin:34px auto 0;border:1px solid #223041;background:#0e141b;padding:18px;font-family:ui-monospace,Consolas,monospace';
-  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the ground · what the house stands on</div>'
-    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">CACHED OFFLINE · NO TELEMETRY · YOUR MARKS STAY PINNED</div>'
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:12px">the ground \u00b7 what the house stands on</div>'
+    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">CACHED OFFLINE \u00b7 NO TELEMETRY \u00b7 YOUR MARKS STAY PINNED</div>'
     +'<div id="stRow" style="display:flex;gap:6px;justify-content:center;margin-bottom:6px;flex-wrap:wrap"></div>'
     +'<div id="styleHint" style="text-align:center;font-size:9px;color:#5c6875;font-style:italic;margin-bottom:10px"></div>'
     +'<div id="toolRow" style="display:flex;gap:6px;justify-content:center;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
@@ -427,19 +503,19 @@ function lockdoor(){
     +'<button id="t_hide" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">hide</button>'
     +'<button id="t_clear" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>'
     +'<button id="t_land" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">landscape</button>'
-    +'<button id="m_undo" title="undo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">↶</button>'
-    +'<button id="m_redo" title="redo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">↷</button>'
+    +'<button id="m_undo" title="undo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">\u21b6</button>'
+    +'<button id="m_redo" title="redo marks" style="background:none;border:1px solid #223041;color:#93a1b0;font:12px ui-monospace;padding:3px 8px;cursor:pointer">\u21b7</button>'
     +'<span id="palRow" style="display:flex;gap:5px;margin-left:6px"></span>'
     +'</div>'
     +'<div style="position:relative;width:100%;height:420px;border:1px solid #223041;overflow:hidden;background:#0a0d12">'
     +'<canvas id="mapCv" style="width:100%;height:100%;cursor:grab;touch-action:none"></canvas>'
     +'<div style="position:absolute;bottom:10px;right:10px;display:flex;flex-direction:column;gap:4px">'
     +'<button id="zIn" style="background:rgba(10,13,18,.8);border:1px solid #223041;color:#93a1b0;width:28px;height:28px;cursor:pointer">+</button>'
-    +'<button id="zOut" style="background:rgba(10,13,18,.8);border:1px solid #223041;color:#93a1b0;width:28px;height:28px;cursor:pointer">−</button>'
+    +'<button id="zOut" style="background:rgba(10,13,18,.8);border:1px solid #223041;color:#93a1b0;width:28px;height:28px;cursor:pointer">\u2212</button>'
     +'</div>'
     +'<div id="mapInfo" style="position:absolute;top:8px;left:10px;font-size:9px;color:#5c6875;letter-spacing:.15em"></div>'
     +'</div>'
-    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw · life · lift · erase = your hand on the world · tap lift = grab one · ↶↷ undo · © OSM · © CARTO · © OpenTopoMap · © Esri</div>';
+    +'<div style="margin-top:8px;font-size:9px;color:#5c6875;text-align:center">draw \u00b7 life \u00b7 lift \u00b7 erase = your hand on the world \u00b7 tap lift = grab one \u00b7 \u21b6\u21b7 undo \u00b7 \u00a9 OSM \u00b7 \u00a9 CARTO \u00b7 \u00a9 OpenTopoMap \u00b7 \u00a9 Esri</div>';
   var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
   var cv=document.getElementById('mapCv'), x=cv.getContext('2d');
   cv.style.touchAction='none';
@@ -449,11 +525,11 @@ function lockdoor(){
              night:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
              contour:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
              deep:'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'};
-  var HINT={ink:'the sleek chart · no labels',night:'the night chart · labeled',
-            contour:'the land\u2019s bones · modern relief',deep:'the water\u2019s floor · darker = deeper · zoom out for the basin'};
+  var HINT={ink:'the sleek chart \u00b7 no labels',night:'the night chart \u00b7 labeled',
+            contour:'the land\u2019s bones \u00b7 modern relief',deep:'the water\u2019s floor \u00b7 darker = deeper \u00b7 zoom out for the basin'};
   var BASEBG={ink:'#0a0d12',night:'#0a0d12',contour:'#e8e4d8',deep:'#06121f'};
   var PALM=['#d9a83a','#e8e4d8','#7fb2e5','#e5735a','#78dcc8'];
-  var style='ink', zoom=12, cx=0, cy=0, IMG={}, pending={}, landscape=false;
+  var style='ink', zoom=12, cx=0, cy=0, IMG={}, pending={};
   var tool='pan', showMarks=true, curStroke=null, drawColor=0;
   var liftSel=null, lifted=null, liftStart=null, holdLift=false;
   var marks={strokes:[],pins:[]};
@@ -516,7 +592,7 @@ function lockdoor(){
       ensure(tx,ty);
     }
     if(showMarks) drawMarks(tlx,tly);
-    var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' · z'+zoom+(landscape?' · landscape':'');
+    var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom+(landscape?' \u00b7 landscape':'');
   }
   function commitLift(){ if(!lifted) return; pushHist();
     lifted.s.forEach(function(i){ marks.strokes[i].pts=marks.strokes[i].pts.map(function(p){return [p[0]+lifted.ox,p[1]+lifted.oy];}); });
@@ -899,11 +975,11 @@ function lockdoor(){
   }
   function ensure(){
     var olds=document.querySelectorAll('button,a');
-    for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='→ archive') olds[o].remove(); }
+    for(var o=0;o<olds.length;o++){ if(olds[o].id!=='wbArc'&&(olds[o].textContent||'').trim()==='\u2192 archive') olds[o].remove(); }
     if(document.getElementById('wbArc')) return;
     var p=pad(); if(!p) return;
     var b=document.createElement('button'); b.id='wbArc';
-    b.textContent='→ archive';
+    b.textContent='\u2192 archive';
     b.style.cssText='display:block;margin-top:10px;background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer';
     p.insertAdjacentElement('afterend',b);
     b.onclick=preview;
@@ -919,12 +995,12 @@ function lockdoor(){
     var old=document.getElementById('wbPrev'); if(old){ old.remove(); return; }
     var box=document.createElement('div'); box.id='wbPrev';
     box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid #e8e4d8;background:#0e141b;padding:14px 16px';
-    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview · how it lands in the archive</div>'+
-      '<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">axiom</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local · unpushed</span></div>'+
+    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">send-out preview \u00b7 how it lands in the archive</div>'+
+      '<div style="display:flex;gap:14px;font-size:9px;color:#5c6875;flex-wrap:wrap"><span style="color:#e8e4d8;letter-spacing:.25em">axiom</span><span>'+new Date().toISOString().slice(0,10)+'</span><span style="color:#d9a83a">local \u00b7 unpushed</span></div>'+
       '<b style="display:block;font-size:12px;letter-spacing:.1em;margin:8px 0">'+d.title.replace(/[<>&"]/g,'')+'</b>'+
       '<p style="white-space:pre-wrap;color:#93a1b0;font-size:11px;line-height:1.8;margin:0">'+d.txt.replace(/[<>&"]/g,'')+'</p>'+
       '<div style="margin-top:8px;font-size:9px;letter-spacing:.12em;color:#5c6875"># bench</div>'+
-      '<div style="margin-top:12px;display:flex;gap:8px"><button id="wbGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send it ↦</button>'+
+      '<div style="margin-top:12px;display:flex;gap:8px"><button id="wbGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">send it \u21e6</button>'+
       '<button id="wbNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
     document.getElementById('wbArc').insertAdjacentElement('afterend',box);
     box.querySelector('#wbGo').onclick=function(){ send(d); box.remove(); };
