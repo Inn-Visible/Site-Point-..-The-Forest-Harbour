@@ -386,7 +386,10 @@ addEventListener('paste',function(e){
   if(!pages||!pages.length) pages=[null];
   var bar=document.createElement('div');
   bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap';
-  cv.parentNode.insertBefore(bar,cv.nextSibling);
+   cv.parentNode.insertBefore(bar,cv.nextSibling);
+  ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'].forEach(function(ev){
+    bar.addEventListener(ev,function(e){ e.stopPropagation(); },true);
+  });
   function warn(t){ var w=bar.querySelector('#nbWarn'); if(w) w.textContent=t; }
   function persist(){ try{ localStorage.setItem('hive_slate_book',JSON.stringify(pages)); warn(''); }catch(e){ warn('the book is too heavy for this glass'); } }
   function clearCv(){ var x=cv.getContext('2d'); x.save(); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,cv.width,cv.height); x.restore(); }
