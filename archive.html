@@ -115,8 +115,8 @@
         '<div id="slatePreview"></div>';
       tools.appendChild(d);
       d.querySelector('#nd').onclick=function(){
-        var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
-        if(!t&&!b) return;
+               var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
+        if(!t&&!b&&!PENDING_IMG) return;
         LOCAL.unshift({id:'ax-L'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
           title:t||'bench note', body:b, tags:['bench'], local:true, img:PENDING_IMG||undefined});
         PENDING_IMG=null;
