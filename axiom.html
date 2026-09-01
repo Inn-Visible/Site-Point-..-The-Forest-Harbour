@@ -374,6 +374,13 @@ function lockdoor(){
     var pages = getPages();
     return Math.max(1, Object.keys(pages).length);
   }
+  function wipeBench(){
+    if(!confirm('clear the table? every leaf goes blank \u00b7 the archive keeps what you sent.')) return;
+    localStorage.removeItem('hive_xeno_pages');
+    localStorage.removeItem('hive_xeno_bench');
+    curPage=1; localStorage.setItem('hive_xeno_page','1');
+    renderBody();
+  }
   
   function renderTabs(){ tabs.innerHTML=''; F.forEach(function(x){ var b=document.createElement('button'); b.textContent=x;
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
@@ -391,7 +398,8 @@ function lockdoor(){
         +'<button id="sz_minus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer;margin-left:auto">A\u2212</button>'
         +'<span id="sz_label" style="font-size:9px;color:#5c6875">'+fontSize+'px</span>'
         +'<button id="sz_plus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">A+</button>'
-        +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>';
+        +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
+        +'<button id="pg_wipe" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>';
       body.appendChild(nav);
       
       var ta=document.createElement('textarea');
@@ -433,6 +441,7 @@ function lockdoor(){
         localStorage.setItem('hive_xeno_unfolded',unfolded?'1':'0');
         renderBody();
       };
+      document.getElementById('pg_wipe').onclick=wipeBench;
     }
     else { var d=document.createElement('div'); d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
       d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
