@@ -385,7 +385,8 @@ addEventListener('paste',function(e){
   try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
   if(!pages||!pages.length) pages=[null];
   var bar=document.createElement('div');
-   bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;position:relative;z-index:9999;pointer-events:auto';
+    bar.id='nbBar';
+  bar.style.cssText='margin-top:10px;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;position:relative;z-index:9999;pointer-events:none';
    cv.parentNode.insertBefore(bar,cv.nextSibling);
   ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'].forEach(function(ev){
     bar.addEventListener(ev,function(e){ e.stopPropagation(); },true);
@@ -425,7 +426,8 @@ addEventListener('paste',function(e){
     h+='<button id="nbShake" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">\u27e2 shake</button>';
     h+='<button id="nbSend" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;padding:5px 9px;cursor:pointer">send \u21a6</button>';
     h+='<span id="nbWarn" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span>';
-    bar.innerHTML=h;
+        bar.innerHTML=h;
+    bar.querySelectorAll('button').forEach(function(b){ b.style.pointerEvents='auto'; });
     var chips=bar.querySelectorAll('[data-p]');
     for(var i=0;i<chips.length;i++) chips[i].onclick=function(){ saveCur(); cur=+this.getAttribute('data-p'); load(cur); render(); persist(); };
     bar.querySelector('#nbAdd').onclick=function(){ saveCur(); pages.push(null); cur=pages.length-1; clearCv(); render(); persist(); };
