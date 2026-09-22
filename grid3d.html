@@ -187,7 +187,12 @@
   document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
   document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
   document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
-  setTimeout(fit,80);
+    function tryFit(n){ var r=cv.getBoundingClientRect();
+    if(r.width>10&&r.height>10){ fit(); }
+    else if(n>0) setTimeout(function(){ tryFit(n-1); },120); }
+  tryFit(25);
+  addEventListener('load',function(){ tryFit(5); });
+  if('ResizeObserver' in window){ new ResizeObserver(function(){ fit(); }).observe(cv); }
 })();
 </script>
 </body>
