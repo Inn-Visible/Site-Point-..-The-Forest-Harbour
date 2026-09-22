@@ -352,7 +352,7 @@ function lockdoor(){
     var mb=document.querySelector('.molbox');
   if(mb&&mb.parentNode) mb.parentNode.insertBefore(sec,mb.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f); }
-  var F=['workbench','gis','cad','3d print','schematics','archive']; var curF='workbench';
+  var F=['workbench','gis','cad','3d print','schematics','archive','kit','grid']; var curF='workbench';
   
   // Page system state
   var curPage = parseInt(localStorage.getItem('hive_xeno_page')||'1',10);
