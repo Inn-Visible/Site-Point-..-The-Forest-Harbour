@@ -232,8 +232,10 @@
     if(!rpn){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
     var f=makeF(rpn);
     curF=f; curName=name||src;
-    msg.style.color='#58a36a';
-    msg.textContent= mode==='solid'? 'carving \u00b7 cage \u00d7 (1 + f/6)' : 'plotting \u00b7 z = '+(name||src);
+        var usesY=rpn.some(function(t){ return t[0]==='v'&&t[1]===1; });
+    if(mode==='solid'){ msg.style.color='#58a36a'; msg.textContent='carving \u00b7 cage \u00d7 (1 + f/6)'; }
+    else if(mode==='curve'&&usesY){ msg.style.color='#d9a83a'; msg.textContent='plotting \u00b7 y = f(x) \u00b7 y pins to 0 in curve \u00b7 your y-terms went quiet'; }
+    else { msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src); }
     if(cv.width<10||cv.height<10) fit();
     draw();
   }
