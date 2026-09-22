@@ -1159,6 +1159,84 @@ function lockdoor(){
   ensure();
 })();
 </script>
+
+<script>
+(function(){
+  var anchor=null, all=document.querySelectorAll('div,footer,section,p');
+  for(var i=0;i<all.length;i++){ var t=all[i].textContent||'';
+    if(t.indexOf('rooted forever')>-1){ if(!anchor||t.length<anchor.textContent.length) anchor=all[i]; } }
+  var hostEl=anchor?anchor.parentElement:document.body;
+  var row=document.createElement('div');
+  row.style.cssText='margin:14px auto 0;text-align:center';
+  row.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:8px">the stone \u00b7 the whole archive \u00b7 your copy \u00b7 wifi optional</div>'+
+    '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'+
+    '<button id="stFile" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">stone \u2193 file</button>'+
+    ('showDirectoryPicker' in window?'<button id="stDir" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">stone \u2193 folder</button>':'')+
+    '<button id="stUp" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">restore \u2191</button>'+
+    '<input id="stIn" type="file" accept=".json,application/json" style="display:none"></div>'+
+    '<div id="stMsg" style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em">the repo is the foundation\u2019s memory \u00b7 the stone is yours</div>';
+  hostEl.appendChild(row);
+  function msg(t){ var m=row.querySelector('#stMsg'); if(m) m.textContent=t; }
+  function localNotes(){ try{ return JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){ return []; } }
+  function getRooted(){
+    return fetch('archive/notes.json').then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+      .then(function(j){ if(j) return j;
+        return fetch('notes.json').then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }); });
+  }
+  function gather(){ return getRooted().then(function(rooted){
+    var L=localNotes(), ids={}, out=[];
+    L.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ ids[n.id]=1; out.push(n); } });
+    (rooted||[]).forEach(function(n){ if(n&&n.id&&!ids[n.id]){ ids[n.id]=1; out.push(n); } });
+    return out; }); }
+  function download(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
+  function stamp(){ return new Date().toISOString().slice(0,10); }
+  row.querySelector('#stFile').onclick=function(){
+    gather().then(function(ns){
+      download('innvisible-archive-'+stamp()+'.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'}));
+      msg('stoned \u2193 '+ns.length+' notes \u00b7 one file, images inside'); }); };
+  var stDir=row.querySelector('#stDir');
+  if(stDir) stDir.onclick=function(){
+    var btn=this; btn.disabled=true;
+    window.showDirectoryPicker({mode:'readwrite'}).then(function(dir){
+      return gather().then(function(ns){
+        return dir.getFileHandle('notes.json',{create:true}).then(function(fh){ return fh.createWritable(); })
+          .then(function(w){ return w.write(JSON.stringify(ns,null,1)).then(function(){ return w.close(); }); })
+          .then(function(){
+            var jobs=ns.filter(function(n){ return n.img&&n.img.indexOf('data:')===0; });
+            if(!jobs.length) return;
+            return dir.getDirectoryHandle('img',{create:true}).then(function(d2){
+              return jobs.reduce(function(p,n){ return p.then(function(){
+                var m=n.img.match(/^data:([^;]+);base64,(.*)$/); if(!m) return;
+                var ext=(m[1].split('/')[1]||'png').replace('jpeg','jpg');
+                var bin=atob(m[2]), arr=new Uint8Array(bin.length);
+                for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+                return d2.getFileHandle(n.id+'.'+ext,{create:true}).then(function(fh){ return fh.createWritable(); })
+                  .then(function(w){ return w.write(arr); }).then(function(){ return w.close(); }); });
+              },Promise.resolve()); }); }); });
+    }).then(function(){ msg('stoned \u2193 folder \u00b7 notes.json + img/'); })
+      .catch(function(e){ if(e&&e.name!=='AbortError') msg('the folder refused \u00b7 use file'); })
+      .then(function(){ btn.disabled=false; });
+  };
+  row.querySelector('#stUp').onclick=function(){ row.querySelector('#stIn').click(); };
+  row.querySelector('#stIn').onchange=function(){
+    var f=this.files&&this.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ msg('the stone would not open'); return; }
+      if(!inc||!inc.length){ msg('the stone is empty'); return; }
+      var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
+      var added=0;
+      inc.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ n.local=true; L.unshift(n); added++; } });
+      localStorage.setItem('arc.local',JSON.stringify(L));
+      msg('restored \u2191 '+added+' \u00b7 reloading ..');
+      setTimeout(function(){ location.reload(); },900);
+    };
+    r.readAsText(f);
+  };
+})();
+</script>
+
   
 </body>
 </html>
