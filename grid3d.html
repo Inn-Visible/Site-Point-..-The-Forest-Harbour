@@ -242,7 +242,22 @@
         if(!isFinite(p[2])){ started=false; return; }
         var q=proj(p[0],p[1],p[2],cx,cy,s);
         if(!started){ x.moveTo(q[0],q[1]); started=true; } else x.lineTo(q[0],q[1]); });
-      x.stroke(); });
+          x.stroke(); });
+    x.font='9px ui-monospace,Consolas,monospace'; x.fillStyle='rgba(147,161,176,0.7)';
+    for(var gi2=-R;gi2<=R;gi2+=2){
+      if(gi2!==0){
+        var qa=proj(gi2,0,0,cx,cy,s); x.fillText(String(gi2), qa[0]+2, qa[1]+10);
+        var qb=proj(0,gi2,0,cx,cy,s); x.fillText(String(gi2), qb[0]+2, qb[1]+10);
+      }
+    }
+    var q0=proj(0,0,0,cx,cy,s); x.fillText('0', q0[0]+2, q0[1]+10);
+    if(mode==='curve'){
+      var zst= zext>12?10: zext>5?2:1;
+      for(var zt=Math.ceil(mn/zst)*zst; zt<=mx; zt+=zst){
+        if(zt===0) continue;
+        var qz=proj(0,0,zt,cx,cy,s); x.fillText(String(zt), qz[0]+3, qz[1]-2);
+      }
+    }
         var mp=null;
     if(mode==='solid'){
       var bd=1e9;
