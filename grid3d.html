@@ -199,8 +199,9 @@
     return [cx+x1*s, cy-up*s];
   }
   function col(t){ return 'rgba('+Math.round(63+t*154)+','+Math.round(127+t*41)+','+Math.round(193-t*135)+',0.85)'; }
-  function draw(){
+   function draw(){
     x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
+    try{
     var lines=buildLines();
     var s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
     var mn=1e9, mx=-1e9;
