@@ -241,8 +241,7 @@
     modesRow.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.m===m); });
     solRow.style.display= m==='solid'?'flex':'none';
     preRow.style.display= m==='surface'?'flex':'none';
-    inp.disabled= m==='solid';
-    document.getElementById('fPlot').disabled= m==='solid';
+       inp.placeholder= m==='curve'? 'y = f(x) \u00b7 e.g. sin(x^2/2)' : m==='surface'? 'z = f(x, y) \u00b7 e.g. sin(r*1.6)*exp(-r/4)*3' : 'carve the cage \u00b7 f(x, y) bumps the radius \u00b7 0 = pure solid';
     draw();
   }
   ['curve','surface','solid'].forEach(function(m){
