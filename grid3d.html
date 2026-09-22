@@ -298,9 +298,26 @@
   inp.value=PRESETS.ripple;
   setMode('surface');
   plot(PRESETS.ripple,'ripple');
-  var drag=false,lx=0,ly=0;
-  cv.addEventListener('pointerdown',function(e){ drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
-  addEventListener('pointermove',function(e){ if(!drag) return;
+   var drag=false,lx=0,ly=0;
+  cv.addEventListener('pointerdown',function(e){
+    var r=cv.getBoundingClientRect();
+    if(mk.sx!=null){ var d0x=e.clientX-r.left-mk.sx, d0y=e.clientY-r.top-mk.sy;
+      if(d0x*d0x+d0y*d0y<196){ dragMk=true; pmx=e.clientX; pmy=e.clientY; e.preventDefault(); return; } }
+    drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
+  addEventListener('pointermove',function(e){
+    if(dragMk){
+      var aX=Math.cos(yaw)*lastS, aY=Math.sin(yaw)*Math.sin(pitch)*lastS;
+      var bX=-Math.sin(yaw)*lastS, bY=Math.cos(yaw)*Math.sin(pitch)*lastS;
+      var dsx=e.clientX-pmx, dsy=e.clientY-pmy; pmx=e.clientX; pmy=e.clientY;
+      var det=aX*bY-aY*bX;
+      if(Math.abs(det)>1e-6){
+        if(mode==='curve'){ mk.x+=(dsx*aX+dsy*aY)/(aX*aX+aY*aY); }
+        else { mk.x+=(dsx*bY-dsy*bX)/det; mk.y+=(aX*dsy-aY*dsx)/det; }
+        mk.x=Math.max(-R,Math.min(R,mk.x)); mk.y=Math.max(-R,Math.min(R,mk.y));
+        draw();
+      }
+      return; }
+    if(!drag) return;
     yaw+=(e.clientX-lx)*0.01; pitch=Math.max(0.15,Math.min(1.5,pitch+(e.clientY-ly)*0.01));
     lx=e.clientX; ly=e.clientY; draw(); });
   addEventListener('pointerup',function(){ drag=false; cv.style.cursor='grab'; });
