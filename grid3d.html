@@ -70,7 +70,15 @@
     return t;
   }
   function compile(src){
-    var t=tokenize(src); if(!t||!t.length) return null;
+      var t=tokenize(src); if(!t||!t.length) return null;
+    var t2=[];
+    for(var q2=0;q2<t.length;q2++){
+      if(q2>0){ var pv=t[q2-1], cu=t[q2];
+        var pvV= pv[0]==='n'||pv[0]==='v'||(pv[0]==='o'&&pv[1]===')');
+        var cuO= cu[0]==='n'||cu[0]==='v'||cu[0]==='f'||(cu[0]==='o'&&cu[1]==='(');
+        if(pvV&&cuO) t2.push(['o','*']); }
+      t2.push(t[q2]); }
+    t=t2;
     var out=[], st=[], want=true;
     for(var k=0;k<t.length;k++){ var tk=t[k];
       if(tk[0]==='n'||tk[0]==='v'){ out.push(tk); want=false; continue; }
