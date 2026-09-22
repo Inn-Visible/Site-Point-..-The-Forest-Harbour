@@ -219,9 +219,16 @@
 <script>
 (function(){
   function $(id){ return document.getElementById(id); }
+  function pf(el){ if(!el) return null; var v=parseFloat(el.value); return isFinite(v)?v:null; }
+  function unlocked(){ var a=localStorage.getItem('hive_access'), s=sessionStorage.getItem('hive_session'); return s==='1'&&a&&+a>Date.now(); }
+  var DEEP=unlocked();
   var pad=$('cPad'); if(!pad) return;
-  var KEYS=['C','\u232b','(',')','7','8','9','\u00f7','4','5','6','\u00d7','1','2','3','\u2212','0','.','%','+','='];
+  var KEYS=['C','\u232b','(',')','7','8','9','\u00f7','4','5','6','\u00d7','1','2','3','\u2212','0','.','%','+'];
+  if(DEEP) KEYS=KEYS.concat(['^','\u221a','\u03c0']);
+  KEYS.push('=');
   function norm(s){ return s.replace(/\u00f7/g,'/').replace(/\u00d7/g,'*').replace(/\u2212/g,'-'); }
+  var PREC={'+':1,'-':1,'*':2,'/':2,'^':3,'u-':4,'\u221a':4};
+  var RASSOC={'^':1,'u-':1,'\u221a':1};
   function calc(raw){
     var s=norm(raw); if(!s.trim()) return null;
     var t=[], i=0;
@@ -229,17 +236,22 @@
       if(c===' '){ i++; continue; }
       if(/[0-9.]/.test(c)){ var j=i; while(j<s.length&&/[0-9.]/.test(s.charAt(j))) j++;
         var n=parseFloat(s.slice(i,j)); if(!isFinite(n)) return null; t.push(['n',n]); i=j; continue; }
-      if('+-*/()%'.indexOf(c)>-1){ t.push(['o',c]); i++; continue; }
+      if(c==='\u03c0'){ t.push(['n',Math.PI]); i++; continue; }
+      if(c==='e'){ t.push(['n',Math.E]); i++; continue; }
+      if('+-*/()%^'.indexOf(c)>-1||c==='\u221a'){ t.push(['o',c]); i++; continue; }
       return null; }
-    var out=[], st=[], want=true, prec={'+':1,'-':1,'*':2,'/':2};
+    var out=[], st=[], want=true;
     for(var k=0;k<t.length;k++){ var tk=t[k];
       if(tk[0]==='n'){ out.push(tk); want=false; continue; }
       var op=tk[1];
       if(op==='('){ st.push(op); want=true; continue; }
       if(op===')'){ var found=false; while(st.length){ var p=st.pop(); if(p==='('){ found=true; break; } out.push(['o',p]); } if(!found) return null; want=false; continue; }
       if(op==='%'){ if(want) return null; out.push(['o','%']); want=false; continue; }
-      if(want){ if(op==='-'){ out.push(['n',0]); } else if(op!=='+'){ return null; } }
-      while(st.length&&st[st.length-1]!=='('&&prec[st[st.length-1]]>=prec[op]){ out.push(['o',st.pop()]); }
+      if(op==='\u221a'){ if(!want) return null; st.push(op); want=true; continue; }
+      if(want){ if(op==='-'){ st.push('u-'); want=true; continue; } if(op==='+'){ continue; } return null; }
+      while(st.length){ var top=st[st.length-1]; if(top==='(') break;
+        var tp=PREC[top]||0, cp=PREC[op]||0;
+        if(RASSOC[op]? tp>cp : tp>=cp){ out.push(['o',st.pop()]); } else break; }
       st.push(op); want=true; }
     if(want) return null;
     while(st.length){ var q=st.pop(); if(q==='(') return null; out.push(['o',q]); }
@@ -247,9 +259,11 @@
     for(var m=0;m<out.length;m++){ var o=out[m];
       if(o[0]==='n'){ ev.push(o[1]); continue; }
       if(o[1]==='%'){ if(!ev.length) return null; ev.push(ev.pop()/100); continue; }
+      if(o[1]==='u-'){ if(!ev.length) return null; ev.push(-ev.pop()); continue; }
+      if(o[1]==='\u221a'){ if(!ev.length) return null; ev.push(Math.sqrt(ev.pop())); continue; }
       if(ev.length<2) return null;
       var b=ev.pop(), a=ev.pop(), r;
-      switch(o[1]){ case '+': r=a+b; break; case '-': r=a-b; break; case '*': r=a*b; break; case '/': r=(b===0?NaN:a/b); break; default: return null; }
+      switch(o[1]){ case '+': r=a+b; break; case '-': r=a-b; break; case '*': r=a*b; break; case '/': r=(b===0?NaN:a/b); break; case '^': r=Math.pow(a,b); break; default: return null; }
       if(!isFinite(r)) return null;
       ev.push(r); }
     return ev.length===1?ev[0]:null;
@@ -273,6 +287,37 @@
     pad.appendChild(b);
   });
   live();
+  var deep=$('deep');
+  if(DEEP&&deep){ deep.style.display='block';
+    var tag=document.createElement('div');
+    tag.style.cssText='margin:26px auto 0;text-align:center;font-size:9px;letter-spacing:.3em;color:#58a36a';
+    tag.textContent='the deep bench \u00b7 unlocked \u00b7 the porch stays simple for strangers';
+    deep.parentNode.insertBefore(tag,deep); }
+  function vec(s){ var a=(s||'').match(/-?[\d.]+/g); return a?a.map(parseFloat):[]; }
+  function vectors(){
+    var o=$('vOut'); if(!o) return;
+    var a=vec($('vA')&&$('vA').value), b=vec($('vB')&&$('vB').value);
+    if(!a.length||!b.length||a.length!==b.length||a.length>5){ o.textContent='same dims, 2\u20135 \u00b7 comma separated'; return; }
+    var dot=0,ma=0,mb=0; for(var i=0;i<a.length;i++){ dot+=a[i]*b[i]; ma+=a[i]*a[i]; mb+=b[i]*b[i]; }
+    ma=Math.sqrt(ma); mb=Math.sqrt(mb);
+    var s='dim '+a.length+' \u00b7 dot '+fmt(dot)+' \u00b7 |a| '+fmt(ma)+' \u00b7 |b| '+fmt(mb);
+    if(ma>0&&mb>0) s+=' \u00b7 \u2220 '+fmt(Math.acos(Math.max(-1,Math.min(1,dot/(ma*mb))))*180/Math.PI)+'\u00b0';
+    if(a.length===3) s+=' \u00b7 a\u00d7b '+[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]].map(fmt).join(',');
+    if(a.length>=4) s+=' \u00b7 the dot holds in 4 & 5 d';
+    o.textContent=s;
+  }
+  function interval(){
+    var o=$('sOut'); if(!o) return;
+    var dt=pf($('sT')), dx=pf($('sX')), dy=pf($('sY')), dz=pf($('sZ'));
+    if(dt==null||dx==null||dy==null||dz==null){ o.textContent='four numbers, one interval'; return; }
+    var c=299792458, s2=Math.pow(c*dt,2)-(dx*dx+dy*dy+dz*dz), s=Math.sqrt(Math.abs(s2));
+    o.textContent = s2>0 ? 'timelike \u00b7 proper time '+fmt(s/c)+' s'
+      : s2<0 ? 'spacelike \u00b7 proper length '+fmt(s)+' m'
+      : 'lightlike \u00b7 the photon\u2019s path';
+  }
+  ['vA','vB'].forEach(function(i){ var e=$(i); if(e) e.oninput=vectors; });
+  ['sT','sX','sY','sZ'].forEach(function(i){ var e=$(i); if(e) e.oninput=interval; });
+  vectors(); interval();
 })();
 </script>
   
