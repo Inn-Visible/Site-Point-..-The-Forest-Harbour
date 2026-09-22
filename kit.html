@@ -282,7 +282,8 @@
     if(want) return null;
     while(st.length){ var q=st.pop(); if(q==='(') return null; out.push(q); }
     var ev=[];
-    for(var m=0;m<out.length;m++){ var o=out[m];
+       for(var m=0;m<out.length;m++){ var o=out[m];
+      if(typeof o==='string') o=['o',o];
       if(o[0]==='n'){ ev.push(o[1]); continue; }
       if(Array.isArray(o)&&o[0]==='f'){ if(!ev.length) return null; ev.push(applyF(o[1],ev.pop())); continue; }
       if(o[1]==='%'){ if(!ev.length) return null; ev.push(ev.pop()/100); continue; }
