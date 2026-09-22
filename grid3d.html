@@ -157,7 +157,8 @@
     var f=makeF(rpn), probe=f(1,1);
     if(probe===undefined){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
     curF=f; curName=name||src;
-    msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
+       msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
+    if(cv.width<10||cv.height<10) fit();
     draw();
   }
   var row=document.getElementById('presets'), inp=document.getElementById('fExpr');
