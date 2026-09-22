@@ -17,6 +17,7 @@
   button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:6px 10px;cursor:pointer}
   button.on{border-color:var(--gold);color:var(--gold)}
   input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:8px 10px;width:min(460px,86vw)}
+  input:disabled{opacity:.4}
   #g3{width:100%;height:440px;border:1px solid var(--line);background:var(--bg);touch-action:none;cursor:grab;display:block}
   .info{margin-top:8px;text-align:center;font-size:10px;color:var(--dim);letter-spacing:.12em}
   .msg{font-size:10px;color:#58a36a;letter-spacing:.1em}
@@ -32,10 +33,12 @@
 <header><div class="brand">THE GRID</div><a class="back" href="axiom.html">axiom ↩</a></header>
 <main>
   <p class="hook">the third dimension, rollable.</p>
-  <p class="man">type any surface · x, y, r = √(x²+y²) · sin cos tan exp ln log sqrt abs ^ ( ) π e · radians</p>
+  <p class="man">curve = flat like desmos · surface = z = f(x, y) · solid = preset shapes · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians</p>
+  <div class="row" id="modes"></div>
   <div class="row"><input id="fExpr" placeholder="z = f(x, y) · e.g. sin(r*1.6)*exp(-r/4)*3" autocomplete="off"></div>
   <div class="row"><button id="fPlot" class="on">plot it</button><span class="msg" id="fMsg"></span></div>
   <div class="row" id="presets"></div>
+  <div class="row" id="solids" style="display:none"></div>
   <div class="row"><button id="zin">+</button><button id="zout">−</button><button id="home">⌂ view</button></div>
   <canvas id="g3"></canvas>
   <div class="info" id="gInfo"></div>
@@ -99,7 +102,7 @@
   function makeF(rpn){
     return function(x,y){
       var r=Math.sqrt(x*x+y*y), ev=[];
-           for(var i=0;i<rpn.length;i++){ var o=rpn[i];
+      for(var i=0;i<rpn.length;i++){ var o=rpn[i];
         if(typeof o==='string') o=['o',o];
         if(o[0]==='n'){ ev.push(o[1]); continue; }
         if(o[0]==='v'){ ev.push(o[1]===0?x:o[1]===1?y:r); continue; }
@@ -115,8 +118,79 @@
   }
   var PRESETS={wave:'sin(x)*cos(y)', saddle:'(x^2-y^2)/6', ripple:'sin(r*1.6)*exp(-r/4)*3',
     gauss:'3*exp(-(x^2+y^2)/8)', plane:'(x+y)/4'};
-  var curF=null, curName='ripple', yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
+  var mode='surface', curF=null, curName='ripple', solidName='sphere';
+  var yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
   var cv=document.getElementById('g3'), x=cv.getContext('2d');
+  function ring(cx0,cy0,cz0,rad,ax,steps){
+    var pts=[];
+    for(var i=0;i<=steps;i++){ var u=i/steps*2*Math.PI;
+      if(ax==='z') pts.push([cx0+rad*Math.cos(u), cy0+rad*Math.sin(u), cz0]);
+      else if(ax==='x') pts.push([cx0, cy0+rad*Math.cos(u), cz0+rad*Math.sin(u)]);
+      else pts.push([cx0+rad*Math.cos(u), cy0, cz0+rad*Math.sin(u)]); }
+    return pts;
+  }
+  function solidLines(name){
+    var L=[], S=4, i, j;
+    if(name==='sphere'){
+      for(i=1;i<8;i++){ var phi=i*Math.PI/8; L.push(ring(0,0,S*Math.cos(phi),S*Math.sin(phi),'z',36)); }
+      for(i=0;i<12;i++){ var u=i*Math.PI/6, pts=[];
+        for(j=0;j<=24;j++){ var ph=j*Math.PI/24;
+          pts.push([S*Math.sin(ph)*Math.cos(u), S*Math.sin(ph)*Math.sin(u), S*Math.cos(ph)]); }
+        L.push(pts); }
+    } else if(name==='torus'){
+      var R0=3.4, r0=1.4;
+      for(i=0;i<12;i++){ var v=i*Math.PI/6, pts2=[];
+        for(j=0;j<=36;j++){ var u2=j*2*Math.PI/36;
+          pts2.push([(R0+r0*Math.cos(v))*Math.cos(u2), (R0+r0*Math.cos(v))*Math.sin(u2), r0*Math.sin(v)]); }
+        L.push(pts2); }
+      for(i=0;i<18;i++){ var u3=i*2*Math.PI/18, pts3=[];
+        for(j=0;j<=24;j++){ var v2=j*2*Math.PI/24;
+          pts3.push([(R0+r0*Math.cos(v2))*Math.cos(u3), (R0+r0*Math.cos(v2))*Math.sin(u3), r0*Math.sin(v2)]); }
+        L.push(pts3); }
+    } else if(name==='cone'){
+      L.push(ring(0,0,-S/2,S,'z',36));
+      for(i=0;i<12;i++){ var u4=i*Math.PI/6;
+        L.push([[S*Math.cos(u4),S*Math.sin(u4),-S/2],[0,0,S/2]]); }
+      for(i=1;i<4;i++){ var t=i/4; L.push(ring(0,0,-S/2+t*S,S*(1-t),'z',36)); }
+    } else if(name==='pyramid'){
+      var h=S/2, C=[[h,h,-h],[-h,h,-h],[-h,-h,-h],[h,-h,-h]];
+      L.push(C.concat([C[0]]));
+      for(i=0;i<4;i++) L.push([C[i],[0,0,h]]);
+      for(i=1;i<4;i++){ var t2=i/4, s2=1-t2, z2=-h+t2*S;
+        L.push([[h*s2,h*s2,z2],[-h*s2,h*s2,z2],[-h*s2,-h*s2,z2],[h*s2,-h*s2,z2],[h*s2,h*s2,z2]]); }
+    } else {
+      var q=S/2, E=[[-q,-q,-q],[q,-q,-q],[q,q,-q],[-q,q,-q],[-q,-q,q],[q,-q,q],[q,q,q],[-q,q,q]];
+      [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(function(e){ L.push([E[e[0]],E[e[1]]]); });
+      L.push([[-q,-q,0],[q,-q,0],[q,q,0],[-q,q,0],[-q,-q,0]]);
+      L.push([[0,-q,-q],[0,q,-q],[0,q,q],[0,-q,q],[0,-q,-q]]);
+      L.push([[-q,0,-q],[q,0,-q],[q,0,q],[-q,0,q],[-q,0,-q]]);
+    }
+    return L;
+  }
+  function buildLines(){
+    var L=[], i, j;
+    if(mode==='solid') return solidLines(solidName);
+    if(mode==='curve'){
+      L.push({faint:true, pts:[[-R,0,0],[R,0,0]]});
+      L.push({faint:true, pts:[[0,0,-3],[0,0,4]]});
+      var pts=[];
+      for(i=0;i<=160;i++){ var px=-R+2*R*i/160, pz=curF?curF(px,0):NaN;
+        pts.push([px,0,isFinite(pz)?pz:NaN]); }
+      L.push({pts:pts});
+      return L;
+    }
+    for(var pass=0;pass<2;pass++){
+      for(i=0;i<=N;i++){
+        var t0=-R+2*R*i/N, line=[];
+        for(j=0;j<=N;j++){
+          var px2= pass===0? -R+2*R*j/N : t0;
+          var py2= pass===0? t0 : -R+2*R*j/N;
+          var pz2=curF?curF(px2,py2):NaN;
+          line.push([px2,py2,isFinite(pz2)?pz2:NaN]); }
+        L.push({pts:line}); }
+    }
+    return L;
+  }
   function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; draw(); }
   addEventListener('resize',fit);
   function proj(px,py,pz,cx,cy,s){
@@ -127,57 +201,77 @@
   function col(t){ return 'rgba('+Math.round(63+t*154)+','+Math.round(127+t*41)+','+Math.round(193-t*135)+',0.85)'; }
   function draw(){
     x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
-    if(!curF) return;
+    var lines=buildLines();
     var s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
-    var zs=[], i, j;
-    for(i=0;i<=N;i++) for(j=0;j<=N;j++){ var z=curF(-R+2*R*i/N,-R+2*R*j/N); zs.push(isFinite(z)?z:0); }
-    var mn=Math.min.apply(null,zs), mx=Math.max.apply(null,zs), rg=(mx-mn)||1;
+    var mn=1e9, mx=-1e9;
+    lines.forEach(function(ln){ ln.pts.forEach(function(p){ if(isFinite(p[2])){ if(p[2]<mn)mn=p[2]; if(p[2]>mx)mx=p[2]; } }); });
+    if(mn>mx){ mn=0; mx=0; }
+    var rg=(mx-mn)||1;
     x.lineWidth=1;
-    for(var pass=0;pass<2;pass++){
-      for(var a=0;a<=N;a++){
-        var t0=-R+2*R*a/N; x.beginPath(); var mid=0, started=false;
-        for(var b2=0;b2<=N;b2++){
-          var px= pass===0? -R+2*R*b2/N : t0;
-          var py= pass===0? t0 : -R+2*R*b2/N;
-          var pz=curF(px,py);
-          if(!isFinite(pz)){ started=false; continue; }
-          var p=proj(px,py,pz,cx,cy,s);
-          if(!started){ x.moveTo(p[0],p[1]); started=true; } else x.lineTo(p[0],p[1]);
-          if(b2===(N>>1)) mid=pz;
-        }
-        x.strokeStyle=col(Math.max(0,Math.min(1,(mid-mn)/rg)));
-        x.stroke();
-      }
-    }
-    document.getElementById('gInfo').textContent='z = '+curName+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
+    lines.forEach(function(ln){
+      var mid=0, cnt=0;
+      ln.pts.forEach(function(p){ if(isFinite(p[2])){ mid+=p[2]; cnt++; } });
+      mid=cnt?mid/cnt:mn;
+      x.strokeStyle= ln.faint? 'rgba(92,104,117,0.45)' : col(Math.max(0,Math.min(1,(mid-mn)/rg)));
+      x.beginPath(); var started=false;
+      ln.pts.forEach(function(p){
+        if(!isFinite(p[2])){ started=false; return; }
+        var q=proj(p[0],p[1],p[2],cx,cy,s);
+        if(!started){ x.moveTo(q[0],q[1]); started=true; } else x.lineTo(q[0],q[1]); });
+      x.stroke(); });
+    document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
   }
   function plot(src,name){
-    var rpn=compile(src);
     var msg=document.getElementById('fMsg');
+    if(mode==='solid'){ draw(); return; }
+    var rpn=compile(src);
     if(!rpn){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
-    var f=makeF(rpn), probe=f(1,1);
-    if(probe===undefined){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
+    var f=makeF(rpn);
     curF=f; curName=name||src;
-       msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
+    msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
     if(cv.width<10||cv.height<10) fit();
     draw();
   }
-  var row=document.getElementById('presets'), inp=document.getElementById('fExpr');
+  var inp=document.getElementById('fExpr');
+  var modesRow=document.getElementById('modes'), preRow=document.getElementById('presets'), solRow=document.getElementById('solids');
+  function setMode(m){
+    mode=m;
+    modesRow.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.m===m); });
+    solRow.style.display= m==='solid'?'flex':'none';
+    preRow.style.display= m==='surface'?'flex':'none';
+    inp.disabled= m==='solid';
+    document.getElementById('fPlot').disabled= m==='solid';
+    draw();
+  }
+  ['curve','surface','solid'].forEach(function(m){
+    var b=document.createElement('button'); b.textContent=m; b.dataset.m=m;
+    b.onclick=function(){ setMode(m); };
+    modesRow.appendChild(b);
+  });
   Object.keys(PRESETS).forEach(function(kk){
     var b=document.createElement('button'); b.textContent=kk; b.dataset.k=kk;
     b.onclick=function(){ inp.value=PRESETS[kk];
-      row.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
+      preRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
       plot(PRESETS[kk],kk); };
-    row.appendChild(b); if(kk===curName) b.classList.add('on');
+    preRow.appendChild(b); if(kk===curName) b.classList.add('on');
+  });
+  ['sphere','torus','cone','pyramid','cube'].forEach(function(kk){
+    var b=document.createElement('button'); b.textContent=kk; b.dataset.k=kk;
+    b.onclick=function(){ solidName=kk;
+      solRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
+      document.getElementById('fMsg').textContent='';
+      draw(); };
+    solRow.appendChild(b); if(kk===solidName) b.classList.add('on');
   });
   document.getElementById('fPlot').onclick=function(){
-    row.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    preRow.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
     plot(inp.value.trim(),null); };
   var deb=null;
   inp.oninput=function(){ clearTimeout(deb); deb=setTimeout(function(){
-    row.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    preRow.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
     plot(inp.value.trim(),null); },450); };
   inp.value=PRESETS.ripple;
+  setMode('surface');
   plot(PRESETS.ripple,'ripple');
   var drag=false,lx=0,ly=0;
   cv.addEventListener('pointerdown',function(e){ drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
@@ -189,7 +283,7 @@
   document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
   document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
   document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
-    function tryFit(n){ var r=cv.getBoundingClientRect();
+  function tryFit(n){ var r=cv.getBoundingClientRect();
     if(r.width>10&&r.height>10){ fit(); }
     else if(n>0) setTimeout(function(){ tryFit(n-1); },120); }
   tryFit(25);
