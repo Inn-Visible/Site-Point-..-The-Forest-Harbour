@@ -84,6 +84,13 @@
     <div class="row"><input id="tV" inputmode="decimal">
       <select id="tU"><option>C</option><option>F</option><option>K</option></select>
     </div><div class="out" id="tOut"></div></div>
+
+  <div class="card"><h3>the cunculator <span>· arithmetic, held</span></h3>
+    <div class="row"><input id="cExpr" style="flex:1;width:auto" placeholder="tap or type .." autocomplete="off"></div>
+    <div class="out" id="cOut" style="font-size:16px">—</div>
+    <div id="cPad" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
+  </div>
+
 </main>
 <footer>
   the kit runs on gifts · keep the fire lit<br>
@@ -194,5 +201,66 @@
   addEventListener('offline',function(){ $('off').textContent='wifi dead \u00b7 the kit holds'; });
 })();
 </script>
+
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var pad=$('cPad'); if(!pad) return;
+  var KEYS=['C','\u232b','(',')','7','8','9','\u00f7','4','5','6','\u00d7','1','2','3','\u2212','0','.','%','+','='];
+  function norm(s){ return s.replace(/\u00f7/g,'/').replace(/\u00d7/g,'*').replace(/\u2212/g,'-'); }
+  function calc(raw){
+    var s=norm(raw); if(!s.trim()) return null;
+    var t=[], i=0;
+    while(i<s.length){ var c=s.charAt(i);
+      if(c===' '){ i++; continue; }
+      if(/[0-9.]/.test(c)){ var j=i; while(j<s.length&&/[0-9.]/.test(s.charAt(j))) j++;
+        var n=parseFloat(s.slice(i,j)); if(!isFinite(n)) return null; t.push(['n',n]); i=j; continue; }
+      if('+-*/()%'.indexOf(c)>-1){ t.push(['o',c]); i++; continue; }
+      return null; }
+    var out=[], st=[], want=true, prec={'+':1,'-':1,'*':2,'/':2};
+    for(var k=0;k<t.length;k++){ var tk=t[k];
+      if(tk[0]==='n'){ out.push(tk); want=false; continue; }
+      var op=tk[1];
+      if(op==='('){ st.push(op); want=true; continue; }
+      if(op===')'){ var found=false; while(st.length){ var p=st.pop(); if(p==='('){ found=true; break; } out.push(['o',p]); } if(!found) return null; want=false; continue; }
+      if(op==='%'){ if(want) return null; out.push(['o','%']); want=false; continue; }
+      if(want){ if(op==='-'){ out.push(['n',0]); } else if(op!=='+'){ return null; } }
+      while(st.length&&st[st.length-1]!=='('&&prec[st[st.length-1]]>=prec[op]){ out.push(['o',st.pop()]); }
+      st.push(op); want=true; }
+    if(want) return null;
+    while(st.length){ var q=st.pop(); if(q==='(') return null; out.push(['o',q]); }
+    var ev=[];
+    for(var m=0;m<out.length;m++){ var o=out[m];
+      if(o[0]==='n'){ ev.push(o[1]); continue; }
+      if(o[1]==='%'){ if(!ev.length) return null; ev.push(ev.pop()/100); continue; }
+      if(ev.length<2) return null;
+      var b=ev.pop(), a=ev.pop(), r;
+      switch(o[1]){ case '+': r=a+b; break; case '-': r=a-b; break; case '*': r=a*b; break; case '/': r=(b===0?NaN:a/b); break; default: return null; }
+      if(!isFinite(r)) return null;
+      ev.push(r); }
+    return ev.length===1?ev[0]:null;
+  }
+  function fmt(n){ if(n==null||!isFinite(n)) return '\u2014';
+    var a=Math.abs(n); if(a!==0&&(a<0.001||a>=100000)) return n.toExponential(6);
+    return String(Math.round(n*1000000)/1000000); }
+  function live(){ var v=$('cExpr').value, r=calc(v);
+    $('cOut').textContent = r==null ? (v.trim()?'\u2026':'\u2014') : '= '+fmt(r); }
+  $('cExpr').oninput=live;
+  KEYS.forEach(function(kk){
+    var b=document.createElement('button'); b.textContent=kk;
+    b.style.cssText='background:none;border:1px solid '+(kk==='='?'#d9a83a':kk==='C'?'#c8452c':'#223041')+';color:'+(kk==='='?'#d9a83a':kk==='C'?'#c8452c':'#93a1b0')+';font:14px ui-monospace,Consolas,monospace;padding:10px 0;cursor:pointer';
+    if(kk==='=') b.style.gridColumn='1 / -1';
+    b.onclick=function(){ var e=$('cExpr');
+      if(kk==='C') e.value='';
+      else if(kk==='\u232b') e.value=e.value.slice(0,-1);
+      else if(kk==='='){ var r=calc(e.value); if(r!=null) e.value=fmt(r); }
+      else e.value+=kk;
+      e.focus(); live(); };
+    pad.appendChild(b);
+  });
+  live();
+})();
+</script>
+  
 </body>
 </html>
