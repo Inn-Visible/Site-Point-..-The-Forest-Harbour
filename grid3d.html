@@ -220,7 +220,8 @@
         var q=proj(p[0],p[1],p[2],cx,cy,s);
         if(!started){ x.moveTo(q[0],q[1]); started=true; } else x.lineTo(q[0],q[1]); });
       x.stroke(); });
-    document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
+      document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
+    }catch(e){ document.getElementById('gInfo').textContent='painter error \u00b7 '+e.message; }
   }
   function plot(src,name){
     var msg=document.getElementById('fMsg');
