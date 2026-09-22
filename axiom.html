@@ -1174,9 +1174,10 @@ function lockdoor(){
     ('showDirectoryPicker' in window?'<button id="stDir" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">stone \u2193 folder</button>':'')+
     '<button id="stUp" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">restore \u2191</button>'+
     '<input id="stIn" type="file" accept=".json,application/json" style="display:none"></div>'+
-    '<div id="stMsg" style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em">the repo is the foundation\u2019s memory \u00b7 the stone is yours</div>';
+    '<div id="stMsg" style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em"></div>';
   hostEl.appendChild(row);
-  function msg(t){ var m=row.querySelector('#stMsg'); if(m) m.textContent=t; }
+  function say(t,col){ var m=row.querySelector('#stMsg'); if(m){ m.textContent=t; m.style.color=col||'#5c6875'; } }
+  say('the stone is awake \u00b7 '+(window.self!==window.top?'in the archive frame':'on the open page')+' \u00b7 every click answers here','#58a36a');
   function localNotes(){ try{ return JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){ return []; } }
   function getRooted(){
     return fetch('archive/notes.json').then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
@@ -1190,14 +1191,19 @@ function lockdoor(){
     return out; }); }
   function download(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
+  function openTab(ns){ var w=window.open('','_blank');
+    if(w){ w.document.write('<pre style="font-family:monospace">'+JSON.stringify(ns,null,1).replace(/</g,'&lt;')+'</pre>'); }
+    else say('popup blocked \u00b7 allow once, or use folder','#c8452c'); }
   function stamp(){ return new Date().toISOString().slice(0,10); }
-  row.querySelector('#stFile').onclick=function(){
+  row.querySelector('#stFile').onclick=function(){ say('gathering ..');
     gather().then(function(ns){
-      download('innvisible-archive-'+stamp()+'.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'}));
-      msg('stoned \u2193 '+ns.length+' notes \u00b7 one file, images inside'); }); };
+      say('stoned \u2193 '+ns.length+' notes \u00b7 check the downloads bar','#58a36a');
+      try{ download('innvisible-archive-'+stamp()+'.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'})); }
+      catch(e){ say('download blocked \u00b7 opened in a tab instead \u00b7 save it by hand','#c8452c'); openTab(ns); }
+    }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
   var stDir=row.querySelector('#stDir');
   if(stDir) stDir.onclick=function(){
-    var btn=this; btn.disabled=true;
+    var btn=this; btn.disabled=true; say('pick a folder ..');
     window.showDirectoryPicker({mode:'readwrite'}).then(function(dir){
       return gather().then(function(ns){
         return dir.getFileHandle('notes.json',{create:true}).then(function(fh){ return fh.createWritable(); })
@@ -1214,22 +1220,22 @@ function lockdoor(){
                 return d2.getFileHandle(n.id+'.'+ext,{create:true}).then(function(fh){ return fh.createWritable(); })
                   .then(function(w){ return w.write(arr); }).then(function(){ return w.close(); }); });
               },Promise.resolve()); }); }); });
-    }).then(function(){ msg('stoned \u2193 folder \u00b7 notes.json + img/'); })
-      .catch(function(e){ if(e&&e.name!=='AbortError') msg('the folder refused \u00b7 use file'); })
+    }).then(function(){ say('stoned \u2193 folder \u00b7 notes.json + img/ written','#58a36a'); })
+      .catch(function(e){ if(e&&e.name!=='AbortError') say('the folder refused \u00b7 use file \u00b7 '+e,'#c8452c'); else say('folder pick cancelled'); })
       .then(function(){ btn.disabled=false; });
   };
-  row.querySelector('#stUp').onclick=function(){ row.querySelector('#stIn').click(); };
+  row.querySelector('#stUp').onclick=function(){ say('pick a stone file ..'); row.querySelector('#stIn').click(); };
   row.querySelector('#stIn').onchange=function(){
-    var f=this.files&&this.files[0]; if(!f) return;
+    var f=this.files&&this.files[0]; if(!f){ say('no file picked'); return; }
     var r=new FileReader();
     r.onload=function(){
-      var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ msg('the stone would not open'); return; }
-      if(!inc||!inc.length){ msg('the stone is empty'); return; }
+      var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ say('the stone would not open \u00b7 not json','#c8452c'); return; }
+      if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
       var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
       var added=0;
       inc.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ n.local=true; L.unshift(n); added++; } });
       localStorage.setItem('arc.local',JSON.stringify(L));
-      msg('restored \u2191 '+added+' \u00b7 reloading ..');
+      say('restored \u2191 '+added+' new \u00b7 '+((inc||[]).length-added)+' already home \u00b7 reloading ..','#58a36a');
       setTimeout(function(){ location.reload(); },900);
     };
     r.readAsText(f);
