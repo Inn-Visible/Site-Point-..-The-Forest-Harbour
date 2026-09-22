@@ -2,7 +2,7 @@ var TILES='hive-tiles-v1', KIT='hive-kit-v1';
 
 self.addEventListener('install',function(e){
   e.waitUntil(caches.open(KIT).then(function(c){
-    return Promise.all(['./kit.html','./donations.html','./board.html'].map(function(u){
+      return Promise.all(['./kit.html','./parlor.html','./donations.html','./board.html'].map(function(u){
       return c.add(u).catch(function(){ return null; });
     }));
   }));
