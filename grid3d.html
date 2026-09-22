@@ -178,10 +178,15 @@
   }
   function buildLines(){
     var L=[], i, j;
-            if(mode==='solid') return solidLines(solidName).map(function(line){ return {pts: line.map(function(p){
-      var k=1;
-      if(curF){ var d=curF(p[0],p[1]); if(isFinite(d)) k=1+d/6; }
-      return [p[0]*k, p[1]*k, p[2]*k]; })}; });
+       if(mode==='solid'){
+      var sl=solidLines(solidName).map(function(line){ return {pts: line.map(function(p){
+        var k=1;
+        if(curF){ var d=curF(p[0],p[1]); if(isFinite(d)) k=1+d/6; }
+        return [p[0]*k, p[1]*k, p[2]*k]; })}; });
+      solidPts=[];
+      sl.forEach(function(ln){ ln.pts.forEach(function(p,i){ if(i%3===0) solidPts.push(p); }); });
+      return sl;
+    }
     if(mode==='curve'){
       L.push({faint:true, pts:[[-R,0,0],[R,0,0]]});
       L.push({faint:true, pts:[[0,0,-3],[0,0,4]]});
