@@ -206,12 +206,18 @@
    function draw(){
     x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
     try{
-    var lines=buildLines();
-    var s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
+      var lines=buildLines();
     var mn=1e9, mx=-1e9;
     lines.forEach(function(ln){ ln.pts.forEach(function(p){ if(isFinite(p[2])){ if(p[2]<mn)mn=p[2]; if(p[2]>mx)mx=p[2]; } }); });
     if(mn>mx){ mn=0; mx=0; }
     var rg=(mx-mn)||1;
+    var zext=Math.max(Math.abs(mn),Math.abs(mx));
+    var V=zext*Math.abs(Math.cos(pitch))+R*Math.abs(Math.sin(pitch))+0.5;
+    var s=Math.min(cv.width/(2*R*1.5), cv.height/(2*V))*zoom, cx=cv.width/2, cy=cv.height/2;
+    lastS=s;
+    var g=[];
+    for(var gi=-R;gi<=R;gi+=2){ g.push({faint:true,pts:[[gi,-R,0],[gi,R,0]]}); g.push({faint:true,pts:[[-R,gi,0],[R,gi,0]]}); }
+    lines=g.concat(lines);
     x.lineWidth=1;
     lines.forEach(function(ln){
       var mid=0, cnt=0;
