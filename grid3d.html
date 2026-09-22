@@ -225,12 +225,12 @@
   }
   function plot(src,name){
     var msg=document.getElementById('fMsg');
-    if(mode==='solid'){ draw(); return; }
     var rpn=compile(src);
     if(!rpn){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
     var f=makeF(rpn);
     curF=f; curName=name||src;
-    msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
+    msg.style.color='#58a36a';
+    msg.textContent= mode==='solid'? 'carving \u00b7 cage \u00d7 (1 + f/6)' : 'plotting \u00b7 z = '+(name||src);
     if(cv.width<10||cv.height<10) fit();
     draw();
   }
