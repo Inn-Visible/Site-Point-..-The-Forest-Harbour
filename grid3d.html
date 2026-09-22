@@ -13,11 +13,13 @@
   main{max-width:900px;margin:0 auto;padding:20px 14px}
   .hook{font-family:var(--serif);font-style:italic;font-size:16px;text-align:center}
   .man{margin-top:8px;color:var(--dim);font-size:11px;text-align:center;letter-spacing:.06em}
-  .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0 10px}
+  .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0 8px;align-items:center}
   button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:6px 10px;cursor:pointer}
   button.on{border-color:var(--gold);color:var(--gold)}
+  input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:8px 10px;width:min(460px,86vw)}
   #g3{width:100%;height:440px;border:1px solid var(--line);background:var(--bg);touch-action:none;cursor:grab;display:block}
   .info{margin-top:8px;text-align:center;font-size:10px;color:var(--dim);letter-spacing:.12em}
+  .msg{font-size:10px;color:#58a36a;letter-spacing:.1em}
 </style>
 </head>
 <body>
@@ -30,7 +32,9 @@
 <header><div class="brand">THE GRID</div><a class="back" href="axiom.html">axiom ↩</a></header>
 <main>
   <p class="hook">the third dimension, rollable.</p>
-  <p class="man">z = f(x, y) in wireframe · drag to roll · wheel or ± to zoom · custom expressions next course</p>
+  <p class="man">type any surface · x, y, r = √(x²+y²) · sin cos tan exp ln log sqrt abs ^ ( ) π e · radians</p>
+  <div class="row"><input id="fExpr" placeholder="z = f(x, y) · e.g. sin(r*1.6)*exp(-r/4)*3" autocomplete="off"></div>
+  <div class="row"><button id="fPlot" class="on">plot it</button><span class="msg" id="fMsg"></span></div>
   <div class="row" id="presets"></div>
   <div class="row"><button id="zin">+</button><button id="zout">−</button><button id="home">⌂ view</button></div>
   <canvas id="g3"></canvas>
@@ -38,54 +42,141 @@
 </main>
 <script>
 (function(){
-  var F={
-    wave:function(x,y){ return Math.sin(x)*Math.cos(y); },
-    saddle:function(x,y){ return (x*x-y*y)/6; },
-    ripple:function(x,y){ var r=Math.sqrt(x*x+y*y); return Math.sin(r*1.6)*Math.exp(-r/4)*3; },
-    gauss:function(x,y){ return 3*Math.exp(-(x*x+y*y)/8); },
-    plane:function(x,y){ return (x+y)/4; }
-  };
-  var cur='ripple', yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
+  var NAMES=['asin','acos','atan','sqrt','sin','cos','tan','exp','ln','log','abs'];
+  var PREC={'+':1,'-':1,'*':2,'/':2,'^':3,'u-':4};
+  var RASSOC={'^':1,'u-':1};
+  function tokenize(s){
+    var t=[],i=0;
+    while(i<s.length){ var c=s.charAt(i);
+      if(/\s/.test(c)){ i++; continue; }
+      if(/[0-9.]/.test(c)){ var j=i; while(j<s.length&&/[0-9.]/.test(s.charAt(j)))j++;
+        var n=parseFloat(s.slice(i,j)); if(!isFinite(n)) return null; t.push(['n',n]); i=j; continue; }
+      if(/[a-zπ]/i.test(c)){
+        if(c==='π'){ t.push(['n',Math.PI]); i++; continue; }
+        var k=i; while(k<s.length&&/[a-z]/i.test(s.charAt(k)))k++;
+        var w=s.slice(i,k).toLowerCase();
+        if(w==='x'){ t.push(['v',0]); i=k; continue; }
+        if(w==='y'){ t.push(['v',1]); i=k; continue; }
+        if(w==='r'){ t.push(['v',2]); i=k; continue; }
+        if(w==='e'){ t.push(['n',Math.E]); i=k; continue; }
+        if(w==='pi'){ t.push(['n',Math.PI]); i=k; continue; }
+        if(NAMES.indexOf(w)>-1){ t.push(['f',w]); i=k; continue; }
+        return null; }
+      if('+-*/^()'.indexOf(c)>-1){ t.push(['o',c]); i++; continue; }
+      return null; }
+    return t;
+  }
+  function compile(src){
+    var t=tokenize(src); if(!t||!t.length) return null;
+    var out=[], st=[], want=true;
+    for(var k=0;k<t.length;k++){ var tk=t[k];
+      if(tk[0]==='n'||tk[0]==='v'){ out.push(tk); want=false; continue; }
+      if(tk[0]==='f'){ st.push(tk); want=true; continue; }
+      var op=tk[1];
+      if(op==='('){ st.push(op); want=true; continue; }
+      if(op===')'){ var found=false;
+        while(st.length){ var p=st.pop(); if(p==='('){ found=true; break; } out.push(p); }
+        if(!found) return null;
+        if(st.length&&Array.isArray(st[st.length-1])&&st[st.length-1][0]==='f') out.push(st.pop());
+        want=false; continue; }
+      if(want){ if(op==='-'){ st.push('u-'); want=true; continue; } if(op==='+'){ continue; } return null; }
+      while(st.length){ var top=st[st.length-1];
+        if(top==='('||Array.isArray(top)) break;
+        var tp=PREC[top]||0, cp=PREC[op]||0;
+        if(RASSOC[op]? tp>cp : tp>=cp){ out.push(st.pop()); } else break; }
+      st.push(op); want=true; }
+    if(want) return null;
+    while(st.length){ var q=st.pop(); if(q==='(') return null; out.push(q); }
+    return out;
+  }
+  function applyF(w,a){
+    switch(w){ case 'sin': return Math.sin(a); case 'cos': return Math.cos(a); case 'tan': return Math.tan(a);
+      case 'asin': return Math.asin(a); case 'acos': return Math.acos(a); case 'atan': return Math.atan(a);
+      case 'exp': return Math.exp(a); case 'ln': return Math.log(a); case 'log': return Math.log(a)/Math.LN10;
+      case 'sqrt': return Math.sqrt(a); case 'abs': return Math.abs(a); }
+    return NaN;
+  }
+  function makeF(rpn){
+    return function(x,y){
+      var r=Math.sqrt(x*x+y*y), ev=[];
+      for(var i=0;i<rpn.length;i++){ var o=rpn[i];
+        if(o[0]==='n'){ ev.push(o[1]); continue; }
+        if(o[0]==='v'){ ev.push(o[1]===0?x:o[1]===1?y:r); continue; }
+        if(o[0]==='f'){ if(!ev.length) return NaN; ev.push(applyF(o[1],ev.pop())); continue; }
+        if(o[1]==='u-'){ if(!ev.length) return NaN; ev.push(-ev.pop()); continue; }
+        if(ev.length<2) return NaN;
+        var b=ev.pop(), a=ev.pop(), v;
+        switch(o[1]){ case '+': v=a+b; break; case '-': v=a-b; break; case '*': v=a*b; break;
+          case '/': v=(b===0?NaN:a/b); break; case '^': v=Math.pow(a,b); break; default: return NaN; }
+        ev.push(v); }
+      return ev.length===1?ev[0]:NaN;
+    };
+  }
+  var PRESETS={wave:'sin(x)*cos(y)', saddle:'(x^2-y^2)/6', ripple:'sin(r*1.6)*exp(-r/4)*3',
+    gauss:'3*exp(-(x^2+y^2)/8)', plane:'(x+y)/4'};
+  var curF=null, curName='ripple', yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
   var cv=document.getElementById('g3'), x=cv.getContext('2d');
   function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; draw(); }
   addEventListener('resize',fit);
   function proj(px,py,pz,cx,cy,s){
     var x1=px*Math.cos(yaw)-py*Math.sin(yaw), y1=px*Math.sin(yaw)+py*Math.cos(yaw), z1=pz;
     var up=z1*Math.cos(pitch)-y1*Math.sin(pitch);
-    return [cx+x1*s, cy-up*s, y1*Math.sin(pitch)+z1*Math.cos(pitch)];
+    return [cx+x1*s, cy-up*s];
   }
-  function col(t){ var r=Math.round(63+t*154), g=Math.round(127+t*41), b=Math.round(193-t*135);
-    return 'rgba('+r+','+g+','+b+',0.85)'; }
+  function col(t){ return 'rgba('+Math.round(63+t*154)+','+Math.round(127+t*41)+','+Math.round(193-t*135)+',0.85)'; }
   function draw(){
     x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
-    var f=F[cur], s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
-    var zs=[]; for(var i=0;i<=N;i++) for(var j=0;j<=N;j++) zs.push(f(-R+2*R*i/N,-R+2*R*j/N));
+    if(!curF) return;
+    var s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
+    var zs=[], i, j;
+    for(i=0;i<=N;i++) for(j=0;j<=N;j++){ var z=curF(-R+2*R*i/N,-R+2*R*j/N); zs.push(isFinite(z)?z:0); }
     var mn=Math.min.apply(null,zs), mx=Math.max.apply(null,zs), rg=(mx-mn)||1;
     x.lineWidth=1;
     for(var pass=0;pass<2;pass++){
       for(var a=0;a<=N;a++){
-        var t0=-R+2*R*a/N; x.beginPath(); var mid=null;
+        var t0=-R+2*R*a/N; x.beginPath(); var mid=0, started=false;
         for(var b2=0;b2<=N;b2++){
           var px= pass===0? -R+2*R*b2/N : t0;
           var py= pass===0? t0 : -R+2*R*b2/N;
-          var pz=f(px,py); var p=proj(px,py,pz,cx,cy,s);
-          b2? x.lineTo(p[0],p[1]) : x.moveTo(p[0],p[1]);
+          var pz=curF(px,py);
+          if(!isFinite(pz)){ started=false; continue; }
+          var p=proj(px,py,pz,cx,cy,s);
+          if(!started){ x.moveTo(p[0],p[1]); started=true; } else x.lineTo(p[0],p[1]);
           if(b2===(N>>1)) mid=pz;
         }
-        x.strokeStyle=col(Math.max(0,Math.min(1,((mid||0)-mn)/rg)));
+        x.strokeStyle=col(Math.max(0,Math.min(1,(mid-mn)/rg)));
         x.stroke();
       }
     }
-    document.getElementById('gInfo').textContent='z = '+cur+'(x, y) \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(1)+' .. '+mx.toFixed(1);
+    document.getElementById('gInfo').textContent='z = '+curName+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
   }
-  var row=document.getElementById('presets');
-  Object.keys(F).forEach(function(k){
-    var b=document.createElement('button'); b.textContent=k; b.dataset.k=k;
-    b.onclick=function(){ cur=k;
-      row.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===k); });
-      draw(); };
-    row.appendChild(b); if(k===cur) b.classList.add('on');
+  function plot(src,name){
+    var rpn=compile(src);
+    var msg=document.getElementById('fMsg');
+    if(!rpn){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
+    var f=makeF(rpn), probe=f(1,1);
+    if(probe===undefined){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
+    curF=f; curName=name||src;
+    msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src);
+    draw();
+  }
+  var row=document.getElementById('presets'), inp=document.getElementById('fExpr');
+  Object.keys(PRESETS).forEach(function(kk){
+    var b=document.createElement('button'); b.textContent=kk; b.dataset.k=kk;
+    b.onclick=function(){ inp.value=PRESETS[kk];
+      row.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
+      plot(PRESETS[kk],kk); };
+    row.appendChild(b); if(kk===curName) b.classList.add('on');
   });
+  document.getElementById('fPlot').onclick=function(){
+    row.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    plot(inp.value.trim(),null); };
+  var deb=null;
+  inp.oninput=function(){ clearTimeout(deb); deb=setTimeout(function(){
+    row.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    plot(inp.value.trim(),null); },450); };
+  inp.value=PRESETS.ripple;
+  plot(PRESETS.ripple,'ripple');
   var drag=false,lx=0,ly=0;
   cv.addEventListener('pointerdown',function(e){ drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
   addEventListener('pointermove',function(e){ if(!drag) return;
