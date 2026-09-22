@@ -359,7 +359,18 @@
   cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.4,Math.min(3,zoom*(e.deltaY<0?1.1:0.9))); draw(); },{passive:false});
   document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
   document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
-  document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
+   document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
+  document.getElementById('rst').onclick=function(){
+    yaw=0.7; pitch=1.0; zoom=1; mk.x=1.5; mk.y=1.5;
+    if(mode==='curve'){ inp.value='sin(x^2/2)'; plot(inp.value,null); }
+    else if(mode==='surface'){ inp.value=PRESETS.ripple;
+      preRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k==='ripple'); });
+      plot(PRESETS.ripple,'ripple'); }
+    else { solidName='sphere'; inp.value='0';
+      solRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k==='sphere'); });
+      plot('0',null); }
+    draw();
+  };
   function tryFit(n){ var r=cv.getBoundingClientRect();
     if(r.width>10&&r.height>10){ fit(); }
     else if(n>0) setTimeout(function(){ tryFit(n-1); },120); }
