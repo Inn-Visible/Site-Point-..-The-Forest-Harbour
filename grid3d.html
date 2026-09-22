@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#0a0d12">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the grid | Inn.Visible</title>
+<style>
+  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a;--mono:ui-monospace,Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0} body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .brand{font-size:14px;letter-spacing:.3em} .back{color:var(--dim);font-size:11px;text-decoration:none}
+  main{max-width:900px;margin:0 auto;padding:20px 14px}
+  .hook{font-family:var(--serif);font-style:italic;font-size:16px;text-align:center}
+  .man{margin-top:8px;color:var(--dim);font-size:11px;text-align:center;letter-spacing:.06em}
+  .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0 10px}
+  button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:6px 10px;cursor:pointer}
+  button.on{border-color:var(--gold);color:var(--gold)}
+  #g3{width:100%;height:440px;border:1px solid var(--line);background:var(--bg);touch-action:none;cursor:grab;display:block}
+  .info{margin-top:8px;text-align:center;font-size:10px;color:var(--dim);letter-spacing:.12em}
+</style>
+</head>
+<body>
+<script>
+(function(){ var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a=localStorage.getItem(KEY);
+  var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); } })();
+</script>
+<header><div class="brand">THE GRID</div><a class="back" href="axiom.html">axiom ↩</a></header>
+<main>
+  <p class="hook">the third dimension, rollable.</p>
+  <p class="man">z = f(x, y) in wireframe · drag to roll · wheel or ± to zoom · custom expressions next course</p>
+  <div class="row" id="presets"></div>
+  <div class="row"><button id="zin">+</button><button id="zout">−</button><button id="home">⌂ view</button></div>
+  <canvas id="g3"></canvas>
+  <div class="info" id="gInfo"></div>
+</main>
+<script>
+(function(){
+  var F={
+    wave:function(x,y){ return Math.sin(x)*Math.cos(y); },
+    saddle:function(x,y){ return (x*x-y*y)/6; },
+    ripple:function(x,y){ var r=Math.sqrt(x*x+y*y); return Math.sin(r*1.6)*Math.exp(-r/4)*3; },
+    gauss:function(x,y){ return 3*Math.exp(-(x*x+y*y)/8); },
+    plane:function(x,y){ return (x+y)/4; }
+  };
+  var cur='ripple', yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
+  var cv=document.getElementById('g3'), x=cv.getContext('2d');
+  function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; draw(); }
+  addEventListener('resize',fit);
+  function proj(px,py,pz,cx,cy,s){
+    var x1=px*Math.cos(yaw)-py*Math.sin(yaw), y1=px*Math.sin(yaw)+py*Math.cos(yaw), z1=pz;
+    var up=z1*Math.cos(pitch)-y1*Math.sin(pitch);
+    return [cx+x1*s, cy-up*s, y1*Math.sin(pitch)+z1*Math.cos(pitch)];
+  }
+  function col(t){ var r=Math.round(63+t*154), g=Math.round(127+t*41), b=Math.round(193-t*135);
+    return 'rgba('+r+','+g+','+b+',0.85)'; }
+  function draw(){
+    x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
+    var f=F[cur], s=(Math.min(cv.width,cv.height)/16)*zoom, cx=cv.width/2, cy=cv.height/2;
+    var zs=[]; for(var i=0;i<=N;i++) for(var j=0;j<=N;j++) zs.push(f(-R+2*R*i/N,-R+2*R*j/N));
+    var mn=Math.min.apply(null,zs), mx=Math.max.apply(null,zs), rg=(mx-mn)||1;
+    x.lineWidth=1;
+    for(var pass=0;pass<2;pass++){
+      for(var a=0;a<=N;a++){
+        var t0=-R+2*R*a/N; x.beginPath(); var mid=null;
+        for(var b2=0;b2<=N;b2++){
+          var px= pass===0? -R+2*R*b2/N : t0;
+          var py= pass===0? t0 : -R+2*R*b2/N;
+          var pz=f(px,py); var p=proj(px,py,pz,cx,cy,s);
+          b2? x.lineTo(p[0],p[1]) : x.moveTo(p[0],p[1]);
+          if(b2===(N>>1)) mid=pz;
+        }
+        x.strokeStyle=col(Math.max(0,Math.min(1,((mid||0)-mn)/rg)));
+        x.stroke();
+      }
+    }
+    document.getElementById('gInfo').textContent='z = '+cur+'(x, y) \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(1)+' .. '+mx.toFixed(1);
+  }
+  var row=document.getElementById('presets');
+  Object.keys(F).forEach(function(k){
+    var b=document.createElement('button'); b.textContent=k; b.dataset.k=k;
+    b.onclick=function(){ cur=k;
+      row.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===k); });
+      draw(); };
+    row.appendChild(b); if(k===cur) b.classList.add('on');
+  });
+  var drag=false,lx=0,ly=0;
+  cv.addEventListener('pointerdown',function(e){ drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
+  addEventListener('pointermove',function(e){ if(!drag) return;
+    yaw+=(e.clientX-lx)*0.01; pitch=Math.max(0.15,Math.min(1.5,pitch+(e.clientY-ly)*0.01));
+    lx=e.clientX; ly=e.clientY; draw(); });
+  addEventListener('pointerup',function(){ drag=false; cv.style.cursor='grab'; });
+  cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.4,Math.min(3,zoom*(e.deltaY<0?1.1:0.9))); draw(); },{passive:false});
+  document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
+  document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
+  document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
+  setTimeout(fit,80);
+})();
+</script>
+</body>
+</html>
