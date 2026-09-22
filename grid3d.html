@@ -320,7 +320,7 @@
     if(!drag) return;
     yaw+=(e.clientX-lx)*0.01; pitch=Math.max(0.15,Math.min(1.5,pitch+(e.clientY-ly)*0.01));
     lx=e.clientX; ly=e.clientY; draw(); });
-  addEventListener('pointerup',function(){ drag=false; cv.style.cursor='grab'; });
+   addEventListener('pointerup',function(){ drag=false; dragMk=false; cv.style.cursor='grab'; });
   cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.4,Math.min(3,zoom*(e.deltaY<0?1.1:0.9))); draw(); },{passive:false});
   document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
   document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
