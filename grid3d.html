@@ -99,7 +99,8 @@
   function makeF(rpn){
     return function(x,y){
       var r=Math.sqrt(x*x+y*y), ev=[];
-      for(var i=0;i<rpn.length;i++){ var o=rpn[i];
+           for(var i=0;i<rpn.length;i++){ var o=rpn[i];
+        if(typeof o==='string') o=['o',o];
         if(o[0]==='n'){ ev.push(o[1]); continue; }
         if(o[0]==='v'){ ev.push(o[1]===0?x:o[1]===1?y:r); continue; }
         if(o[0]==='f'){ if(!ev.length) return NaN; ev.push(applyF(o[1],ev.pop())); continue; }
