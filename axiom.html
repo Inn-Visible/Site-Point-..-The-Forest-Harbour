@@ -446,7 +446,7 @@ function lockdoor(){
       document.getElementById('pg_wipe').onclick=wipeBench;
     }
        else if(curF==='kit'||curF==='grid'){
-      body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html')+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
+           body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html?v='+Date.now())+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
     }
     else { var d=document.createElement('div'); d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
       d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
