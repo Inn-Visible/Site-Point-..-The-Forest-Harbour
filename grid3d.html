@@ -119,7 +119,8 @@
   var PRESETS={wave:'sin(x)*cos(y)', saddle:'(x^2-y^2)/6', ripple:'sin(r*1.6)*exp(-r/4)*3',
     gauss:'3*exp(-(x^2+y^2)/8)', plane:'(x+y)/4'};
   var mode='surface', curF=null, curName='ripple', solidName='sphere';
-  var yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
+   var yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
+  var mk={x:1.5,y:1.5,sx:null,sy:null}, dragMk=false, pmx=0, pmy=0, lastS=20;
   var cv=document.getElementById('g3'), x=cv.getContext('2d');
   function ring(cx0,cy0,cz0,rad,ax,steps){
     var pts=[];
