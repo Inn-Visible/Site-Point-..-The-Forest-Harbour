@@ -169,7 +169,7 @@
   }
   function buildLines(){
     var L=[], i, j;
-    if(mode==='solid') return solidLines(solidName);
+        if(mode==='solid') return solidLines(solidName).map(function(p){ return {pts:p}; });
     if(mode==='curve'){
       L.push({faint:true, pts:[[-R,0,0],[R,0,0]]});
       L.push({faint:true, pts:[[0,0,-3],[0,0,4]]});
