@@ -230,7 +230,19 @@
         var q=proj(p[0],p[1],p[2],cx,cy,s);
         if(!started){ x.moveTo(q[0],q[1]); started=true; } else x.lineTo(q[0],q[1]); });
       x.stroke(); });
-      document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2);
+         if(mode!=='solid'&&curF){
+      var myv= mode==='curve'?0:mk.y, mz=curF(mk.x,myv);
+      if(isFinite(mz)){
+        var q=proj(mk.x,myv,mz,cx,cy,s);
+        mk.sx=q[0]; mk.sy=q[1];
+        x.strokeStyle='rgba(217,168,58,.5)'; x.beginPath();
+        x.moveTo(q[0]-9,q[1]); x.lineTo(q[0]+9,q[1]); x.moveTo(q[0],q[1]-9); x.lineTo(q[0],q[1]+9); x.stroke();
+        x.fillStyle='#d9a83a'; x.beginPath(); x.arc(q[0],q[1],4,0,7); x.fill();
+        x.font='10px ui-monospace,Consolas,monospace';
+        x.fillText(mode==='curve'? '('+mk.x.toFixed(2)+', '+mz.toFixed(2)+')' : '('+mk.x.toFixed(2)+', '+mk.y.toFixed(2)+', '+mz.toFixed(2)+')', q[0]+10, q[1]-10);
+      } else mk.sx=null;
+    } else mk.sx=null;
+    document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2)+' \u00b7 drag the gold dot'; 
     }catch(e){ document.getElementById('gInfo').textContent='painter error \u00b7 '+e.message; }
   }
   function plot(src,name){
