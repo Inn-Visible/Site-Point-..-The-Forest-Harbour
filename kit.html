@@ -187,7 +187,7 @@
   all();
   /* offline coat */
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js',{scope:'./kit.html'}).then(function(){
+   navigator.serviceWorker.register('sw.js').then(function(){
       $('off').textContent='cached \u00b7 opens with no wifi \u00b7 no telemetry';
     }).catch(function(){ $('off').textContent='online this session \u00b7 caching refused'; });
   } else $('off').textContent='online this session';
