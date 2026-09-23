@@ -298,7 +298,7 @@ function lockdoor(){
 })();
 </script>
 
-<!-- the sky, tucked under the deck -->
+<!-- the sky, tucked under the deck · rain, cold, and counsel -->
 <script>
 (function(){
   var HOME={lat:43.54,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
@@ -315,8 +315,10 @@ function lockdoor(){
   elL.style.color='#93a1b0';
   var elW=document.createElement('div'); elW.style.cssText='margin-top:8px;color:#93a1b0';
   var elB=document.createElement('div'); elB.style.cssText='margin-top:8px';
+  var elF=document.createElement('div'); elF.style.cssText='margin-top:8px;color:#93a1b0';
+  var elA=document.createElement('div'); elA.style.cssText='margin-top:6px;font-size:10px;letter-spacing:.16em;display:none';
   el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
-  el.appendChild(elW); el.appendChild(elB);
+  el.appendChild(elW); el.appendChild(elB); el.appendChild(elF); el.appendChild(elA);
   var od=document.getElementById('obsdeck');
   if(od&&od.parentNode) od.parentNode.insertBefore(el,od.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(el,f); }
@@ -347,12 +349,25 @@ function lockdoor(){
     var hrs=(j.hourly&&j.hourly.precipitation_probability)?j.hourly.precipitation_probability.slice(new Date().getHours(),new Date().getHours()+12):[];
     elB.innerHTML='<span style="color:#5c6875">next 12h rain </span>'+hrs.map(function(p){ p=p||0;
       return '<i style="display:inline-block;width:7px;margin:0 1px;background:rgba(63,127,193,'+(0.15+p/140).toFixed(2)+');height:'+(3+Math.round(p*0.22))+'px;vertical-align:bottom"></i>'; }).join('');
+    var h=j.hourly||{}, nh=new Date().getHours();
+    function sl(a){ return (a||[]).slice(nh,nh+12); }
+    function mn(a){ return a.length?Math.min.apply(null,a):null; }
+    function mx(a){ return a.length?Math.max.apply(null,a):null; }
+    function av(a){ return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null; }
+    var ts=sl(h.temperature_2m), fs=sl(h.apparent_temperature), ws=sl(h.wind_speed_10m), cs=sl(h.cloud_cover);
+    var lo=mn(ts), flo=mn(fs), whi=mx(ws), cav=av(cs);
+    elF.innerHTML=(lo!=null||flo!=null||whi!=null||cav!=null)?('next 12h \u00b7 low '+(lo!=null?'<b style="color:#e8e4d8">'+Math.round(lo)+'\u00b0</b>':'\u2014')+' \u00b7 feels '+(flo!=null?'<b style="color:'+(flo<=0?'#c8452c':'#e8e4d8')+'">'+Math.round(flo)+'\u00b0</b>':'\u2014')+' \u00b7 wind to '+(whi!=null?Math.round(whi):'\u2014')+' \u00b7 cloud '+(cav!=null?cav+'%':'\u2014')):'';
+    var adv='';
+    if(flo!=null&&flo<=-10) adv='\u26a0 the cold bites through \u00b7 layer up, keeper';
+    else if(flo!=null&&flo<=0) adv='\u26a0 freezing feels \u00b7 frost takes what it touches';
+    else if(lo!=null&&lo<=2) adv='near frost \u00b7 the ground remembers winter';
+    elA.textContent=adv; elA.style.color=(flo!=null&&flo<=0)?'#c8452c':'#d9a83a'; elA.style.display=adv?'block':'none';
   }
   var c0=localStorage.getItem('hive_wx_full');
   if(c0){ try{ paint(JSON.parse(c0),true); }catch(e){} }
   function fetchW(){
     try{
-      fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=temperature_2m,cloud_cover,wind_speed_10m,weather_code&hourly=precipitation_probability&forecast_days=1&timezone=auto')
+      fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=temperature_2m,cloud_cover,wind_speed_10m,weather_code&hourly=precipitation_probability,temperature_2m,apparent_temperature,wind_speed_10m,cloud_cover&forecast_days=1&timezone=auto')
       .then(function(r){ return r.json(); }).then(function(j){
         try{ localStorage.setItem('hive_wx_full',JSON.stringify(j)); localStorage.setItem('hive_wx_cc',String(j.current.cloud_cover)); }catch(e){}
         paint(j,false);
