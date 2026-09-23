@@ -364,7 +364,8 @@ function lockdoor(){
   }
   function paint(j,stale){
     var c=j.current;
-       elW.textContent=Math.round(c.temperature_2m)+'\u00b0 \u00b7 wind '+Math.round(c.wind_speed_10m)+' \u00b7 cloud '+c.cloud_cover+'% \u00b7 humid '+(c.relative_humidity_2m!=null?Math.round(c.relative_humidity_2m)+'%':'\u2014')+' \u00b7 '+desc(c.weather_code)+(stale?' \u00b7 last light':'');
+         var tArr=trendArrow('hive_wx_tlast',c.temperature_2m,0.3), hArr=trendArrow('hive_wx_hlast',c.relative_humidity_2m,2);
+    elW.innerHTML='<span style="font-size:15px;color:#e8e4d8">'+wicon(c.weather_code,watch(new Date()))+'</span> <b style="color:#e8e4d8;font-size:13px">'+Math.round(c.temperature_2m)+'\u00b0 '+tArr+'</b> \u00b7 wind '+Math.round(c.wind_speed_10m)+' \u00b7 cloud '+c.cloud_cover+'% \u00b7 humid '+(c.relative_humidity_2m!=null?Math.round(c.relative_humidity_2m)+'% '+hArr:'\u2014')+' \u00b7 '+desc(c.weather_code)+(stale?' \u00b7 last light':'');
     var hrs=(j.hourly&&j.hourly.precipitation_probability)?j.hourly.precipitation_probability.slice(new Date().getHours(),new Date().getHours()+12):[];
     elB.innerHTML='<span style="color:#5c6875">next 12h rain </span>'+hrs.map(function(p){ p=p||0;
       return '<i style="display:inline-block;width:7px;margin:0 1px;background:rgba(63,127,193,'+(0.15+p/140).toFixed(2)+');height:'+(3+Math.round(p*0.22))+'px;vertical-align:bottom"></i>'; }).join('');
