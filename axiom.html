@@ -319,7 +319,7 @@ function lockdoor(){
   var elF=document.createElement('div'); elF.style.cssText='margin-top:8px;color:#93a1b0';
   var elA=document.createElement('div'); elA.style.cssText='margin-top:6px;font-size:10px;letter-spacing:.16em;display:none';
   el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
-  el.appendChild(elW); el.appendChild(elB); el.appendChild(elF); el.appendChild(elA);
+   el.appendChild(elW); el.appendChild(elH); el.appendChild(elB); el.appendChild(elF); el.appendChild(elA);
   var od=document.getElementById('obsdeck');
   if(od&&od.parentNode) od.parentNode.insertBefore(el,od.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(el,f); }
