@@ -341,7 +341,26 @@ function lockdoor(){
     if(c<=77) return 'snow over the shore';
     if(c<=82) return 'squalls off the bay';
     if(c<=94) return 'the lake breathes hard';
-    return 'the lake growls';
+     return 'the lake growls';
+  }
+  function wicon(code,wt){
+    if(code===0) return wt==='night'?'\u263e':'\u2600';
+    if(code<=3) return '\u2601';
+    if(code===45||code===48) return '\u224b';
+    if(code<=67) return '\u2602';
+    if(code<=77) return '\u2744';
+    if(code<=82) return '\u2602';
+    if(code<=94) return '\u2601';
+    return '\u26a1';
+  }
+  function trendArrow(key,val,eps){
+    if(val==null) return '';
+    var last=+localStorage.getItem(key)||0;
+    try{ localStorage.setItem(key,String(val)); }catch(e){}
+    if(!last) return '';
+    if(val-last>eps) return '\u2191';
+    if(last-val>eps) return '\u2193';
+    return '\u2192';
   }
   function paint(j,stale){
     var c=j.current;
