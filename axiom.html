@@ -1296,7 +1296,8 @@ function lockdoor(){
   function openTab(ns){ var w=window.open('','_blank');
     if(w){ w.document.write('<pre style="font-family:monospace">'+JSON.stringify(ns,null,1).replace(/</g,'&lt;')+'</pre>'); }
     else say('popup blocked \u00b7 allow once, or use folder','#c8452c'); }
-  function stamp(){ return new Date().toISOString().slice(0,10); }
+   function stamp(){ return new Date().toISOString().slice(0,10); }
+  window.hiveStone=function(){ return gather().then(function(ns){ download('innvisible-archive-'+stamp()+'.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'})); return ns.length; }); };
   row.querySelector('#stFile').onclick=function(){ say('gathering ..');
     gather().then(function(ns){
       say('stoned \u2193 '+ns.length+' notes \u00b7 check the downloads bar','#58a36a');
