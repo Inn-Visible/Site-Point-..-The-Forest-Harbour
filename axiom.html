@@ -1328,7 +1328,19 @@ function lockdoor(){
       .catch(function(e){ if(e&&e.name!=='AbortError') say('the folder refused \u00b7 use file \u00b7 '+e,'#c8452c'); else say('folder pick cancelled'); })
       .then(function(){ btn.disabled=false; });
   };
-  row.querySelector('#stUp').onclick=function(){ say('pick a stone file ..'); row.querySelector('#stIn').click(); };
+    row.querySelector('#stUp').onclick=function(){ say('pick a stone file ..'); row.querySelector('#stIn').click(); };
+  row.querySelector('#stScorch').onclick=function(){
+    if(!confirm('scorch the glass? every leaf, note, mark and key on THIS browser burns. stones already in your downloads survive. this cannot be undone.')) return;
+    say('scorching ..');
+    try{
+      var keys=[], i2;
+      for(i2=0;i2<localStorage.length;i2++){ var k=localStorage.key(i2); if(/^hive_|^arc\./.test(k)) keys.push(k); }
+      keys.forEach(function(k){ localStorage.removeItem(k); });
+      sessionStorage.clear();
+    }catch(e){}
+    say('the glass is ash \u00b7 reload for a bare house','#c8452c');
+    setTimeout(function(){ location.reload(); },1200);
+  };
   row.querySelector('#stIn').onchange=function(){
     var f=this.files&&this.files[0]; if(!f){ say('no file picked'); return; }
     var r=new FileReader();
