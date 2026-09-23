@@ -86,9 +86,12 @@
   if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
 })();
 function lockdoor(){
-  localStorage.removeItem('hive_access');
-  sessionStorage.removeItem('hive_session');
-  location.href='index.html?gate';
+  try{ if(window.hiveStone){ window.hiveStone(); } }catch(e){}
+  setTimeout(function(){
+    localStorage.removeItem('hive_access');
+    sessionStorage.removeItem('hive_session');
+    location.href='index.html?gate';
+  },1400);
 }
 </script>
 
