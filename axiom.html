@@ -355,13 +355,33 @@ function lockdoor(){
     function mx(a){ return a.length?Math.max.apply(null,a):null; }
     function av(a){ return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null; }
     var ts=sl(h.temperature_2m), fs=sl(h.apparent_temperature), ws=sl(h.wind_speed_10m), cs=sl(h.cloud_cover);
-    var lo=mn(ts), flo=mn(fs), whi=mx(ws), cav=av(cs);
-    elF.innerHTML=(lo!=null||flo!=null||whi!=null||cav!=null)?('next 12h \u00b7 low '+(lo!=null?'<b style="color:#e8e4d8">'+Math.round(lo)+'\u00b0</b>':'\u2014')+' \u00b7 feels '+(flo!=null?'<b style="color:'+(flo<=0?'#c8452c':'#e8e4d8')+'">'+Math.round(flo)+'\u00b0</b>':'\u2014')+' \u00b7 wind to '+(whi!=null?Math.round(whi):'\u2014')+' \u00b7 cloud '+(cav!=null?cav+'%':'\u2014')):'';
-    var adv='';
-    if(flo!=null&&flo<=-10) adv='\u26a0 the cold bites through \u00b7 layer up, keeper';
-    else if(flo!=null&&flo<=0) adv='\u26a0 freezing feels \u00b7 frost takes what it touches';
-    else if(lo!=null&&lo<=2) adv='near frost \u00b7 the ground remembers winter';
-    elA.textContent=adv; elA.style.color=(flo!=null&&flo<=0)?'#c8452c':'#d9a83a'; elA.style.display=adv?'block':'none';
+       var lo=mn(ts), flo=mn(fs), whi=mx(ws), cav=av(cs);
+    var fhi=mx(fs), dws=sl(h.dew_point_2m), rhnow=c.relative_humidity_2m;
+    function humidex(T,Td){ if(Td==null||T==null) return null;
+      return T+0.5555*(6.11*Math.exp(5417.7530*(1/273.16-1/(273.15+Td)))-10); }
+    var hmax=null;
+    if(dws.length&&ts.length){ var hv=[];
+      for(var hi2=0;hi2<Math.min(ts.length,dws.length);hi2++){ hv.push(humidex(ts[hi2],dws[hi2])); }
+      hmax=mx(hv); }
+    var uv=(j.daily&&j.daily.uv_index_max!=null)?j.daily.uv_index_max[0]:null;
+    elF.innerHTML='next 12h \u00b7 low '+(lo!=null?'<b style="color:#e8e4d8">'+Math.round(lo)+'\u00b0</b>':'\u2014')
+      +' \u00b7 feels '+(flo!=null?'<b style="color:'+(flo<=0?'#c8452c':'#e8e4d8')+'">'+Math.round(flo)+'\u00b0</b>':'\u2014')
+      +' \u00b7 peak feels '+(fhi!=null?'<b style="color:'+(fhi>=30?'#c8452c':'#e8e4d8')+'">'+Math.round(fhi)+'\u00b0</b>':'\u2014')
+      +' \u00b7 humidex '+(hmax!=null?'<b style="color:'+(hmax>=35?'#c8452c':'#e8e4d8')+'">'+Math.round(hmax)+'</b>':'\u2014')
+      +' \u00b7 wind to '+(whi!=null?Math.round(whi):'\u2014')
+      +' \u00b7 uv '+(uv!=null?Math.round(uv):'\u2014');
+    var adv='', acol='#d9a83a';
+    if(flo!=null&&flo<=-10){ adv='\u26a0 the cold bites through \u00b7 layer up, keeper'; acol='#c8452c'; }
+    else if(flo!=null&&flo<=0){ adv='\u26a0 freezing feels \u00b7 frost takes what it touches'; acol='#c8452c'; }
+    else if(hmax!=null&&hmax>=45){ adv='\u26a0 dangerous humidex \u00b7 the air holds you \u00b7 shade and water'; acol='#c8452c'; }
+    else if(hmax!=null&&hmax>=40){ adv='\u26a0 the humidex climbs \u00b7 slow hours, cool rooms'; acol='#c8452c'; }
+    else if(hmax!=null&&hmax>=35){ adv='the air presses \u00b7 humidex '+Math.round(hmax)+' \u00b7 water, shade, breath'; }
+    else if(fhi!=null&&fhi>=32){ adv='heat watch \u00b7 feels '+Math.round(fhi)+'\u00b0 \u00b7 the house breathes slow'; }
+    else if(rhnow!=null&&rhnow<=20){ adv='the air is a kiln \u00b7 dry throat, oil the wood'; }
+    else if(uv!=null&&uv>=8){ adv='\u26a0 the sun is a blade \u00b7 uv '+Math.round(uv)+' \u00b7 cover up'; acol='#c8452c'; }
+    else if(uv!=null&&uv>=6){ adv='sharp sun \u00b7 uv '+Math.round(uv)+' \u00b7 shade at noon'; }
+    else if(lo!=null&&lo<=2){ adv='near frost \u00b7 the ground remembers winter'; }
+    elA.textContent=adv; elA.style.color=acol; elA.style.display=adv?'block':'none';
   }
   var c0=localStorage.getItem('hive_wx_full');
   if(c0){ try{ paint(JSON.parse(c0),true); }catch(e){} }
