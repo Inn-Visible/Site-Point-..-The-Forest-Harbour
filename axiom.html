@@ -212,10 +212,13 @@ function lockdoor(){
 })();
 </script>
 
-<!-- the obs deck · first impression · schema cycler -->
+<!-- the obs deck · first impression · schema cycler · opts & 12/24 -->
 <script>
 (function(){
-  var ZONES=[['home','America/Toronto'],['utc','UTC'],['tokyo','Asia/Tokyo'],['berlin','Europe/Berlin'],['denver','America/Denver']];
+  var MASTER=[['home','America/Toronto'],['utc','UTC'],['tokyo','Asia/Tokyo'],['berlin','Europe/Berlin'],['denver','America/Denver'],['london','Europe/London'],['kolkata','Asia/Kolkata'],['sydney','Australia/Sydney'],['anchorage','America/Anchorage']];
+  var en0=null; try{ en0=JSON.parse(localStorage.getItem('hive_obs_zones')||'null'); }catch(e){}
+  var EN=(en0&&en0.length)?en0:['home','utc','tokyo','berlin','denver'];
+  var H24=localStorage.getItem('hive_obs_24')!=='0';
   var P={axiom:'#e8e4d8',eigen:'#58a36a',baseline:'#3f7fc1',keystone:'#d9a83a'};
   var ORDER=['axiom','eigen','baseline','keystone'];
   var cur=localStorage.getItem('hive_pillar_theme')||'axiom';
@@ -224,12 +227,19 @@ function lockdoor(){
   sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;text-align:center;font-family:ui-monospace,Consolas,monospace;position:relative;overflow:hidden';
   var bar=document.createElement('div'); bar.style.cssText='height:3px;background:'+P[cur]+';box-shadow:0 0 12px '+hexA(P[cur],.7); sec.appendChild(bar);
   var head=document.createElement('div');
-  head.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #223041';
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #223041;gap:8px';
   head.innerHTML='<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px">the obs deck \u00b7 what the house sees</span>';
+  var hw=document.createElement('span'); hw.style.cssText='display:flex;gap:8px;align-items:center';
   var chip=document.createElement('button');
   chip.style.cssText='background:none;border:1px solid '+P[cur]+';color:'+P[cur]+';font-family:inherit;font-size:10px;letter-spacing:.2em;padding:4px 10px;cursor:pointer';
   chip.textContent='schema \u00b7 '+cur; chip.title='tap five times to walk the pillars';
-  head.appendChild(chip); sec.appendChild(head);
+  var obtn=document.createElement('button');
+  obtn.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font-family:inherit;font-size:10px;letter-spacing:.15em;padding:4px 10px;cursor:pointer';
+  obtn.textContent='opts';
+  hw.appendChild(chip); hw.appendChild(obtn); head.appendChild(hw); sec.appendChild(head);
+  var opts=document.createElement('div');
+  opts.style.cssText='display:none;padding:10px 14px;border-bottom:1px solid #223041;font-size:10px;color:#93a1b0;letter-spacing:.08em;text-align:left';
+  sec.appendChild(opts);
   var clocks=document.createElement('div');
   clocks.style.cssText='display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:18px 12px';
   sec.appendChild(clocks);
@@ -237,16 +247,36 @@ function lockdoor(){
   if(m&&m.parentNode) m.parentNode.insertBefore(sec,m.nextSibling);
   else (document.querySelector('main')||document.body).insertBefore(sec,(document.querySelector('main')||document.body).firstChild);
   function glyph(h){ return (h>=6&&h<18)?'\u2600':'\u263e'; }
+  function hourIn(tz){ try{ return +new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour:'numeric',hour12:false}).format(new Date()); }catch(e){ return 12; } }
+  function fmtClock(tz){
+    try{
+      if(H24){ var t=new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).split(':');
+        return String(+t[0]).padStart(2,'0')+':'+(t[1]||'00'); }
+      var t2=new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true}).format(new Date()).replace(/\./g,'').split(' ');
+      return t2[0]+(t2[1]||'');
+    }catch(e){ return '--:--'; }
+  }
   function draw(){
-    clocks.innerHTML=ZONES.map(function(z){
-      try{
-                  var d=new Date();
-               var t=new Intl.DateTimeFormat('en-CA',{timeZone:z[1],hour:'2-digit',minute:'2-digit',hour12:false}).format(d).split(':');
-        var hh=+t[0], mm2=t[1]||'00';
-        return '<span style="min-width:110px"><span style="display:block;font-size:9px;letter-spacing:.2em;color:#5c6875">'+glyph(hh)+' '+z[0].toUpperCase()+'</span><b style="display:block;margin-top:4px;font-size:17px;white-space:nowrap;color:'+P[cur]+';text-shadow:0 0 10px '+hexA(P[cur],.5)+'">'+String(hh).padStart(2,'0')+':'+mm2+'</b></span>';   
-      }catch(e){ return ''; }
+    clocks.innerHTML=MASTER.filter(function(z){ return EN.indexOf(z[0])>-1; }).map(function(z){
+      var hh=hourIn(z[1]);
+      return '<span style="min-width:104px"><span style="display:block;font-size:9px;letter-spacing:.2em;color:#5c6875">'+glyph(hh)+' '+z[0].toUpperCase()+'</span><b style="display:block;margin-top:4px;font-size:17px;white-space:nowrap;color:'+P[cur]+';text-shadow:0 0 10px '+hexA(P[cur],.5)+'">'+fmtClock(z[1])+'</b></span>';
     }).join('');
   }
+  function renderOpts(){
+    opts.innerHTML='<span style="color:#5c6875;letter-spacing:.2em">the skies you keep</span><br>'+
+      MASTER.map(function(z){ var on=EN.indexOf(z[0])>-1;
+        return '<label style="display:inline-block;margin:8px 12px 0 0;cursor:pointer;color:'+(on?P[cur]:'#5c6875')+'"><input type="checkbox" data-z="'+z[0]+'" '+(on?'checked':'')+' style="vertical-align:middle"> '+z[0]+'</label>'; }).join('')+
+      '<div style="margin-top:12px"><button id="obs24" style="background:none;border:1px solid '+P[cur]+';color:'+P[cur]+';font-family:inherit;font-size:10px;letter-spacing:.15em;padding:3px 12px;cursor:pointer">'+(H24?'24h':'12h')+'</button><span style="color:#5c6875;margin-left:8px">tap to swap the hour tongue</span></div>';
+    opts.querySelectorAll('input[data-z]').forEach(function(cb){ cb.onchange=function(){
+      var k=cb.getAttribute('data-z');
+      if(cb.checked){ if(EN.indexOf(k)<0) EN.push(k); }
+      else { var nx=EN.filter(function(x){ return x!==k; }); if(!nx.length){ cb.checked=true; return; } EN=nx; }
+      try{ localStorage.setItem('hive_obs_zones',JSON.stringify(EN)); }catch(e){}
+      renderOpts(); draw();
+    }; });
+    opts.querySelector('#obs24').onclick=function(){ H24=!H24; try{ localStorage.setItem('hive_obs_24',H24?'1':'0'); }catch(e){} renderOpts(); draw(); };
+  }
+  obtn.onclick=function(){ var open=opts.style.display!=='none'; opts.style.display=open?'none':'block'; if(!open) renderOpts(); };
   draw(); setInterval(draw,30000);
   var tint=document.createElement('div');
   tint.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 12%, '+hexA(P[cur],0.07)+', transparent 70%)';
@@ -260,6 +290,7 @@ function lockdoor(){
     tint.style.background='radial-gradient(ellipse at 50% 12%, '+hexA(P[cur],0.07)+', transparent 70%)';
     var ring=document.querySelectorAll('.mol g')[0]; if(ring) ring.setAttribute('stroke',P[cur]);
     var pulse=document.querySelector('.mol circle.pulse'); if(pulse) pulse.setAttribute('stroke',P[cur]);
+    if(opts.style.display!=='none') renderOpts();
     draw();
     try{ window.dispatchEvent(new CustomEvent('hive-schema',{detail:cur})); }catch(e){}
   }
