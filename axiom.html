@@ -1324,29 +1324,20 @@ function lockdoor(){
       catch(e){ say('download blocked \u00b7 opened in a tab instead \u00b7 save it by hand','#c8452c'); openTab(pkg); }
     }); }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
   
-  var stDir=row.querySelector('#stDir');
+   var stDir=row.querySelector('#stDir');
   if(stDir) stDir.onclick=function(){
     var btn=this; btn.disabled=true; say('pick a folder ..');
     window.showDirectoryPicker({mode:'readwrite'}).then(function(dir){
-      return gather().then(function(ns){
-        return dir.getFileHandle('notes.json',{create:true}).then(function(fh){ return fh.createWritable(); })
-          .then(function(w){ return w.write(JSON.stringify(ns,null,1)).then(function(){ return w.close(); }); })
-          .then(function(){
-            var jobs=ns.filter(function(n){ return n.img&&n.img.indexOf('data:')===0; });
-            if(!jobs.length) return;
-            return dir.getDirectoryHandle('img',{create:true}).then(function(d2){
-              return jobs.reduce(function(p,n){ return p.then(function(){
-                var m=n.img.match(/^data:([^;]+);base64,(.*)$/); if(!m) return;
-                var ext=(m[1].split('/')[1]||'png').replace('jpeg','jpg');
-                var bin=atob(m[2]), arr=new Uint8Array(bin.length);
-                for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
-                return d2.getFileHandle(n.id+'.'+ext,{create:true}).then(function(fh){ return fh.createWritable(); })
-                  .then(function(w){ return w.write(arr); }).then(function(){ return w.close(); }); });
-              },Promise.resolve()); }); }); });
-    }).then(function(){ say('stoned \u2193 folder \u00b7 notes.json + img/ written','#58a36a'); })
-      .catch(function(e){ if(e&&e.name!=='AbortError') say('the folder refused \u00b7 use file \u00b7 '+e,'#c8452c'); else say('folder pick cancelled'); })
+      return gather().then(function(ns){ return cutStone(ns).then(function(pkg){
+        if(!pkg) throw new Error('blank passphrase');
+        return dir.getFileHandle('notes.stone',{create:true}).then(function(fh){ return fh.createWritable(); })
+          .then(function(w){ return w.write(JSON.stringify(pkg)).then(function(){ return w.close(); }); });
+      }); });
+    }).then(function(){ say('stoned \u2193 folder \u00b7 notes.stone written \u00b7 ciphertext \u00b7 images sealed inside','#58a36a'); })
+      .catch(function(e){ if(e&&e.name!=='AbortError') say('the folder refused or passphrase blank \u00b7 '+e,'#c8452c'); else say('folder pick cancelled'); })
       .then(function(){ btn.disabled=false; });
   };
+  
     row.querySelector('#stUp').onclick=function(){ say('pick a stone file ..'); row.querySelector('#stIn').click(); };
   row.querySelector('#stScorch').onclick=function(){
     if(!confirm('scorch the glass? every leaf, note, mark and key on THIS browser burns. stones already in your downloads survive. this cannot be undone.')) return;
