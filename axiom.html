@@ -1278,6 +1278,23 @@ function lockdoor(){
     '<button id="stScorch" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">scorch \u2620</button>'+
        '<button id="stProve" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">prove \u2713</button>'+
     '<input id="stIn" type="file" style="display:none"><input id="stIn2" type="file" style="display:none"></div>'+
+      row.querySelector('#stProve').onclick=function(){ say('pick a stone to prove ..'); row.querySelector('#stIn2').click(); };
+  row.querySelector('#stIn2').onchange=function(){
+    var f=this.files&&this.files[0]; if(!f){ say('no file picked'); return; }
+    var r=new FileReader();
+    r.onload=function(){
+      var o=null; try{ o=JSON.parse(r.result); }catch(e){ say('not json \u00b7 not a stone','#c8452c'); return; }
+      if(o&&o.v===2){
+        var p3=prompt('passphrase to prove it');
+        if(!p3){ say('prove cancelled'); return; }
+        derive(p3,unb64(o.salt)).then(function(key){ return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},key,unb64(o.ct)); })
+          .then(function(pt){ var ns=JSON.parse(new TextDecoder().decode(pt)); say('the stone answers \u00b7 '+ns.length+' notes \u00b7 key good \u00b7 ciphertext intact','#58a36a'); })
+          .catch(function(){ say('the stone refused the passphrase \u00b7 wrong key or rotted file','#c8452c'); });
+      } else if(o&&o.length){ say('legacy plaintext stone \u00b7 '+o.length+' notes \u00b7 re-stone encrypted','#d9a83a'); }
+      else say('empty or unknown stone','#c8452c');
+    };
+    r.readAsText(f);
+  };
     '<div id="stMsg" style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em"></div>';
   hostEl.appendChild(row);
   function say(t,col){ var m=row.querySelector('#stMsg'); if(m){ m.textContent=t; m.style.color=col||'#5c6875'; } }
