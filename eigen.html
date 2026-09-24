@@ -390,6 +390,69 @@ requestAnimationFrame(frame);
 </script>
 
 <script src="sig.js" defer></script>
+
+
+  <script>
+(function(){
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:30px auto;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the shelf \u00b7 your books, your glass</div>'
+   +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">PDFS & FILES \u00b7 IN THIS BROWSER \u00b7 BEHIND THE LOCK \u00b7 NO CLOUD</div>'
+   +'<div style="text-align:center;margin-bottom:12px"><button id="shAdd" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer">+ book</button> <button id="shWipe" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer">burn all</button><input id="shIn" type="file" multiple style="display:none"></div>'
+   +'<div id="shList" style="font-size:11px;color:#93a1b0"></div>';
+  var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
+  var DB=null;
+  function db(){ return new Promise(function(res,rej){
+    if(DB) return res(DB);
+    var rq=indexedDB.open('hive-shelf',1);
+    rq.onupgradeneeded=function(){ var d=rq.result; if(!d.objectStoreNames.contains('books')) d.createObjectStore('books',{keyPath:'id'}); };
+    rq.onsuccess=function(){ DB=rq.result; res(DB); };
+    rq.onerror=function(){ rej(rq.error); };
+  }); }
+  function tx(mode,fn){ return db().then(function(d){ return new Promise(function(res,rej){
+    var t=d.transaction('books',mode), s=t.objectStore('books'), r=fn(s);
+    t.oncomplete=function(){ res(r&&r.result!==undefined?r.result:r); };
+    t.onerror=function(){ rej(t.error); };
+  }); }); }
+  function get(id){ return tx('readonly',function(s){ return s.get(id); }); }
+  function fmtSize(n){ return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'; }
+  function clean(s){ return String(s).replace(/[<>&"]/g,''); }
+  function list(){
+    tx('readonly',function(s){ return s.getAll(); }).then(function(rows){
+      rows.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+      var el=document.getElementById('shList');
+      if(!rows.length){ el.innerHTML='<div style="text-align:center;color:#5c6875;font-style:italic">the shelf is empty \u00b7 + book to shelve something</div>'; return; }
+      el.innerHTML=rows.map(function(r){
+        return '<div style="display:flex;gap:10px;align-items:center;border:1px solid #223041;padding:8px 10px;margin-bottom:6px;flex-wrap:wrap">'
+          +'<span style="flex:1;min-width:140px;color:#e8e4d8">'+clean(r.name)+'</span>'
+          +'<span style="color:#5c6875;font-size:9px">'+fmtSize(r.size)+' \u00b7 '+(r.date||'')+'</span>'
+          +'<button data-r="'+r.id+'" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:3px 9px;cursor:pointer">read</button>'
+          +'<button data-o="'+r.id+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 9px;cursor:pointer">out</button>'
+          +'<button data-b="'+r.id+'" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:3px 9px;cursor:pointer">burn</button></div>';
+      }).join('');
+      el.querySelectorAll('[data-r]').forEach(function(b){ b.onclick=function(){ get(+b.getAttribute('data-r')).then(function(r){ if(!r) return;
+        var a=document.createElement('a'); a.href=URL.createObjectURL(r.blob); a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },400); }); }; });
+      el.querySelectorAll('[data-o]').forEach(function(b){ b.onclick=function(){ get(+b.getAttribute('data-o')).then(function(r){ if(!r) return;
+        var a=document.createElement('a'); a.href=URL.createObjectURL(r.blob); a.download=r.name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },400); }); }; });
+      el.querySelectorAll('[data-b]').forEach(function(b){ b.onclick=function(){ if(!confirm('burn this book off the glass?')) return;
+        tx('readwrite',function(s){ return s.delete(+b.getAttribute('data-b')); }).then(list); }; });
+    }).catch(function(e){ document.getElementById('shList').textContent='shelf error \u00b7 '+e; });
+  }
+  document.getElementById('shAdd').onclick=function(){ document.getElementById('shIn').click(); };
+  document.getElementById('shIn').onchange=function(){
+    var fs=this.files; if(!fs||!fs.length) return;
+    var done=0;
+    Array.prototype.forEach.call(fs,function(file){
+      var rec={id:Date.now()+Math.floor(Math.random()*100000), name:file.name, type:file.type||'application/octet-stream', size:file.size, date:new Date().toISOString().slice(0,10), blob:file};
+      tx('readwrite',function(s){ return s.put(rec); }).then(function(){ done++; if(done===fs.length) list(); }).catch(function(e){ document.getElementById('shList').textContent='shelf full or refused \u00b7 '+e; });
+    });
+    this.value='';
+  };
+  document.getElementById('shWipe').onclick=function(){ if(!confirm('burn every book off the shelf? this cannot be undone.')) return;
+    tx('readwrite',function(s){ return s.clear(); }).then(list); };
+  list();
+})();
+</script>
   
 </body>
 </html>
