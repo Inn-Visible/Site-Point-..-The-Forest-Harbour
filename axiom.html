@@ -1351,21 +1351,35 @@ function lockdoor(){
     say('the glass is ash \u00b7 reload for a bare house','#c8452c');
     setTimeout(function(){ location.reload(); },1200);
   };
+
+  function merge(inc){
+    if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
+    var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
+    var added=0;
+    inc.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ n.local=true; L.unshift(n); added++; } });
+    localStorage.setItem('arc.local',JSON.stringify(L));
+    say('restored \u2191 '+added+' new \u00b7 '+(inc.length-added)+' already home \u00b7 reloading ..','#58a36a');
+    setTimeout(function(){ location.reload(); },900);
+  }
   row.querySelector('#stIn').onchange=function(){
     var f=this.files&&this.files[0]; if(!f){ say('no file picked'); return; }
     var r=new FileReader();
     r.onload=function(){
       var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ say('the stone would not open \u00b7 not json','#c8452c'); return; }
-      if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
-      var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
-      var added=0;
-      inc.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ n.local=true; L.unshift(n); added++; } });
-      localStorage.setItem('arc.local',JSON.stringify(L));
-      say('restored \u2191 '+added+' new \u00b7 '+((inc||[]).length-added)+' already home \u00b7 reloading ..','#58a36a');
-      setTimeout(function(){ location.reload(); },900);
+      if(inc&&inc.v===2){
+        var p2=prompt('passphrase for this stone');
+        if(!p2){ say('restore cancelled'); return; }
+        derive(p2,unb64(inc.salt)).then(function(key){
+          return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(inc.iv)},key,unb64(inc.ct));
+        }).then(function(pt){ merge(JSON.parse(new TextDecoder().decode(pt))); })
+          .catch(function(){ say('the stone refused the passphrase','#c8452c'); });
+        return;
+      }
+      merge(inc);
     };
     r.readAsText(f);
   };
+  
 })();
 </script>
 
