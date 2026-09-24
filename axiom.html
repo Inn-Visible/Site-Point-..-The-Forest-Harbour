@@ -1276,7 +1276,8 @@ function lockdoor(){
     ('showDirectoryPicker' in window?'<button id="stDir" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">stone \u2193 folder</button>':'')+
         '<button id="stUp" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">restore \u2191</button>'+
     '<button id="stScorch" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">scorch \u2620</button>'+
-   '<input id="stIn" type="file" style="display:none"></div>'+
+       '<button id="stProve" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:6px 12px;cursor:pointer">prove \u2713</button>'+
+    '<input id="stIn" type="file" style="display:none"><input id="stIn2" type="file" style="display:none"></div>'+
     '<div id="stMsg" style="margin-top:8px;font-size:9px;color:#5c6875;letter-spacing:.12em"></div>';
   hostEl.appendChild(row);
   function say(t,col){ var m=row.querySelector('#stMsg'); if(m){ m.textContent=t; m.style.color=col||'#5c6875'; } }
