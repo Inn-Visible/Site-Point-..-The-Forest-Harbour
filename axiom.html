@@ -1315,12 +1315,15 @@ function lockdoor(){
   window.hiveStone=function(){ return gather().then(function(ns){ return cutStone(ns).then(function(pkg){
     if(!pkg){ say('stone not cut \u00b7 blank passphrase or no crypto here'); return 0; }
     download('innvisible-archive-'+stamp()+'.stone', new Blob([JSON.stringify(pkg)],{type:'application/json'})); return ns.length; }); }); };
+
   row.querySelector('#stFile').onclick=function(){ say('gathering ..');
-    gather().then(function(ns){
-      say('stoned \u2193 '+ns.length+' notes \u00b7 check the downloads bar','#58a36a');
-      try{ download('innvisible-archive-'+stamp()+'.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'})); }
-      catch(e){ say('download blocked \u00b7 opened in a tab instead \u00b7 save it by hand','#c8452c'); openTab(ns); }
-    }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
+    gather().then(function(ns){ return cutStone(ns).then(function(pkg){
+      if(!pkg){ say('stone not cut \u00b7 blank passphrase or browser lacks crypto','#c8452c'); return; }
+      say('stoned \u2193 '+ns.length+' notes \u00b7 ciphertext \u00b7 check the downloads bar','#58a36a');
+      try{ download('innvisible-archive-'+stamp()+'.stone', new Blob([JSON.stringify(pkg)],{type:'application/json'})); }
+      catch(e){ say('download blocked \u00b7 opened in a tab instead \u00b7 save it by hand','#c8452c'); openTab(pkg); }
+    }); }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
+  
   var stDir=row.querySelector('#stDir');
   if(stDir) stDir.onclick=function(){
     var btn=this; btn.disabled=true; say('pick a folder ..');
