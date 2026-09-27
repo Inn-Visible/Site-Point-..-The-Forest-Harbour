@@ -1062,6 +1062,52 @@ addEventListener('keydown',function(e){
   document.addEventListener('keydown', initAudio, { once: true });
 })();
 </script>
+
+<!-- ======================================================= -->
+<!-- HOUSE GAIN: Adaptive Audio Slider for the Baseline      -->
+<!-- ======================================================= -->
+<script>
+(function() {
+  // Find the existing .wall or .dock to attach this to
+  const wall = document.querySelector('.wall');
+  if (!wall) return;
+
+  const gainWrap = document.createElement('div');
+  gainWrap.style.cssText = 'margin-top:20px;padding-top:16px;border-top:1px solid #223041;display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;';
+  
+  gainWrap.innerHTML = `
+    <span style="font-size:10px;letter-spacing:.2em;color:#93a1b0">HOUSE GAIN</span>
+    <input type="range" id="houseGainSlider" min="15" max="80" value="15" step="5" 
+      style="flex:1;max-width:200px;accent-color:#3f7fc1;cursor:pointer">
+    <span id="gainReadout" style="font-size:10px;color:#3f7fc1;letter-spacing:.1em;width:35px">15%</span>
+  `;
+  
+  wall.appendChild(gainWrap);
+
+  const slider = document.getElementById('houseGainSlider');
+  const readout = document.getElementById('gainReadout');
+  
+  // Load saved preference or default to 15 (safe for mobile)
+  let savedGain = localStorage.getItem('hive_baseline_gain') || 15;
+  slider.value = savedGain;
+  readout.textContent = savedGain + '%';
+
+  // Expose to the global scope so the synth script can read it
+  window.hiveAudioGain = savedGain / 100;
+
+  slider.addEventListener('input', function() {
+    const val = this.value;
+    readout.textContent = val + '%';
+    window.hiveAudioGain = val / 100;
+    localStorage.setItem('hive_baseline_gain', val);
+    
+    // If the audio context is already running, update it live
+    if (window.baselineMasterGain) {
+      window.baselineMasterGain.gain.setTargetAtTime(window.hiveAudioGain, window.baselineAudioCtx.currentTime, 0.1);
+    }
+  });
+})();
+</script>
   
 </body>
 </html>
