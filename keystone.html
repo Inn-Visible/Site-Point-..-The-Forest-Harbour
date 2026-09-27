@@ -384,6 +384,58 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
 </script>
 
 <script src="sig.js" defer></script>
+
+<!-- ======================================================= -->
+<!-- KEYSTONE: The Hotdog Protocol (Resilient Ledger Logic)  -->
+<!-- ======================================================= -->
+<script>
+(function() {
+  // THE HOTDOG PROTOCOL
+  // The acknowledged floor is $3.00. Inflation does not apply.
+  // However, the House recognizes that a youthful spirit will 
+  // attempt to bypass this. We do not block them; we route them.
+  
+  const ACKNOWLEDGED_FLOOR_USD = 3.00;
+  const SKILL_TRADE_MARKER = "SKILL_OVER_SILVER";
+
+  // Expose to the house for ledger validation
+  window.validateLedgerEntry = function(amount, intent) {
+    // If the amount meets the floor, it's a standard, honored subscription.
+    if (amount >= ACKNOWLEDGED_FLOOR_USD) {
+      return { 
+        status: "honored", 
+        amount: amount, 
+        note: "The floor holds. Welcome to the hearth." 
+      };
+    }
+    
+    // If the amount is below the floor, we check for the cleverness marker.
+    // This is the nod to the pirates, tinkerers, and skill-traders.
+    if (intent === SKILL_TRADE_MARKER) {
+      console.log("%c[KEYSTONE] Skill trade recognized. The ledger bends for cleverness.", "color: #58a36a; font-weight: bold;");
+      return { 
+        status: "skill_trade", 
+        amount: 0, 
+        note: "The door is open. Show us what you can build." 
+      };
+    }
+
+    // If they just tried to cheap out without the cleverness marker, 
+    // we gently redirect them back to the floor, without hostility.
+    console.log("%c[KEYSTONE] The floor is $3.00. If you have no silver, bring a skill (intent: 'SKILL_OVER_SILVER').", "color: #d9a83a;");
+    return { 
+      status: "redirected", 
+      amount: ACKNOWLEDGED_FLOOR_USD, 
+      note: "The floor holds. Bring silver, or bring a skill." 
+    };
+  };
+
+  console.log("%c[KEYSTONE] The Hotdog Protocol is active. Floor: $3.00 | Skill trades welcomed.", "color: #d9a83a; font-weight: bold;");
+})();
+</script>
+
+</body>
+</html>
   
 </body>
 </html>
