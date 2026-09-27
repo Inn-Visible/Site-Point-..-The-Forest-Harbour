@@ -1007,21 +1007,25 @@ addEventListener('keydown',function(e){
   let lowpassFilter = null;
 
   function initAudio() {
-    if (audioCtx) return;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext();
-    
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.15; // Kept gentle, sitting down low
-    
-    lowpassFilter = audioCtx.createBiquadFilter();
-    lowpassFilter.type = 'lowpass';
-    lowpassFilter.frequency.value = 500; // Warm, deep roll-off to kill digital fizz
-    lowpassFilter.Q.value = 0.7;
+  if (audioCtx) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioContext();
+  window.baselineAudioCtx = audioCtx; // Expose for live updates
 
-    lowpassFilter.connect(masterGain);
-    masterGain.connect(audioCtx.destination);
-  }
+  masterGain = audioCtx.createGain();
+  // Read the slider value, default to 0.15 if not set
+  const targetGain = window.hiveAudioGain || 0.15;
+  masterGain.gain.value = targetGain;
+  window.baselineMasterGain = masterGain; // Expose for live updates
+
+  lowpassFilter = audioCtx.createBiquadFilter();
+  lowpassFilter.type = 'lowpass';
+  lowpassFilter.frequency.value = 500; // Warm, deep roll-off to kill digital fizz
+  lowpassFilter.Q.value = 0.7;
+
+  lowpassFilter.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
+}
 
   function playGentleNote() {
     if (!audioCtx) initAudio();
