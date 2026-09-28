@@ -504,8 +504,12 @@ function lockdoor(){
     }
     saveEnc(txt);
   }
+  window.addEventListener('beforeunload',function(e){
+    if(_pend[curPage]!=null){ e.preventDefault(); e.returnValue=''; }
+  });
   function totalPages(){
     var pages = getPages();
+    
     return Math.max(1, Object.keys(pages).length);
   }
   function wipeBench(){
