@@ -462,14 +462,34 @@ function lockdoor(){
     try{ return JSON.parse(localStorage.getItem('hive_xeno_pages')||'{}'); }catch(e){ return {}; }
   }
   function savePages(p){ localStorage.setItem('hive_xeno_pages',JSON.stringify(p)); }
-  function getPageContent(){
+    function getPageContent(){
     var pages = getPages();
-    return pages[curPage] || '';
+    var raw = pages[curPage] || '';
+    if(!raw) return '';
+    if(raw.startsWith('{"iv":')){
+      if(!window.vaultIsOpen()){ 
+        // trigger unlock, then reload the bench
+        window.vaultPrompt(function(){ renderBody(); }); 
+        return '(vault locked \u00b7 whisper to read)'; 
+      }
+      // synchronous read is hard with async crypto, so we load it via a slight delay
+      window.vaultDecrypt(raw).then(function(txt){
+        var ta=document.querySelector('textarea'); if(ta) ta.value=txt;
+      }).catch(function(){ var ta=document.querySelector('textarea'); if(ta) ta.value='(corrupt ciphertext)'; });
+      return '(decrypting..)';
+    }
+    return raw; // legacy plaintext fallback
   }
   function setPageContent(txt){
-    var pages = getPages();
-    pages[curPage] = txt;
-    savePages(pages);
+    if(!window.vaultIsOpen()){
+      window.vaultPrompt(function(){ setPageContent(txt); });
+      return;
+    }
+    window.vaultEncrypt(txt).then(function(ct){
+      var pages = getPages();
+      pages[curPage] = ct;
+      savePages(pages);
+    }).catch(function(){ /* fail silently or log */ });
   }
   function totalPages(){
     var pages = getPages();
