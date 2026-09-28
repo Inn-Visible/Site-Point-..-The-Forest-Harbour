@@ -1401,6 +1401,64 @@ function lockdoor(){
 })();
 </script>
 
+<script id="hive-vault">
+(function(){
+  var _key=null;
+  function b64(buf){ var a=new Uint8Array(buf), s=''; for(var i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }
+  function unb64(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+  function derive(pass,salt){ 
+    return crypto.subtle.importKey('raw',new TextEncoder().encode(pass),{name:'PBKDF2'},false,['deriveKey'])
+      .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }); 
+  }
+  window.vaultUnlock=function(pass){
+    var salt=new TextEncoder().encode('hive-vault-v0-salt');
+    return derive(pass,salt).then(function(k){ _key=k; return true; });
+  };
+  window.vaultLock=function(){ _key=null; };
+  window.vaultIsOpen=function(){ return !!_key; };
+  window.vaultEncrypt=function(text){
+    if(!_key) return Promise.reject('locked');
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},_key,new TextEncoder().encode(text))
+      .then(function(ct){ return JSON.stringify({iv:b64(iv), ct:b64(ct)}); });
+  };
+  window.vaultDecrypt=function(pkgStr){
+    if(!_key) return Promise.reject('locked');
+    try{
+      var pkg=JSON.parse(pkgStr);
+      return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(pkg.iv)},_key,unb64(pkg.ct))
+        .then(function(pt){ return new TextDecoder().decode(pt); });
+    }catch(e){ return Promise.reject('corrupt'); }
+  };
+
+  // The Sleek Modal
+  if(!document.getElementById('vaultModal')){
+    var m=document.createElement('div'); m.id='vaultModal';
+    m.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(4,6,10,.95);align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace';
+    m.innerHTML='<div style="background:#0e141b;border:1px solid #223041;padding:24px;max-width:400px;text-align:center">'
+      +'<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:14px;margin-bottom:12px">the vault is locked</div>'
+      +'<div style="font-size:10px;color:#5c6875;margin-bottom:16px">whisper the sleek phrase to sit at the bench</div>'
+      +'<input id="vaultPass" type="password" placeholder="your 4-word phrase" style="width:100%;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;padding:10px;font:inherit;margin-bottom:12px">'
+      +'<button id="vaultGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:inherit;padding:8px 16px;cursor:pointer;letter-spacing:.1em">unlock</button>'
+      +'<div id="vaultErr" style="color:#c8452c;font-size:10px;margin-top:10px;min-height:12px"></div></div>';
+    document.body.appendChild(m);
+    document.getElementById('vaultGo').onclick=function(){
+      var p=document.getElementById('vaultPass').value;
+      if(!p){ document.getElementById('vaultErr').textContent='the vault needs a voice'; return; }
+      window.vaultUnlock(p).then(function(){
+        m.style.display='none'; document.getElementById('vaultPass').value='';
+        if(window._vaultOnOpen) window._vaultOnOpen();
+      }).catch(function(){ document.getElementById('vaultErr').textContent='the vault refused'; });
+    };
+    document.getElementById('vaultPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('vaultGo').click(); });
+  }
+  window.vaultPrompt=function(onOpen){
+    window._vaultOnOpen=onOpen;
+    document.getElementById('vaultModal').style.display='flex';
+    setTimeout(function(){ document.getElementById('vaultPass').focus(); },100);
+  };
+})();
+</script>
   
 </body>
 </html>
