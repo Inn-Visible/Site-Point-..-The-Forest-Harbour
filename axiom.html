@@ -538,6 +538,10 @@ function lockdoor(){
         +'<button id="sz_plus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">A+</button>'
         +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
         +'<button id="pg_wipe" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>';
+           var vs=document.createElement('span'); vs.id='vState';
+      vs.style.cssText='font-size:9px;letter-spacing:.15em;margin-left:10px;color:'+(window.vaultIsOpen()?'#58a36a':'#c8452c');
+      vs.textContent='vault \u00b7 '+(window.vaultIsOpen()?'open':'shut');
+      nav.appendChild(vs);
       body.appendChild(nav);
       
       var ta=document.createElement('textarea');
