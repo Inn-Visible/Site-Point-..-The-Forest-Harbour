@@ -691,8 +691,8 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   var cl=document.querySelector('.cluster'); if(!cl) return;
   var wrap=document.createElement('section');
   wrap.style.cssText='max-width:860px;margin:34px auto 0;text-align:left';
-  wrap.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">four rooms, one house \u00b7 no door is locked to any hand</div>'
-    +'<div style="text-align:center;font-size:10px;color:#5c6875;letter-spacing:.15em;margin-bottom:16px">choose a starting room, not a side \u00b7 every pillar opens to every hand</div>';
+  wrap.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">four rooms, one house \u00b7 no door is locked to any hand that holds its key</div>'
+    +'<div style="text-align:center;font-size:10px;color:#5c6875;letter-spacing:.15em;margin-bottom:16px">choose a starting room, not a side \u00b7 the pillars craft the learning</div>';
   var grid=document.createElement('div'); grid.id='introGrid';
   grid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px';
   INFO.forEach(function(it){
