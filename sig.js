@@ -22,7 +22,14 @@
   var NM=['new moon','waxing crescent','first quarter','waxing gibbous','full moon','waning gibbous','last quarter','waning crescent'];
   var TIDES=[[11,21,'yule-tide','the long night turns'],[1,1,'imbolc-tide','first quickening'],[2,20,'ostara-tide','balance, then light'],[4,1,'beltane-tide','the green fire'],[5,21,'litha-tide','the tall sun'],[7,1,'lughnasadh-tide','first harvest'],[8,22,'mabon-tide','the second balance'],[10,1,'samhain-tide','the veil thins']];
   function moon(d){ var age=((d.getTime()-EPOCH)/86400000)%SYN; if(age<0)age+=SYN; return age; }
-  function phase(age){ return Math.floor(((age+SYN/16)/SYN)*8)%8; }
+  function phase(age){
+    var q=SYN/4;
+    if(age<1.0||age>SYN-1.0) return 0;
+    if(Math.abs(age-q)<1.0) return 2;
+    if(Math.abs(age-2*q)<1.0) return 4;
+    if(Math.abs(age-3*q)<1.0) return 6;
+    return (age<q)?1:(age<2*q)?3:(age<3*q)?5:7;
+  }
   function lit(age){ return Math.round((1-Math.cos(2*Math.PI*age/SYN))/2*100); }
   function tide(d){
     var cand=[];
