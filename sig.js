@@ -66,6 +66,20 @@
     var box=document.createElement('div'); box.id='mooncal';
     box.style.cssText='padding:0 12px 14px;text-align:center;font-size:10px;letter-spacing:.12em;color:#5c6875';
     od.appendChild(box);
+    var tg=document.createElement('button'); tg.id='moonwhy';
+    tg.textContent='? the sky\u2019s tongue';
+    tg.style.cssText='display:block;margin:8px auto 0;background:none;border:1px solid #223041;color:#5c6875;font:9px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:3px 10px;cursor:pointer';
+    var lg=document.createElement('div'); lg.id='moonlegend';
+    lg.style.cssText='display:none;margin:8px auto 0;max-width:600px;padding:10px 14px;border:1px dashed #223041;font-size:9.5px;line-height:1.9;color:#5c6875;text-align:left';
+    lg.innerHTML='<b style="color:#93a1b0">moon-day 17.</b> the moon keeps a ~29\u00bd-day month, new moon to new moon. tonight is day 17 of it \u2014 day 1 is dark, day 15 or so is full.<br>'
+      +'<b style="color:#93a1b0">waning gibbous.</b> the shape\u2019s name. waxing = growing toward full; waning = shrinking toward new. crescent = a sliver, quarter = half-lit, gibbous = more than half but not full.<br>'
+      +'<b style="color:#93a1b0">97% lit.</b> how much of her face the sun is touching tonight.<br>'
+      +'<b style="color:#93a1b0">mabon-tide.</b> the year\u2019s wheel in eight marks: four sun-turns (two solstices, two equinoxes) and four old fire-fests between them. yule = midwinter, imbolc = spring\u2019s first stir, ostara = spring balance, beltane = summer\u2019s fire, litha = midsummer, lughnasadh = first harvest, mabon = autumn balance, samhain = winter\u2019s veil. the \u201ctide\u201d is the walking season between two marks.<br>'
+      +'<b style="color:#93a1b0">34 days to the turn.</b> the countdown to the next mark on the wheel.<br>'
+      +'<b style="color:#93a1b0">week 40.</b> the year\u2019s numbered weeks, mondays first \u2014 the same count the rotas keeps.<br>'
+      +'<b style="color:#93a1b0">the dots.</b> one per day of the moon\u2019s month: filled = lived, gold = tonight, hollow = still coming.';
+    od.appendChild(tg); od.appendChild(lg);
+    tg.onclick=function(){ var open=lg.style.display!=='none'; lg.style.display=open?'none':'block'; tg.textContent=open?'? the sky\u2019s tongue':'\u2715 close the tongue'; };
     draw();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
