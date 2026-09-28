@@ -1112,6 +1112,58 @@ addEventListener('keydown',function(e){
   });
 })();
 </script>
+
+<script>
+(function(){
+  var MAJ=[
+    ['the fool','new beginnings, leaps of faith'],
+    ['the magician','power, skill, will'],
+    ['the high priestess','intuition, mystery'],
+    ['the empress','fertility, abundance'],
+    ['the emperor','structure, authority'],
+    ['the hierophant','tradition, guidance'],
+    ['the lovers','choice, union'],
+    ['the chariot','willpower, victory'],
+    ['strength','courage, patience'],
+    ['the hermit','introspection, solitude'],
+    ['wheel of fortune','cycles, fate'],
+    ['justice','truth, fairness'],
+    ['the hanged man','surrender, new perspective'],
+    ['death','transformation, endings'],
+    ['temperance','balance, moderation'],
+    ['the devil','attachment, shadow'],
+    ['the tower','sudden change, upheaval'],
+    ['the star','hope, renewal'],
+    ['the moon','illusion, intuition'],
+    ['the sun','joy, success'],
+    ['judgement','awakening, reckoning'],
+    ['the world','completion, wholeness']
+  ];
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:900px;margin:30px auto;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;text-align:center';
+  sec.innerHTML='<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the spread \u00b7 three cards</div>'
+   +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">PAST \u00b7 PRESENT \u00b7 FUTURE \u00b7 OFFLINE \u00b7 NO TELEMETRY</div>'
+   +'<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:14px" id="tCards"></div>'
+   +'<button id="tDraw" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer">draw the spread</button>'
+   +'<div id="tMeaning" style="margin-top:14px;font-size:11px;color:#93a1b0;min-height:20px"></div>';
+  var f=document.querySelector('footer'); if(f&&f.parentNode) f.parentNode.insertBefore(sec,f); else document.body.appendChild(sec);
+  function draw(){
+    var deck=MAJ.slice(); var drawn=[];
+    while(drawn.length<3){ var i=Math.floor(Math.random()*deck.length); drawn.push(deck.splice(i,1)[0]); }
+    var labels=['past','present','future'];
+    var el=document.getElementById('tCards');
+    el.innerHTML=drawn.map(function(c,i){
+      return '<div style="flex:1;min-width:120px;max-width:180px;border:1px solid #223041;padding:12px;background:#0a0d12">'
+       +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:8px">'+labels[i].toUpperCase()+'</div>'
+       +'<div style="font-size:13px;color:#d9a83a;margin-bottom:6px">'+c[0]+'</div>'
+       +'<div style="font-size:10px;color:#93a1b0;font-style:italic">'+c[1]+'</div></div>';
+    }).join('');
+    document.getElementById('tMeaning').innerHTML='<span style="color:#5c6875">the spread speaks \u00b7 '+new Date().toISOString().slice(0,10)+'</span>';
+  }
+  document.getElementById('tDraw').onclick=draw;
+  draw();
+})();
+</script>
   
 </body>
 </html>
