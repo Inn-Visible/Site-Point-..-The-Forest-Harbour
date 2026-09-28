@@ -490,8 +490,9 @@ function lockdoor(){
       if(lbl) lbl.textContent='leaf '+curPage+' / '+totalPages();
     }).catch(function(){});
   }
-  function flushPend(){
+   function flushPend(){
     window._vaultAsked=false;
+    var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; }
     if(_pend[curPage]!=null){ var t=_pend[curPage]; _pend[curPage]=null; saveEnc(t); }
   }
   function setPageContent(txt){
