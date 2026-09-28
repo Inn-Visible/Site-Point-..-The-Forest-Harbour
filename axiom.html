@@ -1507,39 +1507,43 @@ function lockdoor(){
 
 <script>
 (function(){
-  function tallTa(){
-    var ts=document.querySelectorAll('textarea');
-    for(var i=0;i<ts.length;i++){ if(ts[i].offsetHeight>200) return ts[i]; }
+  function xenoSec(){
+    var bs=document.querySelectorAll('button');
+    for(var i=0;i<bs.length;i++){
+      if((bs[i].textContent||'').trim()==='workbench'){
+        var row=bs[i].parentNode;
+        return row? row.parentNode : null;
+      }
+    }
     return null;
   }
-  function shutter(ta){
-    ta.readOnly=true; ta.value=''; ta.style.visibility='hidden';
+  function panel(){
     var ov=document.createElement('div'); ov.id='vbLock';
-    ov.style.cssText='border:1px solid #223041;background:#0a0d12;text-align:center;padding:60px 16px;font:11px ui-monospace,Consolas,monospace;color:#5c6875';
+    ov.style.cssText='max-width:980px;margin:30px auto;border:1px solid #223041;background:#0a0d12;text-align:center;padding:70px 16px;font:11px ui-monospace,Consolas,monospace;color:#5c6875';
     ov.innerHTML='<div style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:#93a1b0;margin-bottom:10px">the vault is shut</div>'
-      +'<div style="margin-bottom:16px;letter-spacing:.1em">nothing reads \u00b7 nothing writes \u00b7 until the key turns</div>'
+      +'<div style="margin-bottom:16px;letter-spacing:.1em">the whole wing sleeps \u00b7 nothing reads \u00b7 nothing writes \u00b7 until the key turns</div>'
       +'<button id="vbOpen" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:inherit;padding:9px 20px;cursor:pointer;letter-spacing:.15em">unlock the bench</button>';
-    ta.parentNode.insertBefore(ov,ta);
-    document.getElementById('vbOpen').onclick=function(){
-      window.vaultPrompt(function(){
-        openBench();
-      });
-    };
+    ov.querySelector('#vbOpen').onclick=function(){ window.vaultPrompt(openWing); };
+    return ov;
   }
-  function openBench(){
+  function openWing(){
     var ov=document.getElementById('vbLock'); if(ov) ov.remove();
-    var ta=tallTa(); if(!ta) return;
-    ta.readOnly=false; ta.style.visibility='visible';
+    var sec=xenoSec(); if(sec) sec.style.display='';
     var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; }
-    var raw=getPageContent(); if(raw!=='') ta.value=raw;
+    var ta=null, ts=document.querySelectorAll('textarea');
+    for(var i=0;i<ts.length;i++){ if(ts[i].offsetHeight>200){ ta=ts[i]; break; } }
+    if(ta){ ta.readOnly=false; ta.style.visibility='visible'; var raw=getPageContent(); if(raw!=='') ta.value=raw; }
   }
   setInterval(function(){
-    if(!window.vaultIsOpen){ return; }
+    if(!window.vaultIsOpen) return;
+    var sec=xenoSec(); if(!sec) return;
     if(!window.vaultIsOpen()){
-      var ta=tallTa();
-      if(ta && !document.getElementById('vbLock')) shutter(ta);
-    } else {
-      if(document.getElementById('vbLock')) openBench();
+      if(!document.getElementById('vbLock')){
+        sec.style.display='none';
+        sec.parentNode.insertBefore(panel(),sec);
+      }
+    } else if(document.getElementById('vbLock')){
+      openWing();
     }
   },600);
 })();
