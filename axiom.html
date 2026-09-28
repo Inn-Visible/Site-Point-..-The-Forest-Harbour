@@ -480,16 +480,29 @@ function lockdoor(){
     }
     return raw; // legacy plaintext fallback
   }
-  function setPageContent(txt){
-    if(!window.vaultIsOpen()){
-      window.vaultPrompt(function(){ setPageContent(txt); });
-      return;
-    }
+  var _pend={};
+  function saveEnc(txt){
     window.vaultEncrypt(txt).then(function(ct){
       var pages = getPages();
       pages[curPage] = ct;
       savePages(pages);
-    }).catch(function(){ /* fail silently or log */ });
+      var lbl=document.getElementById('pg_label');
+      if(lbl) lbl.textContent='leaf '+curPage+' / '+totalPages();
+    }).catch(function(){});
+  }
+  function flushPend(){
+    window._vaultAsked=false;
+    if(_pend[curPage]!=null){ var t=_pend[curPage]; _pend[curPage]=null; saveEnc(t); }
+  }
+  function setPageContent(txt){
+    if(!window.vaultIsOpen()){
+      _pend[curPage]=txt;
+      var lbl=document.getElementById('pg_label');
+      if(lbl) lbl.textContent='leaf '+curPage+' \u00b7 held in hand \u00b7 unlock to save';
+      if(!window._vaultAsked){ window._vaultAsked=true; window.vaultPrompt(flushPend); }
+      return;
+    }
+    saveEnc(txt);
   }
   function totalPages(){
     var pages = getPages();
