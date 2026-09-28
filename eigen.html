@@ -443,7 +443,8 @@ requestAnimationFrame(frame);
     var fs=this.files; if(!fs||!fs.length) return;
     var done=0;
     Array.prototype.forEach.call(fs,function(file){
-      var rec={id:Date.now()+Math.floor(Math.random()*100000), name:file.name, type:file.type||'application/octet-stream', size:file.size, date:new Date().toISOString().slice(0,10), blob:file};
+           var typ=file.type||''; if(!typ&&/\.pdf$/i.test(file.name)) typ='application/pdf';
+      var rec={id:Date.now()+Math.floor(Math.random()*100000), name:file.name, type:typ||'application/octet-stream', size:file.size, date:new Date().toISOString().slice(0,10), blob:file};
       tx('readwrite',function(s){ return s.put(rec); }).then(function(){ done++; if(done===fs.length) list(); }).catch(function(e){ document.getElementById('shList').textContent='shelf full or refused \u00b7 '+e; });
     });
     this.value='';
