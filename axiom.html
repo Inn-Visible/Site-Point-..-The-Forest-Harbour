@@ -469,8 +469,7 @@ function lockdoor(){
     if(raw.startsWith('{"iv":')){
       if(!window.vaultIsOpen()){ 
         // trigger unlock, then reload the bench
-        window.vaultPrompt(function(){ renderBody(); }); 
-        return '(vault locked \u00b7 whisper to read)'; 
+              return '';
       }
       // synchronous read is hard with async crypto, so we load it via a slight delay
       window.vaultDecrypt(raw).then(function(txt){
@@ -478,7 +477,8 @@ function lockdoor(){
       }).catch(function(){ var ta=document.querySelector('textarea'); if(ta) ta.value='(corrupt ciphertext)'; });
       return '(decrypting..)';
     }
-    return raw; // legacy plaintext fallback
+    if(!window.vaultIsOpen()){ return ''; }
+    return raw; // legacy plaintext, readable only while open
   }
   var _pend={};
   function saveEnc(txt){
