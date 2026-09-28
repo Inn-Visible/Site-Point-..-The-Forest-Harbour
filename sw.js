@@ -1,6 +1,6 @@
 var TILES='hive-tiles-v1', KIT='hive-kit-v1', CORE='hive-core-v1';
 var PAGES=['./','./index.html','./axiom.html','./eigen.html','./baseline.html',
-  './keystone.html','./archive.html','./grid3d.html','./manifest.json','./sig.js'];
+  './keystone.html','./archive.html','./grid3d.html','./manifest.json','./radio.html','./sig.js'];
 
 self.addEventListener('install',function(e){
   e.waitUntil(
