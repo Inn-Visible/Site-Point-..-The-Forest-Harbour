@@ -1,17 +1,27 @@
-var TILES='hive-tiles-v1', KIT='hive-kit-v1';
+var TILES='hive-tiles-v1', KIT='hive-kit-v1', CORE='hive-core-v1';
+var PAGES=['./','./index.html','./axiom.html','./eigen.html','./baseline.html',
+  './keystone.html','./archive.html','./grid3d.html','./manifest.json','./sig.js'];
 
 self.addEventListener('install',function(e){
-  e.waitUntil(caches.open(KIT).then(function(c){
+  e.waitUntil(
+    caches.open(KIT).then(function(c){
       return Promise.all(['./kit.html','./parlor.html','./donations.html','./board.html'].map(function(u){
-      return c.add(u).catch(function(){ return null; });
-    }));
-  }));
+        return c.add(u).catch(function(){ return null; });
+      }));
+    }).then(function(){
+      return caches.open(CORE).then(function(c){
+        return Promise.all(PAGES.map(function(u){
+          return c.add(u).catch(function(){ return null; });
+        }));
+      });
+    })
+  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate',function(e){
   e.waitUntil(caches.keys().then(function(ks){
-    var keep=[TILES,KIT];
+    var keep=[TILES,KIT,CORE];
     return Promise.all(ks.filter(function(k){ return keep.indexOf(k)===-1; })
       .map(function(k){ return caches.delete(k); }));
   }));
@@ -34,7 +44,7 @@ self.addEventListener('fetch',function(e){
     );
     return;
   }
-  /* kit.html — network-first with cache fallback */
+  /* kit.html + sw.js — network-first with cache fallback */
   if(/\/kit\.html(\?|$)/.test(u) || u.endsWith('sw.js')){
     e.respondWith(
       fetch(e.request).then(function(r){
@@ -43,5 +53,14 @@ self.addEventListener('fetch',function(e){
       }).catch(function(){ return caches.match(e.request); })
     );
     return;
+  }
+  /* every other same-origin file — network-first, cache fallback, refill the box */
+  if(u.indexOf(location.origin)===0){
+    e.respondWith(
+      fetch(e.request).then(function(r){
+        if(r.ok){ var cl=r.clone(); caches.open(CORE).then(function(c){ c.put(e.request,cl); }); }
+        return r;
+      }).catch(function(){ return caches.match(e.request); })
+    );
   }
 });
