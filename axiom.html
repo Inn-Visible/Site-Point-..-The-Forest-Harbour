@@ -1471,7 +1471,9 @@ function lockdoor(){
         if(window._vaultOnOpen) window._vaultOnOpen();
       }).catch(function(){ document.getElementById('vaultErr').textContent='the vault refused'; });
     };
-    document.getElementById('vaultPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('vaultGo').click(); });
+      document.getElementById('vaultPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('vaultGo').click(); });
+    document.getElementById('vaultNo').onclick=function(){ m.style.display='none'; };
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&m.style.display==='flex') m.style.display='none'; });
   }
   window.vaultPrompt=function(onOpen){
     window._vaultOnOpen=onOpen;
