@@ -1183,7 +1183,7 @@ addEventListener('keydown',function(e){
   sec.innerHTML='<div style="font-size:9px;color:#d9a83a;letter-spacing:.3em;margin-bottom:12px">THE RESIDENT DIAL \u00b7 THE SKY\u2019S CHANNELS</div>'
     +'<div style="font-size:11px;color:#93a1b0;margin-bottom:16px">time-gated transmitters for the household \u00b7 the sky holds the key</div>'
     +'<div id="tideRow" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"></div>';
-  var world=document.getElementById('worldStreams');
+  var world=document.getElementById('radioOS')||document.getElementById('worldStreams');
   if(world&&world.parentNode) world.parentNode.insertBefore(sec,world.nextSibling);
   else { var f=document.querySelector('footer'); if(f) f.parentNode.insertBefore(sec,f); }
   var row=sec.querySelector('#tideRow');
