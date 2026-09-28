@@ -430,8 +430,7 @@ requestAnimationFrame(frame);
           +'<button data-o="'+r.id+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 9px;cursor:pointer">out</button>'
           +'<button data-b="'+r.id+'" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:3px 9px;cursor:pointer">burn</button></div>';
       }).join('');
-      el.querySelectorAll('[data-r]').forEach(function(b){ b.onclick=function(){ get(+b.getAttribute('data-r')).then(function(r){ if(!r) return;
-        var a=document.createElement('a'); a.href=URL.createObjectURL(r.blob); a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },400); }); }; });
+           el.querySelectorAll('[data-r]').forEach(function(b){ b.onclick=function(){ get(+b.getAttribute('data-r')).then(function(r){ if(!r) return; reader(r); }); }; });
       el.querySelectorAll('[data-o]').forEach(function(b){ b.onclick=function(){ get(+b.getAttribute('data-o')).then(function(r){ if(!r) return;
         var a=document.createElement('a'); a.href=URL.createObjectURL(r.blob); a.download=r.name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },400); }); }; });
       el.querySelectorAll('[data-b]').forEach(function(b){ b.onclick=function(){ if(!confirm('burn this book off the glass?')) return;
