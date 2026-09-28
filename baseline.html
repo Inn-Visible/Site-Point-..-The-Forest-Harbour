@@ -96,7 +96,12 @@
 
 <script>
 /* the house keeps the lock */
-
+(function(){
+  var KEY='hive_access', SES='hive_session', SPAN=1800000;
+  var a = localStorage.getItem(KEY);
+  var ok = sessionStorage.getItem(SES)==='1' && a && +a > Date.now();
+  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY, String(Date.now()+SPAN)); }
+})();
 function lockdoor(){
   localStorage.removeItem('hive_access');
   sessionStorage.removeItem('hive_session');
