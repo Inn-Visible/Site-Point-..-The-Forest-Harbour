@@ -96,3 +96,35 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
   setInterval(draw,60000);
 })();
+
+(function(){
+  function keyed(){ return sessionStorage.getItem('hive_session')==='1' && !!localStorage.getItem('hive_access'); }
+  var RES=['./core.html','./socials.json'];
+  if(keyed() && localStorage.getItem('hive_resident_cache')!=='1' && 'caches' in window){
+    caches.open('hive-core-v1').then(function(c){
+      return Promise.all(RES.map(function(u){ return c.add(u).catch(function(){ return null; }); }));
+    }).then(function(){ localStorage.setItem('hive_resident_cache','1'); }).catch(function(){});
+  }
+})();
+
+(function(){
+  function keyed(){ return sessionStorage.getItem('hive_session')==='1' && !!localStorage.getItem('hive_access'); }
+  var SRC=[['hive_bench_baseline','baseline'],['hive_bench_axiom','axiom'],['hive_workbench','axiom'],['hive_rotas','keystone']];
+  function bank(){
+    if(!keyed()) return;
+    var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
+    var n=0;
+    SRC.forEach(function(s){
+      var v=localStorage.getItem(s[0]); if(!v||!v.trim()) return;
+      if(localStorage.getItem('hive_bank_last_'+s[0])===v) return;
+      LOCAL.unshift({id:'bank-'+s[0]+'-'+Date.now(), pillar:s[1], date:new Date().toISOString().slice(0,10),
+        title:'offline bank \u00b7 '+s[0].replace('hive_',''), body:v, tags:['auto-bank'], local:true});
+      localStorage.setItem('hive_bank_last_'+s[0],v); n++;
+    });
+    if(n){ localStorage.setItem('arc.local',JSON.stringify(LOCAL)); localStorage.setItem('hive_offline_bank',String(Date.now())); }
+    localStorage.setItem('hive_offline_since',String(Date.now()));
+  }
+  addEventListener('offline',bank);
+  addEventListener('pagehide',bank);
+  addEventListener('online',function(){ bank(); localStorage.removeItem('hive_offline_since'); });
+})();
