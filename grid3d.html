@@ -437,8 +437,9 @@
       if(vx<r.left+20||vx>r.right-20||vy<r.top+20||vy>r.bottom-20){ pev('pointerup',vx,vy); vx=cx; vy=cy; pev('pointerdown',vx,vy); }
       pev('pointermove',vx,vy);
     } else if(down){ pev('pointerup',vx,vy); down=false; }
-    if(R.y) wheel(0,R.y*24,cx,cy);
-    if(R.x) wheel(R.x*24,0,cx,cy);
+        var nz=performance.now();
+    if(Math.abs(R.y)>0.25&&(!frame.zt||nz-frame.zt>90)){ frame.zt=nz; wheel(0,(R.y>0?1:-1)*120,cx,cy); }
+    if(Math.abs(R.x)>0.25&&(!frame.xt||nz-frame.xt>90)){ frame.xt=nz; wheel((R.x>0?1:-1)*120,0,cx,cy); }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
