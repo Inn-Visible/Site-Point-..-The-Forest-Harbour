@@ -508,6 +508,30 @@ addEventListener('paste',function(e){
   render();
 })();
 </script>
+
+<script>
+// SLATE-KIT-1 · toggle the kit's geometry (3d viewer/writer) on the slate
+(function(){
+  var KIT_URL='./grid3d.html'; // <- the one constant: point at wherever the kit's geometry lives (kit.html if that's the true home)
+  var host=document.createElement('div'); host.id='slatekit1';
+  host.style.cssText='display:none;margin:14px auto;max-width:900px;padding:10px;border:1px dashed #3f7fc1;background:#0e141b';
+  host.innerHTML='<div style="font-size:9px;color:#3f7fc1;letter-spacing:.25em;margin-bottom:8px">SLATE-KIT-1 \u00b7 the kit\u2019s geometry \u00b7 3d viewer/writer</div>'
+    +'<iframe id="sk1frame" title="slate-kit-1" style="width:100%;height:420px;border:1px solid #223041;background:#0a0d12" src="about:blank"></iframe>';
+  var bar=document.querySelector('main')||document.body;
+  bar.appendChild(host);
+  var btn=document.createElement('button'); btn.id='slatekit1btn';
+  btn.textContent='slate-kit-1 \u00b7 open the geometry';
+  btn.style.cssText='display:block;margin:10px auto;background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;padding:6px 14px;cursor:pointer';
+  bar.appendChild(btn);
+  var open=false, loaded=false;
+  btn.onclick=function(){
+    open=!open;
+    host.style.display=open?'block':'none';
+    if(open&&!loaded){ document.getElementById('sk1frame').src=KIT_URL; loaded=true; }
+    btn.textContent=open?'slate-kit-1 \u00b7 close the geometry':'slate-kit-1 \u00b7 open the geometry';
+  };
+})();
+</script>
   
 </body>
 </html>
