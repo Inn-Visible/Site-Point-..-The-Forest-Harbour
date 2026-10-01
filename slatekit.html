@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<title>Inn.Visible — slate-kit-1 · the connection</title>
+<style>
+  :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--blue:#3f7fc1;--gold:#d9a83a;--mono:ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  header{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line)}
+  header .t{font-size:10px;letter-spacing:.3em;color:var(--blue)}
+  header .back{color:var(--dim);font-size:10px;letter-spacing:.15em;text-decoration:none}
+  .deck{position:relative;flex:1 1 0;min-height:0}
+  .deck .lab{position:absolute;top:6px;left:10px;font-size:9px;letter-spacing:.25em;color:#5c6875;z-index:2;pointer-events:none}
+  #slate{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+  .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(3,4,7,.6)}
+  .pip{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);cursor:pointer}
+  .pip.on{outline:2px solid var(--ink)}
+  button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.12em;padding:6px 10px;cursor:pointer}
+  button:hover{border-color:var(--gold);color:var(--gold)}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  @media(max-height:520px){ body{overflow:auto} .deck{min-height:46vh} }
+</style>
+</head>
+<body>
+<header>
+  <span class="t">SLATE-KIT-1 · THE CONNECTION</span>
+  <a class="back" href="board.html">the slate ↩</a>
+  <a class="back" href="core.html">core ↩</a>
+</header>
+<div class="deck"><span class="lab">the slate · ink above</span><canvas id="slate"></canvas></div>
+<div class="bar">
+  <span class="pip on" data-c="#e8e4d8" style="background:#e8e4d8"></span>
+  <span class="pip" data-c="#d9a83a" style="background:#d9a83a"></span>
+  <span class="pip" data-c="#7fb2e5" style="background:#7fb2e5"></span>
+  <span class="pip" data-c="#e07856" style="background:#e07856"></span>
+  <span class="pip" data-c="#78dcc8" style="background:#78dcc8"></span>
+  <span class="pip" data-c="#b48ce0" style="background:#b48ce0"></span>
+  <button id="undo">undo</button>
+  <button id="clear">clear</button>
+  <button id="save">save png ⤓</button>
+  <button id="swap">swap decks ⇵</button>
+</div>
+<div class="deck"><span class="lab">the geometry · sticks live inside</span><iframe id="kit" src="grid3d.html"></iframe></div>
+<script>
+(function(){
+  var cv=document.getElementById('slate'), x=cv.getContext('2d');
+  var strokes=[], cur=null, col='#e8e4d8', W, H;
+  function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=r.width; H=cv.height=r.height; redraw(); }
+  addEventListener('resize',fit);
+  function redraw(){ x.clearRect(0,0,W,H); x.lineCap='round'; x.lineJoin='round';
+    strokes.forEach(function(s){ if(s.pts.length<2) return; x.strokeStyle=s.c; x.lineWidth=s.w; x.beginPath();
+      s.pts.forEach(function(p,i){ i?x.lineTo(p[0]*W,p[1]*H):x.moveTo(p[0]*W,p[1]*H); }); x.stroke(); }); }
+  function pt(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]; }
+  cv.addEventListener('pointerdown',function(e){ try{cv.setPointerCapture(e.pointerId);}catch(err){} cur={c:col,w:3,pts:[pt(e)]}; strokes.push(cur); e.preventDefault(); });
+  cv.addEventListener('pointermove',function(e){ if(!cur) return; cur.pts.push(pt(e)); redraw(); });
+  addEventListener('pointerup',function(){ cur=null; });
+  document.querySelectorAll('.pip').forEach(function(p){ p.onclick=function(){ col=p.dataset.c;
+    document.querySelectorAll('.pip').forEach(function(q){ q.classList.remove('on'); }); p.classList.add('on'); }; });
+  document.getElementById('undo').onclick=function(){ strokes.pop(); redraw(); };
+  document.getElementById('clear').onclick=function(){ strokes=[]; redraw(); };
+  document.getElementById('save').onclick=function(){ var a=document.createElement('a'); a.download='slatekit-'+Date.now()+'.png'; a.href=cv.toDataURL('image/png'); a.click(); };
+  document.getElementById('swap').onclick=function(){ var d=document.querySelectorAll('.deck'); d[0].parentNode.appendChild(d[0]); };
+  fit();
+})();
+</script>
+</body>
+</html>
