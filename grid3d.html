@@ -379,5 +379,71 @@
   if('ResizeObserver' in window){ new ResizeObserver(function(){ fit(); }).observe(cv); }
 })();
 </script>
+
+<script>
+/* ---- THE STICKS · twin joysticks for the geometry ---- */
+(function(){
+  var cv=document.querySelector('canvas'); if(!cv) return;
+  var tab=document.createElement('button'); tab.textContent='sticks \u2304';
+  tab.style.cssText='position:fixed;right:10px;bottom:10px;z-index:60;background:rgba(3,4,7,.8);border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;padding:6px 12px;cursor:pointer';
+  var drawer=document.createElement('div');
+  drawer.style.cssText='display:none;position:fixed;left:0;right:0;bottom:0;z-index:59;padding:16px 12px 14px;background:rgba(3,4,7,.92);border-top:1px dashed #223041;align-items:flex-end;justify-content:space-between';
+  drawer.innerHTML='<div style="font:9px ui-monospace,Consolas,monospace;color:#5c6875;letter-spacing:.15em;position:absolute;top:4px;left:12px">left \u00b7 orbit &nbsp;&nbsp; right \u00b7 dolly/pan</div>';
+  document.body.appendChild(tab); document.body.appendChild(drawer);
+  var open=false;
+  function setOpen(o){ open=o; drawer.style.display=o?'flex':'none'; tab.textContent=o?'sticks \u2305':'sticks \u2304'; }
+  tab.onclick=function(){ setOpen(!open); };
+  if(window.matchMedia&&matchMedia('(pointer:coarse)').matches) setOpen(true);
+  var moon=document.createElement('button'); moon.textContent='\ud83c\udf19';
+  moon.style.cssText='position:absolute;top:2px;right:12px;background:none;border:1px solid #223041;color:#5c6875;font:12px ui-monospace,monospace;padding:2px 8px;cursor:pointer';
+  drawer.appendChild(moon);
+  var moonOn=false;
+  moon.onclick=function(){ moonOn=!moonOn; moon.style.borderColor=moonOn?'#d9a83a':'#223041'; moon.style.color=moonOn?'#d9a83a':'#5c6875'; };
+  function pad(color){
+    var p=document.createElement('div');
+    p.style.cssText='position:relative;width:104px;height:104px;border:1px solid '+color+';border-radius:50%;touch-action:none;flex:0 0 auto';
+    var k=document.createElement('div');
+    k.style.cssText='position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:'+color+';opacity:.85;box-shadow:0 0 10px '+color;
+    p.appendChild(k); drawer.appendChild(p);
+    var st={x:0,y:0,on:false,id:null};
+    function move(e){
+      var r=p.getBoundingClientRect();
+      var dx=(e.clientX-(r.left+r.width/2))/(r.width/2), dy=(e.clientY-(r.top+r.height/2))/(r.height/2);
+      var m=Math.max(1,Math.hypot(dx,dy)); dx/=m; dy/=m; st.x=dx; st.y=dy;
+      k.style.left=(50+dx*32)+'%'; k.style.top=(50+dy*32)+'%';
+    }
+    p.addEventListener('pointerdown',function(e){ st.on=true; st.id=e.pointerId; try{p.setPointerCapture(e.pointerId);}catch(err){} move(e); e.preventDefault(); e.stopPropagation(); });
+    p.addEventListener('pointermove',function(e){ if(st.on&&e.pointerId===st.id){ move(e); e.stopPropagation(); } });
+    function up(e){ if(e.pointerId===st.id){ st.on=false; st.x=0; st.y=0; k.style.left='50%'; k.style.top='50%'; } }
+    p.addEventListener('pointerup',up); p.addEventListener('pointercancel',up);
+    return st;
+  }
+  var L=pad('#3f7fc1'), R=pad('#d9a83a');
+  var vx=0,vy=0,down=false;
+  function pev(t,x,y){
+    var b=t==='pointerup'?0:1;
+    try{ cv.dispatchEvent(new PointerEvent(t,{pointerId:7,bubbles:true,cancelable:true,clientX:x,clientY:y,buttons:b,isPrimary:true,pointerType:'touch'})); }catch(e){}
+    var m=t==='pointerdown'?'mousedown':t==='pointerup'?'mouseup':'mousemove';
+    cv.dispatchEvent(new MouseEvent(m,{bubbles:true,cancelable:true,clientX:x,clientY:y,buttons:b}));
+  }
+  function wheel(dx,dy,x,y){ try{ cv.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaX:dx,deltaY:dy,clientX:x,clientY:y})); }catch(e){} }
+  function frame(){
+    var r=cv.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    var lx=L.x, ly=L.y;
+    if(moonOn&&!L.on) lx=0.35;
+    if(lx||ly){
+      if(!down){ vx=cx; vy=cy; pev('pointerdown',vx,vy); down=true; }
+      vx+=lx*6; vy+=ly*6;
+      if(vx<r.left+20||vx>r.right-20||vy<r.top+20||vy>r.bottom-20){ pev('pointerup',vx,vy); vx=cx; vy=cy; pev('pointerdown',vx,vy); }
+      pev('pointermove',vx,vy);
+    } else if(down){ pev('pointerup',vx,vy); down=false; }
+    if(R.y) wheel(0,R.y*24,cx,cy);
+    if(R.x) wheel(R.x*24,0,cx,cy);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+  
 </body>
 </html>
