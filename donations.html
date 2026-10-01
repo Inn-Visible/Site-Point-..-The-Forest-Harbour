@@ -1172,6 +1172,123 @@ setInterval(function(){
 </script>
 
 <script src="sig.js" defer></script>
+
+<script>
+/* ---- FIREBLED · PROJECT WORLD SEED (the portal egg) ---- */
+(function(){
+  // 1. the trigger (down-low, almost invisible against the dark bg)
+  var trig = document.createElement('div');
+  trig.textContent = 'firebled · project world seed';
+  trig.style.cssText = 'text-align:center;margin:60px 0 20px;font-size:8px;letter-spacing:.4em;color:#111318;cursor:pointer;user-select:none;transition:color .4s';
+  trig.onmouseover = function(){ this.style.color='#3f7fc1'; };
+  trig.onmouseout = function(){ this.style.color='#111318'; };
+  document.body.appendChild(trig);
+
+  // 2. the portal overlay
+  var ov = document.createElement('div');
+  ov.id = 'worldseed-portal';
+  ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:9999;background:#000;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity .6s';
+  
+  // camera feed (the window)
+  var vid = document.createElement('video');
+  vid.autoplay = true; vid.playsInline = true; vid.muted = true;
+  vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.85;filter:contrast(1.1) brightness(0.9);';
+  
+  // the void mask (cuts the hole in the dark)
+  var mask = document.createElement('div');
+  mask.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle at center, transparent 28%, rgba(5,2,15,0.96) 30%, #030407 65%);pointer-events:none;';
+  
+  // the void flame ring
+  var ring = document.createElement('div');
+  ring.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56vmin;height:56vmin;border-radius:50%;border:2px solid #8a4fd0;box-shadow:0 0 40px #8a4fd0, inset 0 0 40px rgba(138,79,208,0.4);pointer-events:none;animation:seedPulse 4s infinite ease-in-out;';
+  
+  // the world seed geometry (crosshairs & dashed orbit)
+  var seed = document.createElement('div');
+  seed.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;opacity:0.7"><line x1="50" y1="15" x2="50" y2="85" stroke="#d9a83a" stroke-width="0.5"/><line x1="15" y1="50" x2="85" y2="50" stroke="#d9a83a" stroke-width="0.5"/><circle cx="50" cy="50" r="28" fill="none" stroke="#d9a83a" stroke-width="0.5" stroke-dasharray="2 4"/><circle cx="50" cy="50" r="2" fill="#d9a83a"/></svg>';
+  seed.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56vmin;height:56vmin;pointer-events:none;';
+
+  // the seal (close button)
+  var closeBtn = document.createElement('div');
+  closeBtn.textContent = 'seal the portal';
+  closeBtn.style.cssText = 'position:absolute;bottom:40px;font:10px ui-monospace,monospace;letter-spacing:.2em;color:#5c6875;border:1px solid #223041;padding:10px 20px;cursor:pointer;z-index:10;background:rgba(3,4,7,0.8);';
+  
+  ov.appendChild(vid);
+  ov.appendChild(mask);
+  ov.appendChild(ring);
+  ov.appendChild(seed);
+  ov.appendChild(closeBtn);
+  document.body.appendChild(ov);
+
+  // inject the pulse animation
+  var style = document.createElement('style');
+  style.textContent = '@keyframes seedPulse { 0%,100%{box-shadow:0 0 40px #8a4fd0, inset 0 0 40px rgba(138,79,208,0.3); border-color:#8a4fd0;} 50%{box-shadow:0 0 80px #d9a83a, inset 0 0 60px rgba(217,168,58,0.5); border-color:#d9a83a;} }';
+  document.head.appendChild(style);
+
+  // 3. the ignition logic
+  var stream = null;
+  var audioCtx = null;
+  var osc = null;
+  var lfo = null;
+
+  function ignite() {
+    ov.style.display = 'flex';
+    setTimeout(function(){ ov.style.opacity = '1'; }, 10);
+    
+    // the rumble (heavy, resonant haptic knock)
+    if(navigator.vibrate) navigator.vibrate([50, 30, 100, 30, 200, 50, 400, 100, 800]);
+    
+    // the camera (rear-facing, so you look *through* the phone)
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+        .then(function(s) {
+          stream = s;
+          vid.srcObject = s;
+        }).catch(function(e) {
+          console.log('worldseed: camera denied or unavailable, portal remains pure void.', e);
+        });
+    }
+
+    // the thrum (sub-bass drone with a slow LFO pulse)
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(42, audioCtx.currentTime); // deep sub-bass
+      
+      var gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 1.5);
+      
+      lfo = audioCtx.createOscillator();
+      lfo.frequency.value = 0.15; // slow pulse
+      var lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 8;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      lfo.start();
+    } catch(e) {}
+  }
+
+  function seal() {
+    ov.style.opacity = '0';
+    setTimeout(function(){
+      ov.style.display = 'none';
+      if(stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; vid.srcObject = null; }
+      if(osc) { try{ osc.stop(); }catch(e){} osc = null; }
+      if(lfo) { try{ lfo.stop(); }catch(e){} lfo = null; }
+      if(audioCtx) { try{ audioCtx.close(); }catch(e){} audioCtx = null; }
+    }, 600);
+  }
+
+  trig.onclick = ignite;
+  closeBtn.onclick = seal;
+  ov.onclick = function(e) { if(e.target === ov) seal(); };
+})();
+</script>
   
 </body>
 </html>
