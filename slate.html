@@ -525,6 +525,7 @@ addEventListener('paste',function(e){
   bar.appendChild(btn);
   var open=false, loaded=false;
   btn.onclick=function(){
+    if(matchMedia('(pointer:coarse)').matches){ location.href='slatekit.html'; return; }
     open=!open;
     host.style.display=open?'block':'none';
     if(open&&!loaded){ document.getElementById('sk1frame').src=KIT_URL; loaded=true; }
