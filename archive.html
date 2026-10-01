@@ -291,57 +291,81 @@
 </script>
 
 <script>
-/* ---- the reconnect · one word, the sealed leaves wake ---- */
+/* ---- the word · leaf reconnect · sealed leaves wake here ---- */
 (function(){
-  var KEY=null;
-  function b64d(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
-  function derive(pass){ var salt=new TextEncoder().encode('hive-vault-v0-salt');
-    return crypto.subtle.importKey('raw',new TextEncoder().encode(pass),{name:'PBKDF2'},false,['deriveKey'])
-      .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['decrypt']); }); }
-  var list=document.getElementById('list'); if(!list) return;
-  var bar=document.createElement('div');
-  bar.style.cssText='display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 14px;flex-wrap:wrap';
-  bar.innerHTML='<input id="rcPass" type="password" placeholder="the house word \u00b7 reconnect the sealed leaves" style="background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:11px ui-monospace,Consolas,monospace;padding:8px 12px;width:260px">'
-    +'<button id="rcGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:8px 14px;cursor:pointer">reconnect</button>'
-    +'<span id="rcMsg" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span>';
-  list.parentNode.insertBefore(bar,list);
-  function msg(t,c){ var m=document.getElementById('rcMsg'); if(m){ m.textContent=t; m.style.color=c||'#5c6875'; } }
-  var ENVRE=/\{"iv":"[A-Za-z0-9+\/=]+","ct":"[A-Za-z0-9+\/=]+"\}/g;
-  function decryptAll(){
-    var jobs=[];
-    if(KEY){
-      document.querySelectorAll('#list .note p').forEach(function(p){
-        var txt=p.textContent; if(p.dataset.open==='1'||txt.indexOf('{"iv":')<0) return;
-        var re=new RegExp(ENVRE.source,'g'), m, envs=[];
-        while((m=re.exec(txt))) envs.push(m[0]);
-        if(!envs.length) return;
-        jobs.push(Promise.all(envs.map(function(e){
-          try{ var pkg=JSON.parse(e);
-            return crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(pkg.iv)},KEY,b64d(pkg.ct))
-              .then(function(pt){ return new TextDecoder().decode(pt); }).catch(function(){ return null; });
-          }catch(err){ return Promise.resolve(null); }
-        })).then(function(pts){
-          var out=txt, ok=0;
-          pts.forEach(function(pt,i){ if(pt!=null){ out=out.split(envs[i]).join(pt); ok++; } });
-          if(ok){ p.textContent=out; p.dataset.open='1'; }
-          return ok;
-        }));
-      });
-    }
-    return Promise.all(jobs).then(function(ns){ return ns.reduce(function(a,b){return a+b;},0); });
+  console.log('[archive-reconnect] script loaded');
+  function unb64(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+  var SALT=new TextEncoder().encode('hive-vault-v0-salt');
+  function derive(pass){ return crypto.subtle.importKey('raw',new TextEncoder().encode(pass),{name:'PBKDF2'},false,['deriveKey'])
+    .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:SALT,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }); }
+  var _key=null;
+  function parentVault(){ try{ if(window.parent&&window.parent!==window&&window.parent.vaultIsOpen&&window.parent.vaultIsOpen()) return window.parent; }catch(e){} return null; }
+  function ready(){ return !!parentVault()||!!_key; }
+  function decOne(pkgStr){
+    var P=parentVault(); if(P) return P.vaultDecrypt(pkgStr);
+    if(!_key) return Promise.reject('locked');
+    var pkg=JSON.parse(pkgStr);
+    return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(pkg.iv)},_key,unb64(pkg.ct))
+      .then(function(pt){ return new TextDecoder().decode(pt); });
   }
-  document.getElementById('rcGo').onclick=function(){
-    var pass=document.getElementById('rcPass').value;
-    if(!pass){ msg('say the word first'); return; }
-    msg('turning the key ..');
-    derive(pass).then(function(k){ KEY=k; return decryptAll().then(function(n){
-      if(n>0){ msg('the leaves wake \u00b7 '+n+' envelope'+(n===1?'':'s')+' opened','#58a36a'); document.getElementById('rcPass').value=''; }
-      else { KEY=null; msg('the word was refused \u00b7 or nothing sealed is showing','#c8452c'); }
-    }); }).catch(function(){ msg('no crypto on this glass','#c8452c'); });
-  };
-  document.getElementById('rcPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('rcGo').click(); });
-  var deb=null;
-  new MutationObserver(function(){ clearTimeout(deb); deb=setTimeout(decryptAll,120); }).observe(list,{childList:true,subtree:true});
+  var bar=document.createElement('div');
+  bar.style.cssText='text-align:center;margin:0 0 14px';
+  bar.innerHTML='<button id="arcV" class="chip">the word · reconnect</button> '
+    +'<input id="arcP" type="password" placeholder="house password" style="display:none;background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:11px ui-monospace,monospace;padding:8px 10px;margin-left:6px;width:180px"> '
+    +'<span id="arcS" style="font-size:9px;letter-spacing:.15em;color:#5c6875;margin-left:8px"></span>';
+  var list=document.getElementById('list');
+  if(list&&list.parentNode) list.parentNode.insertBefore(bar,list);
+  else document.body.appendChild(bar);
+  var btn=bar.querySelector('#arcV'), inp=bar.querySelector('#arcP'), st=bar.querySelector('#arcS');
+  function state(){ st.textContent=ready()?('vault · '+(parentVault()?'borrowed from the pillar':'open on this glass')):'vault · shut · leaves stay sealed'; st.style.color=ready()?'#58a36a':'#5c6875'; }
+  btn.onclick=function(){ inp.style.display=(inp.style.display==='none')?'inline-block':'none'; if(inp.style.display!=='none') inp.focus(); state(); };
+  inp.addEventListener('keydown',function(e){ 
+    if(e.key!=='Enter') return; 
+    var p=inp.value; 
+    if(!p) return;
+    console.log('[archive-reconnect] attempting derive...');
+    derive(p).then(function(k){ 
+      _key=k; 
+      inp.value=''; 
+      inp.style.display='none'; 
+      state(); 
+      console.log('[archive-reconnect] key derived, waking leaves');
+      wake(true); 
+    }).catch(function(err){ 
+      console.error('[archive-reconnect] derive failed:', err);
+      st.textContent='the word refused'; 
+      st.style.color='#c8452c'; 
+    }); 
+  });
+  function wake(force){
+    var ps=document.querySelectorAll('#list p');
+    console.log('[archive-reconnect] wake called, found', ps.length, 'p elements, ready:', ready());
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i], t=p.textContent||'';
+      if(t.indexOf('{"iv":')<0) continue;
+      if(p.getAttribute('data-dec')==='1'&&!force) continue;
+      if(!ready()){ p.setAttribute('data-dec','0'); continue; }
+      p.setAttribute('data-dec','1');
+      (function(el,src){
+        var re=/\{"iv":"[^"]+","ct":"[^"]+"\}/g, m, jobs=[];
+        while((m=re.exec(src))!==null) jobs.push(m[0]);
+        console.log('[archive-reconnect] found', jobs.length, 'sealed packages in this leaf');
+        if(!jobs.length){ el.setAttribute('data-dec','0'); return; }
+        Promise.all(jobs.map(function(j){ return decOne(j).catch(function(){ return null; }); }))
+          .then(function(pts){
+            var ok=true, res=src;
+            jobs.forEach(function(j,k){ if(pts[k]==null){ ok=false; return; } res=res.split(j).join(pts[k]); });
+            if(!ok){ el.setAttribute('data-dec','0'); return; }
+            el.textContent=res;
+            console.log('[archive-reconnect] leaf decrypted successfully');
+          });
+      })(p,t);
+    }
+    state();
+  }
+  setInterval(function(){ wake(false); },700);
+  console.log('[archive-reconnect] starting wake loop');
+  wake(false);
 })();
 </script>
   
