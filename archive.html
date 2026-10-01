@@ -289,5 +289,61 @@
   renderTools();
 })();
 </script>
+
+<script>
+/* ---- the reconnect · one word, the sealed leaves wake ---- */
+(function(){
+  var KEY=null;
+  function b64d(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+  function derive(pass){ var salt=new TextEncoder().encode('hive-vault-v0-salt');
+    return crypto.subtle.importKey('raw',new TextEncoder().encode(pass),{name:'PBKDF2'},false,['deriveKey'])
+      .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['decrypt']); }); }
+  var list=document.getElementById('list'); if(!list) return;
+  var bar=document.createElement('div');
+  bar.style.cssText='display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 14px;flex-wrap:wrap';
+  bar.innerHTML='<input id="rcPass" type="password" placeholder="the house word \u00b7 reconnect the sealed leaves" style="background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:11px ui-monospace,Consolas,monospace;padding:8px 12px;width:260px">'
+    +'<button id="rcGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:8px 14px;cursor:pointer">reconnect</button>'
+    +'<span id="rcMsg" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span>';
+  list.parentNode.insertBefore(bar,list);
+  function msg(t,c){ var m=document.getElementById('rcMsg'); if(m){ m.textContent=t; m.style.color=c||'#5c6875'; } }
+  var ENVRE=/\{"iv":"[A-Za-z0-9+\/=]+","ct":"[A-Za-z0-9+\/=]+"\}/g;
+  function decryptAll(){
+    var jobs=[];
+    if(KEY){
+      document.querySelectorAll('#list .note p').forEach(function(p){
+        var txt=p.textContent; if(p.dataset.open==='1'||txt.indexOf('{"iv":')<0) return;
+        var re=new RegExp(ENVRE.source,'g'), m, envs=[];
+        while((m=re.exec(txt))) envs.push(m[0]);
+        if(!envs.length) return;
+        jobs.push(Promise.all(envs.map(function(e){
+          try{ var pkg=JSON.parse(e);
+            return crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(pkg.iv)},KEY,b64d(pkg.ct))
+              .then(function(pt){ return new TextDecoder().decode(pt); }).catch(function(){ return null; });
+          }catch(err){ return Promise.resolve(null); }
+        })).then(function(pts){
+          var out=txt, ok=0;
+          pts.forEach(function(pt,i){ if(pt!=null){ out=out.split(envs[i]).join(pt); ok++; } });
+          if(ok){ p.textContent=out; p.dataset.open='1'; }
+          return ok;
+        }));
+      });
+    }
+    return Promise.all(jobs).then(function(ns){ return ns.reduce(function(a,b){return a+b;},0); });
+  }
+  document.getElementById('rcGo').onclick=function(){
+    var pass=document.getElementById('rcPass').value;
+    if(!pass){ msg('say the word first'); return; }
+    msg('turning the key ..');
+    derive(pass).then(function(k){ KEY=k; return decryptAll().then(function(n){
+      if(n>0){ msg('the leaves wake \u00b7 '+n+' envelope'+(n===1?'':'s')+' opened','#58a36a'); document.getElementById('rcPass').value=''; }
+      else { KEY=null; msg('the word was refused \u00b7 or nothing sealed is showing','#c8452c'); }
+    }); }).catch(function(){ msg('no crypto on this glass','#c8452c'); });
+  };
+  document.getElementById('rcPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('rcGo').click(); });
+  var deb=null;
+  new MutationObserver(function(){ clearTimeout(deb); deb=setTimeout(decryptAll,120); }).observe(list,{childList:true,subtree:true});
+})();
+</script>
+  
 </body>
 </html>
