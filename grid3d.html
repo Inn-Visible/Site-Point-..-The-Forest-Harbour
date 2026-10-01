@@ -430,7 +430,7 @@
   function frame(){
     var r=cv.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
     var lx=L.x, ly=L.y;
-    if(moonOn&&!L.on) lx=0.35;
+    if(moonOn&&!L.on) lx=0.12;
     if(lx||ly){
       if(!down){ vx=cx; vy=cy; pev('pointerdown',vx,vy); down=true; }
       vx+=lx*6; vy+=ly*6;
