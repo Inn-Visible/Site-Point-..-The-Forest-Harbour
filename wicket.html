@@ -361,72 +361,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
 })();
 </script>
 
-<script>
-/* ---- STRANGER GLASS · the modest wicket · cover, no residue · refurbished one-paste ---- */
-(function(){
-  /* consume-once box-burn: a stranger session queued this machine for a clean box */
-  try{ if(localStorage.getItem('hive_burnbox')==='1'){ localStorage.removeItem('hive_burnbox');
-    navigator.serviceWorker&&navigator.serviceWorker.getRegistration&&navigator.serviceWorker.getRegistration().then(function(r){ r&&r.unregister&&r.unregister(); });
-    caches&&caches.keys&&caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); });
-  } }catch(e){}
-  var stranger = (location.pathname.indexOf('wicket')>-1);
-  var CHOICE = sessionStorage.getItem('hive_glass');
-  if(CHOICE) stranger = (CHOICE==='stranger');
-  function knockInputs(){
-    var out=[], ps=document.querySelectorAll('input');
-    for(var i=0;i<ps.length;i++){
-      var h=((ps[i].placeholder||'')+' '+(ps[i].id||'')+' '+(ps[i].name||'')).toLowerCase();
-      if(/knock|word|pass|key|secret/.test(h) || ps[i].type==='password') out.push(ps[i]);
-    }
-    return out;
-  }
-  function cover(inp){
-    if(inp.getAttribute('data-cover')) return;
-    inp.setAttribute('data-cover','1');
-    inp.type='password';
-    inp.autocomplete='new-password'; inp.spellcheck=false;
-    inp.setAttribute('autocapitalize','off'); inp.setAttribute('autocorrect','off');
-    var b=document.createElement('button'); b.type='button'; b.textContent='\ud83d\udc41';
-    b.title='show / hide the knock';
-    b.style.cssText='background:none;border:1px solid #223041;color:#5c6875;font:11px ui-monospace,monospace;padding:2px 7px;margin-left:6px;cursor:pointer;vertical-align:middle';
-    inp.parentNode.insertBefore(b,inp.nextSibling);
-    b.onclick=function(){ var show=inp.type==='password'; inp.type=show?'text':'password';
-      b.style.color=show?'#d9a83a':'#5c6875'; b.style.borderColor=show?'#d9a83a':'#223041'; inp.focus(); };
-    inp.addEventListener('blur',function(){ setTimeout(function(){ inp.value=''; },400); });
-  }
-  function burn(){
-    try{ localStorage.removeItem('hive_access'); sessionStorage.removeItem('hive_session'); sessionStorage.removeItem('hive_glass'); }catch(e){}
-  }
-  function queueBoxBurn(){ try{ localStorage.setItem('hive_burnbox','1'); }catch(e){} }
-  var row=document.createElement('div');
-  row.style.cssText='position:fixed;left:10px;bottom:10px;z-index:70;display:flex;gap:6px;align-items:center;font:9px ui-monospace,Consolas,monospace;letter-spacing:.15em';
-  row.innerHTML='<button id="gMine" style="background:rgba(3,4,7,.8);border:1px solid #223041;color:#93a1b0;font:inherit;padding:4px 8px;cursor:pointer">my glass</button>'
-    +'<button id="gStr" style="background:rgba(3,4,7,.8);border:1px solid #223041;color:#93a1b0;font:inherit;padding:4px 8px;cursor:pointer">stranger glass</button>'
-    +'<button id="gBurn" style="background:rgba(3,4,7,.8);border:1px solid #c8452c;color:#c8452c;font:inherit;padding:4px 8px;cursor:pointer">burn now \ud83d\udd25</button>';
-  document.body.appendChild(row);
-  function paintRow(){
-    row.querySelector('#gMine').style.color=stranger?'#93a1b0':'#d9a83a';
-    row.querySelector('#gMine').style.borderColor=stranger?'#223041':'#d9a83a';
-    row.querySelector('#gStr').style.color=stranger?'#d9a83a':'#93a1b0';
-    row.querySelector('#gStr').style.borderColor=stranger?'#d9a83a':'#223041';
-    row.querySelector('#gBurn').textContent=stranger?'burn now \ud83d\udd25':'lock out \ud83d\udd12';
-  }
-  row.querySelector('#gMine').onclick=function(){ stranger=false; sessionStorage.setItem('hive_glass','mine'); paintRow(); };
-  row.querySelector('#gStr').onclick=function(){ stranger=true; sessionStorage.setItem('hive_glass','stranger'); paintRow(); };
-  row.querySelector('#gBurn').onclick=function(){ burn(); if(stranger) queueBoxBurn(); location.reload(); };
-  paintRow();
-  setInterval(function(){ knockInputs().forEach(cover); },700);
-  document.addEventListener('click',function(e){
-    if(e.target&&e.target.closest&&e.target.closest('button')){
-      setTimeout(function(){ knockInputs().forEach(function(i){ if(i.type==='password') i.value=''; }); },600);
-    }
-  },true);
-  var last=Date.now();
-  ['click','keydown','touchstart','pointermove'].forEach(function(ev){ addEventListener(ev,function(){ last=Date.now(); },{passive:true}); });
-  addEventListener('pagehide',function(){ if(stranger){ burn(); queueBoxBurn(); } });
-  setInterval(function(){ if(stranger && Date.now()-last>600000){ burn(); queueBoxBurn(); location.reload(); } },30000);
-})();
-</script>
+
   
 </body>
 </html>
