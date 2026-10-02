@@ -146,3 +146,24 @@
     setInterval(function(){ if(Date.now()-last>600000){ burn(); location.reload(); } },30000);
   }catch(e){}
 })();
+
+(function(){
+  /* autofill dampener · the house does not offer your words back to strangers */
+  function damp(){
+    var fs=document.querySelectorAll('form');
+    for(var i=0;i<fs.length;i++) fs[i].setAttribute('autocomplete','off');
+    var ps=document.querySelectorAll('input');
+    for(var j=0;j<ps.length;j++){
+      var el=ps[j], h=((el.placeholder||'')+' '+(el.id||'')+' '+(el.name||'')).toLowerCase();
+      if(el.type==='password'){
+        if(!el.getAttribute('data-ro')){
+          el.setAttribute('data-ro','1'); el.setAttribute('readonly','readonly');
+          setTimeout(function(){ el.removeAttribute('readonly'); },60);
+          el.addEventListener('focus',function(){ this.removeAttribute('readonly'); },{once:true});
+        }
+        el.autocomplete='new-password';
+      } else if(/name|alias|word|who|knock|title/.test(h)) el.autocomplete='off';
+    }
+  }
+  damp(); setInterval(damp,1200);
+})();
