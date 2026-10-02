@@ -314,6 +314,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
     if(inp.getAttribute('data-cover')) return;
     inp.setAttribute('data-cover','1');
     inp.type='password';
+        inp.style.width='min(240px,64vw)';
     inp.autocomplete='new-password'; inp.spellcheck=false;
     inp.setAttribute('autocapitalize','off'); inp.setAttribute('autocorrect','off');
     var b=document.createElement('button'); b.type='button'; b.textContent='\ud83d\udc41';
@@ -335,7 +336,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   function queueBoxBurn(){ try{ localStorage.setItem('hive_burnbox','1'); }catch(e){} }
   function armHouse(){ try{ localStorage.setItem('hive_stranger_arm','1'); }catch(e){} }
   var row=document.createElement('div');
-  row.style.cssText='position:fixed;left:10px;bottom:10px;z-index:70;display:flex;gap:6px;align-items:center;font:9px ui-monospace,Consolas,monospace;letter-spacing:.15em';
+  row.style.cssText='position:fixed;right:10px;bottom:10px;z-index:70;display:flex;gap:6px;align-items:center;font:9px ui-monospace,Consolas,monospace;letter-spacing:.15em';
   row.innerHTML='<button id="gMine" style="background:rgba(3,4,7,.8);border:1px solid #223041;color:#93a1b0;font:inherit;padding:4px 8px;cursor:pointer">my glass</button>'
     +'<button id="gStr" style="background:rgba(3,4,7,.8);border:1px solid #223041;color:#93a1b0;font:inherit;padding:4px 8px;cursor:pointer">stranger glass</button>'
     +'<button id="gBurn" style="background:rgba(3,4,7,.8);border:1px solid #c8452c;color:#c8452c;font:inherit;padding:4px 8px;cursor:pointer">burn now \ud83d\udd25</button>';
