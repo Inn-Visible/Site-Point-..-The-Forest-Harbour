@@ -308,8 +308,11 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   function cover(inp){
     if(inp.getAttribute('data-cover')) return;
     inp.setAttribute('data-cover','1');
-    inp.type='password';
-    inp.autocomplete='new-password'; inp.spellcheck=false;
+       inp.type='password';
+    inp.autocomplete='new-password-'+Math.random().toString(36).slice(2); inp.spellcheck=false;
+    inp.setAttribute('readonly','readonly');
+    setTimeout(function(){ inp.removeAttribute('readonly'); },60);
+    inp.addEventListener('focus',function(){ inp.removeAttribute('readonly'); },{once:true});
     inp.setAttribute('autocapitalize','off'); inp.setAttribute('autocorrect','off');
     var b=document.createElement('button'); b.type='button'; b.textContent='\ud83d\udc41';
     b.title='show / hide the knock';
