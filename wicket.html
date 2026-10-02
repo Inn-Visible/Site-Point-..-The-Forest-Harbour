@@ -368,6 +368,54 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   setInterval(function(){ if(stranger && Date.now()-last>600000){ burn(true); queueBoxBurn(); location.reload(); } },30000);
 })();
 </script>
+
+<script>
+/* ---- THE WIND · handedness without words · the rhythm knock ---- */
+(function(){
+  function glyph(dir){
+    var d=dir>0?'M 9 23 A 11 11 0 1 1 23 9':'M 23 9 A 11 11 0 1 0 9 23';
+    var h=dir>0?'M 23 9 l -6 -1.5 M 23 9 l -1.5 6':'M 9 23 l 6 1.5 M 9 23 l 1.5 -6';
+    return '<svg viewBox="0 0 32 32" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="'+d+'"/><path d="'+h+'"/></svg>';
+  }
+  var leg=document.createElement('div');
+  leg.style.cssText='position:fixed;right:10px;bottom:36px;z-index:70;display:flex;gap:10px;align-items:center;color:#5c6875';
+  leg.innerHTML='<span id="wWith" style="color:#d9a83a;cursor:pointer">'+glyph(1)+'</span><span id="wAgainst" style="cursor:pointer">'+glyph(-1)+'</span>';
+  document.body.appendChild(leg);
+  var KEYW='hive_knock_wind', seq=[], teach=false, teachSeq='';
+  function flash(dir){ var el=dir>0?leg.querySelector('#wWith'):leg.querySelector('#wAgainst');
+    el.style.color='#f1d078'; setTimeout(function(){ el.style.color=dir>0?'#d9a83a':'#5c6875'; },260); }
+  function say(t){ var s=document.getElementById('stat'); if(s) s.textContent=t; }
+  var t0=0;
+  leg.querySelector('#wWith').addEventListener('pointerdown',function(){ t0=Date.now(); });
+  leg.querySelector('#wWith').addEventListener('pointerup',function(){
+    if(Date.now()-t0<2000) return;
+    teach=true; teachSeq=''; seq=[]; say('the rose learns a rhythm .. four winds');
+  });
+  var cv=document.getElementById('species'); if(!cv) return;
+  var acc=0, lastA=null, down=false;
+  function ang(e){ var r=cv.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    return Math.atan2(e.clientY-cy,e.clientX-cx); }
+  cv.addEventListener('pointerdown',function(e){ down=true; acc=0; lastA=ang(e); });
+  cv.addEventListener('pointermove',function(e){ if(!down) return; var a=ang(e), d=a-lastA;
+    while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI; acc+=d; lastA=a; });
+  cv.addEventListener('pointerup',function(){ if(!down) return; down=false;
+    if(Math.abs(acc)<1.2) return;
+    var s=acc>0?'+':'-'; flash(acc>0?1:-1);
+    if(teach){ teachSeq+=s;
+      if(teachSeq.length>=4){ localStorage.setItem(KEYW,teachSeq); teach=false;
+        say('the rhythm is remembered \u00b7 '+teachSeq.replace(/\+/g,'\u21bb').replace(/-/g,'\u21ba')); }
+      return; }
+    seq.push(s); if(seq.length>4) seq.shift();
+    if(seq.length===4){ var p=localStorage.getItem(KEYW)||'';
+      if(p&&seq.join('')===p){ seq=[];
+        var inp=document.querySelector('input'), bs=document.querySelectorAll('button'), btn=null;
+        for(var i=0;i<bs.length;i++) if(/knock/i.test(bs[i].textContent||'')) btn=bs[i];
+        if(inp&&btn){ inp.value='ragewood'; btn.click(); }
+      } else if(p){ seq=[]; say('the rose felt a rhythm it does not know.'); }
+    }
+  });
+})();
+</script>
   
 </body>
 </html>
