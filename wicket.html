@@ -378,7 +378,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
     return '<svg viewBox="0 0 32 32" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="'+d+'"/><path d="'+h+'"/></svg>';
   }
   var leg=document.createElement('div');
-  leg.style.cssText='position:fixed;right:10px;bottom:36px;z-index:70;display:flex;gap:10px;align-items:center;color:#5c6875';
+  leg.style.cssText='position:fixed;right:10px;top:10px;z-index:70;display:flex;gap:10px;align-items:center;color:#5c6875';
   leg.innerHTML='<span id="wWith" style="color:#d9a83a;cursor:pointer">'+glyph(1)+'</span><span id="wAgainst" style="cursor:pointer">'+glyph(-1)+'</span>';
   document.body.appendChild(leg);
   var KEYW='hive_knock_wind', seq=[], teach=false, teachSeq='';
