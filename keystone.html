@@ -906,6 +906,81 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
   render();
 })();
 </script>
+
+<script>
+/* ---- the keystone router · four doors, one desk ---- */
+(function(){
+  function byText(sel,needle){ var els=document.querySelectorAll(sel); for(var i=0;i<els.length;i++){ if((els[i].textContent||'').indexOf(needle)>-1) return els[i]; } return null; }
+  var TABS=['desk','books','rotas','purse'];
+  var LABEL={desk:'the desk \u00b7 slots & scope',books:'the books \u00b7 chain & works',rotas:'the rotas \u00b7 who holds',purse:'the purse \u00b7 budget & piggy'};
+  function start(){
+    if(document.getElementById('ksTabs')) return;
+    var ks=document.querySelector('section.ks');
+    var runway=byText('section','the runway \u00b7');
+    var rotas=byText('section','the rotas \u00b7');
+    var budget=byText('section','the budget \u00b7');
+    var piggy=byText('section','the piggy \u00b7');
+    if(!ks&&!rotas&&!budget) return setTimeout(start,400);
+    var bar=document.createElement('div'); bar.id='ksTabs';
+    bar.style.cssText='max-width:980px;margin:26px auto 0;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding:0 14px';
+    var foot=document.querySelector('footer');
+    (foot&&foot.parentNode||document.body).insertBefore(bar,foot);
+    var P={};
+    TABS.forEach(function(t){
+      var d=document.createElement('div'); d.id='ksP-'+t;
+      d.style.cssText='max-width:980px;margin:14px auto 0';
+      bar.parentNode.insertBefore(d,bar.nextSibling);
+      P[t]=d;
+      var b=document.createElement('button'); b.setAttribute('data-t',t); b.innerHTML=LABEL[t];
+      b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 14px;cursor:pointer';
+      bar.appendChild(b);
+    });
+    function moveTo(t,el){ if(el) P[t].appendChild(el); }
+    moveTo('desk',ks);
+    moveTo('desk',byText('main .dock','workforce'));
+    moveTo('books',runway);
+    Array.prototype.slice.call(document.querySelectorAll('main .dock')).forEach(function(dk){ moveTo('books',dk); });
+    moveTo('rotas',rotas);
+    moveTo('purse',budget); moveTo('purse',piggy);
+    function show(t){
+      if(TABS.indexOf(t)<0) t='desk';
+      TABS.forEach(function(x){ P[x].style.display=(x===t)?'block':'none'; });
+      bar.querySelectorAll('button').forEach(function(b){
+        var on=b.getAttribute('data-t')===t;
+        b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0';
+      });
+      try{ localStorage.setItem('hive_ks_tab',t); }catch(e){}
+    }
+    bar.addEventListener('click',function(e){ var b=e.target.closest('button'); if(b){ show(b.getAttribute('data-t')); } });
+    addEventListener('hashchange',function(){ show(location.hash.replace('#','')); });
+    show(location.hash.replace('#','')||localStorage.getItem('hive_ks_tab')||'desk');
+    /* the bridge: rotas price the week */
+    if(rotas){
+      var lb=document.createElement('div');
+      lb.style.cssText='text-align:center;font-size:10px;color:#5c6875;letter-spacing:.12em;margin:0 0 10px';
+      lb.innerHTML='shifts are labor \u00b7 labor is money \u00b7 <span id="ksLabor" style="color:#d9a83a"></span> \u00b7 rate $<input id="ksRate" style="width:52px;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:3px" value="'+(localStorage.getItem('hive_ks_rate')||'25')+'">/h';
+      rotas.insertBefore(lb,rotas.children[2]||null);
+      addEventListener('input',function(e){ if(e.target&&e.target.id==='ksRate') localStorage.setItem('hive_ks_rate',e.target.value); });
+      setInterval(function(){
+        var d; try{ d=JSON.parse(localStorage.getItem('hive_rotas')||'{}'); }catch(e){ d={}; }
+        var mon=new Date(); mon.setDate(mon.getDate()-((mon.getDay()+6)%7)); mon.setHours(0,0,0,0);
+        var hrs=0;
+        for(var i=0;i<7;i++){
+          var x=new Date(mon); x.setDate(x.getDate()+i);
+          var k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+          (d[k]||[]).forEach(function(s){ var p=String(s.start).split(':'), q=String(s.end).split(':'); hrs+=(+q[0]+(+q[1]||0)/60)-(+p[0]+(+p[1]||0)/60); });
+        }
+        if(hrs<0) hrs=0;
+        var rate=parseFloat(localStorage.getItem('hive_ks_rate')||'25')||0;
+        var el=document.getElementById('ksLabor');
+        if(el) el.textContent=hrs.toFixed(1)+'h this week \u00b7 $'+(hrs*rate).toFixed(2);
+      },1500);
+    }
+  }
+  if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(start,300); });
+  else setTimeout(start,300);
+})();
+</script>
   
 </body>
 </html>
