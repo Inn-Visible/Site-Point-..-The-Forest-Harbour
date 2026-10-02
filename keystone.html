@@ -981,6 +981,102 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
   else setTimeout(start,300);
 })();
 </script>
+
+
+<script>
+/* ---- THE VISYU · W.I.P. WALL · the week as a wheel ---- */
+(function(){
+  var SYND=29.530588853, EPOCH=947182440000;
+  function moonDay(d){ var a=((d.getTime()-EPOCH)/86400000)%SYND; if(a<0)a+=SYND; return Math.floor(a)+1; }
+  function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(0,0,0,0); return x; }
+  function hoursOn(k){ var d; try{ d=JSON.parse(localStorage.getItem('hive_rotas')||'{}'); }catch(e){ d={}; }
+    var h=0; (d[k]||[]).forEach(function(s){ var p=String(s.start).split(':'), q=String(s.end).split(':'); h+=(+q[0]+(+q[1]||0)/60)-(+p[0]+(+p[1]||0)/60); }); return Math.max(0,h); }
+  function dropsOn(k){ var L; try{ L=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){ L=[]; }
+    var n=0; L.forEach(function(e){ if(e.date===k) n++; }); return n; }
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:980px;margin:26px auto 0;border:1px solid #223041;background:linear-gradient(180deg,#101623,#0e141b);padding:14px 14px 16px;font-family:ui-monospace,Consolas,monospace;box-shadow:0 6px 24px rgba(0,0,0,.45)';
+  sec.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1px solid #223041;padding-bottom:8px;margin-bottom:12px">'
+    +'<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:14px">the visyu \u00b7 the week as a wheel</span>'
+    +'<span style="font-size:9px;letter-spacing:.25em;color:#d9a83a;border:1px solid #d9a83a;padding:3px 8px">W.I.P. WALL</span>'
+    +'<span id="visToday" style="font-size:9px;letter-spacing:.15em;color:#5c6875"></span></div>'
+    +'<div style="display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap">'
+    +'<div><canvas id="visyu" style="width:min(340px,88vw);height:min(340px,88vw);display:block"></canvas>'
+    +'<div id="visRead" style="margin-top:8px;font-size:10px;color:#93a1b0;letter-spacing:.12em;text-align:center;min-height:14px">tap a slice \u00b7 read the day</div></div>'
+    +'<div id="visTally" style="min-width:200px;font-size:10px;letter-spacing:.12em;color:#93a1b0;line-height:2.1"></div></div>'
+    +'<div style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em">SLICE = THE DAY\u2019S WEIGHT \u00b7 RINGS = THE WEEKS \u00b7 THE OUTER RING IS STILL BEING WEIGHED</div>';
+  var mn=document.querySelector('main');
+  if(mn&&mn.parentNode) mn.parentNode.insertBefore(sec,mn.nextSibling);
+  else { var ft=document.querySelector('footer'); (ft&&ft.parentNode||document.body).insertBefore(sec,ft); }
+  var cv=document.getElementById('visyu'), g=cv.getContext('2d'), read=document.getElementById('visRead');
+  var RINGS=4, hits=[];
+  function fit(){ var r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1; cv.width=r.width*dpr; cv.height=r.height*dpr; g.setTransform(dpr,0,0,dpr,0,0); draw(); }
+  addEventListener('resize',fit);
+  function weekDates(mon){ var o=[]; for(var i=0;i<7;i++){ var x=new Date(mon); x.setDate(x.getDate()+i); o.push(x); } return o; }
+  function weight(d){ return hoursOn(iso(d))+0.5*dropsOn(iso(d)); }
+  function tally(){
+    var tMon=monday(new Date()), days=weekDates(tMon), H=0, D=0, best=null, bh=-1, inked=0;
+    days.forEach(function(d){ var h=hoursOn(iso(d)), dr=dropsOn(iso(d)); H+=h; D+=dr; if(dr||h) inked++; if(h+dr>bh){ bh=h+dr; best=d; } });
+    var DN=['sun','mon','tue','wed','thu','fri','sat'];
+    document.getElementById('visTally').innerHTML=
+      '<div style="color:#5c6875">THIS WEEK \u00b7 '+iso(tMon).slice(5)+' \u2192</div>'
+      +'<div>load \u00b7 <b style="color:#d9a83a">'+H.toFixed(1)+'h</b> \u00b7 '+D+' drop'+(D===1?'':'s')+'</div>'
+      +'<div>days weighed \u00b7 <b style="color:#e8e4d8">'+inked+' / 7</b></div>'
+      +'<div>heaviest \u00b7 <b style="color:#e8e4d8">'+(bh>0?DN[best.getDay()]+' '+iso(best).slice(5):'\u2014 at rest')+'</b></div>'
+      +'<div>moon \u00b7 <b style="color:#d9a83a">day '+moonDay(new Date())+'</b></div>'
+      +'<div style="color:#5c6875;font-style:italic;font-family:Georgia,serif">the outer ring is this week.<br>it is not finished. neither are you.</div>';
+    document.getElementById('visToday').textContent=new Date().toDateString().slice(0,10)+' \u00b7 week '+iso(tMon);
+  }
+  function draw(){
+    var W=cv.clientWidth, H=cv.clientHeight, cx=W/2, cy=H/2;
+    g.clearRect(0,0,W,H); hits=[];
+    var today=new Date(), tMon=monday(today);
+    var Rmax=Math.min(W,H)/2-6, Rmin=Rmax*0.32;
+    for(var w=0;w<RINGS;w++){
+      var mon=new Date(tMon); mon.setDate(mon.getDate()-7*(RINGS-1-w));
+      var days=weekDates(mon), ws=days.map(weight), tot=0;
+      days.forEach(function(d,i){ tot+=1+ws[i]*0.55; });
+      var r0=Rmin+(Rmax-Rmin)*(w/RINGS), r1=Rmin+(Rmax-Rmin)*((w+1)/RINGS)-2;
+      var a=-Math.PI/2;
+      for(var i=0;i<7;i++){
+        var ang=2*Math.PI*((1+ws[i]*0.55)/tot);
+        var cur=(w===RINGS-1), td=iso(days[i])===iso(today), md=moonDay(days[i]);
+        var col= td? '#d9a83a' : (md>=14&&md<=16)? 'rgba(217,168,58,'+(cur?0.55:0.28)+')' : (md<=1)? 'rgba(92,104,117,'+(cur?0.35:0.16)+')' : 'rgba(63,127,193,'+(cur?0.45:0.20)+')';
+        g.beginPath(); g.arc(cx,cy,r1,a,a+ang); g.arc(cx,cy,r0,a+ang,a,true); g.closePath();
+        g.fillStyle=col; g.fill(); g.strokeStyle='rgba(10,13,18,.9)'; g.lineWidth=1; g.stroke();
+        hits.push({a0:a,a1:a+ang,r0:r0,r1:r1,d:days[i],h:hoursOn(iso(days[i])),dr:dropsOn(iso(days[i])),md:md});
+        a+=ang;
+      }
+    }
+    var mdT=moonDay(today);
+    g.beginPath(); g.arc(cx,cy,Rmin-4,0,7); g.fillStyle='#0a0d12'; g.fill(); g.strokeStyle='#223041'; g.stroke();
+    g.save(); g.beginPath(); g.arc(cx,cy,Rmin-10,0,7); g.clip();
+    g.beginPath(); g.arc(cx,cy,Rmin-10,0,7); g.fillStyle='rgba(217,168,58,.9)'; g.fill();
+    g.beginPath(); g.arc(cx+(mdT<15?-1:1)*(Rmin-10)*Math.min(2,Math.abs(15-mdT)/7.5),cy,Rmin-10,0,7);
+    g.fillStyle='rgba(10,13,18,.93)'; g.fill(); g.restore();
+    g.fillStyle='#e8e4d8'; g.font='9px ui-monospace,Consolas,monospace'; g.textAlign='center';
+    g.fillText('day '+mdT,cx,cy+3);
+    var hT=null; hits.forEach(function(hh){ if(iso(hh.d)===iso(today)) hT=hh; });
+    if(hT){ var mid=(hT.a0+hT.a1)/2;
+      g.strokeStyle='#d9a83a'; g.lineWidth=1.5; g.beginPath();
+      g.moveTo(cx+Math.cos(mid)*(Rmin-2),cy+Math.sin(mid)*(Rmin-2));
+      g.lineTo(cx+Math.cos(mid)*(Rmax+3),cy+Math.sin(mid)*(Rmax+3)); g.stroke(); }
+    g.textAlign='left';
+  }
+  cv.addEventListener('click',function(e){
+    var r=cv.getBoundingClientRect(), x=e.clientX-r.left-cv.clientWidth/2, y=e.clientY-r.top-cv.clientHeight/2;
+    var rad=Math.sqrt(x*x+y*y), an0=Math.atan2(y,x), f=null;
+    for(var i=0;i<hits.length;i++){ var h=hits[i], an=an0; while(an<h.a0) an+=2*Math.PI;
+      if(rad>=h.r0&&rad<=h.r1&&an>=h.a0&&an<h.a1){ f=h; break; } }
+    if(!f){ read.textContent='tap a slice \u00b7 read the day'; return; }
+    var D=['sun','mon','tue','wed','thu','fri','sat'][f.d.getDay()];
+    read.textContent=D+' '+iso(f.d)+' \u00b7 '+f.h.toFixed(1)+'h \u00b7 '+f.dr+' drop'+(f.dr===1?'':'s')+' \u00b7 moon-day '+f.md;
+  });
+  function tick(){ draw(); tally(); }
+  setTimeout(function(){ fit(); tally(); },60);
+  setInterval(tick,60000);
+})();
+</script>
   
 </body>
 </html>
