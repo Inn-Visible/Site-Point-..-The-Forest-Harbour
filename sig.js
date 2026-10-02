@@ -128,3 +128,21 @@
   addEventListener('pagehide',bank);
   addEventListener('online',function(){ bank(); localStorage.removeItem('hive_offline_since'); });
 })();
+
+(function(){
+  /* stranger arm · consumed once · burns on exit house-wide */
+  try{
+    if(localStorage.getItem('hive_stranger_arm')!=='1') return;
+    localStorage.removeItem('hive_stranger_arm');
+    sessionStorage.setItem('hive_glass','stranger');
+    var last=Date.now();
+    ['click','keydown','touchstart','pointermove'].forEach(function(ev){ addEventListener(ev,function(){ last=Date.now(); },{passive:true}); });
+    function burn(){ try{
+      localStorage.removeItem('hive_access'); sessionStorage.removeItem('hive_session'); sessionStorage.removeItem('hive_glass');
+      ['hive_patron','hive_user','hive_member','hive_word','hive_pillar','hive_name','hive_tier'].forEach(function(k){ localStorage.removeItem(k); });
+      localStorage.setItem('hive_burnbox','1');
+    }catch(e){} }
+    addEventListener('pagehide',burn);
+    setInterval(function(){ if(Date.now()-last>600000){ burn(); location.reload(); } },30000);
+  }catch(e){}
+})();
