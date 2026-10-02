@@ -1077,6 +1077,41 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
   setInterval(tick,60000);
 })();
 </script>
+
+<script>
+/* ---- the day, beside the week · subtle side-by-side ---- */
+(function(){
+  function findVisyu(){ var ss=document.querySelectorAll('section'); for(var i=0;i<ss.length;i++){ if((ss[i].textContent||'').indexOf('the visyu \u00b7')>-1) return ss[i]; } return null; }
+  function start(){
+    var sec=findVisyu(); if(!sec||document.getElementById('dayBeside')) return setTimeout(start,600);
+    var cv=document.getElementById('visyu'); if(!cv) return setTimeout(start,600);
+    var rail=sec.children[0], flex=cv.parentNode.parentNode;
+    var btn=document.createElement('button'); btn.id='dayBeside';
+    btn.textContent='day \u00b7 week'; btn.title='set the day beside the week';
+    btn.style.cssText='background:none;border:1px solid #223041;color:#5c6875;font:9px ui-monospace,Consolas,monospace;letter-spacing:.2em;padding:3px 8px;cursor:pointer';
+    rail.insertBefore(btn,rail.children[1]||null);
+    var day=document.createElement('div'); day.id='visDay';
+    day.style.cssText='display:none;min-width:200px;font-size:10px;letter-spacing:.12em;color:#93a1b0;line-height:2.1;border-left:1px dashed #223041;padding-left:14px';
+    flex.insertBefore(day,cv.parentNode);
+    btn.onclick=function(){ var on=day.style.display==='none'; day.style.display=on?'block':'none';
+      btn.style.color=on?'#d9a83a':'#5c6875'; btn.style.borderColor=on?'#d9a83a':'#223041'; if(on) paint(); };
+    function season(d){var m=d.getMonth(); if(m===11||m<2)return'winter'; if(m<5)return'spring'; if(m<8)return'summer'; return'autumn';}
+    function watch(d){var h=d.getHours(); if(h>=5&&h<8)return'dawn'; if(h>=8&&h<17)return'noon'; if(h>=17&&h<21)return'dusk'; return'night';}
+    var RUNE={winter:'\u2744',spring:'\u273f',summer:'\u2600',autumn:'\u2726'};
+    var LINES={dawn:'the fire wakes hungry',noon:'steady burn',dusk:'the tall flame',night:'banked embers'};
+    function paint(){
+      var now=new Date(), S=season(now), Wt=watch(now);
+      var wx=null; try{ wx=JSON.parse(localStorage.getItem('hive_wx_full')||'null'); }catch(e){}
+      var sky=(wx&&wx.current)? Math.round(wx.current.temperature_2m)+'\u00b0 \u00b7 wind '+Math.round(wx.current.wind_speed_10m)+' \u00b7 cloud '+wx.current.cloud_cover+'%' : 'the sky keeps its counsel';
+      day.innerHTML='<div style="color:#5c6875">TODAY \u00b7 '+now.toDateString().slice(0,10)+'</div>'
+        +'<div><span style="color:#d9a83a">'+RUNE[S]+'</span> '+S+' \u00b7 '+Wt+' watch</div>'
+        +'<div>'+LINES[Wt]+'</div><div>'+sky+'</div>'
+        +'<div style="color:#5c6875;font-style:italic;font-family:Georgia,serif">one day, beside the whole week.</div>';
+    }
+  }
+  setTimeout(start,400);
+})();
+</script>
   
 </body>
 </html>
