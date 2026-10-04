@@ -594,6 +594,80 @@ async function addBal(k,amt){ const r=ref(db,'drops/'+k+'/bal'); const s=await g
 </script>
 
 <script src="sig.js" defer></script>
+
+<script>
+/* ---- the quest log · shifts as personal deeds ---- */
+(function(){
+  var RKEY='hive_rotas', QKEY='hive_quests';
+  function loadR(){ try{ return JSON.parse(localStorage.getItem(RKEY)||'{}'); }catch(e){ return {}; } }
+  function loadQ(){ try{ return JSON.parse(localStorage.getItem(QKEY)||'{}'); }catch(e){ return {}; } }
+  function saveQ(d){ localStorage.setItem(QKEY,JSON.stringify(d)); }
+  function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(0,0,0,0); return x; }
+
+  var sec=document.createElement('section');
+  sec.className='dock';
+  sec.innerHTML='<div class="fig">the quest log \u00b7 your shifts this week</div>'
+    +'<div id="qList" style="display:flex;flex-direction:column;gap:6px;min-height:80px"></div>'
+    +'<div id="qTally" style="text-align:center;margin-top:12px;font-size:11px;letter-spacing:.15em;color:var(--gold);min-height:16px"></div>';
+
+  var deck=document.querySelector('.deck');
+  if(deck) deck.parentNode.insertBefore(sec,deck.nextSibling);
+  else document.body.appendChild(sec);
+
+  function render(){
+    var R=loadR(), Q=loadQ();
+    var list=sec.querySelector('#qList'); list.innerHTML='';
+    var today=iso(new Date());
+    var mon=monday(new Date());
+    var deeds=[];
+
+    for(var i=0;i<7;i++){
+      var x=new Date(mon); x.setDate(x.getDate()+i);
+      var k=iso(x);
+      var dayName=['sun','mon','tue','wed','thu','fri','sat'][x.getDay()];
+      (R[k]||[]).forEach(function(s){
+        deeds.push({id:s.id, name:s.name, role:s.role, day:dayName, date:k, start:s.start, end:s.end, isToday:k===today});
+      });
+    }
+
+    deeds.sort(function(a,b){ return (a.date+a.start) < (b.date+b.start) ? -1 : 1; });
+
+    var done=0, total=deeds.length;
+
+    if(!total){
+      list.innerHTML='<div style="text-align:center;color:var(--dim);font-size:11px;padding:20px;font-style:italic">no shifts scheduled \u00b7 the house rests</div>';
+      sec.querySelector('#qTally').textContent='';
+      return;
+    }
+
+    deeds.forEach(function(d){
+      var isDone=!!Q[d.id];
+      if(isDone) done++;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid '+(isDone?'var(--line)':'var(--green)')+';background:'+(isDone?'var(--bg)':'rgba(88,163,106,0.05)')+';cursor:pointer;transition:all 0.2s';
+      row.innerHTML='<div style="width:16px;height:16px;border:1px solid '+(isDone?'var(--dim)':'var(--green)')+';display:flex;align-items:center;justify-content:center;color:var(--green);font-size:12px">'+(isDone?'\u2713':'')+'</div>'
+        +'<div style="flex:1;font-size:11px;'+(isDone?'text-decoration:line-through;color:var(--dim)':'color:var(--ink)')+'">'
+        +'<b style="color:'+(d.isToday?'var(--gold)':'var(--dim)')+'">'+d.day.toUpperCase()+' '+d.date.slice(5)+'</b> \u00b7 '
+        +d.name+(d.role?' \u00b7 '+d.role:'')+' \u00b7 <span style="color:var(--dim)">'+d.start+'\u2013'+d.end+'</span></div>';
+
+      row.onmouseenter=function(){ if(!isDone) row.style.background='rgba(88,163,106,0.15)'; };
+      row.onmouseleave=function(){ row.style.background=isDone?'var(--bg)':'rgba(88,163,106,0.05)'; };
+      row.onclick=function(){
+        var qq=loadQ();
+        if(qq[d.id]) delete qq[d.id]; else qq[d.id]=Date.now();
+        saveQ(qq); render();
+      };
+      list.appendChild(row);
+    });
+
+    sec.querySelector('#qTally').textContent=done+' / '+total+' deeds done this week \u00b7 '+(done===total?'the house holds \u2713':'the watch continues');
+  }
+
+  render();
+  setInterval(render, 5000);
+})();
+</script>
   
 </body>
 </html>
