@@ -182,10 +182,11 @@
 
 (function(){
   /* wind-glyphs house-wide · every arrow wears a winding (edge-match) */
-  function glyph(dir){
-    var d=dir>0?'M 9 23 A 11 11 0 1 1 23 9':'M 23 9 A 11 11 0 1 0 9 23';
-    var h=dir>0?'M 23 9 l -6 -1.5 M 23 9 l -1.5 6':'M 9 23 l 6 1.5 M 9 23 l 1.5 -6';
-    return '<svg viewBox="0 0 32 32" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin:0 2px"><path d="'+d+'"/><path d="'+h+'"/></svg>';
+   function glyph(dir){
+    var inner='<path d="M 9 23 A 11 11 0 1 1 23 9"/><path d="M 23 9 l -6 -1.5 M 23 9 l -1.5 6"/>';
+    var body=dir>0? inner : '<g transform="translate(32,0) scale(-1,1)">'+inner+'</g>';
+    var col=dir>0?'rgba(217,168,58,.9)':'rgba(63,127,193,.9)';
+    return '<svg viewBox="0 0 32 32" width="11" height="11" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linecap="round" style="vertical-align:middle;margin:0 2px">'+body+'</svg>';
   }
   function dirOf(ch){ return (ch==='\u2039'||ch==='\u2190'||ch==='\u2196'||ch==='\u2199')?-1:1; }
   function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
