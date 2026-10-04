@@ -97,4 +97,4 @@ self.addEventListener('fetch',function(e){
   addEventListener('offline',function(){ on=false; paint(); });
   addEventListener('online',function(){ on=true; paint(); });
   paint();
-})();
+})();S
