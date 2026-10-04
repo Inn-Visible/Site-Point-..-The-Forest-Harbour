@@ -87,14 +87,3 @@ self.addEventListener('fetch',function(e){
   }
 });
 
-(function(){
-  /* the dusk vignette · the house dims its own lights when the wire dies */
-  var on=navigator.onLine;
-  var v=document.createElement('div');
-  v.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:997;opacity:0;transition:opacity .8s;background:radial-gradient(ellipse at 50% 60%, rgba(217,168,58,0.06), rgba(3,4,7,0.55) 75%)';
-  document.body.appendChild(v);
-  function paint(){ v.style.opacity=on?'0':'1'; }
-  addEventListener('offline',function(){ on=false; paint(); });
-  addEventListener('online',function(){ on=true; paint(); });
-  paint();
-})();S
