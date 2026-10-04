@@ -179,3 +179,29 @@
   addEventListener('online',function(){ on=true; paint(); });
   paint();
 })();
+
+(function(){
+  /* wind-glyphs house-wide · every arrow wears a winding */
+  function glyph(dir){
+    var d=dir>0?'M 9 23 A 11 11 0 1 1 23 9':'M 23 9 A 11 11 0 1 0 9 23';
+    var h=dir>0?'M 23 9 l -6 -1.5 M 23 9 l -1.5 6':'M 9 23 l 6 1.5 M 9 23 l 1.5 -6';
+    return '<svg viewBox="0 0 32 32" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin:0 2px"><path d="'+d+'"/><path d="'+h+'"/></svg>';
+  }
+  function wind(el){
+    if(el.getAttribute('data-wind')) return;
+    var t=el.textContent||'';
+    if(/[‹←↖↙]/.test(t)) el.innerHTML=glyph(-1);
+    else if(/[›→↗↘]/.test(t)) el.innerHTML=glyph(1);
+    else if(/‹/.test(t)) el.innerHTML=glyph(-1);
+    else if(/›/.test(t)) el.innerHTML=glyph(1);
+    el.setAttribute('data-wind','1');
+  }
+  function scan(){
+    var els=document.querySelectorAll('button,a,span');
+    for(var i=0;i<els.length;i++){
+      var t=(els[i].textContent||'').trim();
+      if(/^[‹›←→↖↗↘↙]$/.test(t)) wind(els[i]);
+    }
+  }
+  scan(); setInterval(scan,1500);
+})();
