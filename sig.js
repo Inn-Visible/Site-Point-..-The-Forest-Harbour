@@ -181,26 +181,29 @@
 })();
 
 (function(){
-  /* wind-glyphs house-wide · every arrow wears a winding */
+  /* wind-glyphs house-wide · every arrow wears a winding (edge-match) */
   function glyph(dir){
     var d=dir>0?'M 9 23 A 11 11 0 1 1 23 9':'M 23 9 A 11 11 0 1 0 9 23';
     var h=dir>0?'M 23 9 l -6 -1.5 M 23 9 l -1.5 6':'M 9 23 l 6 1.5 M 9 23 l 1.5 -6';
-    return '<svg viewBox="0 0 32 32" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin:0 2px"><path d="'+d+'"/><path d="'+h+'"/></svg>';
+    return '<svg viewBox="0 0 32 32" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin:0 2px"><path d="'+d+'"/><path d="'+h+'"/></svg>';
   }
-  function wind(el){
-    if(el.getAttribute('data-wind')) return;
-    var t=el.textContent||'';
-    if(/[‹←↖↙]/.test(t)) el.innerHTML=glyph(-1);
-    else if(/[›→↗↘]/.test(t)) el.innerHTML=glyph(1);
-    else if(/‹/.test(t)) el.innerHTML=glyph(-1);
-    else if(/›/.test(t)) el.innerHTML=glyph(1);
-    el.setAttribute('data-wind','1');
-  }
+  function dirOf(ch){ return (ch==='\u2039'||ch==='\u2190'||ch==='\u2196'||ch==='\u2199')?-1:1; }
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function scan(){
     var els=document.querySelectorAll('button,a,span');
     for(var i=0;i<els.length;i++){
-      var t=(els[i].textContent||'').trim();
-      if(/^[‹›←→↖↗↘↙]$/.test(t)) wind(els[i]);
+      var el=els[i];
+      if(el.getAttribute('data-wind')) continue;
+      if(el.children.length) continue; /* text-only labels, never touch nested markup */
+      var t=el.textContent||'';
+      var lead=/^\s*([\u2039\u203a\u2190\u2192\u2196\u2197\u2198\u2199])/.exec(t);
+      var trail=/([\u2039\u203a\u2190\u2192\u2196\u2197\u2198\u2199])\s*$/.exec(t);
+      if(!lead&&!trail) continue;
+      el.setAttribute('data-wind','1');
+      var body=t, pre='', post='';
+      if(lead){ pre=glyph(dirOf(lead[1])); body=body.slice(lead[0].length); }
+      if(trail){ post=glyph(dirOf(trail[1])); body=body.slice(0,body.length-trail[0].length); }
+      el.innerHTML=pre+esc(body.trim())+post;
     }
   }
   scan(); setInterval(scan,1500);
