@@ -197,12 +197,88 @@ if(deck){
   card.innerHTML='<span class="h">(\u25c6) DEEDS \u00b7 need \u2192 mode \u2192 value</span><ul id="list-deeds"></ul>';
   deck.appendChild(card);
   function me(){ return localStorage.getItem('hive_word')||localStorage.getItem('hive_name')||'the ferryman'; }
-  async function render(){
+   async function render(){
     const ul=document.getElementById('list-deeds'); ul.innerHTML='';
+    
+    // pull personal shifts from local rotas
+    var personalDeeds=[];
+    try{
+      var R=JSON.parse(localStorage.getItem('hive_rotas')||'{}');
+      var today=new Date(), mon=new Date(today);
+      mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
+      mon.setHours(0,0,0,0);
+      for(var i=0;i<7;i++){
+        var x=new Date(mon); x.setDate(x.getDate()+i);
+        var k=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+        var dayName=['sun','mon','tue','wed','thu','fri','sat'][x.getDay()];
+        (R[k]||[]).forEach(function(s){
+          personalDeeds.push({
+            id:'local-'+s.id, ask:'shift: '+s.name+(s.role?' ('+s.role+')':''),
+            need:'discipline', mode:'labor', watches:1, value:10,
+            status:'open', poster:'personal', when:x.getTime(),
+            start:s.start, end:s.end, day:dayName, date:k, isLocal:true
+          });
+        });
+      }
+    }catch(e){}
+    
     try{
       const snap=await get(ref(db,'rota'));
-      if(!snap.exists()){ ul.innerHTML='<li class="empty">\u2014 no deeds on the rail \u2014</li>'; return; }
-      const v=snap.val();
+      var firebaseDeeds=[];
+      if(snap.exists()){
+        const v=snap.val();
+        Object.keys(v).sort().reverse().forEach(function(id){ firebaseDeeds.push(Object.assign({id:id},v[id])); });
+      }
+      
+      // merge: firebase deeds first, then personal shifts
+      var allDeeds=firebaseDeeds.concat(personalDeeds);
+      
+      if(!allDeeds.length){ ul.innerHTML='<li class="empty">— no deeds on the rail —</li>'; return; }
+      
+      allDeeds.forEach(function(d){
+        const li=document.createElement('li');
+        const t=document.createElement('span');
+        
+        if(d.isLocal){
+          // personal shift rendering
+          var today=new Date().toISOString().slice(0,10);
+          var isToday=d.date===today;
+          t.textContent=d.day.toUpperCase()+' '+d.date.slice(5)+' · '+d.start+'–'+d.end+' · '+d.ask.slice(7)+' · personal shift';
+          t.style.color=isToday?'var(--gold)':'var(--dim)';
+        }else{
+          // existing Firebase deed rendering
+          t.textContent=d.ask+' · '+d.need+' · '+d.mode+' · '+d.watches+'× · '+d.value+' deed · '+d.status+(d.taker?' · '+d.taker:'');
+        }
+        
+        li.appendChild(t);
+        
+        const mk=function(label,fn){ const b=document.createElement('button'); b.textContent=label; b.onclick=fn; li.appendChild(b); };
+        
+        if(d.isLocal){
+          // personal shift: just mark as done locally
+          var Q=JSON.parse(localStorage.getItem('hive_quests')||'{}');
+          var done=!!Q[d.id];
+          if(done){ t.style.textDecoration='line-through'; t.style.color='var(--dim)'; }
+          mk(done?'↺ undo':'✓ done',function(){
+            var qq=JSON.parse(localStorage.getItem('hive_quests')||'{}');
+            if(qq[d.id]) delete qq[d.id]; else qq[d.id]=Date.now();
+            localStorage.setItem('hive_quests',JSON.stringify(qq));
+            render();
+          });
+        }else{
+          // existing Firebase deed logic
+          if(d.status==='open') mk('▶ take',async function(){ 
+            var carry=0; const snap2=await get(ref(db,'rota')); if(snap2.exists()){ var v2=snap2.val(); for(var c2 in v2){ var x=v2[c2]; if(x.taker===me()&&(x.status==='taken'||x.status==='awaiting')) carry++; } }
+            if(carry>=2) return;
+            d.status='taken'; d.taker=me(); await set(ref(db,'rota/'+d.id),d); render(); });
+          else if(d.status==='taken'&&d.taker===me()) mk('✓ done',async function(){ var pr=prompt('the proof · one line, link, or artifact:'); if(pr===null) return; d.proof=String(pr).slice(0,140); d.status='awaiting'; await set(ref(db,'rota/'+d.id),d); render(); });
+          else if(d.status==='awaiting'&&(d.poster===me()||localStorage.getItem('hive_user'))) mk('◆ confirm',async function(){ d.status='closed'; await set(ref(db,'rota/'+d.id),d); render(); });
+        }
+        
+        ul.appendChild(li);
+      });
+    }catch(e){ ul.innerHTML='<li class="empty">— the rail is dark —</li>'; }
+  }
       Object.keys(v).sort().reverse().forEach(function(id){ const d=v[id];
         const li=document.createElement('li');
         const t=document.createElement('span');
