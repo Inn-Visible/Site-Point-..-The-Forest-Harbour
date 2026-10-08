@@ -298,7 +298,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
     navigator.serviceWorker&&navigator.serviceWorker.getRegistration&&navigator.serviceWorker.getRegistration().then(function(r){ r&&r.unregister&&r.unregister(); });
     caches&&caches.keys&&caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); });
   } }catch(e){}
-  var stranger = (location.pathname.indexOf('wicket')>-1);
+   var stranger = false; /* the wicket plugs home by default · stranger is one tap away */
   var CHOICE = sessionStorage.getItem('hive_glass');
   if(CHOICE) stranger = (CHOICE==='stranger');
   var sessAtLoad = sessionStorage.getItem('hive_session')==='1';
