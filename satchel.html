@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<title>The Satchel | Inn.Visible</title>
+<style>
+  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a;--blue:#3f7fc1;--mono:ui-monospace,Consolas,monospace;--serif:Georgia,serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)}
+  .brand{font-size:14px;letter-spacing:.3em;color:var(--gold)}
+  .back{color:var(--dim);font-size:11px;text-decoration:none}
+  main{max-width:760px;margin:0 auto;padding:34px 18px}
+  .hook{font-family:var(--serif);font-style:italic;font-size:17px;text-align:center;color:var(--dim)}
+  .sub{margin-top:6px;text-align:center;font-size:10px;letter-spacing:.2em;color:#5c6875}
+  .drop{margin-top:22px;border:1px dashed var(--line);background:var(--panel);padding:20px;text-align:center}
+  .drop input{display:none}
+  .btn{background:none;border:1px solid var(--gold);color:var(--gold);font:11px var(--mono);letter-spacing:.15em;padding:9px 16px;cursor:pointer;margin:4px}
+  .btn.b{border-color:var(--blue);color:var(--blue)}
+  .shelf{margin-top:18px}
+  .row{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:8px 10px;margin-bottom:6px;font-size:10px}
+  .row b{color:var(--ink);font-weight:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+  .row span{color:#5c6875}
+  .row button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);padding:4px 8px;cursor:pointer;margin-left:4px}
+  .stat{margin-top:12px;text-align:center;font-size:10px;color:#5c6875;letter-spacing:.12em;min-height:14px}
+</style>
+</head>
+<body>
+<header><div class="brand">THE SATCHEL</div><a class="back" href="core.html">core ↩</a></header>
+<main>
+  <p class="hook">carry files between glasses, without a wire.</p>
+  <p class="sub">PACK → CARRY THE .SATCHEL → UNPACK · ZERO SERVERS · ZERO TELEMETRY · OFFLINE-TRUE</p>
+  <div class="drop">
+    <button class="btn" id="add">+ put files in</button>
+    <button class="btn" id="pack">pack the satchel ⤓</button>
+    <button class="btn b" id="unpack">unpack a satchel ⤒</button>
+    <input type="file" id="fin" multiple>
+    <input type="file" id="sin" accept=".satchel,application/json">
+  </div>
+  <div class="shelf" id="shelf"></div>
+  <div class="stat" id="stat">the satchel is empty · everything stays on this glass until you pack</div>
+</main>
+<script>
+(function(){
+  var DB=null;
+  function db(){ return new Promise(function(res,rej){
+    if(DB) return res(DB);
+    var r=indexedDB.open('hive-satchel',1);
+    r.onupgradeneeded=function(){ r.result.createObjectStore('files',{keyPath:'id'}); };
+    r.onsuccess=function(){ DB=r.result; res(DB); };
+    r.onerror=function(){ rej(r.error); };
+  }); }
+  function tx(mode){ return db().then(function(d){ return d.transaction('files',mode).objectStore('files'); }); }
+  function all(){ return tx('readonly').then(function(s){ return new Promise(function(res){ var q=s.getAll(); q.onsuccess=function(){ res(q.result||[]); }; }); }); }
+  function put(o){ return tx('readwrite').then(function(s){ return new Promise(function(res){ s.put(o); res(); }); }); }
+  function del(id){ return tx('readwrite').then(function(s){ return new Promise(function(res){ s.delete(id); res(); }); }); }
+  function stat(t){ document.getElementById('stat').textContent=t; }
+  function fmt(n){ return n>1048576?(n/1048576).toFixed(1)+'MB':n>1024?(n/1024).toFixed(0)+'KB':n+'B'; }
+  function b64(buf){ var a=new Uint8Array(buf), s=''; for(var i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }
+  function unb64(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+  function render(){
+    all().then(function(list){
+      var sh=document.getElementById('shelf'); sh.innerHTML='';
+      list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      list.forEach(function(f){
+        var r=document.createElement('div'); r.className='row';
+        r.innerHTML='<b>'+String(f.name).replace(/[<>&"]/g,'')+'</b><span>'+fmt(f.size)+'</span>';
+        var d=document.createElement('button'); d.textContent='take ⤓';
+        d.onclick=function(){ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([unb64(f.data)],{type:f.type||'application/octet-stream'})); a.download=f.name; a.click(); };
+        var x=document.createElement('button'); x.textContent='✕';
+        x.onclick=function(){ del(f.id).then(render); };
+        r.appendChild(d); r.appendChild(x); sh.appendChild(r);
+      });
+      stat(list.length? list.length+' file'+(list.length===1?'':'s')+' on this glass · pack to carry':'the satchel is empty · everything stays on this glass until you pack');
+    });
+  }
+  document.getElementById('add').onclick=function(){ document.getElementById('fin').click(); };
+  document.getElementById('fin').onchange=function(){
+    var fs=this.files;
+    Array.prototype.forEach.call(fs,function(f){
+      if(f.size>8*1048576){ stat('too heavy for the satchel (8MB max): '+f.name); return; }
+      var rd=new FileReader();
+      rd.onload=function(){ put({id:f.name+'|'+f.size+'|'+Date.now()+Math.random(), name:f.name, type:f.type||'application/octet-stream', size:f.size, data:b64(rd.result)}).then(render); };
+      rd.readAsArrayBuffer(f);
+    });
+    this.value='';
+  };
+  document.getElementById('pack').onclick=function(){
+    all().then(function(list){
+      if(!list.length){ stat('nothing to pack'); return; }
+      var pkg={v:1,kind:'hive-satchel',when:Date.now(),files:list.map(function(f){ return {name:f.name,type:f.type,size:f.size,data:f.data}; })};
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(pkg)],{type:'application/json'}));
+      a.download='innvisible-'+new Date().toISOString().slice(0,10)+'.satchel';
+      a.click();
+      stat('packed '+list.length+' file'+(list.length===1?'':'s')+' · carry the .satchel');
+    });
+  };
+  document.getElementById('unpack').onclick=function(){ document.getElementById('sin').click(); };
+  document.getElementById('sin').onchange=function(){
+    var f=this.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var pkg=JSON.parse(rd.result);
+        if(!pkg||pkg.kind!=='hive-satchel'||!pkg.files){ stat('that is not a satchel'); return; }
+        pkg.files.forEach(function(e){ put({id:e.name+'|'+e.size+'|'+Date.now()+Math.random(), name:e.name, type:e.type, size:e.size, data:e.data}).then(render); });
+        stat('unpacked '+pkg.files.length+' file'+(pkg.files.length===1?'':'s')+' from the carried satchel');
+      }catch(e){ stat('the satchel would not open'); }
+    };
+    rd.readAsText(f);
+    this.value='';
+  };
+  render();
+})();
+</script>
+</body>
+</html>
