@@ -42,9 +42,10 @@
   <div class="shelf" id="shelf"></div>
   <div class="stat" id="stat">the satchel is empty · everything stays on this glass until you pack</div>
 </main>
+
 <script>
+/* ==== ENGINE · known-good v1 · must survive anything ==== */
 (function(){
-  document.title='The Satchel | booting..';
   var DB=null;
   function db(){ return new Promise(function(res,rej){ if(DB) return res(DB);
     var r=indexedDB.open('hive-satchel',1);
@@ -58,11 +59,72 @@
   function fmt(n){ return n>1048576?(n/1048576).toFixed(1)+'MB':n>1024?(n/1024).toFixed(0)+'KB':n+'B'; }
   function b64(buf){ var a=new Uint8Array(buf), s=''; for(var i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }
   function unb64(s){ var bin=atob(s), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
-  function blobOf(f){ return new Blob([unb64(f.data)],{type:f.type||'application/octet-stream'}); }
+  window._sat={all:all,put:put,del:del,stat:stat,fmt:fmt,b64:b64,unb64:unb64};
+  function render(){
+    all().then(function(list){
+      var sh=document.getElementById('shelf'); sh.innerHTML='';
+      list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      list.forEach(function(f){
+        var r=document.createElement('div'); r.className='row';
+        r.innerHTML='<b>'+String(f.name).replace(/[<>&"]/g,'')+'</b><span>'+fmt(f.size)+'</span>';
+        var d=document.createElement('button'); d.textContent='take ⤓';
+        d.onclick=function(){ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([unb64(f.data)],{type:f.type||'application/octet-stream'})); a.download=f.name; a.click(); };
+        var x=document.createElement('button'); x.textContent='✕';
+        x.onclick=function(){ del(f.id).then(render); };
+        r.appendChild(d); r.appendChild(x); sh.appendChild(r);
+      });
+      stat(list.length? list.length+' file'+(list.length===1?'':'s')+' on this glass · pack to carry':'the satchel is empty · everything stays on this glass until you pack');
+    });
+  }
+  window._satRender=render;
+  document.getElementById('add').onclick=function(){ document.getElementById('fin').click(); };
+  document.getElementById('fin').onchange=function(){
+    Array.prototype.forEach.call(this.files,function(f){
+      if(f.size>8*1048576){ stat('too heavy for the satchel (8MB max): '+f.name); return; }
+      var rd=new FileReader();
+      rd.onload=function(){ put({id:f.name+'|'+f.size+'|'+Date.now()+Math.random(), name:f.name, type:f.type||'application/octet-stream', size:f.size, data:b64(rd.result)}).then(render); };
+      rd.readAsArrayBuffer(f);
+    });
+    this.value='';
+  };
+  document.getElementById('pack').onclick=function(){
+    all().then(function(list){
+      if(!list.length){ stat('nothing to pack'); return; }
+      var pkg={v:1,kind:'hive-satchel',when:Date.now(),files:list.map(function(f){ return {name:f.name,type:f.type,size:f.size,data:f.data}; })};
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(pkg)],{type:'application/json'}));
+      a.download='innvisible-'+new Date().toISOString().slice(0,10)+'.satchel';
+      a.click();
+      stat('packed '+list.length+' file'+(list.length===1?'':'s')+' · carry the .satchel');
+    });
+  };
+  document.getElementById('unpack').onclick=function(){ document.getElementById('sin').click(); };
+  document.getElementById('sin').onchange=function(){
+    var f=this.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var pkg=JSON.parse(rd.result);
+        if(!pkg||pkg.kind!=='hive-satchel'||!pkg.files){ stat('that is not a satchel'); return; }
+        pkg.files.forEach(function(e){ put({id:e.name+'|'+e.size+'|'+Date.now()+Math.random(), name:e.name, type:e.type, size:e.size, data:e.data}).then(render); });
+        stat('unpacked '+pkg.files.length+' file'+(pkg.files.length===1?'':'s')+' from the carried satchel');
+      }catch(e){ stat('the satchel would not open'); }
+    };
+    rd.readAsText(f);
+    this.value='';
+  };
+  render();
+  document.title='The Satchel | awake';
+})();
+</script>
+
+<script>
+/* ==== HANDS · v2 · additive · if this dies the engine still walks ==== */
+(function(){
+  var S=window._sat; if(!S) return;
+  var shelf=document.getElementById('shelf');
+  function blobOf(f){ return new Blob([S.unb64(f.data)],{type:f.type||'application/octet-stream'}); }
   function canShareFiles(){ try{ return !!(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File(['x'],'t.txt',{type:'text/plain'})]})); }catch(e){ return false; } }
-  function shareFile(f){ var file=new File([blobOf(f)],f.name,{type:f.type});
-    if(canShareFiles()) return navigator.share({files:[file],title:f.name}).catch(function(){});
-    return Promise.reject('noshare'); }
   function modal(title,value,onOk,okLabel){
     var ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:rgba(4,6,10,.94);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -78,82 +140,72 @@
     ov.querySelector('#mOk').onclick=function(){ onOk(ta.value,ov); };
     return ov;
   }
-  function render(){
-    all().then(function(list){
-      var sh=document.getElementById('shelf'); sh.innerHTML='';
+  function renderHands(){
+    S.all().then(function(list){
       list.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+      shelf.innerHTML='';
       list.forEach(function(f){
-        var r=document.createElement('div'); r.className='row';
-        r.innerHTML='<b>'+String(f.name).replace(/[<>&"]/g,'')+'</b><span>'+fmt(f.size)+'</span>';
-        var t=document.createElement('button'); t.textContent='take \u2913';
+        var r=document.createElement('div'); r.className='row'; r.setAttribute('data-hands','1');
+        r.innerHTML='<b>'+String(f.name).replace(/[<>&"]/g,'')+'</b><span>'+S.fmt(f.size)+'</span>';
+        var t=document.createElement('button'); t.textContent='take ⤓';
         t.onclick=function(){ var a=document.createElement('a'); a.href=URL.createObjectURL(blobOf(f)); a.download=f.name; a.click(); };
         r.appendChild(t);
-        var s2=document.createElement('button'); s2.textContent='share \u2197';
-        s2.onclick=function(){ shareFile(f).catch(function(){ stat('this glass cannot share files \u00b7 took a download instead'); t.click(); }); };
+        var s2=document.createElement('button'); s2.textContent='share ↗';
+        s2.onclick=function(){ var file=new File([blobOf(f)],f.name,{type:f.type});
+          if(canShareFiles()) navigator.share({files:[file],title:f.name}).catch(function(){});
+          else S.stat('this glass cannot share files · take ⤓ still works'); };
         r.appendChild(s2);
         if(f.size<=204800){
           var x2=document.createElement('button'); x2.textContent='as text';
-          x2.onclick=function(){ var payload='HIVESAT1 '+b64(new TextEncoder().encode(JSON.stringify({name:f.name,type:f.type,size:f.size,data:f.data})));
-            var ov=modal('text-carry \u00b7 copy this line, paste it anywhere',payload,function(v,m){ try{ navigator.clipboard.writeText(v); }catch(e){} m.remove(); stat('copied \u00b7 the file rides as text'); },'copy');
+          x2.onclick=function(){ var payload='HIVESAT1 '+S.b64(new TextEncoder().encode(JSON.stringify({name:f.name,type:f.type,size:f.size,data:f.data})));
+            var ov=modal('text-carry · copy this line, paste it anywhere',payload,function(v,m){ try{ navigator.clipboard.writeText(v); }catch(e){} m.remove(); S.stat('copied · the file rides as text'); },'copy');
             ov.querySelector('#mTa').select(); };
           r.appendChild(x2);
         }
-        var x=document.createElement('button'); x.textContent='\u2715';
-        x.onclick=function(){ del(f.id).then(render); };
-        r.appendChild(x); sh.appendChild(r);
+        var x=document.createElement('button'); x.textContent='✕';
+        x.onclick=function(){ S.del(f.id).then(renderHands); };
+        r.appendChild(x); shelf.appendChild(r);
       });
-      stat(list.length? list.length+' file'+(list.length===1?'':'s')+' on this glass'+(canShareFiles()?' \u00b7 share-ready':' \u00b7 carry by pack'):'the satchel is empty \u00b7 everything stays on this glass until you pack');
+      S.stat(list.length? list.length+' file'+(list.length===1?'':'s')+' on this glass'+(canShareFiles()?' · share-ready':' · carry by pack'):'the satchel is empty · everything stays on this glass until you pack');
     });
   }
-  function ingestFile(f){
-    if(f.size>8*1048576){ stat('too heavy for the satchel (8MB max): '+f.name); return; }
-    var rd=new FileReader();
-    rd.onload=function(){ put({id:f.name+'|'+f.size+'|'+Date.now()+Math.random(), name:f.name, type:f.type||'application/octet-stream', size:f.size, data:b64(rd.result)}).then(render); };
-    rd.readAsArrayBuffer(f);
-  }
-  document.getElementById('add').onclick=function(){ document.getElementById('fin').click(); };
-  document.getElementById('fin').onchange=function(){ Array.prototype.forEach.call(this.files,ingestFile); this.value=''; };
-  var dz=document.querySelector('.drop');
-  if(dz){ ['dragover','dragenter'].forEach(function(ev){ dz.addEventListener(ev,function(e){ e.preventDefault(); dz.style.borderColor='#d9a83a'; }); });
-    ['dragleave','drop'].forEach(function(ev){ dz.addEventListener(ev,function(e){ e.preventDefault(); dz.style.borderColor=''; }); });
-    dz.addEventListener('drop',function(e){ Array.prototype.forEach.call((e.dataTransfer&&e.dataTransfer.files)||[],ingestFile); }); }
-  function packBlob(){ return all().then(function(list){ if(!list.length) return null;
-    return {blob:new Blob([JSON.stringify({v:1,kind:'hive-satchel',when:Date.now(),files:list.map(function(f){ return {name:f.name,type:f.type,size:f.size,data:f.data}; })}],{type:'application/json'}), n:list.length}; }); }
-  document.getElementById('pack').onclick=function(){ packBlob().then(function(p){ if(!p){ stat('nothing to pack'); return; }
-    var a=document.createElement('a'); a.href=URL.createObjectURL(p.blob); a.download='innvisible-'+new Date().toISOString().slice(0,10)+'.satchel'; a.click();
-    stat('packed '+p.n+' file'+(p.n===1?'':'s')+' \u00b7 carry the .satchel'); }); };
-  if(!document.getElementById('packShare')&&document.getElementById('pack')){
-    var ps=document.createElement('button'); ps.id='packShare'; ps.className='btn'; ps.textContent='share the pack \u2197';
+  new MutationObserver(function(){ if(shelf.querySelector('.row:not([data-hands])')) renderHands(); }).observe(shelf,{childList:true});
+  if(!document.getElementById('packShare')){
+    var ps=document.createElement('button'); ps.id='packShare'; ps.className='btn'; ps.textContent='share the pack ↗';
     document.getElementById('pack').parentNode.insertBefore(ps,document.getElementById('pack').nextSibling);
-    ps.onclick=function(){ packBlob().then(function(p){ if(!p){ stat('nothing to share'); return; }
+    ps.onclick=function(){ S.all().then(function(list){ if(!list.length){ S.stat('nothing to share'); return; }
       var fname='innvisible-'+new Date().toISOString().slice(0,10)+'.satchel';
-      var file=new File([p.blob],fname,{type:'application/json'});
+      var blob=new Blob([JSON.stringify({v:1,kind:'hive-satchel',when:Date.now(),files:list.map(function(f){ return {name:f.name,type:f.type,size:f.size,data:f.data}; })}],{type:'application/json'});
+      var file=new File([blob],fname,{type:'application/json'});
       if(canShareFiles()) navigator.share({files:[file],title:fname}).catch(function(){});
-      else { var a=document.createElement('a'); a.href=URL.createObjectURL(p.blob); a.download=fname; a.click(); stat('this glass cannot share \u00b7 downloaded instead'); } }); };
+      else { var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; a.click(); S.stat('this glass cannot share · downloaded instead'); } }); };
   }
-  document.getElementById('unpack').onclick=function(){ document.getElementById('sin').click(); };
-  document.getElementById('sin').onchange=function(){ var f=this.files[0]; if(!f) return;
-    var rd=new FileReader(); rd.onload=function(){ ingestPackText(rd.result); }; rd.readAsText(f); this.value=''; };
-  function ingestPackText(txt){
-    try{ var pkg=JSON.parse(txt);
-      if(!pkg||pkg.kind!=='hive-satchel'||!pkg.files){ stat('that is not a satchel'); return; }
-      pkg.files.forEach(function(e){ put({id:e.name+'|'+e.size+'|'+Date.now()+Math.random(), name:e.name, type:e.type, size:e.size, data:e.data}).then(render); });
-      stat('unpacked '+pkg.files.length+' file'+(pkg.files.length===1?'':'s'));
-    }catch(e){ stat('the satchel would not open'); }
-  }
-  if(!document.getElementById('pasteText')&&dz){
-    var pt=document.createElement('button'); pt.id='pasteText'; pt.className='btn b'; pt.textContent='paste text \u2191';
+  var dz=document.querySelector('.drop');
+  if(dz&&!document.getElementById('pasteText')){
+    var pt=document.createElement('button'); pt.id='pasteText'; pt.className='btn b'; pt.textContent='paste text ↑';
     dz.appendChild(pt);
     pt.onclick=function(){ modal('paste a HIVESAT1 line or a whole .satchel json','',function(v,m){
       v=(v||'').trim(); m.remove();
-      if(v.indexOf('HIVESAT1 ')===0){ try{ var o=JSON.parse(new TextDecoder().decode(unb64(v.slice(9))));
-          put({id:o.name+'|'+o.size+'|'+Date.now()+Math.random(), name:o.name, type:o.type, size:o.size, data:o.data}).then(render);
-          stat('the text became a file again \u00b7 '+o.name); }catch(e){ stat('the text would not become a file'); } }
-      else ingestPackText(v);
+      if(v.indexOf('HIVESAT1 ')===0){ try{ var o=JSON.parse(new TextDecoder().decode(S.unb64(v.slice(9))));
+          S.put({id:o.name+'|'+o.size+'|'+Date.now()+Math.random(), name:o.name, type:o.type, size:o.size, data:o.data}).then(renderHands);
+          S.stat('the text became a file again · '+o.name); }catch(e){ S.stat('the text would not become a file'); } }
+      else { try{ var pkg=JSON.parse(v);
+          if(pkg&&pkg.kind==='hive-satchel'&&pkg.files){ pkg.files.forEach(function(e){ S.put({id:e.name+'|'+e.size+'|'+Date.now()+Math.random(), name:e.name, type:e.type, size:e.size, data:e.data}); }); S.stat('unpacked from pasted json'); setTimeout(renderHands,300); }
+          else S.stat('that is not a satchel'); }catch(e){ S.stat('that is not a satchel'); } }
     },'unpack'); };
+    ['dragover','dragenter'].forEach(function(ev){ dz.addEventListener(ev,function(e){ e.preventDefault(); dz.style.borderColor='#d9a83a'; }); });
+    ['dragleave','drop'].forEach(function(ev){ dz.addEventListener(ev,function(e){ e.preventDefault(); dz.style.borderColor=''; }); });
+    dz.addEventListener('drop',function(e){
+      Array.prototype.forEach.call((e.dataTransfer&&e.dataTransfer.files)||[],function(f){
+        if(f.size>8*1048576){ S.stat('too heavy for the satchel (8MB max): '+f.name); return; }
+        var rd=new FileReader();
+        rd.onload=function(){ S.put({id:f.name+'|'+f.size+'|'+Date.now()+Math.random(), name:f.name, type:f.type||'application/octet-stream', size:f.size, data:S.b64(rd.result)}).then(renderHands); };
+        rd.readAsArrayBuffer(f);
+      });
+    });
   }
-  render();
-  document.title='The Satchel | awake v2';
+  renderHands();
+  document.title='The Satchel | awake + hands';
 })();
 </script>
 </body>
