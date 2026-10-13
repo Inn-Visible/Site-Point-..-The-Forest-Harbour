@@ -416,6 +416,25 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   });
 })();
 </script>
+
+<script>
+/* ---- the bow \u00b7 a small flock and the for-all, at the door ---- */
+(function(){
+  var a=document.createElement('a');
+  a.href='homage.html'; a.title='the ones who carried';
+  a.style.cssText='position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:60;opacity:.75;text-decoration:none;text-align:center';
+  a.innerHTML='<svg width="46" height="46" viewBox="0 0 512 512" style="display:block;margin:0 auto">'
+    +'<defs><linearGradient id="hrim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b070e8"/><stop offset="1" stop-color="#6ee0c8"/></linearGradient>'
+    +'<path id="hb" d="M96,0 C78,-4 66,-6 54,-4 C40,-26 22,-38 4,-42 C14,-26 24,-14 38,-6 C20,-2 8,6 0,18 C16,10 30,6 44,6 C58,8 76,6 96,0 Z"/></defs>'
+    +'<g fill="#e8e4d8" stroke="url(#hrim)" stroke-width="10" stroke-linejoin="round">'
+    +'<use href="#hb" transform="translate(292,148) scale(1.25) rotate(-10)"/>'
+    +'<use href="#hb" transform="translate(196,244) scale(1.05) rotate(-8)"/>'
+    +'<use href="#hb" transform="translate(104,338) scale(1.0) rotate(-12)"/>'
+    +'<use href="#hb" transform="translate(318,332) scale(0.72) rotate(-4)"/></g></svg>'
+    +'<div style="font:16px Georgia,serif;color:#d9a83a;margin-top:2px">\u2200</div>';
+  document.body.appendChild(a);
+})();
+</script>
   
 </body>
 </html>
