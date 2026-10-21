@@ -489,6 +489,19 @@ requestAnimationFrame(frame);
   d.textContent='THE FREE DOOR OPENS EVERY OCTOBER \u00b7 THE WORD TRAVELS BY HAND';
   s.appendChild(d); })();
 </script>
+
+<script>
+/* ---- the october banner \u00b7 the word, out loud, one month a year ---- */
+(function(){
+  if (new Date().getMonth() !== 9) return;
+  var d = document.createElement('div');
+  d.style.cssText='margin:18px auto 0;max-width:640px;border:1px solid #d9a83a;background:rgba(217,168,58,.06);padding:12px 16px;text-align:center;font:11px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#93a1b0';
+  d.innerHTML='the free door is open \u00b7 the word is <b style="color:#d9a83a;letter-spacing:.3em">foxwolf7</b> \u00b7 it sleeps when october does'
+    + '<br><a href="wicket.html" style="color:#5c6875;font-size:10px;letter-spacing:.2em;text-decoration:none">carry it to the small door \u2197</a>';
+  var f = document.querySelector('form#gate') || document.querySelector('footer');
+  if (f && f.parentNode) f.parentNode.insertBefore(d, f); else document.body.appendChild(d);
+})();
+</script>
  
 </body>
 </html>
