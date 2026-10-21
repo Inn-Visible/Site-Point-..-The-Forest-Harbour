@@ -1,4 +1,13 @@
 (function(){
+  /* ---- the gala clock \u00b7 house-wide ---- */
+  var GALA_END = new Date(2026, 9, 26, 23, 59).getTime(); /* same date as index */
+  if (Date.now() > GALA_END) {
+    localStorage.removeItem('hive_access');
+    sessionStorage.removeItem('hive_session');
+  }
+})();
+
+(function(){
   var year='\u00a9 '+new Date().getFullYear()+' The Inn.Visible Foundation \u00b7 all rights reserved';
   var gift='<a href="donations.html" style="color:#5c6875;text-decoration:none">the forge runs on gifts \u00b7 keep the fire lit \u2197</a>';
   var f=document.querySelector('footer');
