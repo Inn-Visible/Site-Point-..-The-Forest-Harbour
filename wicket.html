@@ -435,6 +435,21 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
   document.body.appendChild(a);
 })();
 </script>
+
+  <script>
+/* ---- the october door \u00b7 the free word is a season ---- */
+document.addEventListener('click', function(e){
+  var b = e.target && e.target.closest ? e.target.closest('button') : null;
+  if(!b || !/knock/i.test(b.textContent||'')) return;
+  var inp = document.querySelector('input');
+  var w = ((inp && inp.value) || '').trim().toLowerCase();
+  if (w === 'fw7' && new Date().getMonth() !== 9) {
+    e.stopPropagation(); e.preventDefault();
+    var s = document.getElementById('stat');
+    if (s) s.textContent = 'the free word sleeps \u00b7 it wakes in october';
+  }
+}, true);
+</script>
   
 </body>
 </html>
