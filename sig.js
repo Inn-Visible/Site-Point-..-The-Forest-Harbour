@@ -1,7 +1,7 @@
 (function(){
   /* ---- the october clock \u00b7 house-wide \u00b7 free-word guests only ---- */
   var OCT = new Date().getMonth() === 9;
-  var freeWord = (localStorage.getItem('hive_word') || '').toLowerCase() === 'fw7';
+  var freeWord = (localStorage.getItem('hive_word') || '').toLowerCase() === 'foxwolf7';
   if (!OCT && freeWord) {
     localStorage.removeItem('hive_access');
     sessionStorage.removeItem('hive_session');
