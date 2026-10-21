@@ -470,6 +470,17 @@ requestAnimationFrame(frame);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',place); else place();
 })();
 </script>
+
+<script>
+/* ---- the october notice \u00b7 live only in the open month ---- */
+(function(){
+  if (new Date().getMonth() !== 9) return;
+  var d = document.createElement('div');
+  d.style.cssText='position:fixed;left:14px;top:12px;z-index:65;font:10px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#d9a83a;opacity:.8;pointer-events:none';
+  d.textContent='\u00b7 the free door is open \u00b7 it sleeps when october does \u00b7';
+  document.body.appendChild(d);
+})();
+</script>
  
 </body>
 </html>
