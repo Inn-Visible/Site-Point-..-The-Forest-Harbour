@@ -86,21 +86,38 @@
 <footer>An Inn.Visible Initiative · “Know Thyself; Do No Harm; Hold The Truth.”</footer>
 
 <script>
-/* ---- THE MODERN LOCK ---- */
+/* ---- THE MODERN LOCK & THE TIMEDOWN ---- */
+// THE GALA EXPIRATION: The exact moment the doors permanently lock.
+// Format: YYYY, Month(0-11), Day, Hour(24h), Minute. 
+// Example below: October 26th, 2026 at 11:59 PM (local time). Change this date to your exact deadline.
+const GALA_END = new Date(2026, 9, 26, 23, 59).getTime(); 
+
 const KEY = 'hive_access', SES = 'hive_session';
 const access = localStorage.getItem(KEY);
 const wantsGate = location.search.indexOf('gate') !== -1;
+const partyOver = Date.now() > GALA_END;
 
-if (access && +access > Date.now()) {
+if (partyOver) {
+  // The gala has concluded. Wipe their tokens so core.html bounces them to the porch.
+  localStorage.removeItem(KEY);
+  sessionStorage.removeItem(SES);
+} else if (access && +access > Date.now()) {
   sessionStorage.setItem(SES, '1'); 
   if (!wantsGate) location.replace('core.html');
 }
 
 gate.onsubmit = e => {
   e.preventDefault();
+  
+  if (Date.now() > GALA_END) {
+    err.textContent = 'the gala has concluded .. the doors are locked';
+    return;
+  }
+
   const u = uid.value.trim();
   const c = code.value.trim().toUpperCase();
   
+  // (keep your actual password logic here exactly as it was)
   if (u === 'HIVE-0000-0000' && c === 'HIVE-0000-0000') {
     localStorage.setItem('hive_access', String(Date.now() + 30*864e5)); // 30 days
     sessionStorage.setItem('hive_session', '1');
