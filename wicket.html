@@ -468,6 +468,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
     localStorage.setItem('hive_access', String(Date.now() + SPAN));
     localStorage.setItem('hive_member', '1');
     localStorage.setItem('hive_word', FREE);
+        sessionStorage.setItem('hive_egg', '1');
     location.href = 'core.html';
   }
   document.addEventListener('click', function(e){
@@ -480,7 +481,7 @@ btn.addEventListener('pointerleave',function(){ t0=0; btn.textContent='witness';
     if (new Date().getMonth() === 9) {
       stat('the flock remembers \u00b7 welcome back');
       flock(); pulse();
-      setTimeout(grant, 900);
+      setTimeout(grant, 1700);
     } else {
       pulse();
       stat('the rose remembers \u00b7 it wakes in october \u00b7 ' + daysToOctober() + ' days');
