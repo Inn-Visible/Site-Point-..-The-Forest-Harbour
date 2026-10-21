@@ -1,7 +1,8 @@
 (function(){
-  /* ---- the gala clock \u00b7 house-wide ---- */
-  var GALA_END = new Date(2026, 9, 26, 23, 59).getTime(); /* same date as index */
-  if (Date.now() > GALA_END) {
+  /* ---- the october clock \u00b7 house-wide \u00b7 free-word guests only ---- */
+  var OCT = new Date().getMonth() === 9;
+  var freeWord = (localStorage.getItem('hive_word') || '').toLowerCase() === 'fw7';
+  if (!OCT && freeWord) {
     localStorage.removeItem('hive_access');
     sessionStorage.removeItem('hive_session');
   }
