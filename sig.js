@@ -219,3 +219,26 @@
   }
   scan(); setInterval(scan,1500);
 })();
+
+(function(){
+  /* ---- the flock escort \u00b7 the welcome carries through the door ---- */
+  if (sessionStorage.getItem('hive_egg') !== '1') return;
+  sessionStorage.removeItem('hive_egg');
+  function go(){
+    var cl = document.querySelector('.cluster'); if (!cl) return;
+    var grid = document.getElementById('introGrid');
+    if (grid) { grid.style.opacity = '0'; grid.style.transition = 'opacity 1.1s ease'; setTimeout(function(){ grid.style.opacity = '1'; }, 250); }
+    var B = 'M96,0 C78,-4 66,-6 54,-4 C40,-26 22,-38 4,-42 C14,-26 24,-14 38,-6 C20,-2 8,6 0,18 C16,10 30,6 44,6 C58,8 76,6 96,0 Z';
+    for (var i = 0; i < 3; i++) {
+      var s = document.createElement('span');
+      s.style.cssText = 'position:fixed;left:' + (16 + i * 10) + '%;bottom:' + (28 + i * 7) + '%;z-index:66;pointer-events:none;opacity:.85;animation:eggglide 1.6s ease-in forwards;animation-delay:' + (i * 0.12) + 's';
+      s.innerHTML = '<svg width="22" height="19" viewBox="0 -45 100 90"><path d="' + B + '" fill="#e8e4d8" stroke="#b070e8" stroke-width="6"/></svg>';
+      document.body.appendChild(s);
+      s.addEventListener('animationend', function(){ this.remove(); });
+    }
+    var st = document.createElement('style');
+    st.textContent = '@keyframes eggglide{to{transform:translate(46vw,-46vh) scale(.55);opacity:0}}';
+    document.head.appendChild(st);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();
