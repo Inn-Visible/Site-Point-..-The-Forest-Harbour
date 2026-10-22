@@ -346,7 +346,7 @@
   var SK=null;
   setTimeout(function(){ SK=[]; var cs=document.querySelectorAll('body > canvas');
     for(var i=0;i<cs.length;i++){ var s=cs[i].style;
-      if(s.position==='fixed'&&s.zIndex==='-1'&&cs[i].width>innerWidth+8) SK.push(cs[i]); } },800);
+      if(s.position==='fixed'&&s.zIndex==='-1'&&cs[i].width>innerWidth+8&&cs[i].id!=='skycloud') SK.push(cs[i]); } },800);
   var lastEq=0;
   function loop(now){
     var on=document.body.classList.contains('coasting');
