@@ -242,3 +242,115 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();
+
+(function(){
+  /* ---- the gyro hand II \u00b7 level, equations, offline-true ---- */
+  var btn=document.getElementById('coastBtn'); if(!btn) return;
+  var hasHud=!!document.getElementById('hud');
+  document.addEventListener('click',function(){ try{ if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().then(function(){}).catch(function(){}); }catch(e){} },{once:true});
+  var HOME={lat:43.9,lon:-79.0}, LAT=HOME.lat, LON=HOME.lon;
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(p){ LAT=p.coords.latitude; LON=p.coords.longitude; },function(){},{timeout:5000,maximumAge:600000});
+  var beta=0,gamma=0,haveTilt=false,hT=0,hC=0,haveH=false;
+  function onOri(e){
+    if(e.beta!=null||e.gamma!=null){ beta=e.beta||0; gamma=e.gamma||0; haveTilt=true; }
+    var h=null;
+    if(typeof e.webkitCompassHeading==='number') h=e.webkitCompassHeading;
+    else if(e.alpha!=null&&e.absolute) h=360-e.alpha;
+    if(h!=null&&!isNaN(h)){ hT=h; haveH=true; }
+  }
+  if('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute',onOri,true);
+  addEventListener('deviceorientation',onOri,true);
+  var hud=hasHud?document.getElementById('hud'):null;
+  if(!hud){
+    hud=document.createElement('div'); hud.id='gyroHud';
+    hud.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:70;text-align:center;font:10px ui-monospace,Consolas,monospace;color:#5c6875;letter-spacing:.12em;pointer-events:none;display:none';
+    hud.innerHTML='<canvas id="gtape" width="280" height="42" style="display:block;margin:0 auto"></canvas><div id="ghdg" style="color:#d9a83a;font-size:12px;margin-top:2px"></div>';
+    document.body.appendChild(hud);
+    var st0=document.createElement('style'); st0.textContent='body.coasting > #gyroHud{display:block!important}';
+    document.head.appendChild(st0);
+  }
+  var lv=document.createElement('canvas'); lv.width=76; lv.height=76; lv.style.cssText='display:block;margin:6px auto 0';
+  hud.appendChild(lv);
+  var eq=document.createElement('div'); eq.style.cssText='margin-top:4px;font-size:9px;line-height:1.6';
+  hud.appendChild(eq);
+  var lg=lv.getContext('2d');
+  var gt=document.getElementById('gtape'), gg=gt?gt.getContext('2d'):null, gh=document.getElementById('ghdg');
+  var C16=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  function tape(h){
+    gg.clearRect(0,0,280,42); gg.font='9px monospace'; gg.textAlign='center';
+    var s0=Math.floor((h-64)/5)*5;
+    for(var d0=s0;d0<=h+64;d0+=5){
+      var x=140+(d0-h)*2.2, m=((Math.round(d0)%360)+360)%360;
+      var len=m%45===0?10:m%15===0?7:4;
+      gg.strokeStyle=m%45===0?'rgba(147,161,176,.9)':'rgba(92,104,117,.6)';
+      gg.beginPath(); gg.moveTo(x,26); gg.lineTo(x,26-len); gg.stroke();
+      if(m%45===0){ gg.fillStyle='#93a1b0'; gg.fillText(['N','NE','E','SE','S','SW','W','NW'][m/45],x,38); }
+    }
+    gg.strokeStyle='#d9a83a'; gg.beginPath(); gg.moveTo(140,4); gg.lineTo(140,26); gg.stroke();
+    gg.fillStyle='#d9a83a'; gg.beginPath(); gg.moveTo(140,28); gg.lineTo(136,34); gg.lineTo(144,34); gg.closePath(); gg.fill();
+  }
+   function level(){
+    lg.clearRect(0,0,76,76);
+    var cx=38,cy=38,R=30;
+    if(!haveTilt){
+      lg.strokeStyle='rgba(92,104,117,.4)'; lg.lineWidth=1.5;
+      lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
+      lg.fillStyle='#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
+      lg.fillText('no gyro on this glass', cx, cy+R+10);
+      return;
+    }
+    var flat=Math.abs(gamma)<3&&Math.abs(beta)<3;
+    lg.strokeStyle=flat?'#d9a83a':'rgba(92,104,117,.7)'; lg.lineWidth=1.5;
+    lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
+    lg.strokeStyle='rgba(92,104,117,.5)'; lg.lineWidth=1;
+    lg.beginPath(); lg.arc(cx,cy,4,0,7); lg.stroke();
+    lg.beginPath(); lg.moveTo(cx-R,cy); lg.lineTo(cx-R+6,cy); lg.moveTo(cx+R-6,cy); lg.lineTo(cx+R,cy);
+    lg.moveTo(cx,cy-R); lg.lineTo(cx,cy-R+6); lg.moveTo(cx,cy+R-6); lg.lineTo(cx,cy+R); lg.stroke();
+    var bx=cx+Math.max(-1,Math.min(1,gamma/30))*(R-8), by=cy+Math.max(-1,Math.min(1,beta/30))*(R-8);
+    lg.fillStyle=flat?'#d9a83a':'#93a1b0';
+    lg.beginPath(); lg.arc(bx,by,5,0,7); lg.fill();
+    lg.fillStyle=flat?'#d9a83a':'#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
+    lg.fillText(flat?'level':Math.round(Math.max(Math.abs(gamma),Math.abs(beta)))+'\u00b0', cx, cy+R+10);
+  }
+  /* ---- equations \u00b7 all local \u00b7 clock + sensor only ---- */
+  function rad(d){ return d*Math.PI/180; } function deg(r){ return r*180/Math.PI; }
+  function lst(){ var d=Date.now()/86400000+2440587.5-2451545.0;
+    return ((280.46061837+360.98564736629*d+LON)%360+360)%360; }
+  function sunEq(){ var d=new Date(), jan=new Date(d.getFullYear(),0,0);
+    var N=Math.floor((d-jan)/86400000);
+    var dec=-23.44*Math.cos(rad(360/365*(N+10)));
+    var dst=d.getMonth()>2&&d.getMonth()<10;
+    var sol=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600-(dst?1:0)+(LON+75)/15;
+    var HA=rad((sol-12)*15), la=rad(LAT), de=rad(dec);
+    var alt=deg(Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(HA)));
+    var az=(deg(Math.atan2(Math.sin(HA), Math.cos(HA)*Math.sin(la)-Math.tan(de)*Math.cos(la))+180)+360)%360;
+    return {alt:alt,az:az}; }
+  var SYN=29.530588853, EPOCH=Date.UTC(2000,0,6,18,14,0);
+  var NM=['new','waxing crescent','first quarter','waxing gibbous','full','waning gibbous','last quarter','waning crescent'];
+  function moonEq(){ var age=((Date.now()-EPOCH)/86400000)%SYN; if(age<0) age+=SYN;
+    return {age:age, name:NM[Math.floor((age/SYN)*8+0.5)%8]}; }
+  function houseCC(){ var doy=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
+    return Math.max(0,Math.min(100,Math.round(38+26*Math.sin(doy/5.3)+12*Math.sin(doy/1.7)))); }
+  function seedCC(){ if(!navigator.onLine){ try{ localStorage.setItem('hive_wx_cc',String(houseCC())); }catch(e){} } }
+  seedCC(); setInterval(seedCC,600000);
+  /* ---- loop ---- */
+  var SK=null; setTimeout(function(){ SK=[]; var cs=document.querySelectorAll('body > canvas');
+    for(var i=0;i<cs.length;i++){ var s=cs[i].style; if(s.position==='fixed'&&s.zIndex==='-1') SK.push(cs[i]); } },800);
+  var lastEq=0;
+  function loop(now){
+    var on=document.body.classList.contains('coasting');
+    if(haveH){ var d=((hT-hC+540)%360)-180; hC=(hC+d*0.12+360)%360; }
+    if(!hasHud&&on&&gg){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }
+    if(on&&haveTilt) level();
+    if(on&&now-lastEq>500){ lastEq=now;
+      var s=sunEq(), m=moonEq(), L=lst();
+      var lh=Math.floor(L/15), lm=Math.floor((L/15-lh)*60);
+      var dc=new Date(), pp=function(n){ return String(n).padStart(2,'0'); };       eq.innerHTML='t '+pp(dc.getHours())+':'+pp(dc.getMinutes())+':'+pp(dc.getSeconds())+' \u00b7 lst '+lh+'h'+String(lm).padStart(2,'0')+' \u00b7 sun '+(s.alt>=0?'+':'')+Math.round(s.alt)+'\u00b0/'+Math.round(s.az)+'\u00b0 \u00b7 moon day '+Math.floor(m.age)+' \u00b7 '+m.name
+        +'<br><span style="color:'+(navigator.onLine?'#58a36a':'#d9a83a')+'">\u25cf</span> '+(navigator.onLine?'wire idle':'no wire')+' \u00b7 clock+sensor only \u00b7 the sky needs no wire';
+    }
+    if(on&&haveTilt&&SK){ var tx=Math.max(-8,Math.min(8,gamma*0.25)), ty=Math.max(-8,Math.min(8,beta*0.25));
+      for(var i=0;i<SK.length;i++){ try{ SK[i].style.translate=tx.toFixed(1)+'px '+ty.toFixed(1)+'px'; }catch(e){} } }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
