@@ -269,10 +269,19 @@
     var st0=document.createElement('style'); st0.textContent='body.coasting > #gyroHud{display:block!important}';
     document.head.appendChild(st0);
   }
-  var lv=document.createElement('canvas'); lv.width=76; lv.height=76; lv.style.cssText='display:block;margin:6px auto 0';
-  hud.appendChild(lv);
-  var eq=document.createElement('div'); eq.style.cssText='margin-top:4px;font-size:9px;line-height:1.6';
-  hud.appendChild(eq);
+  var panel=document.createElement('div');
+  panel.style.cssText='margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center;max-width:94vw';
+  var lv=document.createElement('canvas'); lv.width=76; lv.height=92; lv.style.cssText='display:block;width:76px;height:92px';
+  panel.appendChild(lv);
+  var eq=document.createElement('div'); eq.style.cssText='font-size:9px;line-height:1.6;text-align:center';
+  panel.appendChild(eq);
+  hud.appendChild(panel);
+  var mq=document.createElement('style');
+  mq.textContent='@media(max-width:700px){#hud,#gyroHud{bottom:64px!important}'
+    +'#tape,#gtape{width:min(280px,92vw)!important;height:auto!important}'
+    +'#hud>div>canvas,#gyroHud>div>canvas{width:64px!important;height:77.5px!important}'
+    +'#hud>div>div,#gyroHud>div>div{font-size:8px!important}}';
+  document.head.appendChild(mq);
   var lg=lv.getContext('2d');
   var gt=document.getElementById('gtape'), gg=gt?gt.getContext('2d'):null, gh=document.getElementById('ghdg');
   var C16=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
