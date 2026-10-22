@@ -244,7 +244,7 @@
 })();
 
 (function(){
-  /* ---- the gyro hand II \u00b7 level, equations, offline-true ---- */
+  /* ---- the gyro hand III \u00b7 one clean instrument: level, tape, equations ---- */
   var btn=document.getElementById('coastBtn'); if(!btn) return;
   var hasHud=!!document.getElementById('hud');
   document.addEventListener('click',function(){ try{ if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().then(function(){}).catch(function(){}); }catch(e){} },{once:true});
@@ -277,10 +277,7 @@
   panel.appendChild(eq);
   hud.appendChild(panel);
   var mq=document.createElement('style');
-  mq.textContent='@media(max-width:700px){#hud,#gyroHud{bottom:64px!important}'
-    +'#tape,#gtape{width:min(280px,92vw)!important;height:auto!important}'
-    +'#hud>div>canvas,#gyroHud>div>canvas{width:96px!important;height:73.6px!important}'
-    +'#hud>div>div,#gyroHud>div>div{font-size:8px!important}}';
+  mq.textContent='@media(max-width:700px){#hud,#gyroHud{bottom:64px!important}#tape,#gtape{width:min(280px,92vw)!important;height:auto!important}#hud>div>div:last-child,#gyroHud>div>div:last-child{font-size:8px!important}}';
   document.head.appendChild(mq);
   var lg=lv.getContext('2d');
   var gt=document.getElementById('gtape'), gg=gt?gt.getContext('2d'):null, gh=document.getElementById('ghdg');
@@ -298,38 +295,41 @@
     gg.strokeStyle='#d9a83a'; gg.beginPath(); gg.moveTo(140,4); gg.lineTo(140,26); gg.stroke();
     gg.fillStyle='#d9a83a'; gg.beginPath(); gg.moveTo(140,28); gg.lineTo(136,34); gg.lineTo(144,34); gg.closePath(); gg.fill();
   }
-   function level(){
-    lg.clearRect(0,0,76,76);
-    var cx=60,cy=38,R=30;
+  function level(){
+    lg.clearRect(0,0,lv.width,lv.height); /* the WHOLE frame, every frame \u2014 no ghosts */
+    var cx=60,cy=40,R=32;
     if(!haveTilt){
-      lg.strokeStyle='rgba(92,104,117,.4)'; lg.lineWidth=1.5;
+      lg.strokeStyle='rgba(147,161,176,.55)'; lg.lineWidth=2;
       lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
-      lg.fillStyle='#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
-      lg.fillText('no gyro', cx, cy+4);
+      lg.fillStyle='#93a1b0'; lg.font='9px monospace'; lg.textAlign='center';
+      lg.fillText('no gyro', cx, cy+R+12);
       return;
     }
     var flat=Math.abs(gamma)<3&&Math.abs(beta)<3;
-    lg.strokeStyle=flat?'#d9a83a':'rgba(92,104,117,.7)'; lg.lineWidth=1.5;
+    lg.strokeStyle=flat?'#d9a83a':'rgba(147,161,176,.9)'; lg.lineWidth=2;
     lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
-    lg.strokeStyle='rgba(92,104,117,.5)'; lg.lineWidth=1;
-    lg.beginPath(); lg.arc(cx,cy,4,0,7); lg.stroke();
-    lg.beginPath(); lg.moveTo(cx-R,cy); lg.lineTo(cx-R+6,cy); lg.moveTo(cx+R-6,cy); lg.lineTo(cx+R,cy);
-    lg.moveTo(cx,cy-R); lg.lineTo(cx,cy-R+6); lg.moveTo(cx,cy+R-6); lg.lineTo(cx,cy+R); lg.stroke();
-    var bx=cx+Math.max(-1,Math.min(1,gamma/30))*(R-8), by=cy+Math.max(-1,Math.min(1,beta/30))*(R-8);
-    lg.fillStyle=flat?'#d9a83a':'#93a1b0';
-    lg.beginPath(); lg.arc(bx,by,5,0,7); lg.fill();
-    lg.fillStyle=flat?'#d9a83a':'#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
-    lg.fillText(flat?'level':Math.round(Math.max(Math.abs(gamma),Math.abs(beta)))+'\u00b0', cx, cy+4);
+    lg.strokeStyle=flat?'rgba(217,168,58,.6)':'rgba(147,161,176,.5)'; lg.lineWidth=1;
+    lg.beginPath(); lg.arc(cx,cy,5,0,7); lg.stroke();
+    lg.beginPath(); lg.moveTo(cx-R,cy); lg.lineTo(cx-R+7,cy); lg.moveTo(cx+R-7,cy); lg.lineTo(cx+R,cy);
+    lg.moveTo(cx,cy-R); lg.lineTo(cx,cy-R+7); lg.moveTo(cx,cy+R-7); lg.lineTo(cx,cy+R); lg.stroke();
+    var bx=cx+Math.max(-1,Math.min(1,gamma/30))*(R-9), by=cy+Math.max(-1,Math.min(1,beta/30))*(R-9);
+    lg.fillStyle=flat?'#d9a83a':'#e8e4d8';
+    lg.beginPath(); lg.arc(bx,by,6,0,7); lg.fill();
+    lg.fillStyle=flat?'#d9a83a':'#93a1b0'; lg.font='9px monospace'; lg.textAlign='center';
+    lg.fillText(flat?'level':Math.round(Math.max(Math.abs(gamma),Math.abs(beta)))+'\u00b0', cx, cy+R+12);
   }
   /* ---- equations \u00b7 all local \u00b7 clock + sensor only ---- */
   function rad(d){ return d*Math.PI/180; } function deg(r){ return r*180/Math.PI; }
   function lst(){ var d=Date.now()/86400000+2440587.5-2451545.0;
     return ((280.46061837+360.98564736629*d+LON)%360+360)%360; }
+  function usdst(d){ var m=d.getMonth(), y=d.getFullYear(), dd=d.getDate();
+    if(m>2&&m<10) return true; if(m<2||m>10) return false;
+    if(m===2){ var s=1+((7-new Date(y,2,1).getDay())%7); return dd>=s+7; }
+    return dd<1+((7-new Date(y,10,1).getDay())%7); }
   function sunEq(){ var d=new Date(), jan=new Date(d.getFullYear(),0,0);
     var N=Math.floor((d-jan)/86400000);
     var dec=-23.44*Math.cos(rad(360/365*(N+10)));
-    var dst=(function(d){ var m=d.getMonth(), y=d.getFullYear(), dd=d.getDate();       if(m>2&&m<10) return true; if(m<2||m>10) return false;       if(m===2){ var s=1+((7-new Date(y,2,1).getDay())%7); return dd>=s+7; }       return dd<1+((7-new Date(y,10,1).getDay())%7); })(d);
-    var sol=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600-(dst?1:0)+(LON+75)/15;
+    var sol=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600-(usdst(d)?1:0)+(LON+75)/15;
     var HA=rad((sol-12)*15), la=rad(LAT), de=rad(dec);
     var alt=deg(Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(HA)));
     var az=(deg(Math.atan2(Math.sin(HA), Math.cos(HA)*Math.sin(la)-Math.tan(de)*Math.cos(la))+180)+360)%360;
@@ -342,19 +342,25 @@
     return Math.max(0,Math.min(100,Math.round(38+26*Math.sin(doy/5.3)+12*Math.sin(doy/1.7)))); }
   function seedCC(){ if(!navigator.onLine){ try{ localStorage.setItem('hive_wx_cc',String(houseCC())); }catch(e){} } }
   seedCC(); setInterval(seedCC,600000);
-  /* ---- loop ---- */
-  var SK=null; setTimeout(function(){ SK=[]; var cs=document.querySelectorAll('body > canvas');
-    for(var i=0;i<cs.length;i++){ var s=cs[i].style; if(s.position==='fixed'&&s.zIndex==='-1') SK.push(cs[i]); } },800);
+  /* ---- loop \u00b7 parallax only touches oversized skies (no jutting edges) ---- */
+  var SK=null;
+  setTimeout(function(){ SK=[]; var cs=document.querySelectorAll('body > canvas');
+    for(var i=0;i<cs.length;i++){ var s=cs[i].style;
+      if(s.position==='fixed'&&s.zIndex==='-1'&&cs[i].width>innerWidth+8) SK.push(cs[i]); } },800);
   var lastEq=0;
   function loop(now){
     var on=document.body.classList.contains('coasting');
     if(haveH){ var d=((hT-hC+540)%360)-180; hC=(hC+d*0.12+360)%360; }
-    if(!hasHud&&on&&gg){       if(haveH){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }       else { gg.clearRect(0,0,280,42); gg.fillStyle='#5c6875'; gg.font='9px monospace'; gg.textAlign='center'; gg.fillText('north is up \u00b7 no sensor on this glass',140,24); gh.textContent=''; }     }
+    if(!hasHud&&on&&gg){
+      if(haveH){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }
+      else { gg.clearRect(0,0,280,42); gg.fillStyle='#5c6875'; gg.font='9px monospace'; gg.textAlign='center'; gg.fillText('north is up \u00b7 no sensor on this glass',140,24); gh.textContent=''; }
+    }
     if(on) level();
     if(on&&now-lastEq>500){ lastEq=now;
       var s=sunEq(), m=moonEq(), L=lst();
       var lh=Math.floor(L/15), lm=Math.floor((L/15-lh)*60);
-      var dc=new Date(), pp=function(n){ return String(n).padStart(2,'0'); };       eq.innerHTML='t '+pp(dc.getHours())+':'+pp(dc.getMinutes())+':'+pp(dc.getSeconds())+' \u00b7 lst '+lh+'h'+String(lm).padStart(2,'0')+' \u00b7 sun '+(s.alt>=0?'+':'')+Math.round(s.alt)+'\u00b0/'+Math.round(s.az)+'\u00b0 \u00b7 moon day '+Math.floor(m.age)+' \u00b7 '+m.name
+      var dc=new Date(), pp=function(n){ return String(n).padStart(2,'0'); };
+      eq.innerHTML='t '+pp(dc.getHours())+':'+pp(dc.getMinutes())+':'+pp(dc.getSeconds())+' \u00b7 lst '+lh+'h'+String(lm).padStart(2,'0')+' \u00b7 sun '+(s.alt>=0?'+':'')+Math.round(s.alt)+'\u00b0/'+Math.round(s.az)+'\u00b0 \u00b7 moon day '+Math.floor(m.age)+' \u00b7 '+m.name
         +'<br><span style="color:'+(navigator.onLine?'#58a36a':'#d9a83a')+'">\u25cf</span> '+(navigator.onLine?'wire idle':'no wire')+' \u00b7 clock+sensor only \u00b7 the sky needs no wire';
     }
     if(on&&haveTilt&&SK){ var tx=Math.max(-8,Math.min(8,gamma*0.25)), ty=Math.max(-8,Math.min(8,beta*0.25));
