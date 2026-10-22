@@ -525,7 +525,7 @@ async function send(){
   var cv=document.createElement('canvas');
   cv.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none';
   document.body.appendChild(cv);
-  cv.id='skycloud'; var g=cv.getContext('2d'), W,H, clouds=[];
+  cv.id='skycloud'; var ks=document.createElement('style'); ks.textContent='body.coasting > #skycloud{display:block!important}'; document.head.appendChild(ks); var g=cv.getContext('2d'), W,H, clouds=[];
   function fit(){ var VW=innerWidth, VH=innerHeight, D=Math.ceil(Math.hypot(VW,VH))+4;     cv.style.width=D+'px'; cv.style.height=D+'px';     cv.style.left=Math.round((VW-D)/2)+'px'; cv.style.top=Math.round((VH-D)/2)+'px';     W=cv.width=D; H=cv.height=D; }
   addEventListener('resize',fit); fit();
   for(var i=0;i<7;i++) clouds.push({x:Math.random(),y:0.08+Math.random()*0.55,s:0.7+Math.random()*1.1,v:0.00004+Math.random()*0.00008,b:Math.random()*7});
