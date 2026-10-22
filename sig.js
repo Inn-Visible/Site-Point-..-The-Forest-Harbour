@@ -319,7 +319,7 @@
   function sunEq(){ var d=new Date(), jan=new Date(d.getFullYear(),0,0);
     var N=Math.floor((d-jan)/86400000);
     var dec=-23.44*Math.cos(rad(360/365*(N+10)));
-    var dst=d.getMonth()>2&&d.getMonth()<10;
+    var dst=(function(d){ var m=d.getMonth(), y=d.getFullYear(), dd=d.getDate();       if(m>2&&m<10) return true; if(m<2||m>10) return false;       if(m===2){ var s=1+((7-new Date(y,2,1).getDay())%7); return dd>=s+7; }       return dd<1+((7-new Date(y,10,1).getDay())%7); })(d);
     var sol=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600-(dst?1:0)+(LON+75)/15;
     var HA=rad((sol-12)*15), la=rad(LAT), de=rad(dec);
     var alt=deg(Math.asin(Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(HA)));
