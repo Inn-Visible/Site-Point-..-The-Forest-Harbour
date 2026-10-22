@@ -271,7 +271,7 @@
   }
   var panel=document.createElement('div');
   panel.style.cssText='margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center;max-width:94vw';
-  var lv=document.createElement('canvas'); lv.width=76; lv.height=92; lv.style.cssText='display:block;width:76px;height:92px';
+  var lv=document.createElement('canvas'); lv.width=120; lv.height=92; lv.style.cssText='display:block;width:120px;height:92px';
   panel.appendChild(lv);
   var eq=document.createElement('div'); eq.style.cssText='font-size:9px;line-height:1.6;text-align:center';
   panel.appendChild(eq);
@@ -279,7 +279,7 @@
   var mq=document.createElement('style');
   mq.textContent='@media(max-width:700px){#hud,#gyroHud{bottom:64px!important}'
     +'#tape,#gtape{width:min(280px,92vw)!important;height:auto!important}'
-    +'#hud>div>canvas,#gyroHud>div>canvas{width:64px!important;height:77.5px!important}'
+    +'#hud>div>canvas,#gyroHud>div>canvas{width:96px!important;height:73.6px!important}'
     +'#hud>div>div,#gyroHud>div>div{font-size:8px!important}}';
   document.head.appendChild(mq);
   var lg=lv.getContext('2d');
@@ -300,7 +300,7 @@
   }
    function level(){
     lg.clearRect(0,0,76,76);
-    var cx=38,cy=38,R=30;
+    var cx=60,cy=38,R=30;
     if(!haveTilt){
       lg.strokeStyle='rgba(92,104,117,.4)'; lg.lineWidth=1.5;
       lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
@@ -349,7 +349,7 @@
   function loop(now){
     var on=document.body.classList.contains('coasting');
     if(haveH){ var d=((hT-hC+540)%360)-180; hC=(hC+d*0.12+360)%360; }
-    if(!hasHud&&on&&gg){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }
+    if(!hasHud&&on&&gg){       if(haveH){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }       else { gg.clearRect(0,0,280,42); gg.fillStyle='#5c6875'; gg.font='9px monospace'; gg.textAlign='center'; gg.fillText('north is up \u00b7 no sensor on this glass',140,24); gh.textContent=''; }     }
     if(on) level();
     if(on&&now-lastEq>500){ lastEq=now;
       var s=sunEq(), m=moonEq(), L=lst();
