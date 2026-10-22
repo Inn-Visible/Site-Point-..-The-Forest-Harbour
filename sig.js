@@ -305,7 +305,7 @@
       lg.strokeStyle='rgba(92,104,117,.4)'; lg.lineWidth=1.5;
       lg.beginPath(); lg.arc(cx,cy,R,0,7); lg.stroke();
       lg.fillStyle='#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
-      lg.fillText('no gyro on this glass', cx, cy+R+10);
+      lg.fillText('no gyro', cx, cy+4);
       return;
     }
     var flat=Math.abs(gamma)<3&&Math.abs(beta)<3;
@@ -319,7 +319,7 @@
     lg.fillStyle=flat?'#d9a83a':'#93a1b0';
     lg.beginPath(); lg.arc(bx,by,5,0,7); lg.fill();
     lg.fillStyle=flat?'#d9a83a':'#5c6875'; lg.font='8px monospace'; lg.textAlign='center';
-    lg.fillText(flat?'level':Math.round(Math.max(Math.abs(gamma),Math.abs(beta)))+'\u00b0', cx, cy+R+10);
+    lg.fillText(flat?'level':Math.round(Math.max(Math.abs(gamma),Math.abs(beta)))+'\u00b0', cx, cy+4);
   }
   /* ---- equations \u00b7 all local \u00b7 clock + sensor only ---- */
   function rad(d){ return d*Math.PI/180; } function deg(r){ return r*180/Math.PI; }
