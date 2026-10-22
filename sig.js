@@ -341,7 +341,7 @@
     var on=document.body.classList.contains('coasting');
     if(haveH){ var d=((hT-hC+540)%360)-180; hC=(hC+d*0.12+360)%360; }
     if(!hasHud&&on&&gg){ tape(hC); gh.textContent=Math.round(hC)%360+'\u00b0 \u00b7 '+C16[Math.round(hC/22.5)%16]; }
-    if(on&&haveTilt) level();
+    if(on) level();
     if(on&&now-lastEq>500){ lastEq=now;
       var s=sunEq(), m=moonEq(), L=lst();
       var lh=Math.floor(L/15), lm=Math.floor((L/15-lh)*60);
