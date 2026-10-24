@@ -123,6 +123,7 @@ function gisChart(url){
   var z, x, y;
   if (m) { z = +m[1]; y = +m[2]; x = +m[3]; }
   else { var m2 = url.pathname.match(/\/(\d+)\/(\d+)\/(\d+)\.(png|jpe?g)/); if (!m2) return gisSea(); z = +m2[1]; x = +m2[2]; y = +m2[3]; }
+  if (z >= 7) return gisUncharted(z, x, y);
   var n = Math.pow(2, z);
   function P(lon, lat){
     var wx = (lon + 180) / 360;
@@ -137,9 +138,52 @@ function gisChart(url){
   s += '<path d="' + gp + '" stroke="rgba(92,104,117,.22)" fill="none"/>';
   var lp = '';
   LAND.forEach(function(poly){ lp += 'M' + poly.map(function(p){ var q = P(p[0], p[1]); return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L') + 'Z'; });
-  s += '<path d="' + lp + '" fill="#141c26" stroke="rgba(217,168,58,.45)" stroke-width="1"/>';
+  s += '<path d="' + lp + '" fill="none" stroke="rgba(217,168,58,.16)" stroke-width="4" stroke-linejoin="round"/>';
+  s += '<path d="' + lp + '" fill="#141c26" stroke="rgba(217,168,58,.5)" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>';
   var ay = P(0, -70)[1];
-  if (ay < 256) { var top = Math.max(0, ay); s += '<rect y="' + top.toFixed(1) + '" width="256" height="' + (256 - top).toFixed(1) + '" fill="#141c26"/><line x1="0" y1="' + top.toFixed(1) + '" x2="256" y2="' + top.toFixed(1) + '" stroke="rgba(217,168,58,.45)"/>'; }
+  if (ay < 256) { var top = Math.max(0, ay); s += '<rect y="' + top.toFixed(1) + '" width="256" height="' + (256 - top).toFixed(1) + '" fill="#141c26"/><line x1="0" y1="' + top.toFixed(1) + '" x2="256" y2="' + top.toFixed(1) + '" stroke="rgba(217,168,58,.5)"/>'; }
+  var NAMES = ['NORTH AMERICA','GREENLAND','SOUTH AMERICA','AFRICA','EURASIA','BRITAIN','AUSTRALIA','MADAGASCAR','NEW ZEALAND'];
+  var fs = z <= 2 ? 9 : (z <= 4 ? 11 : 8);
+  LAND.forEach(function(poly, i){
+    var cl = [0, 0]; poly.forEach(function(p){ cl[0] += p[0]; cl[1] += p[1]; });
+    cl = [cl[0] / poly.length, cl[1] / poly.length];
+    var q = P(cl[0], cl[1]);
+    if (q[0] > -40 && q[0] < 296 && q[1] > -10 && q[1] < 266) {
+      s += '<text x="' + q[0].toFixed(1) + '" y="' + q[1].toFixed(1) + '" font-family="Georgia,serif" font-style="italic" font-size="' + fs + '" fill="rgba(217,168,58,.55)" text-anchor="middle" letter-spacing="2">' + NAMES[i] + '</text>';
+    }
+  });
+  s += '</svg>';
+  return new Response(s, { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' } });
+}
+function gisUncharted(z, x, y){
+  var dpt = 360 / Math.pow(2, z);
+  var steps = [10,5,2,1,0.5,0.2,0.1,0.05,0.02,0.01,0.005];
+  var step = steps[steps.length - 1];
+  for (var i = 0; i < steps.length; i++){ if (steps[i] <= dpt / 3){ step = steps[i]; break; } }
+  var n = Math.pow(2, z);
+  function P(lon, lat){
+    var wx = (lon + 180) / 360;
+    var wy = (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2;
+    return [(wx * n - x) * 256, (wy * n - y) * 256];
+  }
+  function latOf(wy){ return (2 * Math.atan(Math.exp(Math.PI * (1 - 2 * wy))) - Math.PI / 2) * 180 / Math.PI; }
+  var lon0 = x / n * 360 - 180, lon1 = (x + 1) / n * 360 - 180;
+  var latTop = latOf(y / n), latBot = latOf((y + 1) / n);
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">';
+  s += '<rect width="256" height="256" fill="#0b1016"/>';
+  s += '<path d="M0 64H256M0 128H256M0 192H256M64 0V256M128 0V256M192 0V256" stroke="rgba(92,104,117,.06)"/>';
+  var gp = '';
+  for (var lon = Math.ceil(lon0 / step) * step; lon <= lon1; lon += step){ var gx = P(lon, 0)[0]; if (gx > -2 && gx < 258) gp += 'M' + gx.toFixed(1) + ' 0V256'; }
+  for (var lat = Math.ceil(latBot / step) * step; lat <= latTop; lat += step){ var gy = P(0, lat)[1]; if (gy > -2 && gy < 258) gp += 'M0 ' + gy.toFixed(1) + 'H256'; }
+  s += '<path d="' + gp + '" stroke="rgba(92,104,117,.2)" fill="none"/>';
+  var h = (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+  function rnd(){ h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return (h >>> 0) / 4294967296; }
+  for (var k = 0; k < 6; k++){
+    var dx = 18 + rnd() * 220, dy = 18 + rnd() * 220, dep = (8 + rnd() * 170).toFixed(1);
+    s += '<circle cx="' + dx.toFixed(1) + '" cy="' + dy.toFixed(1) + '" r="0.9" fill="rgba(147,161,176,.4)"/>'
+       + '<text x="' + (dx + 4).toFixed(1) + '" y="' + (dy + 3).toFixed(1) + '" font-size="8" font-style="italic" font-family="Georgia,serif" fill="rgba(147,161,176,.38)">' + dep + '</text>';
+  }
+  if ((x + y) % 4 === 0) s += '<text x="10" y="246" font-size="8" font-family="monospace" fill="rgba(92,104,117,.55)" letter-spacing="2">UNCHARTED \u00b7 THE CACHE ENDS HERE</text>';
   s += '</svg>';
   return new Response(s, { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' } });
 }
