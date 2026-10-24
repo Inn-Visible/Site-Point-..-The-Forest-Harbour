@@ -866,7 +866,7 @@ function lockdoor(){
   Object.keys(STYLE).forEach(function(k){ var b=document.createElement('button'); b.id='st_'+k; b.textContent=k;
     b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer';
     b.onclick=function(){ setStyle(k); }; row.appendChild(b); });
-  setStyle('ink'); setTool('pan');
+  window.hiveGround={ project:project, HOME:HOME, STYLE:STYLE, ctx:function(){ return x; }, state:function(){ return {cx:cx,cy:cy,zoom:zoom,w:cv.width,h:cv.height,style:style}; }, center:function(lon,lat){ var p=project(lon,lat,zoom); cx=p[0]; cy=p[1]; draw(); } };
 
   /* ==== the ping \u00b7 an orb that orients, wire or no wire ==== */
   function pingGet(){ try{ return JSON.parse(localStorage.getItem('hive_map_ping')||'null'); }catch(e){ return null; } }
@@ -1650,6 +1650,62 @@ function lockdoor(){
       openWing();
     }
   },600);
+})();
+</script>
+
+<script>
+/* ==== the ping & the pour \u00b7 standalone rider \u00b7 yields if the ground already carries them ==== */
+(function(){
+  setTimeout(function(){
+    var tr=document.getElementById('toolRow'); if(!tr) return;
+    var b=tr.querySelectorAll('button'), i, have=false;
+    for(i=0;i<b.length;i++){ if((b[i].textContent||'').indexOf('orient')>-1){ have=true; break; } }
+    if(!have) boot();
+  },900);
+  function boot(){
+    var G=function(){ return window.hiveGround; };
+    function pingGet(){ try{ return JSON.parse(localStorage.getItem('hive_map_ping')||'null'); }catch(e){ return null; } }
+    function acquire(){ if(!navigator.geolocation) return; try{ navigator.geolocation.getCurrentPosition(function(p){ localStorage.setItem('hive_map_ping',JSON.stringify({lat:p.coords.latitude,lon:p.coords.longitude,t:Date.now()})); },function(){},{timeout:8000,maximumAge:60000}); }catch(e){} }
+    function ago(ms){ var m=Math.floor(ms/60000); if(m<2)return 'now'; if(m<60)return m+'m'; var h=Math.floor(m/60); if(h<48)return h+'h'; return Math.floor(h/24)+'d'; }
+    function paint(){
+      var g=G(); if(!g) return; var pg=pingGet(); if(!pg) return;
+      var s=g.state(), x=g.ctx();
+      var age=Date.now()-pg.t, fresh=age<90000;
+      var pp=g.project(pg.lon,pg.lat,s.zoom);
+      var px=pp[0]-s.cx+s.w/2, py=pp[1]-s.cy+s.h/2;
+      if(px<-80||py<-80||px>s.w+80||py>s.h+80) return;
+      var col=fresh?'#d9a83a':'#5c6875';
+      var rr=fresh? 12+2*Math.sin(Date.now()/450) : 14+Math.min(46,age/36e5*3);
+      x.save();
+      x.strokeStyle=col; x.lineWidth=1.4; x.setLineDash(fresh?[]:[4,3]);
+      x.beginPath(); x.arc(px,py,rr,0,7); x.stroke(); x.setLineDash([]);
+      x.fillStyle=col; x.beginPath(); x.arc(px,py,4,0,7); x.fill();
+      x.beginPath(); x.moveTo(px-9,py); x.lineTo(px-5,py); x.moveTo(px+5,py); x.lineTo(px+9,py);
+      x.moveTo(px,py-9); x.lineTo(px,py-5); x.moveTo(px,py+5); x.lineTo(px,py+9); x.stroke();
+      x.font='9px ui-monospace,Consolas,monospace';
+      x.fillText(fresh?'you \u00b7 now':'last ping \u00b7 '+ago(age), px+rr+4, py+3);
+      x.restore();
+    }
+    (function watch(){ requestAnimationFrame(function(){ if(!document.hidden) paint(); watch(); }); })();
+    setInterval(acquire,60000); acquire();
+    function addBtn(txt,fn,gold){ var b=document.createElement('button'); b.textContent=txt;
+      b.style.cssText='background:none;border:1px solid '+(gold?'#d9a83a':'#223041')+';color:'+(gold?'#d9a83a':'#93a1b0')+';font:10px ui-monospace;padding:4px 10px;cursor:pointer';
+      b.onclick=fn; document.getElementById('toolRow').appendChild(b); return b; }
+    addBtn('orient',function(){ acquire(); var pg=pingGet(); if(pg&&G()) G().center(pg.lon,pg.lat); });
+    var pour=addBtn('pour the cove',function(){
+      if(!navigator.onLine){ alert('the pour needs the wire'); return; }
+      pour.disabled=true; pour.textContent='pouring ..';
+      var g=G(), tiles=[], done=0, st=g.state().style;
+      for(var z=10;z<=14;z++){ var p=g.project(g.HOME[0],g.HOME[1],z), span=4;
+        for(var ty=Math.floor((p[1]-span*256)/256);ty<=Math.floor((p[1]+span*256)/256);ty++)
+          for(var tx=Math.floor((p[0]-span*256)/256);tx<=Math.floor((p[0]+span*256)/256);tx++)
+            tiles.push(g.STYLE[st].replace('{z}',z).replace('{x}',tx).replace('{y}',ty)); }
+      var total=tiles.length;
+      (function next(){ if(!tiles.length){ pour.textContent='poured \u00b7 '+done+' tiles'; pour.disabled=false; return; }
+        var u=tiles.shift();
+        fetch(u).then(function(r){ if(r&&r.ok&&(r.headers.get('content-type')||'').indexOf('svg')<0){ caches.open('hive-topo').then(function(c){ c.put(u,r.clone()); }); done++; } pour.textContent='pouring \u00b7 '+done+'/'+total; next(); }).catch(next); })();
+    },true);
+  }
 })();
 </script>
   
