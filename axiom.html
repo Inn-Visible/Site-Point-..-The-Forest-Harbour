@@ -525,7 +525,20 @@ function lockdoor(){
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
     b.onclick=function(){ curF=x; renderTabs(); renderBody(); }; tabs.appendChild(b); }); }
     
-  function renderBody(){ body.innerHTML='';
+  function renderBody(){
+    var cv0=document.getElementById('mapCv'); var s0=cv0?cv0.closest('section'):null;
+    if(s0 && window._gParent && s0.parentNode===body){ window._gParent.insertBefore(s0, window._gAnchor||null); }
+    body.innerHTML='';
+    if(curF==='gis'){
+      var cvEl=document.getElementById('mapCv'); var secg=cvEl?cvEl.closest('section'):null;
+      if(secg){ if(!window._gParent){ window._gAnchor=secg.nextSibling; window._gParent=secg.parentNode; }
+        body.appendChild(secg);
+        setTimeout(function(){ window.dispatchEvent(new Event('resize')); },60);
+      } else {
+        body.innerHTML='<div style="border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9">the ground is still pouring .. tap gis again in a breath</div>';
+      }
+      return;
+    }
     if(curF==='workbench'){
       // Page nav
       var nav=document.createElement('div');
@@ -710,7 +723,7 @@ function lockdoor(){
     try{ if(!('caches' in window)) return direct(u);
       return caches.open('hive-topo').then(function(c){return c.match(u);}).catch(function(){return null;}).then(function(m){
         if(m) return m;
-        return direct(u).then(function(r){ if(r){ caches.open('hive-topo').then(function(c){c.put(u,r.clone());}).catch(function(){}); } return r; });
+        return direct(u).then(function(r){ if(r && (r.headers.get('content-type')||'').indexOf('svg')<0){ caches.open('hive-topo').then(function(c){c.put(u,r.clone());}).catch(function(){}); } return r; });
       });
     }catch(e){ return direct(u); } }
   function ensure(tx,ty){ var k=style+'_'+zoom+'_'+tx+'_'+ty; if(IMG[k]||pending[k]) return; pending[k]=true;
