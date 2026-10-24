@@ -867,6 +867,41 @@ function lockdoor(){
     b.onclick=function(){ setStyle(k); }; row.appendChild(b); });
   setStyle('ink'); setTool('pan');
 
+  /* ==== the ping \u00b7 an orb that orients, wire or no wire ==== */
+  function pingGet(){ try{ return JSON.parse(localStorage.getItem('hive_map_ping')||'null'); }catch(e){ return null; } }
+  function acquirePing(){ if(!navigator.geolocation) return;
+    try{ navigator.geolocation.getCurrentPosition(function(p){
+      localStorage.setItem('hive_map_ping', JSON.stringify({lat:p.coords.latitude, lon:p.coords.longitude, t:Date.now()}));
+      draw();
+    }, function(){}, {timeout:8000, maximumAge:60000}); }catch(e){} }
+  function ago(ms){ var m=Math.floor(ms/60000); if(m<2) return 'now'; if(m<60) return m+'m'; var h=Math.floor(m/60); if(h<48) return h+'h'; return Math.floor(h/24)+'d'; }
+  function drawPing(tlx,tly){
+    var pg=pingGet(); if(!pg) return;
+    var age=Date.now()-pg.t, fresh=age<90000;
+    var pp=project(pg.lon, pg.lat, zoom);
+    var px=pp[0]-tlx, py=pp[1]-tly;
+    if(px<-80||py<-80||px>cv.width+80||py>cv.height+80) return;
+    var col=fresh?'#d9a83a':'#5c6875';
+    var rr=fresh? 12+2*Math.sin(Date.now()/450) : 14+Math.min(46, age/36e5*3);
+    x.save();
+    x.strokeStyle=col; x.lineWidth=1.4; x.setLineDash(fresh?[]:[4,3]);
+    x.beginPath(); x.arc(px,py,rr,0,7); x.stroke(); x.setLineDash([]);
+    x.fillStyle=col; x.beginPath(); x.arc(px,py,4,0,7); x.fill();
+    x.beginPath(); x.moveTo(px-9,py); x.lineTo(px-5,py); x.moveTo(px+5,py); x.lineTo(px+9,py);
+    x.moveTo(px,py-9); x.lineTo(px,py-5); x.moveTo(px,py+5); x.lineTo(px,py+9); x.stroke();
+    x.font='9px ui-monospace,Consolas,monospace';
+    x.fillText(fresh?'you \u00b7 now':'last ping \u00b7 '+ago(age), px+rr+4, py+3);
+    x.restore();
+  }
+  var pingBtn=document.createElement('button');
+  pingBtn.textContent='orient';
+  pingBtn.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer';
+  pingBtn.onclick=function(){ acquirePing(); var pg=pingGet(); if(pg){ var p=project(pg.lon,pg.lat,zoom); cx=p[0]; cy=p[1]; draw(); } };
+  var tr2=document.getElementById('toolRow'); if(tr2) tr2.appendChild(pingBtn);
+  acquirePing(); setInterval(acquirePing, 60000);
+  setInterval(function(){ if(!document.hidden) draw(); }, 1400);
+  (function(){ var pg=pingGet(); if(pg && Date.now()-pg.t < 864e5){ var p=project(pg.lon,pg.lat,zoom); cx=p[0]; cy=p[1]; draw(); } })();
+ 
   /* ==== the pour · bulk-cache the cove, z10–z14, while online ==== */
   var pourBtn=document.createElement('button');
   pourBtn.textContent='pour the cove';
