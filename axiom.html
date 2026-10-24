@@ -866,6 +866,48 @@ function lockdoor(){
     b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer';
     b.onclick=function(){ setStyle(k); }; row.appendChild(b); });
   setStyle('ink'); setTool('pan');
+
+  /* ==== the pour · bulk-cache the cove, z10–z14, while online ==== */
+  var pourBtn=document.createElement('button');
+  pourBtn.textContent='pour the cove';
+  pourBtn.style.cssText='background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:6px 14px;cursor:pointer;margin-top:10px';
+  pourBtn.onclick=function(){
+    if(!navigator.onLine){ alert('the pour needs the wire'); return; }
+    pourBtn.disabled=true; pourBtn.textContent='pouring ..';
+    var z0=10, z1=14, total=0, done=0;
+    var p=project(HOME[0],HOME[1],z0);
+    var cx0=p[0], cy0=p[1];
+    var tiles=[];
+    for(var z=z0;z<=z1;z++){
+      var s=world(z);
+      var p2=project(HOME[0],HOME[1],z);
+      var cxz=p2[0], cyz=p2[1];
+      var span=4;
+      for(var ty=Math.floor((cyz-span*256)/256);ty<=Math.floor((cyz+span*256)/256);ty++){
+        for(var tx=Math.floor((cxz-span*256)/256);tx<=Math.floor((cxz+span*256)/256);tx++){
+          tiles.push({z:z,tx:tx,ty:ty,style:style});
+        }
+      }
+    }
+    total=tiles.length;
+    function next(){
+      if(!tiles.length){ pourBtn.textContent='poured · '+done+' tiles cached'; pourBtn.disabled=false; return; }
+      var t=tiles.shift();
+      var u=STYLE[t.style].replace('{z}',t.z).replace('{x}',t.tx).replace('{y}',t.ty);
+      fetch(u).then(function(r){
+        if(r && r.ok && (r.headers.get('content-type')||'').indexOf('svg')<0){
+          caches.open('hive-topo').then(function(c){ c.put(u,r.clone()); });
+          done++;
+        }
+        pourBtn.textContent='pouring · '+done+'/'+total;
+        next();
+      }).catch(function(){ next(); });
+    }
+    next();
+  };
+  var toolRow=document.getElementById('toolRow');
+  if(toolRow) toolRow.appendChild(pourBtn);
+  
 })();
 </script>
 
