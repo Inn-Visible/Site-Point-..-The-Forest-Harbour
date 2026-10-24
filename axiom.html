@@ -762,13 +762,13 @@ function lockdoor(){
         if(style==='night'&&!CHARTK[k]){ try{ x.filter='invert(1) hue-rotate(180deg) brightness(.82) saturate(.4)'; }catch(e){} }
         x.drawImage(IMG[k], dxp, dyp, 256,256);
         try{ x.filter='none'; }catch(e){}
-      } else {
+       } else {
         var got=false;
         for(var d=1;d<=4&&!got;d++){ var az=zoom-d; if(az<1) break; var ax=tx>>d, ay=ty>>d; var ak=style+'_'+az+'_'+ax+'_'+ay;
           if(IMG[ak]){ var ss=256/Math.pow(2,d); var sx=(tx-(ax<<d))*ss, sy=(ty-(ay<<d))*ss;
-            x.drawImage(IMG[ak], sx, sy, ss, ss, dxp, dyp, 256,256); got=true; } }
-        if(!got){ for(var c=0;c<4;c++){ var cz=zoom+1; if(cz>maxZ()) break; var ck=style+'_'+cz+'_'+(tx*2+(c%2))+'_'+(ty*2+(c>>1));
-          if(IMG[ck]){ x.drawImage(IMG[ck], dxp+(c%2)*128, dyp+(c>>1)*128, 128,128); got=true; } } }
+            x.drawImage(IMG[ak], sx, sy, ss, ss, dxp, dyp, 256,256); got=true; } else ensureZ(az,ax,ay); }
+        if(!got){ for(var c=0;c<4;c++){ var cz=zoom+1; if(cz>maxZ()) break; var cx2=tx*2+(c%2), cy2=ty*2+(c>>1); var ck=style+'_'+cz+'_'+cx2+'_'+cy2;
+          if(IMG[ck]){ x.drawImage(IMG[ck], dxp+(c%2)*128, dyp+(c>>1)*128, 128,128); got=true; } else ensureZ(cz,cx2,cy2); } }
       }
       if(!IMG[k]) ensureZ(zoom,tx,ty);
     }
