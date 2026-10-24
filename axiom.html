@@ -726,10 +726,13 @@ function lockdoor(){
         return direct(u).then(function(r){ if(r && (r.headers.get('content-type')||'').indexOf('svg')<0){ caches.open('hive-topo').then(function(c){c.put(u,r.clone());}).catch(function(){}); } return r; });
       });
     }catch(e){ return direct(u); } }
-  function ensure(tx,ty){ var k=style+'_'+zoom+'_'+tx+'_'+ty; if(IMG[k]||pending[k]) return; pending[k]=true;
-    loadTile(zoom,tx,ty).then(function(r){ pending[k]=false; if(!r) return;
+   var CHARTK={};
+  function ensureZ(z,tx,ty){ var k=style+'_'+z+'_'+tx+'_'+ty; if(IMG[k]||pending[k]) return; pending[k]=true;
+    loadTile(z,tx,ty).then(function(r){ pending[k]=false; if(!r) return;
+      CHARTK[k]=(((r.headers&&r.headers.get('content-type'))||'').indexOf('svg')>-1)?1:0;
       r.blob().then(function(b){ var img=new Image(); img.onload=function(){ IMG[k]=img; draw(); }; img.src=URL.createObjectURL(b); }); });
   }
+  function ensure(tx,ty){ ensureZ(zoom,tx,ty); }
   function liftOffS(i){ return (lifted&&lifted.s.indexOf(i)>-1)?[lifted.ox,lifted.oy]:[0,0]; }
   function liftOffP(i){ return (lifted&&lifted.p.indexOf(i)>-1)?[lifted.ox,lifted.oy]:[0,0]; }
   function drawMarks(tlx,tly){
@@ -752,12 +755,22 @@ function lockdoor(){
     var tlx=cx-cv.width/2, tly=cy-cv.height/2;
     var x0=Math.floor(tlx/256), x1=Math.floor((tlx+cv.width)/256);
     var y0=Math.floor(tly/256), y1=Math.floor((tly+cv.height)/256);
-    for(var ty=y0;ty<=y1;ty++) for(var tx=x0;tx<=x1;tx++){
-         var k=style+'_'+zoom+'_'+tx+'_'+ty;
-      if(IMG[k]){ if(style==='night'){ try{ x.filter='invert(1) hue-rotate(180deg) brightness(.82) saturate(.4)'; }catch(e){} }
-        x.drawImage(IMG[k], tx*256-tlx, ty*256-tly, 256,256);
-        try{ x.filter='none'; }catch(e){} }
-      ensure(tx,ty);
+       for(var ty=y0;ty<=y1;ty++) for(var tx=x0;tx<=x1;tx++){
+      var k=style+'_'+zoom+'_'+tx+'_'+ty;
+      var dxp=tx*256-tlx, dyp=ty*256-tly;
+      if(IMG[k]){
+        if(style==='night'&&!CHARTK[k]){ try{ x.filter='invert(1) hue-rotate(180deg) brightness(.82) saturate(.4)'; }catch(e){} }
+        x.drawImage(IMG[k], dxp, dyp, 256,256);
+        try{ x.filter='none'; }catch(e){}
+      } else {
+        var got=false;
+        for(var d=1;d<=4&&!got;d++){ var az=zoom-d; if(az<1) break; var ax=tx>>d, ay=ty>>d; var ak=style+'_'+az+'_'+ax+'_'+ay;
+          if(IMG[ak]){ var ss=256/Math.pow(2,d); var sx=(tx-(ax<<d))*ss, sy=(ty-(ay<<d))*ss;
+            x.drawImage(IMG[ak], sx, sy, ss, ss, dxp, dyp, 256,256); got=true; } }
+        if(!got){ for(var c=0;c<4;c++){ var cz=zoom+1; if(cz>maxZ()) break; var ck=style+'_'+cz+'_'+(tx*2+(c%2))+'_'+(ty*2+(c>>1));
+          if(IMG[ck]){ x.drawImage(IMG[ck], dxp+(c%2)*128, dyp+(c>>1)*128, 128,128); got=true; } } }
+      }
+      if(!IMG[k]) ensureZ(zoom,tx,ty);
     }
     if(showMarks) drawMarks(tlx,tly);
     var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom+(landscape?' \u00b7 landscape':'');
