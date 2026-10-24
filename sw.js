@@ -40,13 +40,14 @@ self.addEventListener('fetch',function(e){
   if(e.request.method!=='GET') return;
   var u=e.request.url;
   /* tile urls (ground map) — cache forever, network-first */
+  
   if(/arcgisonline\.com|openstreetmap\.org|opentopomap|basemaps\.cartocdn|tile\.openstreetmap/.test(u)){
     e.respondWith(
       caches.open(TILES).then(function(c){
         return c.match(u).then(function(hit){
           return hit || fetch(e.request).then(function(r){
             if(r.ok) c.put(u,r.clone()); return r;
-          }).catch(function(){ return hit; });
+           }).catch(function(){ return hit || gisChart(new URL(u)); });
         });
       })
     );
@@ -87,3 +88,61 @@ self.addEventListener('fetch',function(e){
   }
 });
 
+/* ==== offline gis \u00b7 esri tile cache + the house chart ==== */
+var GISCACHE = 'hive-gis-tiles-v1';
+function gisIsTile(url){
+  return url.hostname.indexOf('arcgisonline') > -1 || /\/tile\/\d+\/\d+\/\d+/.test(url.pathname);
+}
+function gisFlow(req, url){
+  return caches.open(GISCACHE).then(function(cache){
+    return cache.match(req).then(function(hit){
+      if (hit) return hit;
+      return fetch(req).then(function(res){
+        if (res && (res.ok || res.type === 'opaque')) {
+          cache.put(req, res.clone());
+          cache.keys().then(function(k){ if (k.length > 900) { for (var i = 0; i < k.length - 900; i++) cache.delete(k[i]); } });
+        }
+        return res;
+      }).catch(function(){ return gisChart(url); });
+    });
+  });
+}
+var LAND = [
+ [[-168,66],[-160,70],[-140,70],[-125,72],[-110,73],[-95,72],[-85,70],[-75,62],[-65,60],[-60,55],[-65,45],[-70,42],[-75,35],[-80,30],[-82,25],[-85,30],[-90,29],[-95,26],[-97,20],[-92,15],[-85,12],[-80,8],[-78,7],[-83,10],[-90,13],[-97,16],[-105,20],[-110,24],[-115,30],[-120,34],[-125,40],[-125,48],[-130,55],[-140,60],[-150,60],[-158,58],[-165,60]],
+ [[-45,60],[-52,64],[-55,70],[-50,76],[-40,78],[-30,76],[-22,70],[-25,65],[-35,62]],
+ [[-78,7],[-72,10],[-62,10],[-52,5],[-45,0],[-35,-5],[-35,-10],[-40,-20],[-48,-25],[-53,-32],[-58,-38],[-65,-45],[-68,-52],[-72,-54],[-75,-50],[-73,-40],[-70,-30],[-70,-18],[-75,-14],[-80,-5],[-80,0]],
+ [[-10,35],[0,37],[10,37],[20,32],[30,31],[35,28],[43,12],[51,12],[48,5],[42,-2],[40,-10],[35,-20],[32,-28],[25,-34],[18,-34],[15,-28],[12,-18],[9,-5],[9,4],[5,5],[-5,5],[-10,6],[-17,12],[-17,20],[-13,28]],
+ [[-10,36],[-9,43],[-2,48],[-5,50],[0,52],[5,58],[10,62],[15,68],[25,70],[35,68],[45,68],[60,70],[75,72],[90,74],[105,75],[120,73],[135,72],[150,70],[160,68],[170,66],[178,65],[175,60],[162,58],[155,52],[142,45],[135,40],[128,35],[122,30],[115,22],[108,15],[105,10],[100,8],[98,12],[92,15],[88,22],[85,20],[80,15],[77,8],[73,15],[70,20],[65,25],[58,25],[52,25],[48,28],[44,30],[36,36],[28,36],[20,36],[12,38],[5,36],[0,36]],
+ [[-5,50],[-3,55],[-5,58],[-2,57],[0,53],[1,51]],
+ [[114,-22],[114,-30],[118,-35],[125,-32],[130,-32],[135,-35],[140,-38],[147,-38],[150,-35],[153,-28],[150,-22],[145,-15],[140,-17],[135,-12],[130,-13],[125,-14],[120,-18]],
+ [[44,-12],[50,-15],[48,-25],[45,-25],[43,-20]],
+ [[167,-45],[174,-40],[178,-38],[175,-42],[170,-47]]
+];
+function gisChart(url){
+  var m = url.pathname.match(/\/tile\/(\d+)\/(\d+)\/(\d+)/);
+  var z, x, y;
+  if (m) { z = +m[1]; y = +m[2]; x = +m[3]; }
+  else { var m2 = url.pathname.match(/\/(\d+)\/(\d+)\/(\d+)\.(png|jpe?g)/); if (!m2) return gisSea(); z = +m2[1]; x = +m2[2]; y = +m2[3]; }
+  var n = Math.pow(2, z);
+  function P(lon, lat){
+    var wx = (lon + 180) / 360;
+    var wy = (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2;
+    return [(wx * n - x) * 256, (wy * n - y) * 256];
+  }
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">';
+  s += '<rect width="256" height="256" fill="#0b1016"/>';
+  var step = z < 3 ? 30 : (z < 6 ? 10 : 5), gp = '';
+  for (var lon = -180; lon <= 180; lon += step) { var gx = P(lon, 0)[0]; if (gx > -2 && gx < 258) gp += 'M' + gx.toFixed(1) + ' 0V256'; }
+  for (var lat = -80; lat <= 80; lat += step) { var gy = P(0, lat)[1]; if (gy > -2 && gy < 258) gp += 'M0 ' + gy.toFixed(1) + 'H256'; }
+  s += '<path d="' + gp + '" stroke="rgba(92,104,117,.22)" fill="none"/>';
+  var lp = '';
+  LAND.forEach(function(poly){ lp += 'M' + poly.map(function(p){ var q = P(p[0], p[1]); return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L') + 'Z'; });
+  s += '<path d="' + lp + '" fill="#141c26" stroke="rgba(217,168,58,.45)" stroke-width="1"/>';
+  var ay = P(0, -70)[1];
+  if (ay < 256) { var top = Math.max(0, ay); s += '<rect y="' + top.toFixed(1) + '" width="256" height="' + (256 - top).toFixed(1) + '" fill="#141c26"/><line x1="0" y1="' + top.toFixed(1) + '" x2="256" y2="' + top.toFixed(1) + '" stroke="rgba(217,168,58,.45)"/>'; }
+  s += '</svg>';
+  return new Response(s, { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' } });
+}
+function gisSea(){
+  return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#0b1016"/></svg>', { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' } });
+}
