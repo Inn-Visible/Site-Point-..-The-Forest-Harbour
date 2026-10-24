@@ -773,6 +773,7 @@ function lockdoor(){
       if(!IMG[k]) ensureZ(zoom,tx,ty);
     }
     if(showMarks) drawMarks(tlx,tly);
+        drawPing(tlx,tly);
     var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom+(landscape?' \u00b7 landscape':'');
   }
   function commitLift(){ if(!lifted) return; pushHist();
