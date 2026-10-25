@@ -192,6 +192,19 @@
   .note-item .act-btn.pin-on{color:var(--gold)}
   .note-item .act-btn:hover{color:var(--ink)}
   .note-item .act-btn.del:hover{color:var(--red)}
+  .note-item.selected{background:rgba(88,163,106,0.12);border-left-color:var(--green);box-shadow:inset 0 0 20px rgba(88,163,106,0.08);transition:all .3s ease}
+  .note-item.selected .chk{opacity:1}
+  .note-item.selected:hover{background:rgba(88,163,106,0.18);box-shadow:inset 0 0 24px rgba(88,163,106,0.12)}
+
+  /* jumble button */
+  .jumble-btn{background:none;border:1px solid var(--gold);color:var(--gold);font:10px var(--mono);padding:6px 12px;cursor:pointer;letter-spacing:.1em;transition:all .3s ease;border-radius:20px;display:inline-flex;align-items:center}
+  .jumble-btn:hover{background:rgba(217,168,58,0.15);box-shadow:0 0 12px rgba(217,168,58,0.3)}
+  .jumble-btn.active{background:var(--gold);color:var(--bg);box-shadow:0 0 16px rgba(217,168,58,0.5)}
+  .jumble-btn svg{transition:transform .3s ease}
+  .jumble-btn:hover svg{transform:rotate(15deg) scale(1.1)}
+  .jumble-btn.active svg{animation:jumbleSpin 2s linear infinite}
+  @keyframes jumbleSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .jumble-count{font-size:9px;color:var(--gold);letter-spacing:.1em;margin-left:4px;font-style:italic;font-family:var(--serif)}
 
   /* list footer */
   .list-foot{padding:5px 12px;border-top:1px solid rgba(34,48,65,0.5);
@@ -356,6 +369,20 @@
         <span class="ico">⌕</span>
         <input class="search-input" id="searchInput" type="text" placeholder="search the garden...">
         <button class="search-clear" id="searchClear">×</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+        <button class="jumble-btn" id="jumbleBtn" title="select notes to drag as a group">
+          <svg width="14" height="14" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:4px">
+            <path d="M16 40 L24 16 L44 16 L36 40 Z"/>
+            <line x1="10" y1="46" x2="44" y2="12"/>
+            <path d="M44 12 l-8 1.5 M44 12 l-1.5 8"/>
+            <circle cx="28" cy="8" r="2" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="48" cy="28" r="2" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="28" cy="48" r="2" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="8" cy="28" r="2" stroke-width="1.5" opacity="0.6"/>
+          </svg>jumble
+        </button>
+        <span class="jumble-count" id="jumbleCount"></span>
       </div>
     </div>
     <div class="controls">
@@ -799,6 +826,7 @@
   var chatWorkspace=$('chatWorkspace');
   var chatGrid=$('chatGrid');
   var noteDisplayModes={}; // Track display mode per note: 'title', '500', '1000', 'full'
+  var selectedNotes=new Set(); // Track selected notes for jumble drag
 
   // Quad logo click - open chat workspace
   quadLogo.onclick=function(){
@@ -943,22 +971,37 @@
       dropZone.addEventListener('drop',function(e){
         e.preventDefault();
         winEl.classList.remove('drop-target');
+
+        // Check for multiple notes (jumble drag)
+        var noteIdsJson=e.dataTransfer.getData('text/note-ids');
         var noteId=e.dataTransfer.getData('text/note-id');
         var srcWin=e.dataTransfer.getData('text/src-win');
-        if(!noteId) return;
+
+        var noteIds=[];
+        if(noteIdsJson){
+          try { noteIds=JSON.parse(noteIdsJson); } catch(err) { noteIds=[]; }
+        }
+        if(noteIds.length===0 && noteId){
+          noteIds=[noteId];
+        }
+        if(noteIds.length===0) return;
 
         // If coming from another window, remove from source first
         if(srcWin!=='' && srcWin!==undefined && srcWin!==String(idx)){
           var srcIdx=parseInt(srcWin);
           if(chatWindows[srcIdx]){
-            chatWindows[srcIdx].notes=chatWindows[srcIdx].notes.filter(function(id){return id!==noteId});
+            noteIds.forEach(function(nid){
+              chatWindows[srcIdx].notes=chatWindows[srcIdx].notes.filter(function(id){return id!==nid});
+            });
           }
         }
 
-        // Add to target window (if not already there)
-        if(win.notes.indexOf(noteId)===-1){
-          win.notes.push(noteId);
-        }
+        // Add all notes to target window (if not already there)
+        noteIds.forEach(function(nid){
+          if(win.notes.indexOf(nid)===-1){
+            win.notes.push(nid);
+          }
+        });
         renderChatGrid();
       });
 
@@ -1017,19 +1060,63 @@
   function makeNotesDraggable(){
     noteList.querySelectorAll('.note-item').forEach(function(el){
       el.setAttribute('draggable','true');
+
+      // Checkbox handler for jumble selection
+      var chk=el.querySelector('.chk');
+      if(chk){
+        chk.addEventListener('click',function(e){
+          e.stopPropagation();
+          var noteId=el.getAttribute('data-id');
+          if(chk.checked){
+            selectedNotes.add(noteId);
+            el.classList.add('selected');
+          } else {
+            selectedNotes.delete(noteId);
+            el.classList.remove('selected');
+          }
+          updateJumbleCount();
+        });
+      }
+
       el.addEventListener('dragstart',function(e){
         var noteId=el.getAttribute('data-id');
-        e.dataTransfer.setData('text/note-id',noteId);
+
+        // If this note is selected, drag all selected notes
+        if(selectedNotes.has(noteId) && selectedNotes.size > 1){
+          var noteIds=Array.from(selectedNotes);
+          e.dataTransfer.setData('text/note-ids',JSON.stringify(noteIds));
+          e.dataTransfer.setData('text/note-id',noteId); // fallback for single
+        } else {
+          e.dataTransfer.setData('text/note-id',noteId);
+        }
+
         e.dataTransfer.effectAllowed='copy';
+        el.classList.add('dragging');
+
         // If chat workspace is open, highlight drop zones
         if(chatWorkspace.classList.contains('open')){
           document.querySelectorAll('.chat-window').forEach(function(w){w.classList.add('drop-target')});
         }
       });
+
       el.addEventListener('dragend',function(){
+        el.classList.remove('dragging');
         document.querySelectorAll('.chat-window').forEach(function(w){w.classList.remove('drop-target')});
       });
     });
+  }
+
+  function updateJumbleCount(){
+    var count=selectedNotes.size;
+    var countEl=$('jumbleCount');
+    var btn=$('jumbleBtn');
+    if(count > 0){
+      countEl.textContent='('+count+' selected)';
+      btn.classList.add('active');
+    } else {
+      countEl.textContent='';
+      btn.classList.remove('active');
+    }
   }
 
   // Override renderList to make notes draggable after rendering
@@ -1050,23 +1137,61 @@
   quadLogo.addEventListener('drop',function(e){
     e.preventDefault();
     quadLogo.style.transform='';
+
+    // Check for multiple notes (jumble drag)
+    var noteIdsJson=e.dataTransfer.getData('text/note-ids');
     var noteId=e.dataTransfer.getData('text/note-id');
-    if(noteId){
+
+    var noteIds=[];
+    if(noteIdsJson){
+      try { noteIds=JSON.parse(noteIdsJson); } catch(err) { noteIds=[]; }
+    }
+    if(noteIds.length===0 && noteId){
+      noteIds=[noteId];
+    }
+
+    if(noteIds.length > 0){
       chatWorkspace.classList.add('open');
       quadLogo.classList.add('spinning');
       if(chatWindows.length===0){
         for(var i=0;i<chatLayout;i++) addChatWindow();
       }
-      // Add to first window
-      if(chatWindows[0].notes.indexOf(noteId)===-1){
-        chatWindows[0].notes.push(noteId);
-      }
+      // Add all to first window
+      noteIds.forEach(function(nid){
+        if(chatWindows[0].notes.indexOf(nid)===-1){
+          chatWindows[0].notes.push(nid);
+        }
+      });
       renderChatGrid();
     }
   });
 
   // Re-run renderList to apply draggable to existing notes
   makeNotesDraggable();
+
+  // Jumble button - toggle selection mode
+  $('jumbleBtn').addEventListener('click',function(){
+    if(selectedNotes.size > 0){
+      // Clear selection
+      selectedNotes.clear();
+      noteList.querySelectorAll('.note-item').forEach(function(el){
+        el.classList.remove('selected');
+        var chk=el.querySelector('.chk');
+        if(chk) chk.checked=false;
+      });
+      updateJumbleCount();
+    } else {
+      // Select all visible notes
+      noteList.querySelectorAll('.note-item').forEach(function(el){
+        var noteId=el.getAttribute('data-id');
+        selectedNotes.add(noteId);
+        el.classList.add('selected');
+        var chk=el.querySelector('.chk');
+        if(chk) chk.checked=true;
+      });
+      updateJumbleCount();
+    }
+  });
 })();
 </script>
 
