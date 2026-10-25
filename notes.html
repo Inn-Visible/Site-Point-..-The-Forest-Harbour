@@ -53,17 +53,17 @@
   .chat-header{padding:12px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:var(--bg)}
   .chat-header .title{font-size:12px;letter-spacing:.2em;color:var(--green)}
   .chat-header .close{margin-left:auto}
-  .chat-grid{flex:1;display:grid;gap:12px;padding:12px;overflow:auto}
+  .chat-grid{flex:1;display:grid;gap:12px;padding:12px;overflow:auto;min-height:0}
   .chat-grid.cols-1{grid-template-columns:1fr}
   .chat-grid.cols-2{grid-template-columns:repeat(2,1fr)}
   .chat-grid.cols-3{grid-template-columns:repeat(3,1fr)}
   .chat-grid.cols-4{grid-template-columns:repeat(4,1fr)}
-  .chat-window{border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:300px}
+  .chat-window{border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:300px;max-height:calc(100vh - 200px);overflow:hidden}
   .chat-window-header{padding:8px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:rgba(10,13,18,0.5)}
   .chat-window-header .win-title{font-size:10px;letter-spacing:.15em;color:var(--dim);flex:1}
   .chat-window-header .win-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px}
   .chat-window-header .win-close:hover{color:var(--red)}
-  .chat-window-body{flex:1;overflow-y:auto;padding:12px}
+  .chat-window-body{flex:1;overflow-y:auto;padding:12px;min-height:0}
   .chat-window.drop-target{border-color:var(--green);background:rgba(88,163,106,0.05)}
   .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg)}
   .chat-note .cn-title{font-size:11px;color:var(--ink);margin-bottom:4px}
@@ -85,10 +85,11 @@
   .chat-filter-tags .tag-pill.active{color:var(--green);border-color:rgba(88,163,106,0.5);background:rgba(88,163,106,0.1)}
 
   /* draggable notes in chat windows */
-  .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg);cursor:grab;transition:all .15s}
+  .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg);cursor:grab;transition:all .15s;display:flex;flex-direction:column;max-height:none}
   .chat-note:hover{border-color:var(--dim)}
   .chat-note.dragging{opacity:0.3}
   .chat-note:active{cursor:grabbing}
+  .chat-note .cn-body{flex:1;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;line-height:1.6;max-height:none}
 
   .btn{background:none;border:1px solid var(--green);color:var(--green);
     font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:6px 14px;
@@ -907,7 +908,7 @@
             return '<div class="chat-note" draggable="true" data-note-id="'+note.id+'" data-src-win="'+idx+'">'+
               '<button class="cn-remove" data-remove-note="'+idx+'" data-note-id="'+note.id+'">×</button>'+
               '<div class="cn-title">'+(esc(note.title)||'<i>untitled</i>')+'</div>'+
-              '<div class="cn-body">'+esc(note.body.slice(0,500))+(note.body.length>500?'...':'')+'</div>'+
+              '<div class="cn-body">'+esc(note.body)+'</div>'+
             '</div>';
           }).join('')+
         '</div>';
