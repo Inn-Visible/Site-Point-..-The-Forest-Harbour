@@ -32,7 +32,7 @@
   #count{text-align:center;font-size:9px;letter-spacing:.2em;color:var(--mut);margin:10px 0 18px}
   /* tools */
   #tools{margin:0 0 18px}
-  .drop{border:1px dashed var(--line);background:var(--panel);padding:14px 16px}
+  .drop{border:1px dashed var(--line);background:var(--panel);padding:14px 16px;margin-bottom:12px}
   .drop h5{font-size:10px;letter-spacing:.25em;color:var(--bone);margin-bottom:10px}
   .drop input,.drop textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
     font-family:var(--mono);font-size:11px;padding:8px 10px;margin-bottom:8px}
@@ -40,7 +40,7 @@
   .drop input:focus,.drop textarea:focus{outline:none;border-color:var(--dim)}
   .drop .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .btn{border:1px solid var(--gold);color:var(--gold);background:none;font-family:var(--mono);
-    font-size:10px;letter-spacing:.15em;padding:7px 12px;cursor:pointer}
+    font-size:10px;letter-spacing:.15em;padding:7px 12px;cursor:pointer;text-decoration:none;display:inline-block}
   .btn:hover{background:var(--gold);color:#0a0d12}
   .hint{font-size:9px;letter-spacing:.12em;color:var(--mut)}
   .tbd{border:1px dashed var(--line);padding:16px;text-align:center;color:var(--mut);
@@ -49,6 +49,20 @@
   .room iframe{width:100%;height:70vh;border:1px solid var(--line);background:var(--panel);margin-top:10px}
   .room .links{margin-top:10px;font-size:10px;letter-spacing:.12em;color:var(--dim)}
   .room a{color:var(--blue);text-decoration:none} .room a:hover{color:var(--ink)}
+  /* schematics section */
+  .schematics{border:1px solid var(--bone);background:var(--panel);padding:16px;margin-bottom:12px}
+  .schematics h5{font-size:10px;letter-spacing:.25em;color:var(--bone);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .schematics h5 svg{flex-shrink:0}
+  .schematics .tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+  .schematics .tool-card{border:1px dashed var(--line);padding:12px;text-align:center;transition:all .2s}
+  .schematics .tool-card:hover{border-color:var(--bone);background:rgba(232,228,216,0.03)}
+  .schematics .tool-card .icon{font-size:20px;margin-bottom:6px;opacity:0.6}
+  .schematics .tool-card .name{font-size:11px;color:var(--ink);letter-spacing:.1em;margin-bottom:4px}
+  .schematics .tool-card .desc{font-size:9px;color:var(--mut);line-height:1.5}
+  .schematics .stats{display:flex;gap:16px;justify-content:center;padding:10px 0;border-top:1px solid var(--line);margin-top:10px}
+  .schematics .stat{text-align:center}
+  .schematics .stat .num{font-size:14px;color:var(--bone);font-family:var(--serif)}
+  .schematics .stat .lbl{font-size:8px;color:var(--mut);letter-spacing:.15em;margin-top:2px}
   /* notes */
   .note{border:1px dashed var(--line);border-left:2px solid var(--mut);background:var(--panel);
     padding:14px 16px;margin-bottom:12px}
@@ -99,37 +113,70 @@
 (function(){
   var NOTES=[], q='', pil='all';
   var LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]');
-    var PENDING_IMG=null;
+  var PENDING_IMG=null;
   var list=document.getElementById('list'), count=document.getElementById('count'), tools=document.getElementById('tools');
   function saveLocal(){ localStorage.setItem('arc.local', JSON.stringify(LOCAL)); }
 
   function renderTools(){
     tools.innerHTML='';
     if(pil==='axiom'){
+      // ─── SCHEMATICS SECTION ───
+      var sch=document.createElement('div'); sch.className='schematics';
+      var schNotes=LOCAL.filter(function(n){return n.pillar==='axiom'&&(n.tags||[]).indexOf('schematic')!==-1});
+      sch.innerHTML='<h5>'+
+        '<svg width="16" height="16" viewBox="0 0 56 56" fill="none" stroke="#e8e4d8" stroke-width="3">'+
+        '<circle cx="28" cy="28" r="11"/><line x1="28" y1="8" x2="28" y2="15"/>'+
+        '<line x1="28" y1="41" x2="28" y2="48"/><line x1="8" y1="28" x2="15" y2="28"/>'+
+        '<line x1="41" y1="28" x2="48" y2="28"/><circle cx="28" cy="28" r="2.5" fill="#e8e4d8" stroke="none"/></svg>'+
+        'AXIOM SCHEMATICS · the bench</h5>'+
+        '<div class="tools-grid">'+
+          '<a class="tool-card btn" href="schematic.html" target="_blank">'+
+            '<div class="icon">⚙</div>'+
+            '<div class="name">SCHEMATIC BOARD</div>'+
+            '<div class="desc">circuit design · component placement · wire routing · BOM · netlist</div>'+
+          '</a>'+
+          '<a class="tool-card btn" href="alchemy.html" target="_blank">'+
+            '<div class="icon">⚗</div>'+
+            '<div class="name">ALCHEMY GARDEN</div>'+
+            '<div class="desc">organic chemistry · drag reagents · grow molecules · discover</div>'+
+          '</a>'+
+        '</div>'+
+        '<div class="stats">'+
+          '<div class="stat"><div class="num">'+schNotes.length+'</div><div class="lbl">schematic notes</div></div>'+
+          '<div class="stat"><div class="num">'+LOCAL.filter(function(n){return n.pillar==='axiom'}).length+'</div><div class="lbl">total axiom</div></div>'+
+        '</div>';
+      tools.appendChild(sch);
+
+      // ─── BENCH DROP ───
       var d=document.createElement('div'); d.className='drop';
       d.innerHTML='<h5>AXIOM DROP · from the bench / slate</h5>'+
         '<input id="nt" placeholder="title (e.g. pump specs, bench log, sourcing)">'+
         '<textarea id="nb" placeholder="the note…"></textarea>'+
-               '<div class="row"><button class="btn" id="nd">drop it</button>'+
+        '<div class="row"><button class="btn" id="nd">drop it</button>'+
         '<button class="btn" id="ns">pull from slate</button>'+
         '<button class="btn" id="np" style="border-color:#3f7fc1;color:#3f7fc1">preview</button>'+
+        '<label style="font-size:9px;color:#5c6875;display:flex;align-items:center;gap:4px;cursor:pointer">'+
+          '<input type="checkbox" id="ntag" style="accent-color:#e8e4d8"> tag as #schematic</label>'+
         '<span class="hint">lives in this browser until you copy json + commit</span></div>'+
         '<div id="slatePreview"></div>';
       tools.appendChild(d);
       d.querySelector('#nd').onclick=function(){
-               var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
+        var t=d.querySelector('#nt').value.trim(), b=d.querySelector('#nb').value.trim();
+        var isSch=d.querySelector('#ntag').checked;
         if(!t&&!b&&!PENDING_IMG) return;
+        var tags=['bench'];
+        if(isSch) tags.push('schematic');
         LOCAL.unshift({id:'ax-L'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
-          title:t||'bench note', body:b, tags:['bench'], local:true, img:PENDING_IMG||undefined});
+          title:t||'bench note', body:b, tags:tags, local:true, img:PENDING_IMG||undefined});
         PENDING_IMG=null;
-        saveLocal(); render(); d.querySelector('#nt').value=''; d.querySelector('#nb').value='';
+        saveLocal(); render(); d.querySelector('#nt').value=''; d.querySelector('#nb').value=''; d.querySelector('#ntag').checked=false;
       };
-        d.querySelector('#ns').onclick=function(){
+      d.querySelector('#ns').onclick=function(){
         var s=localStorage.getItem('arc.slate'); var btn=this;
         if(!s){ btn.textContent='slate quiet'; setTimeout(function(){btn.textContent='pull from slate';},1500); return; }
         var o=JSON.parse(s);
         showSlatePreview(o, d);
-        btn.textContent='pulled \u2713';
+        btn.textContent='pulled ✓';
         setTimeout(function(){btn.textContent='pull from slate';},1500);
       };
       d.querySelector('#np').onclick=function(){
@@ -141,7 +188,7 @@
           '<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">'+clean(t||'bench note')+'</div>'+
           (PENDING_IMG?'<img src="'+PENDING_IMG+'" alt="preview">':'')+
           '<div class="prevBody">'+clean(b||'(no body)')+'</div>'+
-          '<div style="font-size:9px;color:#5c6875;margin-top:6px">drop it to save \u00b7 copy json to commit</div>';
+          '<div style="font-size:9px;color:#5c6875;margin-top:6px">drop it to save · copy json to commit</div>';
       };
     }
     if(pil==='eigen'){
@@ -165,7 +212,7 @@
     }
   }
 
-   function stitchBook(cb){
+  function stitchBook(cb){
     var pages=[]; try{ pages=JSON.parse(localStorage.getItem('hive_slate_book')||'[]'); }catch(e){}
     pages=pages.filter(function(p){return !!p;});
     if(!pages.length){ cb(null); return; }
@@ -186,7 +233,7 @@
     pv.innerHTML='<div style="font-size:9px;letter-spacing:.2em;color:#3f7fc1;margin-bottom:6px">from the slate</div>'+
       '<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">'+clean(o.title||'slate')+'</div>'+
       (o.img?'<img src="'+o.img+'" alt="slate preview">':'')+
-      '<div class="prevBody" style="color:#5c6875;font-style:italic">'+(o.body?('wall lettering: '+clean(o.body)):'(no lettering \u00b7 the drawing carries it)')+'</div>'+
+      '<div class="prevBody" style="color:#5c6875;font-style:italic">'+(o.body?('wall lettering: '+clean(o.body)):'(no lettering · the drawing carries it)')+'</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+
       '<button class="btn" id="usePage" style="border-color:#3f7fc1;color:#3f7fc1">drop page</button>'+
       '<button class="btn" id="useBook" style="border-color:#3f7fc1;color:#3f7fc1">drop whole book</button>'+
@@ -201,7 +248,7 @@
         if(!img){ var b=pv.querySelector('#useBook'); b.textContent='book empty'; setTimeout(function(){b.textContent='drop whole book';},1500); return; }
         PENDING_IMG=img;
         var n=(JSON.parse(localStorage.getItem('hive_slate_book')||'[]').filter(function(p){return !!p;})).length;
-        d.querySelector('#nt').value='slate \u00b7 the whole book \u00b7 '+n+' page'+(n===1?'':'s'); d.querySelector('#nb').value='';
+        d.querySelector('#nt').value='slate · the whole book · '+n+' page'+(n===1?'':'s'); d.querySelector('#nb').value='';
         pv.style.display='none';
       });
     };
@@ -212,24 +259,24 @@
     var m=document.createElement('div'); m.className='meta';
     var rung='';
     if(n.local){
-      if(n.stoned) rung='<span class="loc stoned">stoned \u00b7 '+n.stoned+'</span>';
-      else if(n.copied) rung='<span class="loc copied">copied \u00b7 awaits stone</span>';
-      else rung='<span class="loc">local \u00b7 unpushed</span>';
+      if(n.stoned) rung='<span class="loc stoned">stoned · '+n.stoned+'</span>';
+      else if(n.copied) rung='<span class="loc copied">copied · awaits stone</span>';
+      else rung='<span class="loc">local · unpushed</span>';
     }
     m.innerHTML='<span class="pil">'+n.pillar+'</span><span class="dt">'+(n.date||'')+'</span><span class="nid">'+n.id+'</span>'+rung;
     var h=document.createElement('b'); h.className='ttl'; h.textContent=n.title;
-           var b=document.createElement('p'); b.textContent=n.body; b.style.whiteSpace='pre-wrap';
-       c.appendChild(m); c.appendChild(h); c.appendChild(b);
+    var b=document.createElement('p'); b.textContent=n.body; b.style.whiteSpace='pre-wrap';
+    c.appendChild(m); c.appendChild(h); c.appendChild(b);
     if(n.img){ var im=document.createElement('img'); im.src=n.img;
       im.style.cssText='max-width:100%;margin-top:10px;border:1px solid #223041'; c.appendChild(im); }
     if(n.tags&&n.tags.length){var tg=document.createElement('div');tg.className='tags';tg.textContent='# '+n.tags.join('  # ');c.appendChild(tg);}
     if(n.roots&&n.roots.length){var r=document.createElement('div');r.className='roots';
-      r.innerHTML='roots: '+n.roots.map(function(x){return '<a href="#n-'+x+'">'+x+'</a>';}).join(' \u00b7 ');c.appendChild(r);}
-                if(n.local){
+      r.innerHTML='roots: '+n.roots.map(function(x){return '<a href="#n-'+x+'">'+x+'</a>';}).join(' · ');c.appendChild(r);}
+    if(n.local){
       var cp=document.createElement('button'); cp.className='btn cpy'; cp.textContent='copy json';
       cp.setAttribute('data-id',n.id); c.appendChild(cp);
       if(n.copied && !n.stoned){
-        var st=document.createElement('button'); st.className='btn stone'; st.textContent='stone it \u2713';
+        var st=document.createElement('button'); st.className='btn stone'; st.textContent='stone it ✓';
         st.setAttribute('data-id',n.id); st.style.cssText='margin-left:8px;border-color:#58a36a;color:#58a36a';
         c.appendChild(st);
       }
@@ -255,10 +302,10 @@
     count.textContent=shown+' note'+(shown===1?'':'s')+' pulled';
   }
 
-    list.addEventListener('click',function(e){
+  list.addEventListener('click',function(e){
     var id=e.target.getAttribute&&e.target.getAttribute('data-id'); if(!id) return;
     var n=LOCAL.filter(function(x){return x.id===id;})[0]; if(!n) return;
-       if(e.target.classList.contains('svgbtn')){
+    if(e.target.classList.contains('svgbtn')){
       var a=document.createElement('a'); a.href=n.img; a.download=id+'.png'; a.click(); return; }
     if(e.target.classList.contains('del')){
       if(!confirm('unhook this note from this browser?')) return;
@@ -273,7 +320,7 @@
     if(n.img) o.img='archive/img/'+id+'.png';
     navigator.clipboard.writeText(JSON.stringify(o)).then(function(){
       n.copied=true; saveLocal(); render();
-      var btn=e.target; btn.textContent='copied \u2713'; setTimeout(function(){btn.textContent='copy json';},1500);
+      var btn=e.target; btn.textContent='copied ✓'; setTimeout(function(){btn.textContent='copy json';},1500);
     });
   });
 
@@ -319,23 +366,23 @@
   var btn=bar.querySelector('#arcV'), inp=bar.querySelector('#arcP'), st=bar.querySelector('#arcS');
   function state(){ st.textContent=ready()?('vault · '+(parentVault()?'borrowed from the pillar':'open on this glass')):'vault · shut · leaves stay sealed'; st.style.color=ready()?'#58a36a':'#5c6875'; }
   btn.onclick=function(){ inp.style.display=(inp.style.display==='none')?'inline-block':'none'; if(inp.style.display!=='none') inp.focus(); state(); };
-  inp.addEventListener('keydown',function(e){ 
-    if(e.key!=='Enter') return; 
-    var p=inp.value; 
+  inp.addEventListener('keydown',function(e){
+    if(e.key!=='Enter') return;
+    var p=inp.value;
     if(!p) return;
     console.log('[archive-reconnect] attempting derive...');
-    derive(p).then(function(k){ 
-      _key=k; 
-      inp.value=''; 
-      inp.style.display='none'; 
-      state(); 
+    derive(p).then(function(k){
+      _key=k;
+      inp.value='';
+      inp.style.display='none';
+      state();
       console.log('[archive-reconnect] key derived, waking leaves');
-      wake(true); 
-    }).catch(function(err){ 
+      wake(true);
+    }).catch(function(err){
       console.error('[archive-reconnect] derive failed:', err);
-      st.textContent='the word refused'; 
-      st.style.color='#c8452c'; 
-    }); 
+      st.textContent='the word refused';
+      st.style.color='#c8452c';
+    });
   });
   function wake(force){
     var ps=document.querySelectorAll('#list p');
@@ -368,6 +415,6 @@
   wake(false);
 })();
 </script>
-  
+
 </body>
 </html>
