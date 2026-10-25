@@ -45,7 +45,9 @@
   .quad-logo:active{cursor:grabbing}
   .quad-logo .ring{position:absolute;inset:0;border:1px solid var(--green);border-radius:50%;opacity:0.3}
   .quad-logo.spinning .ring{animation:quadSpin 2s linear infinite}
+  .quad-logo.spinning-reverse .ring{animation:quadSpinReverse 2s linear}
   @keyframes quadSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes quadSpinReverse{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
 
   /* chat workspace */
   .chat-workspace{position:fixed;inset:0;background:rgba(10,13,18,0.95);z-index:100;display:none;flex-direction:column}
@@ -85,11 +87,17 @@
   .chat-filter-tags .tag-pill.active{color:var(--green);border-color:rgba(88,163,106,0.5);background:rgba(88,163,106,0.1)}
 
   /* draggable notes in chat windows */
-  .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg);cursor:grab;transition:all .15s;display:flex;flex-direction:column;max-height:none}
+  .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg);cursor:grab;transition:all .15s;display:flex;flex-direction:column;max-height:none;position:relative}
   .chat-note:hover{border-color:var(--dim)}
   .chat-note.dragging{opacity:0.3}
   .chat-note:active{cursor:grabbing}
-  .chat-note .cn-body{flex:1;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;line-height:1.6;max-height:none}
+  .chat-note .cn-body{flex:1;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;line-height:1.6;max-height:none;transition:max-height 0.3s ease}
+  .chat-note .cn-expand{position:absolute;top:8px;right:32px;background:none;border:1px solid var(--line);color:var(--dim);font:9px var(--mono);padding:2px 6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em}
+  .chat-note .cn-expand:hover{border-color:var(--green);color:var(--green)}
+  .chat-note.mode-title .cn-body{display:none}
+  .chat-note.mode-500 .cn-body{max-height:120px;overflow:hidden}
+  .chat-note.mode-1000 .cn-body{max-height:240px;overflow:hidden}
+  .chat-note.mode-full .cn-body{max-height:none}
 
   .btn{background:none;border:1px solid var(--green);color:var(--green);
     font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:6px 14px;
@@ -790,6 +798,7 @@
   var quadLogo=$('quadLogo');
   var chatWorkspace=$('chatWorkspace');
   var chatGrid=$('chatGrid');
+  var noteDisplayModes={}; // Track display mode per note: 'title', '500', '1000', 'full'
 
   // Quad logo click - open chat workspace
   quadLogo.onclick=function(){
@@ -806,6 +815,10 @@
   $('chatClose').onclick=function(){
     chatWorkspace.classList.remove('open');
     quadLogo.classList.remove('spinning');
+    quadLogo.classList.add('spinning-reverse');
+    setTimeout(function(){
+      quadLogo.classList.remove('spinning-reverse');
+    },2000);
   };
 
   // Filter toggle
@@ -905,7 +918,10 @@
               if(hay.indexOf(q)===-1) return '';
             }
             if(chatTagFilter && (!note.tags || note.tags.indexOf(chatTagFilter)===-1)) return '';
-            return '<div class="chat-note" draggable="true" data-note-id="'+note.id+'" data-src-win="'+idx+'">'+
+            var mode=noteDisplayModes[note.id]||'full';
+            var modeLabel={'title':'◇','500':'◐','1000':'◑','full':'●'}[mode];
+            return '<div class="chat-note mode-'+mode+'" draggable="true" data-note-id="'+note.id+'" data-src-win="'+idx+'">'+
+              '<button class="cn-expand" data-expand-note="'+note.id+'" title="cycle view: title → 500 → 1000 → full">'+modeLabel+'</button>'+
               '<button class="cn-remove" data-remove-note="'+idx+'" data-note-id="'+note.id+'">×</button>'+
               '<div class="cn-title">'+(esc(note.title)||'<i>untitled</i>')+'</div>'+
               '<div class="cn-body">'+esc(note.body)+'</div>'+
@@ -960,6 +976,19 @@
           e.stopPropagation();
           var noteId=btn.getAttribute('data-note-id');
           win.notes=win.notes.filter(function(id){return id!==noteId});
+          renderChatGrid();
+        };
+      });
+
+      // Expand/collapse note (cycle through modes)
+      winEl.querySelectorAll('[data-expand-note]').forEach(function(btn){
+        btn.onclick=function(e){
+          e.stopPropagation();
+          var noteId=btn.getAttribute('data-expand-note');
+          var modes=['title','500','1000','full'];
+          var current=noteDisplayModes[noteId]||'full';
+          var nextIdx=(modes.indexOf(current)+1)%modes.length;
+          noteDisplayModes[noteId]=modes[nextIdx];
           renderChatGrid();
         };
       });
