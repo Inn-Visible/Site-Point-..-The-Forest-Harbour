@@ -251,6 +251,32 @@
     font:13px/1.8 var(--mono);color:var(--silver);padding:16px 20px;display:block}
   .ed-body::placeholder{color:#2a3a4c;font-style:italic}
 
+  /* image support */
+  .ed-img-btn{background:none;border:1px solid var(--blue);color:var(--blue);font:10px var(--mono);
+    padding:4px 10px;cursor:pointer;letter-spacing:.05em;transition:all .15s;border-radius:12px}
+  .ed-img-btn:hover{background:rgba(63,127,193,0.15);box-shadow:0 0 8px rgba(63,127,193,0.3)}
+  .ed-preview{flex:1;width:100%;min-height:0;background:none;padding:16px 20px;overflow-y:auto;
+    font:13px/1.8 var(--mono);color:var(--silver);display:none}
+  .ed-preview.active{display:block}
+  .ed-preview img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:4px;
+    margin:8px 0;cursor:pointer;transition:all .2s}
+  .ed-preview img:hover{box-shadow:0 0 12px rgba(88,163,106,0.3)}
+  .ed-preview img.size-small{max-width:200px}
+  .ed-preview img.size-medium{max-width:400px}
+  .ed-preview img.size-full{max-width:100%}
+  .ed-preview .img-caption{font-size:10px;color:var(--dim);font-style:italic;text-align:center;
+    margin-top:-4px;margin-bottom:8px;font-family:var(--serif)}
+  .chat-note img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:3px;
+    margin:6px 0;cursor:pointer;transition:all .2s}
+  .chat-note img:hover{box-shadow:0 0 10px rgba(88,163,106,0.25)}
+  .chat-note img.size-small{max-width:150px}
+  .chat-note img.size-medium{max-width:300px}
+  .chat-note img.size-full{max-width:100%}
+  .img-drop-zone{border:2px dashed var(--blue);background:rgba(63,127,193,0.05);padding:20px;
+    text-align:center;color:var(--blue);font-size:11px;border-radius:4px;margin:8px 0;
+    transition:all .2s}
+  .img-drop-zone.drag-over{background:rgba(63,127,193,0.1);border-color:var(--green)}
+
   /* welcome state */
   .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;
     height:100%;text-align:center;padding:32px}
@@ -465,6 +491,22 @@
   }
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
+  // Render note body with images
+  function renderNoteBody(note,truncate){
+    var body=note.body||'';
+    if(truncate && body.length>truncate) body=body.slice(0,truncate)+'...';
+    var html=esc(body);
+    // Replace image markers with actual images
+    html=html.replace(/\{\{img:([^}]+)\}\}/g,function(match,imgId){
+      if(!note.images||!note.images[imgId]) return '<span style="color:var(--red);font-size:10px">[missing image]</span>';
+      var sizeClass=(note.imageStyles&&note.imageStyles[imgId])||'size-medium';
+      return '<img src="'+note.images[imgId]+'" class="'+sizeClass+'" data-img-id="'+imgId+'" data-note-id="'+note.id+'" title="click to resize">';
+    });
+    // Convert newlines to <br> for display
+    html=html.replace(/\n/g,'<br>');
+    return html;
+  }
+
   // spore particles
   (function(){
     var c=$('spores');
@@ -553,14 +595,18 @@
 
     var html='';
     filtered.forEach(function(n){
-      var preview=n.body.replace(/\n/g,' ').slice(0,80);
+      // Strip image markers for preview, count them
+      var imgCount=(n.body.match(/\{\{img:[^}]+\}\}/g)||[]).length;
+      var preview=n.body.replace(/\{\{img:[^}]+\}\}/g,'[image]').replace(/\n/g,' ').slice(0,80);
       var isActive=n.id===activeId;
       var isSel=!!selected[n.id];
       html+='<div class="note-item'+(isActive?' active':'')+'" data-id="'+n.id+'">'+
         '<input type="checkbox" class="chk"'+(isSel?' checked':'')+' data-chk="'+n.id+'">'+
         '<div class="body">'+
           '<div class="ttl'+(n.title?'':' empty')+'">'+(esc(n.title)||'untitled')+
-            (n.pinned?'<span class="pin-ind"> ◆</span>':'')+'</div>'+
+            (n.pinned?'<span class="pin-ind"> ◆</span>':'')+
+            (imgCount>0?'<span style="color:var(--blue);font-size:9px;margin-left:4px" title="'+imgCount+' image'+(imgCount>1?'s':'')+'">⌘'+imgCount+'</span>':'')+
+            '</div>'+
           (preview?'<div class="prev">'+esc(preview)+'</div>':'')+
           '<div class="meta">'+
             '<span class="ts">'+timeAgo(n.updated)+'</span>'+
@@ -654,12 +700,18 @@
 
     var words=n.body.trim()?n.body.trim().split(/\s+/).length:0;
 
+    // Initialize images object if not present
+    if(!n.images) n.images={};
+    if(!n.imageStyles) n.imageStyles={};
+
     editorContent.innerHTML=
       '<div style="display:flex;flex-direction:column;height:100%;flex:1;overflow:hidden">'+
         '<div class="ed-toolbar">'+
           '<button class="back" id="edBack">← list</button>'+
           '<div class="sep"></div>'+
           '<span class="ts">'+timeAgo(n.updated)+'</span>'+
+          '<button class="ed-img-btn" id="edImgBtn" title="insert image">⌘ image</button>'+
+          '<button class="ed-img-btn" id="edPreviewBtn" title="toggle preview">◉ preview</button>'+
           '<span class="wc">'+words+' words · '+n.body.length+' chars</span>'+
           '<button class="act-btn'+(n.pinned?' pin-on':'')+'" id="edPin" style="font-size:12px;margin-left:8px" title="'+(n.pinned?'unpin':'pin')+'">'+(n.pinned?'◆':'◇')+'</button>'+
         '</div>'+
@@ -673,7 +725,9 @@
             '<div class="tag-suggest" id="tagSuggest"></div>'+
           '</div>'+
         '</div>'+
-        '<textarea class="ed-body" id="edBody" placeholder="the garden grows here..." spellcheck="false">'+esc(n.body)+'</textarea>'+
+        '<textarea class="ed-body" id="edBody" placeholder="the garden grows here... paste or drop images" spellcheck="false">'+esc(n.body)+'</textarea>'+
+        '<div class="ed-preview" id="edPreview"></div>'+
+        '<input type="file" id="edImgInput" accept="image/*" style="display:none" multiple>'+
       '</div>';
 
     // wire editor events
@@ -730,6 +784,135 @@
       var t=raw.trim().toLowerCase().replace(/[^a-z0-9\-_]/g,'');
       if(t && n.tags.indexOf(t)===-1){n.tags.push(t);n.updated=Date.now();save();renderEditor();renderList();}
       tagInput.value='';suggest.classList.remove('open');
+    }
+
+    // ─── Image handling ───
+    var imgBtn=$('edImgBtn'), imgInput=$('edImgInput'), previewBtn=$('edPreviewBtn'), previewEl=$('edPreview');
+    var previewMode=false;
+
+    // Image button - open file picker
+    imgBtn.onclick=function(){imgInput.click()};
+
+    // Preview toggle
+    previewBtn.onclick=function(){
+      previewMode=!previewMode;
+      if(previewMode){
+        bodyEl.style.display='none';
+        previewEl.classList.add('active');
+        previewBtn.textContent='◉ edit';
+        renderPreview();
+      } else {
+        bodyEl.style.display='';
+        previewEl.classList.remove('active');
+        previewBtn.textContent='◉ preview';
+      }
+    };
+
+    // File input handler
+    imgInput.onchange=function(e){
+      var files=e.target.files;
+      if(!files||!files.length) return;
+      Array.from(files).forEach(function(file){processImageFile(file)});
+      imgInput.value='';
+    };
+
+    // Paste handler
+    bodyEl.addEventListener('paste',function(e){
+      var items=e.clipboardData&&e.clipboardData.items;
+      if(!items) return;
+      for(var i=0;i<items.length;i++){
+        if(items[i].type.indexOf('image')!==-1){
+          e.preventDefault();
+          var file=items[i].getAsFile();
+          processImageFile(file);
+          return;
+        }
+      }
+    });
+
+    // Drop handler
+    bodyEl.addEventListener('dragover',function(e){e.preventDefault();bodyEl.style.borderColor='var(--blue)'});
+    bodyEl.addEventListener('dragleave',function(){bodyEl.style.borderColor=''});
+    bodyEl.addEventListener('drop',function(e){
+      e.preventDefault();
+      bodyEl.style.borderColor='';
+      var files=e.dataTransfer&&e.dataTransfer.files;
+      if(!files) return;
+      Array.from(files).forEach(function(file){
+        if(file.type.indexOf('image')!==-1) processImageFile(file);
+      });
+    });
+
+    // Process and compress image
+    function processImageFile(file){
+      var reader=new FileReader();
+      reader.onload=function(e){
+        var img=new Image();
+        img.onload=function(){
+          // Compress
+          var canvas=document.createElement('canvas');
+          var maxW=800, maxH=800;
+          var w=img.width, h=img.height;
+          if(w>maxW){h=h*(maxW/w);w=maxW}
+          if(h>maxH){w=w*(maxH/h);h=maxH}
+          canvas.width=w;canvas.height=h;
+          var ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,w,h);
+          var dataUrl=canvas.toDataURL('image/jpeg',0.7);
+
+          // Store image
+          var imgId='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+          n.images[imgId]=dataUrl;
+          n.imageStyles[imgId]='size-medium';
+
+          // Insert marker at cursor or end
+          var marker='{{img:'+imgId+'}}';
+          var pos=bodyEl.selectionStart||n.body.length;
+          n.body=n.body.slice(0,pos)+'\n'+marker+'\n'+n.body.slice(pos);
+          bodyEl.value=n.body;
+          n.updated=Date.now();
+          save();
+
+          // Update word count
+          var wc=editorContent.querySelector('.wc');
+          if(wc){var w2=n.body.trim()?n.body.trim().split(/\s+/).length:0;wc.textContent=w2+' words · '+n.body.length+' chars';}
+
+          // Update preview if active
+          if(previewMode) renderPreview();
+        };
+        img.src=e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Render preview with images
+    function renderPreview(){
+      var html=n.body;
+      // Escape HTML first
+      html=esc(html);
+      // Replace image markers with actual images
+      html=html.replace(/\{\{img:([^}]+)\}\}/g,function(match,imgId){
+        if(!n.images[imgId]) return '<span style="color:var(--red)">[missing image]</span>';
+        var sizeClass=n.imageStyles[imgId]||'size-medium';
+        return '<img src="'+n.images[imgId]+'" class="'+sizeClass+'" data-img-id="'+imgId+'" title="click to resize">';
+      });
+      // Convert newlines
+      html=html.replace(/\n/g,'<br>');
+      previewEl.innerHTML=html;
+
+      // Wire image click handlers for resizing
+      previewEl.querySelectorAll('img').forEach(function(img){
+        img.onclick=function(){
+          var imgId=img.getAttribute('data-img-id');
+          var sizes=['size-small','size-medium','size-full'];
+          var current=n.imageStyles[imgId]||'size-medium';
+          var idx=sizes.indexOf(current);
+          var next=sizes[(idx+1)%sizes.length];
+          n.imageStyles[imgId]=next;
+          img.className=next;
+          save();
+        };
+      });
     }
   }
 
@@ -952,7 +1135,7 @@
               '<button class="cn-expand" data-expand-note="'+note.id+'" title="cycle view: title → 500 → 1000 → full">'+modeLabel+'</button>'+
               '<button class="cn-remove" data-remove-note="'+idx+'" data-note-id="'+note.id+'">×</button>'+
               '<div class="cn-title">'+(esc(note.title)||'<i>untitled</i>')+'</div>'+
-              '<div class="cn-body">'+esc(note.body)+'</div>'+
+              '<div class="cn-body">'+renderNoteBody(note)+'</div>'+
             '</div>';
           }).join('')+
         '</div>';
@@ -1034,6 +1217,27 @@
           noteDisplayModes[noteId]=modes[nextIdx];
           renderChatGrid();
         };
+      });
+
+      // Image click handlers (cycle size)
+      winEl.querySelectorAll('.cn-body img').forEach(function(img){
+        img.addEventListener('click',function(e){
+          e.stopPropagation();
+          var imgId=img.getAttribute('data-img-id');
+          var noteId=img.getAttribute('data-note-id');
+          var note=notes.find(function(n){return n.id===noteId});
+          if(!note) return;
+          if(!note.imageStyles) note.imageStyles={};
+          var sizes=['size-small','size-medium','size-full'];
+          var current=note.imageStyles[imgId]||'size-medium';
+          var idx=sizes.indexOf(current);
+          var next=sizes[(idx+1)%sizes.length];
+          note.imageStyles[imgId]=next;
+          img.className=next;
+          save();
+        });
+        // Prevent drag when clicking image
+        img.addEventListener('dragstart',function(e){e.preventDefault()});
       });
 
       // Make chat notes draggable (for moving between windows)
