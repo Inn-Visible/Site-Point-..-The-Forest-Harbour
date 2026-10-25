@@ -27,20 +27,21 @@
   .tb{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
   .tb:hover{border-color:var(--dim);color:var(--ink)}
   .tb.active{border-color:var(--green);color:var(--green)}
+  .tb.active-del{border-color:var(--red);color:var(--red);background:rgba(200,69,44,0.1)}
   .tb.gold{border-color:var(--gold);color:var(--gold)}
   .tb.gold:hover{background:var(--gold);color:var(--bg)}
   .sep{width:1px;height:18px;background:var(--line);margin:0 2px}
 
   .main{display:flex;flex:1;overflow:hidden}
 
-  .palette{width:180px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;overflow:hidden}
+  .palette{width:200px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;overflow:hidden}
   .pal-section{padding:8px 10px;border-bottom:1px solid rgba(34,48,65,0.5)}
   .pal-title{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-bottom:6px}
   .pal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
   .pal-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border:1px solid transparent;cursor:pointer;transition:all .15s;border-radius:2px}
   .pal-item:hover{border-color:var(--line);background:rgba(88,163,106,0.05)}
   .pal-item.active{border-color:var(--green);background:rgba(88,163,106,0.1)}
-  .pal-item svg{width:28px;height:20px}
+  .pal-item svg{width:32px;height:22px}
   .pal-item span{font-size:8px;color:#5c6875;letter-spacing:.05em;text-align:center}
 
   .pal-scroll{flex:1;overflow-y:auto}
@@ -50,6 +51,8 @@
   #gridCanvas{z-index:1}
   #schematicCanvas{z-index:2}
   #overlayCanvas{z-index:3;cursor:default}
+  .canvas-wrap.mode-delete #overlayCanvas{cursor:not-allowed}
+  .canvas-wrap.mode-wire #overlayCanvas{cursor:crosshair}
 
   .right-panel{width:240px;border-left:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;overflow:hidden}
   .rp-section{padding:10px;border-bottom:1px solid rgba(34,48,65,0.5)}
@@ -67,19 +70,14 @@
   .status{display:flex;align-items:center;justify-content:space-between;padding:4px 16px;border-top:1px solid var(--line);flex-shrink:0;font-size:9px;color:#3a4a5c;letter-spacing:.1em;background:var(--bg)}
   .status .coords{color:var(--dim)}
   .status .mode{color:var(--green)}
+  .status .mode.del{color:var(--red)}
 
-  .ctx-menu{position:fixed;background:var(--panel);border:1px solid var(--line);z-index:100;display:none;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-  .ctx-menu.open{display:block}
-  .ctx-item{display:block;width:100%;text-align:left;background:none;border:none;font:11px var(--mono);color:var(--dim);padding:7px 12px;cursor:pointer;transition:all .15s}
-  .ctx-item:hover{background:rgba(88,163,106,0.1);color:var(--green)}
-  .ctx-item.red:hover{background:rgba(200,69,44,0.1);color:var(--red)}
-  .ctx-sep{border-top:1px solid var(--line);margin:2px 0}
-
-  .help-tip{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--green);padding:10px 20px;font-size:11px;color:var(--green);z-index:50;opacity:0;transition:opacity .3s;pointer-events:none}
+  .help-tip{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--green);padding:8px 16px;font-size:11px;color:var(--green);z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
   .help-tip.show{opacity:1}
+  .help-tip.del{border-color:var(--red);color:var(--red)}
 
   @media(max-width:900px){
-    .palette{width:140px}
+    .palette{width:160px}
     .right-panel{width:200px}
     .brand-sub{display:none}
   }
@@ -99,18 +97,24 @@
     </svg>
     <div>
       <div class="brand-name">AXIOM INDUSTRIES</div>
-      <div class="brand-sub">schematic board v3 · fluid editing</div>
+      <div class="brand-sub">schematic board · fluid editing</div>
     </div>
   </div>
   <div class="hdr-tools">
-    <button class="tb" id="toolPlace" title="place component (P)">+ place</button>
+    <button class="tb" id="toolSelect" title="select/move (V)">◇ select</button>
     <button class="tb" id="toolWire" title="draw wire (W)">─ wire</button>
+    <button class="tb" id="toolDelete" title="delete mode (X)">✕ delete</button>
     <div class="sep"></div>
-    <button class="tb gold" id="exportPng">export png</button>
+    <button class="tb" id="toolRotate" title="rotate selected (R)">↻</button>
+    <button class="tb" id="toolMirror" title="mirror selected (M)">⇔</button>
+    <div class="sep"></div>
+    <button class="tb" id="zoomIn">+</button>
+    <button class="tb" id="zoomOut">−</button>
+    <button class="tb" id="zoomFit">fit</button>
+    <div class="sep"></div>
+    <button class="tb gold" id="exportPng">png</button>
     <button class="tb gold" id="exportJson">save</button>
     <button class="tb" id="importJson">load</button>
-    <div class="sep"></div>
-    <button class="tb" id="zoomFit">fit</button>
     <a class="back" href="axiom.html">axiom ↩</a>
   </div>
 </header>
@@ -131,8 +135,16 @@
         <div class="pal-grid" id="palPower"></div>
       </div>
       <div class="pal-section">
-        <div class="pal-title">IC</div>
+        <div class="pal-title">IC / LOGIC</div>
         <div class="pal-grid" id="palIC"></div>
+      </div>
+      <div class="pal-section">
+        <div class="pal-title">CONNECT</div>
+        <div class="pal-grid" id="palConnect"></div>
+      </div>
+      <div class="pal-section">
+        <div class="pal-title">REFURB</div>
+        <div class="pal-grid" id="palRefurb"></div>
       </div>
     </div>
   </div>
@@ -147,7 +159,7 @@
     <div class="rp-scroll">
       <div class="rp-section">
         <div class="rp-title">PROPERTIES</div>
-        <div id="propsContent"><span style="font-size:10px;color:#3a4a5c;font-style:italic">click anything to edit</span></div>
+        <div id="propsContent"><span style="font-size:10px;color:#3a4a5c;font-style:italic">select anything</span></div>
       </div>
       <div class="rp-section">
         <div class="rp-title">BENCH NOTES</div>
@@ -158,11 +170,10 @@
 </div>
 
 <div class="status">
-  <span class="mode" id="statusMode">ready · click to place · drag to move</span>
+  <span class="mode" id="statusMode">select</span>
   <span class="coords" id="statusCoords">0, 0</span>
 </div>
 
-<div class="ctx-menu" id="ctxMenu"></div>
 <div class="help-tip" id="helpTip"></div>
 
 <input type="file" id="fileInput" accept=".json" style="display:none">
@@ -170,7 +181,10 @@
 <script>
 (function(){
   var GRID=20;
+
+  // ─── Full Component Library ───
   var COMPS={
+    // Passive
     resistor:{cat:'passive',label:'R',w:3,h:1,pins:[{x:0,y:0,id:1},{x:3,y:0,id:2}],draw:function(c,x,y){
       c.strokeStyle='#d8dde3';c.lineWidth=1.5;
       c.beginPath();c.moveTo(x-GRID*1.5,y);c.lineTo(x-GRID*0.8,y);c.stroke();
@@ -184,6 +198,20 @@
       c.beginPath();c.moveTo(x+GRID*0.3,y-GRID*0.4);c.lineTo(x+GRID*0.3,y+GRID*0.4);c.stroke();
       c.beginPath();c.moveTo(x+GRID*0.3,y);c.lineTo(x+GRID,y);c.stroke();
     }},
+    inductor:{cat:'passive',label:'L',w:3,h:1,pins:[{x:0,y:0,id:1},{x:3,y:0,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#d9a83a';c.lineWidth=1.5;c.beginPath();
+      for(var i=0;i<4;i++){var bx=x-GRID*1.2+i*GRID*0.7;c.moveTo(bx,y);c.arc(bx+GRID*0.35,y,GRID*0.35,Math.PI,0,false);}
+      c.stroke();
+    }},
+    pot:{cat:'passive',label:'VR',w:3,h:2,pins:[{x:0,y:1,id:1},{x:3,y:1,id:2},{x:1.5,y:0,id:3}],draw:function(c,x,y){
+      c.strokeStyle='#d8dde3';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x-GRID,y);c.lineTo(x-GRID*0.3,y);c.stroke();
+      c.strokeRect(x-GRID*0.3,y-GRID*0.3,GRID*0.6,GRID*0.6);
+      c.beginPath();c.moveTo(x+GRID*0.3,y);c.lineTo(x+GRID,y);c.stroke();
+      c.beginPath();c.moveTo(x,y-GRID*0.5);c.lineTo(x,y-GRID);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y-GRID*0.85);c.lineTo(x+GRID*0.15,y-GRID*0.85);c.stroke();
+    }},
+    // Semi
     diode:{cat:'semi',label:'D',w:2,h:1,pins:[{x:0,y:0,id:1},{x:2,y:0,id:2}],draw:function(c,x,y){
       c.strokeStyle='#c8452c';c.lineWidth=1.5;
       c.beginPath();c.moveTo(x-GRID,y);c.lineTo(x-GRID*0.3,y);c.stroke();
@@ -197,7 +225,27 @@
       c.beginPath();c.moveTo(x-GRID*0.3,y-GRID*0.3);c.lineTo(x+GRID*0.3,y);c.lineTo(x-GRID*0.3,y+GRID*0.3);c.closePath();c.stroke();
       c.beginPath();c.moveTo(x+GRID*0.3,y-GRID*0.3);c.lineTo(x+GRID*0.3,y+GRID*0.3);c.stroke();
       c.beginPath();c.moveTo(x+GRID*0.3,y);c.lineTo(x+GRID,y);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.1,y-GRID*0.6);c.lineTo(x+GRID*0.4,y-GRID*0.9);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.3,y-GRID*0.5);c.lineTo(x+GRID*0.6,y-GRID*0.8);c.stroke();
     }},
+    npn:{cat:'semi',label:'Q',w:2,h:3,pins:[{x:0,y:1.5,id:'B'},{x:2,y:0.5,id:'C'},{x:2,y:2.5,id:'E'}],draw:function(c,x,y){
+      c.strokeStyle='#d8dde3';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x-GRID*0.5,y-GRID*0.8);c.lineTo(x-GRID*0.5,y+GRID*0.8);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.5,y-GRID*0.3);c.lineTo(x+GRID*0.5,y-GRID*0.8);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.5,y+GRID*0.3);c.lineTo(x+GRID*0.5,y+GRID*0.8);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.2,y+GRID*0.6);c.lineTo(x+GRID*0.5,y+GRID*0.8);c.lineTo(x+GRID*0.15,y+GRID*0.85);c.stroke();
+    }},
+    mosfet:{cat:'semi',label:'M',w:2,h:3,pins:[{x:0,y:1.5,id:'G'},{x:2,y:0.5,id:'D'},{x:2,y:2.5,id:'S'}],draw:function(c,x,y){
+      c.strokeStyle='#3f7fc1';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x-GRID*0.4,y-GRID*0.8);c.lineTo(x-GRID*0.4,y+GRID*0.8);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y-GRID*0.6);c.lineTo(x-GRID*0.15,y-GRID*0.2);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y-GRID*0.1);c.lineTo(x-GRID*0.15,y+GRID*0.1);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y+GRID*0.2);c.lineTo(x-GRID*0.15,y+GRID*0.6);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y-GRID*0.4);c.lineTo(x+GRID*0.5,y-GRID*0.4);c.lineTo(x+GRID*0.5,y-GRID*0.8);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y);c.lineTo(x+GRID*0.5,y);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y+GRID*0.4);c.lineTo(x+GRID*0.5,y+GRID*0.4);c.lineTo(x+GRID*0.5,y+GRID*0.8);c.stroke();
+    }},
+    // Power
     vcc:{cat:'power',label:'V+',w:1,h:1,pins:[{x:0,y:1,id:1}],draw:function(c,x,y){
       c.strokeStyle='#c8452c';c.lineWidth=1.5;
       c.beginPath();c.moveTo(x,y+GRID*0.5);c.lineTo(x,y-GRID*0.2);c.stroke();
@@ -208,18 +256,90 @@
       c.beginPath();c.moveTo(x,y-GRID*0.5);c.lineTo(x,y);c.stroke();
       c.beginPath();c.moveTo(x-GRID*0.4,y);c.lineTo(x+GRID*0.4,y);c.stroke();
       c.beginPath();c.moveTo(x-GRID*0.25,y+GRID*0.2);c.lineTo(x+GRID*0.25,y+GRID*0.2);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.1,y+GRID*0.4);c.lineTo(x+GRID*0.1,y+GRID*0.4);c.stroke();
+    }},
+    battery:{cat:'power',label:'BAT',w:2,h:1,pins:[{x:0,y:0,id:1},{x:2,y:0,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#d9a83a';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x-GRID,y);c.lineTo(x-GRID*0.2,y);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.2,y-GRID*0.5);c.lineTo(x-GRID*0.2,y+GRID*0.5);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.2,y-GRID*0.25);c.lineTo(x+GRID*0.2,y+GRID*0.25);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.2,y);c.lineTo(x+GRID,y);c.stroke();
+    }},
+    // IC
+    ic555:{cat:'ic',label:'555',w:4,h:4,pins:[{x:0,y:1,id:1},{x:0,y:2,id:2},{x:0,y:3,id:3},{x:4,y:1,id:7},{x:4,y:2,id:6},{x:4,y:3,id:5},{x:1,y:0,id:8},{x:1,y:4,id:4}],
+      draw:function(c,x,y){
+        c.strokeStyle='#58a36a';c.lineWidth=1.5;
+        c.strokeRect(x-GRID*1.5,y-GRID*1.5,GRID*3,GRID*3);
+        c.fillStyle='#58a36a';c.font='9px monospace';c.textAlign='center';c.fillText('555',x,y+3);c.textAlign='left';
+      }},
+    icGeneric:{cat:'ic',label:'IC',w:4,h:5,pins:[{x:0,y:1,id:1},{x:0,y:2,id:2},{x:0,y:3,id:3},{x:0,y:4,id:4},{x:4,y:1,id:8},{x:4,y:2,id:7},{x:4,y:3,id:6},{x:4,y:4,id:5},{x:1,y:0,id:9},{x:3,y:0,id:10}],
+      draw:function(c,x,y){
+        c.strokeStyle='#93a1b0';c.lineWidth=1.5;
+        c.strokeRect(x-GRID*1.5,y-GRID*2,GRID*3,GRID*4);
+        c.fillStyle='#93a1b0';c.font='8px monospace';c.textAlign='center';c.fillText('IC',x,y+3);c.textAlign='left';
+        c.beginPath();c.arc(x-GRID*0.5,y-GRID*2,GRID*0.2,0,Math.PI,true);c.stroke();
+      }},
+    opamp:{cat:'ic',label:'OP',w:3,h:3,pins:[{x:0,y:0.75,id:'+'},{x:0,y:2.25,id:'-'},{x:3,y:1.5,id:'out'}],
+      draw:function(c,x,y){
+        c.strokeStyle='#3f7fc1';c.lineWidth=1.5;
+        c.beginPath();c.moveTo(x-GRID,y-GRID);c.lineTo(x-GRID,y+GRID);c.lineTo(x+GRID,y);c.closePath();c.stroke();
+        c.fillStyle='#3f7fc1';c.font='10px monospace';c.fillText('+',x-GRID*0.7,y-GRID*0.4);c.fillText('−',x-GRID*0.7,y+GRID*0.6);
+      }},
+    // Connect
+    jack:{cat:'connect',label:'JCK',w:2,h:1,pins:[{x:0,y:0,id:1},{x:2,y:0,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#d9a83a';c.lineWidth=1.5;
+      c.beginPath();c.arc(x-GRID*0.3,y,GRID*0.3,0,Math.PI*2);c.stroke();
+      c.beginPath();c.moveTo(x,y);c.lineTo(x+GRID*0.5,y);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.3,y-GRID*0.3);c.lineTo(x+GRID*0.3,y+GRID*0.3);c.stroke();
+    }},
+    switchSPST:{cat:'connect',label:'SW',w:3,h:1,pins:[{x:0,y:0,id:1},{x:3,y:0,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#d8dde3';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x-GRID,y);c.lineTo(x-GRID*0.3,y);c.stroke();
+      c.beginPath();c.arc(x-GRID*0.3,y,GRID*0.1,0,Math.PI*2);c.stroke();
+      c.beginPath();c.arc(x+GRID*0.3,y,GRID*0.1,0,Math.PI*2);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.3,y);c.lineTo(x+GRID*0.25,y-GRID*0.4);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*0.3,y);c.lineTo(x+GRID,y);c.stroke();
+    }},
+    terminal:{cat:'connect',label:'TP',w:1,h:1,pins:[{x:0,y:0,id:1}],draw:function(c,x,y){
+      c.strokeStyle='#d9a83a';c.lineWidth=1.5;
+      c.beginPath();c.arc(x,y,GRID*0.25,0,Math.PI*2);c.stroke();
+      c.beginPath();c.arc(x,y,GRID*0.08,0,Math.PI*2);c.fill();
+    }},
+    // Refurb
+    salvaged:{cat:'refurb',label:'SALV',w:3,h:2,pins:[{x:0,y:1,id:1},{x:3,y:1,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#58a36a';c.lineWidth=1.5;c.setLineDash([4,3]);
+      c.strokeRect(x-GRID*1.2,y-GRID*0.7,GRID*2.4,GRID*1.4);
+      c.setLineDash([]);
+      c.fillStyle='#58a36a';c.font='8px monospace';c.textAlign='center';c.fillText('SALVAGED',x,y+3);c.textAlign='left';
+      c.beginPath();c.moveTo(x-GRID*1.2,y);c.lineTo(x-GRID*1.5,y);c.stroke();
+      c.beginPath();c.moveTo(x+GRID*1.2,y);c.lineTo(x+GRID*1.5,y);c.stroke();
+    }},
+    testPoint:{cat:'refurb',label:'TST',w:1,h:1,pins:[{x:0,y:0,id:1}],draw:function(c,x,y){
+      c.strokeStyle='#c8452c';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x,y-GRID*0.4);c.lineTo(x-GRID*0.3,y+GRID*0.3);c.lineTo(x+GRID*0.3,y+GRID*0.3);c.closePath();c.stroke();
+    }},
+    probe:{cat:'refurb',label:'PROBE',w:1,h:2,pins:[{x:0,y:0,id:1},{x:0,y:2,id:2}],draw:function(c,x,y){
+      c.strokeStyle='#d9a83a';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(x,y-GRID*0.5);c.lineTo(x,y+GRID*0.5);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.2,y+GRID*0.5);c.lineTo(x,y+GRID*0.8);c.lineTo(x+GRID*0.2,y+GRID*0.5);c.stroke();
+      c.beginPath();c.moveTo(x-GRID*0.15,y-GRID*0.5);c.lineTo(x+GRID*0.15,y-GRID*0.5);c.stroke();
     }}
   };
 
+  // ─── State ───
   var components=[], wires=[], nextRef={};
-  var tool=null, selectedComp=null, selectedWire=null, selectedWirePoint=null;
-  var placing=null, wireStart=null;
+  var tool='select'; // select, wire, delete, place
+  var placing=null;
+  var selectedComp=null, selectedWire=null;
+  var wireStart=null;
   var panX=0, panY=0, zoom=1;
   var dragging=false, dragComp=null, dragOffset=null;
-  var draggingWirePoint=false;
+  var draggingWirePoint=false, dragWireInfo=null;
   var panning=false, panStart=null;
   var undoStack=[];
+  var mouseWorld=null;
 
+  // ─── DOM ───
   var wrap=document.getElementById('canvasWrap');
   var gridC=document.getElementById('gridCanvas');
   var schC=document.getElementById('schematicCanvas');
@@ -235,16 +355,17 @@
   }
   window.addEventListener('resize',resize);
 
+  // ─── Palette ───
   function buildPalette(){
-    var cats={passive:'palPassive',semi:'palSemi',power:'palPower',ic:'palIC'};
+    var cats={passive:'palPassive',semi:'palSemi',power:'palPower',ic:'palIC',connect:'palConnect',refurb:'palRefurb'};
     Object.keys(COMPS).forEach(function(key){
       var def=COMPS[key];
       var el=document.createElement('div');
       el.className='pal-item';
       el.setAttribute('data-comp',key);
-      var cvs=document.createElement('canvas');cvs.width=28;cvs.height=20;
+      var cvs=document.createElement('canvas');cvs.width=32;cvs.height=22;
       var cx=cvs.getContext('2d');
-      cx.save();cx.translate(14,10);cx.scale(0.35,0.35);
+      cx.save();cx.translate(16,11);cx.scale(0.35,0.35);
       def.draw(cx,0,0);
       cx.restore();
       el.appendChild(cvs);
@@ -256,13 +377,16 @@
   }
 
   function startPlacing(key){
-    placing=key;tool='place';
+    placing=key;
+    tool='place';
     document.querySelectorAll('.pal-item').forEach(function(e){e.classList.remove('active')});
-    document.querySelector('[data-comp="'+key+'"]').classList.add('active');
-    showTip('click to place · ESC to cancel');
+    var el=document.querySelector('[data-comp="'+key+'"]');
+    if(el) el.classList.add('active');
     updateToolUI();
+    showTip('click canvas to place · ESC to cancel');
   }
 
+  // ─── Coordinates ───
   function screenToWorld(sx,sy){return{x:(sx-panX)/(GRID*zoom),y:(sy-panY)/(GRID*zoom)};}
   function worldToScreen(wx,wy){return{x:wx*GRID*zoom+panX,y:wy*GRID*zoom+panY};}
   function snap(v){return Math.round(v);}
@@ -278,14 +402,14 @@
     return{x:comp.x+rpx,y:comp.y+rpy};
   }
 
+  // ─── Hit testing ───
   function findPinAt(wx,wy){
     var best=null, bestDist=0.5;
     components.forEach(function(c){
       var def=COMPS[c.type];if(!def||!def.pins) return;
       def.pins.forEach(function(pin){
         var pp=getPinWorldPos(c,pin);
-        var dx=wx-pp.x, dy=wy-pp.y;
-        var d=Math.sqrt(dx*dx+dy*dy);
+        var d=Math.sqrt((wx-pp.x)*(wx-pp.x)+(wy-pp.y)*(wy-pp.y));
         if(d<bestDist){bestDist=d;best={comp:c,pin:pin,x:pp.x,y:pp.y};}
       });
     });
@@ -306,8 +430,8 @@
       var wr=wires[i];
       for(var j=0;j<wr.points.length;j++){
         var pt=wr.points[j];
-        var dx=wx-pt.x, dy=wy-pt.y;
-        if(Math.sqrt(dx*dx+dy*dy)<0.4) return{wire:wr,idx:j,point:pt};
+        if(Math.sqrt((wx-pt.x)*(wx-pt.x)+(wy-pt.y)*(wy-pt.y))<0.4)
+          return{wire:wr,idx:j,point:pt};
       }
     }
     return null;
@@ -323,13 +447,14 @@
         if(len2===0) continue;
         var t=Math.max(0,Math.min(1,((wx-p0.x)*dx+(wy-p0.y)*dy)/len2));
         var px=p0.x+t*dx,py=p0.y+t*dy;
-        var d=Math.sqrt((wx-px)*(wx-px)+(wy-py)*(wy-py));
-        if(d<0.3) return{wire:wr,idx:j,x:px,y:py};
+        if(Math.sqrt((wx-px)*(wx-px)+(wy-py)*(wy-py))<0.3)
+          return{wire:wr,idx:j,x:px,y:py};
       }
     }
     return null;
   }
 
+  // ─── Drawing ───
   function drawGrid(){
     var w=gridC.width,h=gridC.height;
     gridCtx.clearRect(0,0,w,h);
@@ -345,13 +470,13 @@
   }
 
   function drawSchematic(){
-    var w=schC.width,h=schC.height;
-    schCtx.clearRect(0,0,w,h);
+    schCtx.clearRect(0,0,schC.width,schC.height);
 
+    // Wires
     wires.forEach(function(wr){
-      var isSelected=wr===selectedWire;
-      schCtx.strokeStyle=isSelected?'#d9a83a':'#58a36a';
-      schCtx.lineWidth=isSelected?2.5:2;
+      var isSel=wr===selectedWire;
+      schCtx.strokeStyle=isSel?'#d9a83a':'#58a36a';
+      schCtx.lineWidth=isSel?2.5:2;
       schCtx.beginPath();
       var p0=worldToScreen(wr.points[0].x,wr.points[0].y);
       schCtx.moveTo(p0.x,p0.y);
@@ -361,29 +486,30 @@
       }
       schCtx.stroke();
 
-      // Draw wire points
+      // Wire points
       wr.points.forEach(function(pt,idx){
         var sp=worldToScreen(pt.x,pt.y);
-        var isEndpoint=idx===0||idx===wr.points.length-1;
-        schCtx.fillStyle=isEndpoint?'#58a36a':'#d9a83a';
+        var isEnd=idx===0||idx===wr.points.length-1;
+        schCtx.fillStyle=isEnd?'#58a36a':'#d9a83a';
         schCtx.beginPath();
-        schCtx.arc(sp.x,sp.y,(isEndpoint?4:3)*zoom,0,Math.PI*2);
+        schCtx.arc(sp.x,sp.y,(isEnd?4:3)*zoom,0,Math.PI*2);
         schCtx.fill();
       });
     });
 
+    // Components
     components.forEach(function(comp){
       var def=COMPS[comp.type];if(!def) return;
       var sp=worldToScreen(comp.x,comp.y);
-      var isSelected=comp===selectedComp;
+      var isSel=comp===selectedComp;
 
       schCtx.save();
       schCtx.translate(sp.x,sp.y);
       schCtx.scale(zoom,zoom);
-      if(comp.rot){schCtx.rotate(Math.PI/2*comp.rot);}
-      if(comp.mir){schCtx.scale(-1,1);}
+      if(comp.rot) schCtx.rotate(Math.PI/2*comp.rot);
+      if(comp.mir) schCtx.scale(-1,1);
 
-      if(isSelected){
+      if(isSel){
         schCtx.strokeStyle='rgba(217,168,58,0.4)';schCtx.lineWidth=2/zoom;
         var hw=(def.w||2)*GRID/2+GRID*0.4, hh=(def.h||2)*GRID/2+GRID*0.4;
         schCtx.strokeRect(-hw,-hh,hw*2,hh*2);
@@ -392,9 +518,10 @@
       def.draw(schCtx,0,0);
       schCtx.restore();
 
+      // Labels
       var lx=sp.x+(def.w||2)*GRID*zoom*0.5+6;
       var ly=sp.y-GRID*zoom*0.3;
-      schCtx.fillStyle=isSelected?'#d9a83a':'#93a1b0';
+      schCtx.fillStyle=isSel?'#d9a83a':'#93a1b0';
       schCtx.font=(10*zoom)+'px monospace';
       schCtx.fillText(comp.ref||'',lx,ly);
       if(comp.value){
@@ -406,10 +533,10 @@
   }
 
   function drawOverlay(){
-    var w=ovrC.width,h=ovrC.height;
-    ovrCtx.clearRect(0,0,w,h);
+    ovrCtx.clearRect(0,0,ovrC.width,ovrC.height);
 
-    if(placing && mouseWorld){
+    // Placement preview
+    if(tool==='place' && placing && mouseWorld){
       var def=COMPS[placing];if(!def) return;
       var sx=snap(mouseWorld.x), sy=snap(mouseWorld.y);
       var sp=worldToScreen(sx,sy);
@@ -419,12 +546,20 @@
       ovrCtx.restore();
     }
 
-    if(wireStart && mouseWorld){
+    // Wire preview
+    if(tool==='wire' && wireStart && mouseWorld){
       var sp0=worldToScreen(wireStart.x,wireStart.y);
       var endX=snap(mouseWorld.x), endY=snap(mouseWorld.y);
       var nearPin=findPinAt(mouseWorld.x,mouseWorld.y);
       if(nearPin){endX=nearPin.x;endY=nearPin.y;}
       var sp1=worldToScreen(endX,endY);
+
+      // Snap indicator
+      if(nearPin){
+        ovrCtx.strokeStyle='#d9a83a';ovrCtx.lineWidth=2;
+        ovrCtx.beginPath();ovrCtx.arc(sp1.x,sp1.y,8*zoom,0,Math.PI*2);ovrCtx.stroke();
+      }
+
       ovrCtx.strokeStyle=nearPin?'#d9a83a':'rgba(88,163,106,0.6)';
       ovrCtx.lineWidth=2;ovrCtx.setLineDash([4,4]);
       ovrCtx.beginPath();ovrCtx.moveTo(sp0.x,sp0.y);
@@ -432,72 +567,137 @@
       ovrCtx.lineTo(mx,sp0.y);ovrCtx.lineTo(mx,sp1.y);ovrCtx.lineTo(sp1.x,sp1.y);
       ovrCtx.stroke();ovrCtx.setLineDash([]);
     }
+
+    // Delete mode hover highlight
+    if(tool==='delete' && mouseWorld){
+      var comp=findCompAt(mouseWorld.x,mouseWorld.y);
+      var wp=findWirePointAt(mouseWorld.x,mouseWorld.y);
+      var ws=!wp&&findWireSegmentAt(mouseWorld.x,mouseWorld.y);
+
+      if(comp){
+        var def=COMPS[comp.type];
+        var sp=worldToScreen(comp.x,comp.y);
+        ovrCtx.strokeStyle='rgba(200,69,44,0.5)';ovrCtx.lineWidth=2;
+        var hw=(def.w||2)*GRID*zoom/2+GRID*0.4*zoom, hh=(def.h||2)*GRID*zoom/2+GRID*0.4*zoom;
+        ovrCtx.strokeRect(sp.x-hw,sp.y-hh,hw*2,hh*2);
+      } else if(wp){
+        var sp=worldToScreen(wp.point.x,wp.point.y);
+        ovrCtx.strokeStyle='#c8452c';ovrCtx.lineWidth=2;
+        ovrCtx.beginPath();ovrCtx.arc(sp.x,sp.y,8*zoom,0,Math.PI*2);ovrCtx.stroke();
+      } else if(ws){
+        var sp0=worldToScreen(ws.wire.points[ws.idx].x,ws.wire.points[ws.idx].y);
+        var sp1=worldToScreen(ws.wire.points[ws.idx+1].x,ws.wire.points[ws.idx+1].y);
+        ovrCtx.strokeStyle='#c8452c';ovrCtx.lineWidth=3;
+        ovrCtx.beginPath();ovrCtx.moveTo(sp0.x,sp0.y);ovrCtx.lineTo(sp1.x,sp1.y);ovrCtx.stroke();
+      }
+    }
   }
 
   function drawAll(){drawGrid();drawSchematic();drawOverlay();}
 
-  var mouseWorld=null;
+  // ─── Mouse ───
   function getMousePos(e){var r=ovrC.getBoundingClientRect();return{sx:e.clientX-r.left,sy:e.clientY-r.top};}
 
-  function pushUndo(){undoStack.push(JSON.stringify({components:components,wires:wires}));if(undoStack.length>50)undoStack.shift();}
-  function undo(){if(!undoStack.length)return;var s=JSON.parse(undoStack.pop());components=s.components;wires=s.wires;selectedComp=null;selectedWire=null;drawAll();updateProps();}
+  function pushUndo(){undoStack.push(JSON.stringify({c:components,w:wires}));if(undoStack.length>50)undoStack.shift();}
+  function undo(){if(!undoStack.length)return;var s=JSON.parse(undoStack.pop());components=s.c;wires=s.w;selectedComp=null;selectedWire=null;drawAll();updateProps();}
 
   ovrC.addEventListener('mousedown',function(e){
     var pos=getMousePos(e);
     var w=screenToWorld(pos.sx,pos.sy);
     mouseWorld=w;
 
+    // Middle button = pan
     if(e.button===1){panning=true;panStart={x:pos.sx-panX,y:pos.sy-panY};e.preventDefault();return;}
 
-    if(e.button===2){
-      e.preventDefault();
+    // ─── DELETE MODE: single click to delete ───
+    if(tool==='delete'){
       var comp=findCompAt(w.x,w.y);
-      var wp=findWirePointAt(w.x,w.y);
-      var ws=findWireSegmentAt(w.x,w.y);
-
       if(comp){
-        selectedComp=comp;selectedWire=null;
-        showCompContextMenu(e.clientX,e.clientY,comp);
-      } else if(wp){
-        selectedWire=wp.wire;selectedComp=null;
-        showWirePointContextMenu(e.clientX,e.clientY,wp);
-      } else if(ws){
-        selectedWire=ws.wire;selectedComp=null;
-        showWireSegmentContextMenu(e.clientX,e.clientY,ws);
+        pushUndo();
+        components=components.filter(function(c){return c!==comp});
+        if(selectedComp===comp) selectedComp=null;
+        drawAll();updateProps();
+        return;
       }
-      drawAll();updateProps();
+      var wp=findWirePointAt(w.x,w.y);
+      if(wp){
+        pushUndo();
+        if(wp.wire.points.length>2){
+          wp.wire.points.splice(wp.idx,1);
+        } else {
+          wires=wires.filter(function(wr){return wr!==wp.wire});
+        }
+        if(selectedWire===wp.wire && wp.wire.points.length<=1) selectedWire=null;
+        drawAll();
+        return;
+      }
+      var ws=findWireSegmentAt(w.x,w.y);
+      if(ws){
+        pushUndo();
+        wires=wires.filter(function(wr){return wr!==ws.wire});
+        if(selectedWire===ws.wire) selectedWire=null;
+        drawAll();
+        return;
+      }
       return;
     }
 
-    // Left click
-    if(placing){
+    // ─── PLACE MODE ───
+    if(tool==='place' && placing){
       pushUndo();
       var def=COMPS[placing];
       var ref=def.label+(nextRef[def.label]||'');
       nextRef[def.label]=(nextRef[def.label]||1)+1;
-      var comp={id:'c'+Date.now(),type:placing,x:snap(w.x),y:snap(w.y),rot:0,mir:false,ref:ref,value:'',label:''};
+      var comp={id:'c'+Date.now()+Math.random().toString(36).slice(2,5),type:placing,
+        x:snap(w.x),y:snap(w.y),rot:0,mir:false,ref:ref,value:'',label:''};
       components.push(comp);
       selectedComp=comp;
+      // Immediately start dragging the just-placed component
+      dragging=true;dragComp=comp;
+      dragOffset={x:0,y:0};
       drawAll();updateProps();
       return;
     }
 
+    // ─── WIRE MODE ───
     if(tool==='wire'){
+      // If we already have a wire start, this click ends it
+      if(wireStart){
+        var pin=findPinAt(w.x,w.y);
+        var endX=pin?pin.x:snap(w.x);
+        var endY=pin?pin.y:snap(w.y);
+        if(Math.abs(endX-wireStart.x)>0.1||Math.abs(endY-wireStart.y)>0.1){
+          pushUndo();
+          var pts=[{x:wireStart.x,y:wireStart.y}];
+          var mx=(wireStart.x+endX)/2;
+          pts.push({x:mx,y:wireStart.y});
+          pts.push({x:mx,y:endY});
+          pts.push({x:endX,y:endY});
+          wires.push({id:'w'+Date.now(),points:pts});
+          // Continue chaining from end
+          wireStart={x:endX,y:endY};
+        }
+        drawAll();
+        return;
+      }
+      // Start new wire
       var pin=findPinAt(w.x,w.y);
       wireStart=pin?{x:pin.x,y:pin.y}:{x:snap(w.x),y:snap(w.y)};
       return;
     }
 
-    // Default: try to select/drag
+    // ─── SELECT MODE (default) ───
+    // Try wire point first (for dragging)
     var wp=findWirePointAt(w.x,w.y);
     if(wp){
-      selectedWire=wp.wire;selectedComp=null;selectedWirePoint=wp;
-      draggingWirePoint=true;
+      selectedWire=wp.wire;selectedComp=null;
+      draggingWirePoint=true;dragWireInfo=wp;
       pushUndo();
       drawAll();updateProps();
       return;
     }
 
+    // Then component
     var comp=findCompAt(w.x,w.y);
     if(comp){
       selectedComp=comp;selectedWire=null;
@@ -508,9 +708,9 @@
       return;
     }
 
+    // Then wire segment (add waypoint)
     var ws=findWireSegmentAt(w.x,w.y);
     if(ws){
-      // Add waypoint
       pushUndo();
       ws.wire.points.splice(ws.idx+1,0,{x:snap(ws.x),y:snap(ws.y)});
       selectedWire=ws.wire;selectedComp=null;
@@ -518,6 +718,7 @@
       return;
     }
 
+    // Empty space = deselect + pan
     selectedComp=null;selectedWire=null;
     panning=true;panStart={x:pos.sx-panX,y:pos.sy-panY};
     drawAll();updateProps();
@@ -531,16 +732,14 @@
     document.getElementById('statusCoords').textContent=snap(w.x)+', '+snap(w.y);
 
     if(panning&&panStart){panX=pos.sx-panStart.x;panY=pos.sy-panStart.y;drawAll();return;}
-
     if(dragging&&dragComp){
       dragComp.x=snap(w.x-dragOffset.x);
       dragComp.y=snap(w.y-dragOffset.y);
       drawAll();return;
     }
-
-    if(draggingWirePoint&&selectedWirePoint){
-      selectedWirePoint.point.x=snap(w.x);
-      selectedWirePoint.point.y=snap(w.y);
+    if(draggingWirePoint&&dragWireInfo){
+      dragWireInfo.point.x=snap(w.x);
+      dragWireInfo.point.y=snap(w.y);
       drawAll();return;
     }
 
@@ -550,26 +749,7 @@
   ovrC.addEventListener('mouseup',function(e){
     if(panning){panning=false;panStart=null;return;}
     if(dragging){dragging=false;dragComp=null;return;}
-    if(draggingWirePoint){draggingWirePoint=false;selectedWirePoint=null;return;}
-
-    if(tool==='wire'&&wireStart){
-      var pos=getMousePos(e);
-      var w=screenToWorld(pos.sx,pos.sy);
-      var pin=findPinAt(w.x,w.y);
-      var endX=pin?pin.x:snap(w.x);
-      var endY=pin?pin.y:snap(w.y);
-
-      if(Math.abs(endX-wireStart.x)>0.1||Math.abs(endY-wireStart.y)>0.1){
-        pushUndo();
-        var pts=[{x:wireStart.x,y:wireStart.y}];
-        var mx=(wireStart.x+endX)/2;
-        pts.push({x:mx,y:wireStart.y});
-        pts.push({x:mx,y:endY});
-        pts.push({x:endX,y:endY});
-        wires.push({id:'w'+Date.now(),points:pts});
-      }
-      wireStart=null;drawAll();
-    }
+    if(draggingWirePoint){draggingWirePoint=false;dragWireInfo=null;return;}
   });
 
   ovrC.addEventListener('wheel',function(e){
@@ -583,7 +763,6 @@
     drawAll();
   });
 
-  ovrC.addEventListener('contextmenu',function(e){e.preventDefault()});
   ovrC.addEventListener('dblclick',function(e){
     var pos=getMousePos(e);
     var w=screenToWorld(pos.sx,pos.sy);
@@ -591,83 +770,58 @@
     if(comp){
       selectedComp=comp;
       var v=prompt('value:',comp.value||'');
-      if(v!==null){comp.value=v;pushUndo();drawAll();updateProps();}
+      if(v!==null){pushUndo();comp.value=v;drawAll();updateProps();}
     }
   });
 
-  var ctxMenu=document.getElementById('ctxMenu');
-  function showCompContextMenu(x,y,comp){
-    ctxMenu.innerHTML=
-      '<button class="ctx-item" data-action="rotate">↻ rotate</button>'+
-      '<button class="ctx-item" data-action="mirror">⇔ mirror</button>'+
-      '<button class="ctx-item" data-action="edit">✎ edit value</button>'+
-      '<div class="ctx-sep"></div>'+
-      '<button class="ctx-item red" data-action="delete">✕ delete</button>';
-    ctxMenu.style.left=x+'px';ctxMenu.style.top=y+'px';ctxMenu.classList.add('open');
-
-    ctxMenu.querySelectorAll('.ctx-item').forEach(function(btn){
-      btn.onclick=function(){
-        var action=btn.getAttribute('data-action');
-        if(action==='rotate'){comp.rot=(comp.rot+1)%4;pushUndo();}
-        if(action==='mirror'){comp.mir=!comp.mir;pushUndo();}
-        if(action==='edit'){var v=prompt('value:',comp.value||'');if(v!==null){comp.value=v;pushUndo();}}
-        if(action==='delete'){components=components.filter(function(c){return c!==comp});selectedComp=null;pushUndo();}
-        ctxMenu.classList.remove('open');
-        drawAll();updateProps();
-      };
-    });
+  // ─── Tools ───
+  function setTool(t){
+    tool=t;
+    if(t!=='place'){placing=null;document.querySelectorAll('.pal-item').forEach(function(e){e.classList.remove('active')});}
+    if(t!=='wire') wireStart=null;
+    updateToolUI();
+    drawOverlay();
   }
-
-  function showWirePointContextMenu(x,y,wp){
-    ctxMenu.innerHTML=
-      '<button class="ctx-item red" data-action="delete">✕ delete point</button>';
-    ctxMenu.style.left=x+'px';ctxMenu.style.top=y+'px';ctxMenu.classList.add('open');
-
-    ctxMenu.querySelector('[data-action="delete"]').onclick=function(){
-      if(wp.wire.points.length>2){
-        wp.wire.points.splice(wp.idx,1);
-        pushUndo();
-      }
-      ctxMenu.classList.remove('open');
-      drawAll();
-    };
-  }
-
-  function showWireSegmentContextMenu(x,y,ws){
-    ctxMenu.innerHTML=
-      '<button class="ctx-item" data-action="add">+ add waypoint</button>'+
-      '<button class="ctx-item red" data-action="delete">✕ delete wire</button>';
-    ctxMenu.style.left=x+'px';ctxMenu.style.top=y+'px';ctxMenu.classList.add('open');
-
-    ctxMenu.querySelectorAll('.ctx-item').forEach(function(btn){
-      btn.onclick=function(){
-        var action=btn.getAttribute('data-action');
-        if(action==='add'){ws.wire.points.splice(ws.idx+1,0,{x:snap(ws.x),y:snap(ws.y)});pushUndo();}
-        if(action==='delete'){wires=wires.filter(function(w){return w!==ws.wire});selectedWire=null;pushUndo();}
-        ctxMenu.classList.remove('open');
-        drawAll();
-      };
-    });
-  }
-
-  document.addEventListener('click',function(){ctxMenu.classList.remove('open')});
 
   function updateToolUI(){
-    document.getElementById('toolPlace').classList.toggle('active',tool==='place');
+    document.getElementById('toolSelect').classList.toggle('active',tool==='select');
     document.getElementById('toolWire').classList.toggle('active',tool==='wire');
-    document.getElementById('statusMode').textContent=
-      placing?'placing: '+placing:
-      tool==='wire'?'wire · click pin to start':
-      'ready · click to place · drag to move';
+    document.getElementById('toolDelete').classList.toggle('active',tool==='delete');
+    document.getElementById('toolDelete').classList.toggle('active-del',tool==='delete');
+
+    wrap.classList.toggle('mode-delete',tool==='delete');
+    wrap.classList.toggle('mode-wire',tool==='wire');
+
+    var modeEl=document.getElementById('statusMode');
+    if(tool==='delete'){
+      modeEl.textContent='DELETE · click to remove';
+      modeEl.className='mode del';
+    } else if(tool==='wire'){
+      modeEl.textContent=wireStart?'wire · click to end · ESC to cancel':'wire · click pin to start';
+      modeEl.className='mode';
+    } else if(tool==='place'){
+      modeEl.textContent='place: '+(placing||'?');
+      modeEl.className='mode';
+    } else {
+      modeEl.textContent='select · drag to move';
+      modeEl.className='mode';
+    }
   }
 
-  document.getElementById('toolPlace').onclick=function(){tool='place';updateToolUI();showTip('click component in palette')};
-  document.getElementById('toolWire').onclick=function(){tool='wire';updateToolUI();showTip('click pin to start wire')};
+  document.getElementById('toolSelect').onclick=function(){setTool('select')};
+  document.getElementById('toolWire').onclick=function(){setTool('wire');showTip('click pin to start wire')};
+  document.getElementById('toolDelete').onclick=function(){setTool('delete');showTip('click anything to delete it','del')};
+  document.getElementById('toolRotate').onclick=function(){if(selectedComp){pushUndo();selectedComp.rot=(selectedComp.rot+1)%4;drawAll();}};
+  document.getElementById('toolMirror').onclick=function(){if(selectedComp){pushUndo();selectedComp.mir=!selectedComp.mir;drawAll();}};
+  document.getElementById('zoomIn').onclick=function(){zoom=Math.min(5,zoom*1.3);drawAll()};
+  document.getElementById('zoomOut').onclick=function(){zoom=Math.max(0.2,zoom/1.3);drawAll()};
   document.getElementById('zoomFit').onclick=function(){
     if(!components.length){panX=ovrC.width/2;panY=ovrC.height/2;zoom=1;drawAll();return;}
     var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     components.forEach(function(c){var d=COMPS[c.type];var hw=(d.w||2)/2+1,hh=(d.h||2)/2+1;
       minX=Math.min(minX,c.x-hw);minY=Math.min(minY,c.y-hh);maxX=Math.max(maxX,c.x+hw);maxY=Math.max(maxY,c.y+hh);});
+    wires.forEach(function(wr){wr.points.forEach(function(p){
+      minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x);maxY=Math.max(maxY,p.y);});});
     var bw=maxX-minX,bh=maxY-minY;
     zoom=Math.min(ovrC.width/(bw*GRID+80),ovrC.height/(bh*GRID+80));
     zoom=Math.max(0.2,Math.min(5,zoom));
@@ -676,6 +830,7 @@
     drawAll();
   };
 
+  // ─── Properties ───
   function updateProps(){
     var el=document.getElementById('propsContent');
     if(selectedComp){
@@ -684,20 +839,30 @@
         '<div class="prop-row"><span class="prop-label">type</span><span style="font-size:11px;color:var(--green)">'+c.type+'</span></div>'+
         '<div class="prop-row"><span class="prop-label">ref</span><input class="prop-input" id="pRef" value="'+(c.ref||'')+'"></div>'+
         '<div class="prop-row"><span class="prop-label">value</span><input class="prop-input" id="pVal" value="'+(c.value||'')+'"></div>'+
-        '<div class="prop-row"><span class="prop-label">pos</span><span style="font-size:10px;color:#5c6875">'+c.x+', '+c.y+'</span></div>';
-      el.querySelector('#pRef').onchange=function(){c.ref=this.value;drawAll()};
-      el.querySelector('#pVal').onchange=function(){c.value=this.value;drawAll()};
+        '<div class="prop-row"><span class="prop-label">pos</span><span style="font-size:10px;color:#5c6875">'+c.x+', '+c.y+' · rot '+c.rot*90+'°</span></div>'+
+        '<div style="margin-top:8px"><button class="tb" style="font-size:9px;padding:4px 8px" id="pDel">✕ delete</button> '+
+        '<button class="tb" style="font-size:9px;padding:4px 8px" id="pRot">↻ rotate</button> '+
+        '<button class="tb" style="font-size:9px;padding:4px 8px" id="pMir">⇔ mirror</button></div>';
+      el.querySelector('#pRef').onchange=function(){pushUndo();c.ref=this.value;drawAll()};
+      el.querySelector('#pVal').onchange=function(){pushUndo();c.value=this.value;drawAll()};
+      el.querySelector('#pDel').onclick=function(){pushUndo();components=components.filter(function(x){return x!==c});selectedComp=null;drawAll();updateProps()};
+      el.querySelector('#pRot').onclick=function(){pushUndo();c.rot=(c.rot+1)%4;drawAll()};
+      el.querySelector('#pMir').onclick=function(){pushUndo();c.mir=!c.mir;drawAll()};
     } else if(selectedWire){
-      el.innerHTML='<div style="font-size:10px;color:#5c6875">wire · '+selectedWire.points.length+' points<br>right-click to edit</div>';
+      el.innerHTML='<div style="font-size:10px;color:#5c6875">wire · '+selectedWire.points.length+' points<br><br>'+
+        '<button class="tb" style="font-size:9px;padding:4px 8px" id="wDel">✕ delete wire</button></div>';
+      el.querySelector('#wDel').onclick=function(){pushUndo();wires=wires.filter(function(w){return w!==selectedWire});selectedWire=null;drawAll();updateProps()};
     } else {
-      el.innerHTML='<span style="font-size:10px;color:#3a4a5c;font-style:italic">click anything to edit</span>';
+      el.innerHTML='<span style="font-size:10px;color:#3a4a5c;font-style:italic">select anything</span>';
     }
   }
 
+  // ─── Bench notes ───
   var benchEl=document.getElementById('benchNotes');
   benchEl.value=localStorage.getItem('axiom_bench_notes')||'';
   benchEl.addEventListener('input',function(){localStorage.setItem('axiom_bench_notes',benchEl.value)});
 
+  // ─── Export/Import ───
   document.getElementById('exportPng').onclick=function(){
     var tmp=document.createElement('canvas');
     var bb=getBounds();var pad=40;
@@ -712,7 +877,7 @@
   };
 
   function getBounds(){
-    if(!components.length)return{minX:-5,minY:-5,maxX:5,maxY:5};
+    if(!components.length&&!wires.length) return{minX:-5,minY:-5,maxX:5,maxY:5};
     var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     components.forEach(function(c){var d=COMPS[c.type];var hw=(d.w||2)/2+1,hh=(d.h||2)/2+1;
       minX=Math.min(minX,c.x-hw);minY=Math.min(minY,c.y-hh);maxX=Math.max(maxX,c.x+hw);maxY=Math.max(maxY,c.y+hh);});
@@ -747,31 +912,43 @@
     r.readAsText(f);e.target.value='';
   };
 
-  function showTip(msg){
+  // ─── Help tip ───
+  function showTip(msg,type){
     var tip=document.getElementById('helpTip');
-    tip.textContent=msg;tip.classList.add('show');
-    setTimeout(function(){tip.classList.remove('show')},2000);
+    tip.textContent=msg;
+    tip.className='help-tip show'+(type==='del'?' del':'');
+    clearTimeout(tip._t);
+    tip._t=setTimeout(function(){tip.classList.remove('show')},2500);
   }
 
+  // ─── Keyboard ───
   document.addEventListener('keydown',function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-    if(e.key==='Escape'){placing=null;tool=null;wireStart=null;document.querySelectorAll('.pal-item').forEach(function(e){e.classList.remove('active')});updateToolUI();drawOverlay();}
-    if(e.key==='p'||e.key==='P'){tool='place';updateToolUI();}
-    if(e.key==='w'||e.key==='W'){tool='wire';updateToolUI();}
+    if(e.key==='v'||e.key==='V') setTool('select');
+    if(e.key==='w'||e.key==='W') setTool('wire');
+    if(e.key==='x'||e.key==='X') setTool('delete');
+    if(e.key==='r'||e.key==='R'){if(selectedComp){pushUndo();selectedComp.rot=(selectedComp.rot+1)%4;drawAll();}}
+    if(e.key==='m'||e.key==='M'){if(selectedComp){pushUndo();selectedComp.mir=!selectedComp.mir;drawAll();}}
+    if(e.key==='Escape'){
+      if(tool==='wire') wireStart=null;
+      setTool('select');
+      drawOverlay();
+    }
     if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();}
     if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();document.getElementById('exportJson').click();}
     if(e.key==='Delete'||e.key==='Backspace'){
-      if(selectedComp){components=components.filter(function(c){return c!==selectedComp});selectedComp=null;pushUndo();drawAll();updateProps();}
-      if(selectedWire){wires=wires.filter(function(w){return w!==selectedWire});selectedWire=null;pushUndo();drawAll();}
+      if(selectedComp){pushUndo();components=components.filter(function(c){return c!==selectedComp});selectedComp=null;drawAll();updateProps();}
+      else if(selectedWire){pushUndo();wires=wires.filter(function(w){return w!==selectedWire});selectedWire=null;drawAll();updateProps();}
     }
   });
 
+  // ─── Init ───
   buildPalette();
   try{var last=JSON.parse(localStorage.getItem('axiom_schematic_last')||'null');if(last){components=last.components||[];wires=last.wires||[];nextRef=last.refs||{};}}catch(e){}
   resize();
   panX=ovrC.width/2;panY=ovrC.height/2;
   drawAll();updateProps();
-  showTip('click palette to place · drag to move · right-click to edit');
+  showTip('click palette to place · drag to move · X to delete');
 })();
 </script>
 </body>
