@@ -39,6 +39,43 @@
   .back{color:var(--dim);text-decoration:none;font-size:11px;letter-spacing:.12em}
   .back:hover{color:var(--ink)}
 
+  /* quadruple spin logo button */
+  .quad-logo{width:32px;height:32px;cursor:grab;transition:all .2s;position:relative}
+  .quad-logo:hover{transform:rotate(90deg) scale(1.1)}
+  .quad-logo:active{cursor:grabbing}
+  .quad-logo .ring{position:absolute;inset:0;border:1px solid var(--green);border-radius:50%;opacity:0.3}
+  .quad-logo.spinning .ring{animation:quadSpin 2s linear infinite}
+  @keyframes quadSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* chat workspace */
+  .chat-workspace{position:fixed;inset:0;background:rgba(10,13,18,0.95);z-index:100;display:none;flex-direction:column}
+  .chat-workspace.open{display:flex}
+  .chat-header{padding:12px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:var(--bg)}
+  .chat-header .title{font-size:12px;letter-spacing:.2em;color:var(--green)}
+  .chat-header .close{margin-left:auto}
+  .chat-grid{flex:1;display:grid;gap:12px;padding:12px;overflow:auto}
+  .chat-grid.cols-1{grid-template-columns:1fr}
+  .chat-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .chat-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .chat-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+  .chat-window{border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:300px}
+  .chat-window-header{padding:8px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:rgba(10,13,18,0.5)}
+  .chat-window-header .win-title{font-size:10px;letter-spacing:.15em;color:var(--dim);flex:1}
+  .chat-window-header .win-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px}
+  .chat-window-header .win-close:hover{color:var(--red)}
+  .chat-window-body{flex:1;overflow-y:auto;padding:12px}
+  .chat-window.drop-target{border-color:var(--green);background:rgba(88,163,106,0.05)}
+  .chat-note{border:1px solid var(--line);padding:10px;margin-bottom:8px;background:var(--bg)}
+  .chat-note .cn-title{font-size:11px;color:var(--ink);margin-bottom:4px}
+  .chat-note .cn-body{font-size:10px;color:var(--dim);line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+  .chat-note .cn-remove{float:right;background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px}
+  .chat-note .cn-remove:hover{color:var(--red)}
+  .chat-empty{text-align:center;padding:40px 20px;color:#3a4a5c;font-size:10px;letter-spacing:.1em}
+  .chat-controls{padding:10px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:var(--bg)}
+  .chat-controls .layout-btn{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);padding:6px 12px;cursor:pointer;letter-spacing:.1em}
+  .chat-controls .layout-btn:hover{border-color:var(--dim);color:var(--ink)}
+  .chat-controls .layout-btn.active{border-color:var(--green);color:var(--green)}
+
   .btn{background:none;border:1px solid var(--green);color:var(--green);
     font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:6px 14px;
     cursor:pointer;transition:all .2s}
@@ -113,6 +150,9 @@
     border-left:2px solid transparent;position:relative}
   .note-item:hover{background:rgba(14,20,27,0.6)}
   .note-item.active{background:rgba(88,163,106,0.08);border-left-color:var(--green)}
+  .note-item[draggable="true"]{cursor:grab}
+  .note-item[draggable="true"]:active{cursor:grabbing}
+  .note-item.dragging{opacity:0.4}
   .note-item .chk{margin-top:2px;flex-shrink:0;opacity:0;transition:opacity .15s;accent-color:var(--green)}
   .note-item:hover .chk,.note-item .chk:checked{opacity:1}
   .note-item .body{flex:1;min-width:0}
@@ -224,9 +264,28 @@
 
 <header>
   <div class="brand">
-    <svg width="20" height="20" viewBox="0 0 56 56" fill="none" stroke="#58a36a" stroke-width="3">
-      <path d="M16 40 L24 16 L44 16 L36 40 Z"/><line x1="10" y1="46" x2="44" y2="12"/>
-      <path d="M44 12 l-8 1.5 M44 12 l-1.5 8"/></svg>
+    <!-- Quadruple Spin Logo - draggable to open chat workspace -->
+    <div class="quad-logo" id="quadLogo" title="drag notes here or click to open chat workspace">
+      <div class="ring"></div>
+      <svg width="32" height="32" viewBox="0 0 56 56" fill="none" stroke="#58a36a" stroke-width="2.5">
+        <!-- Four pillars in a rotating arrangement -->
+        <!-- Axiom - top -->
+        <circle cx="28" cy="12" r="4" stroke-width="2"/>
+        <line x1="28" y1="8" x2="28" y2="10" stroke-width="1.5"/>
+        <line x1="28" y1="14" x2="28" y2="16" stroke-width="1.5"/>
+        <!-- Eigen - right -->
+        <path d="M40 24 L44 20 L48 24 L44 28 Z" stroke-width="2"/>
+        <line x1="42" y1="26" x2="46" y2="22" stroke-width="1.5"/>
+        <!-- Baseline - bottom -->
+        <path d="M24 44 Q28 40 32 44 Q28 48 24 44" stroke-width="2"/>
+        <circle cx="28" cy="44" r="1.5" fill="#58a36a"/>
+        <!-- Keystone - left -->
+        <path d="M8 28 L12 24 L16 28 L12 32 Z" stroke-width="2"/>
+        <path d="M10 26 L14 26 L15 30 L9 30 Z" fill="#58a36a" opacity="0.3"/>
+        <!-- Center connection -->
+        <circle cx="28" cy="28" r="2" fill="#58a36a" opacity="0.5"/>
+      </svg>
+    </div>
     <div>
       <div class="brand-name">EIGEN DYNAMICS</div>
       <div class="brand-sub">the notes tablet · the garden within</div>
@@ -238,6 +297,31 @@
     <a class="back" href="eigen.html">eigen ↩</a>
   </div>
 </header>
+
+<!-- Chat Workspace -->
+<div class="chat-workspace" id="chatWorkspace">
+  <div class="chat-header">
+    <svg width="16" height="16" viewBox="0 0 56 56" fill="none" stroke="#58a36a" stroke-width="3">
+      <circle cx="28" cy="28" r="11"/><line x1="28" y1="8" x2="28" y2="15"/>
+      <line x1="28" y1="41" x2="28" y2="48"/><line x1="8" y1="28" x2="15" y2="28"/>
+      <line x1="41" y1="28" x2="48" y2="28"/><circle cx="28" cy="28" r="2.5" fill="#58a36a" stroke="none"/>
+    </svg>
+    <span class="title">CHAT WORKSPACE · drag notes from the list</span>
+    <button class="btn close" id="chatClose">✕ close</button>
+  </div>
+  <div class="chat-grid cols-2" id="chatGrid">
+    <!-- Chat windows will be added here dynamically -->
+  </div>
+  <div class="chat-controls">
+    <button class="layout-btn" data-cols="1">1 window</button>
+    <button class="layout-btn active" data-cols="2">2 windows</button>
+    <button class="layout-btn" data-cols="3">3 windows</button>
+    <button class="layout-btn" data-cols="4">4 windows</button>
+    <div style="flex:1"></div>
+    <button class="btn" id="addWindow">+ add window</button>
+    <button class="btn btn-dim" id="clearAll">clear all</button>
+  </div>
+</div>
 
 <div class="main" id="mainLayout">
   <!-- sidebar -->
@@ -682,6 +766,183 @@
 
   // init
   load();renderList();renderEditor();
+
+  // ─── Chat Workspace ───
+  var chatWindows=[];
+  var chatLayout=2;
+  var quadLogo=$('quadLogo');
+  var chatWorkspace=$('chatWorkspace');
+  var chatGrid=$('chatGrid');
+
+  // Quad logo click - open chat workspace
+  quadLogo.onclick=function(){
+    chatWorkspace.classList.add('open');
+    quadLogo.classList.add('spinning');
+    if(chatWindows.length===0){
+      // Create initial windows based on layout
+      for(var i=0;i<chatLayout;i++) addChatWindow();
+    }
+    renderChatGrid();
+  };
+
+  // Close chat workspace
+  $('chatClose').onclick=function(){
+    chatWorkspace.classList.remove('open');
+    quadLogo.classList.remove('spinning');
+  };
+
+  // Layout buttons
+  document.querySelectorAll('.layout-btn').forEach(function(btn){
+    btn.onclick=function(){
+      document.querySelectorAll('.layout-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      chatLayout=parseInt(btn.getAttribute('data-cols'));
+      chatGrid.className='chat-grid cols-'+chatLayout;
+      // Adjust windows to match layout
+      while(chatWindows.length<chatLayout) addChatWindow();
+      while(chatWindows.length>chatLayout) chatWindows.pop();
+      renderChatGrid();
+    };
+  });
+
+  // Add window button
+  $('addWindow').onclick=function(){
+    if(chatWindows.length<4){
+      addChatWindow();
+      renderChatGrid();
+    }
+  };
+
+  // Clear all button
+  $('clearAll').onclick=function(){
+    if(confirm('clear all chat windows?')){
+      chatWindows=[];
+      for(var i=0;i<chatLayout;i++) addChatWindow();
+      renderChatGrid();
+    }
+  };
+
+  function addChatWindow(){
+    chatWindows.push({id:'cw'+Date.now()+Math.random().toString(36).slice(2,5),notes:[]});
+  }
+
+  function renderChatGrid(){
+    chatGrid.innerHTML='';
+    chatWindows.forEach(function(win,idx){
+      var winEl=document.createElement('div');
+      winEl.className='chat-window';
+      winEl.setAttribute('data-win-idx',idx);
+      winEl.innerHTML=
+        '<div class="chat-window-header">'+
+          '<span class="win-title">window '+(idx+1)+' · '+win.notes.length+' note'+(win.notes.length!==1?'s':'')+'</span>'+
+          '<button class="win-close" data-close-win="'+idx+'">✕</button>'+
+        '</div>'+
+        '<div class="chat-window-body" data-drop-zone="'+idx+'">'+
+          (win.notes.length===0?'<div class="chat-empty">drag notes here from the list</div>':'')+
+          win.notes.map(function(noteId){
+            var note=notes.find(function(n){return n.id===noteId});
+            if(!note) return '';
+            return '<div class="chat-note" data-note-id="'+note.id+'">'+
+              '<button class="cn-remove" data-remove-note="'+idx+'" data-note-id="'+note.id+'">×</button>'+
+              '<div class="cn-title">'+(esc(note.title)||'<i>untitled</i>')+'</div>'+
+              '<div class="cn-body">'+esc(note.body.slice(0,500))+(note.body.length>500?'...':'')+'</div>'+
+            '</div>';
+          }).join('')+
+        '</div>';
+      chatGrid.appendChild(winEl);
+
+      // Drop zone for this window
+      var dropZone=winEl.querySelector('[data-drop-zone]');
+      dropZone.addEventListener('dragover',function(e){
+        e.preventDefault();
+        winEl.classList.add('drop-target');
+      });
+      dropZone.addEventListener('dragleave',function(){
+        winEl.classList.remove('drop-target');
+      });
+      dropZone.addEventListener('drop',function(e){
+        e.preventDefault();
+        winEl.classList.remove('drop-target');
+        var noteId=e.dataTransfer.getData('text/note-id');
+        if(noteId && win.notes.indexOf(noteId)===-1){
+          win.notes.push(noteId);
+          renderChatGrid();
+        }
+      });
+
+      // Close window button
+      winEl.querySelector('[data-close-win]').onclick=function(){
+        if(chatWindows.length>1){
+          chatWindows.splice(idx,1);
+          renderChatGrid();
+        }
+      };
+
+      // Remove note from window
+      winEl.querySelectorAll('[data-remove-note]').forEach(function(btn){
+        btn.onclick=function(){
+          var noteId=btn.getAttribute('data-note-id');
+          win.notes=win.notes.filter(function(id){return id!==noteId});
+          renderChatGrid();
+        };
+      });
+    });
+  }
+
+  // Make note items draggable to chat workspace
+  function makeNotesDraggable(){
+    noteList.querySelectorAll('.note-item').forEach(function(el){
+      el.setAttribute('draggable','true');
+      el.addEventListener('dragstart',function(e){
+        var noteId=el.getAttribute('data-id');
+        e.dataTransfer.setData('text/note-id',noteId);
+        e.dataTransfer.effectAllowed='copy';
+        // If chat workspace is open, highlight drop zones
+        if(chatWorkspace.classList.contains('open')){
+          document.querySelectorAll('.chat-window').forEach(function(w){w.classList.add('drop-target')});
+        }
+      });
+      el.addEventListener('dragend',function(){
+        document.querySelectorAll('.chat-window').forEach(function(w){w.classList.remove('drop-target')});
+      });
+    });
+  }
+
+  // Override renderList to make notes draggable after rendering
+  var originalRenderList=renderList;
+  renderList=function(){
+    originalRenderList();
+    makeNotesDraggable();
+  };
+
+  // Also allow dragging to the quad logo to open chat and add to first window
+  quadLogo.addEventListener('dragover',function(e){
+    e.preventDefault();
+    quadLogo.style.transform='rotate(180deg) scale(1.2)';
+  });
+  quadLogo.addEventListener('dragleave',function(){
+    quadLogo.style.transform='';
+  });
+  quadLogo.addEventListener('drop',function(e){
+    e.preventDefault();
+    quadLogo.style.transform='';
+    var noteId=e.dataTransfer.getData('text/note-id');
+    if(noteId){
+      chatWorkspace.classList.add('open');
+      quadLogo.classList.add('spinning');
+      if(chatWindows.length===0){
+        for(var i=0;i<chatLayout;i++) addChatWindow();
+      }
+      // Add to first window
+      if(chatWindows[0].notes.indexOf(noteId)===-1){
+        chatWindows[0].notes.push(noteId);
+      }
+      renderChatGrid();
+    }
+  });
+
+  // Re-run renderList to apply draggable to existing notes
+  makeNotesDraggable();
 })();
 </script>
 
