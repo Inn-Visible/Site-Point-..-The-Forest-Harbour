@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Alchemist's Garden · Organic Chemistry</title>
+<style>
+  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;
+    --red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--purple:#8b5fbf;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --serif:Georgia,"Times New Roman",serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  ::selection{background:rgba(88,163,106,0.25)}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--line);flex-shrink:0;z-index:20}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand-name{font-size:13px;letter-spacing:.25em;color:var(--purple)}
+  .brand-sub{font-size:9px;letter-spacing:.12em;color:#3a4a5c;margin-top:1px;font-style:italic;font-family:var(--serif)}
+  .hdr-stats{display:flex;gap:12px;align-items:center}
+  .stat{text-align:center}
+  .stat .num{font-size:14px;color:var(--green);font-family:var(--serif)}
+  .stat .lbl{font-size:8px;color:#3a4a5c;letter-spacing:.15em}
+  .back{color:var(--dim);text-decoration:none;font-size:11px;letter-spacing:.12em}
+  .back:hover{color:var(--ink)}
+
+  .main{display:flex;flex:1;overflow:hidden}
+
+  /* Left - reagent shelf */
+  .shelf{width:200px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;overflow:hidden}
+  .shelf-title{font-size:9px;letter-spacing:.2em;color:#5c6875;padding:10px 12px 6px}
+  .shelf-scroll{flex:1;overflow-y:auto;padding:0 8px 8px}
+  .reagent{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid transparent;cursor:grab;transition:all .15s;margin-bottom:4px;border-radius:2px}
+  .reagent:hover{border-color:var(--line);background:rgba(139,95,191,0.05)}
+  .reagent.dragging{opacity:0.4}
+  .reagent .flask{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid rgba(139,95,191,0.3)}
+  .reagent .info{flex:1;min-width:0}
+  .reagent .name{font-size:10px;color:var(--ink);letter-spacing:.05em}
+  .reagent .formula{font-size:9px;color:#5c6875;letter-spacing:.05em}
+  .reagent .desc{font-size:8px;color:#3a4a5c;margin-top:2px;line-height:1.4}
+
+  /* Center - the workbench */
+  .bench{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .bench-bg{position:absolute;inset:0;pointer-events:none;opacity:0.03}
+
+  .workspace{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:20px}
+
+  /* The molecule display */
+  .mol-area{position:relative;width:100%;max-width:600px;min-height:300px;border:1px dashed var(--line);border-radius:4px;background:rgba(14,20,27,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color .3s}
+  .mol-area.drag-over{border-color:var(--purple);background:rgba(139,95,191,0.05)}
+  .mol-area .hint{font:italic 13px var(--serif);color:#3a4a5c;text-align:center;padding:20px}
+
+  /* Chain display */
+  .chain{display:flex;align-items:center;gap:0;padding:20px;position:relative}
+  .carbon{width:44px;height:44px;border-radius:50%;border:2px solid var(--dim);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--dim);position:relative;transition:all .3s;background:var(--bg)}
+  .carbon.has-group{border-color:var(--green);color:var(--green)}
+  .carbon .group-label{position:absolute;top:-18px;font-size:9px;color:var(--gold);white-space:nowrap;letter-spacing:.05em}
+  .carbon .group-sub{position:absolute;bottom:-16px;font-size:8px;color:#5c6875;white-space:nowrap}
+  .bond{width:20px;height:2px;background:var(--line);position:relative}
+  .bond::before,.bond::after{content:'';position:absolute;width:4px;height:4px;border-radius:50%;background:var(--line);top:-1px}
+  .bond::before{left:-2px}.bond::after{right:-2px}
+
+  /* Molecule name reveal */
+  .mol-name{margin-top:20px;text-align:center;min-height:40px}
+  .mol-name .name{font:italic 18px var(--serif);color:var(--green);opacity:0;transition:opacity .5s}
+  .mol-name .name.show{opacity:1}
+  .mol-name .iupac{font-size:10px;color:#5c6875;letter-spacing:.1em;margin-top:4px;opacity:0;transition:opacity .5s .2s}
+  .mol-name .iupac.show{opacity:1}
+  .mol-name .type{font-size:9px;color:var(--purple);letter-spacing:.15em;margin-top:6px;opacity:0;transition:opacity .5s .4s}
+  .mol-name .type.show{opacity:1}
+
+  /* Reaction animation */
+  .reaction-flash{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s}
+  .reaction-flash.active{opacity:1;background:radial-gradient(circle at center,rgba(88,163,106,0.15),transparent 70%)}
+
+  /* Controls */
+  .bench-controls{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--line);justify-content:center;flex-wrap:wrap}
+  .ctrl-btn{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:6px 12px;cursor:pointer;transition:all .15s}
+  .ctrl-btn:hover{border-color:var(--dim);color:var(--ink)}
+  .ctrl-btn.active{border-color:var(--purple);color:var(--purple)}
+  .ctrl-btn.green{border-color:var(--green);color:var(--green)}
+  .ctrl-btn.green:hover{background:var(--green);color:var(--bg)}
+
+  /* Right - garden / discoveries */
+  .garden{width:240px;border-left:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;overflow:hidden}
+  .garden-title{font-size:9px;letter-spacing:.2em;color:#5c6875;padding:10px 12px 6px;display:flex;justify-content:space-between;align-items:center}
+  .garden-scroll{flex:1;overflow-y:auto;padding:0 8px 8px}
+  .discovery{padding:8px;border:1px solid rgba(34,48,65,0.5);margin-bottom:4px;border-radius:2px;transition:all .15s}
+  .discovery:hover{border-color:var(--line);background:rgba(88,163,106,0.03)}
+  .discovery.new{animation:glow 1s ease-out;border-color:var(--green)}
+  @keyframes glow{0%{box-shadow:0 0 12px rgba(88,163,106,0.4)}100%{box-shadow:none}}
+  .discovery .d-name{font:italic 11px var(--serif);color:var(--green)}
+  .discovery .d-formula{font-size:9px;color:#5c6875;margin-top:2px}
+  .discovery .d-type{font-size:8px;color:var(--purple);letter-spacing:.1em;margin-top:3px}
+  .discovery .d-time{font-size:8px;color:#3a4a5c;margin-top:2px}
+
+  /* Reaction log */
+  .reaction-log{border-top:1px solid var(--line);padding:8px 12px;max-height:120px;overflow-y:auto}
+  .reaction-log .title{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-bottom:6px}
+  .log-entry{font-size:9px;color:var(--dim);line-height:1.6;padding:2px 0;border-bottom:1px solid rgba(34,48,65,0.3)}
+  .log-entry .arrow{color:var(--green)}
+  .log-entry .reagent-name{color:var(--gold)}
+
+  /* Toast */
+  .toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel);border:1px solid var(--green);padding:10px 20px;
+    font:12px var(--serif);font-style:italic;color:var(--green);
+    opacity:0;transition:all .4s;z-index:100;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Chain selector */
+  .chain-sel{display:flex;gap:4px;align-items:center}
+  .chain-btn{width:28px;height:28px;border:1px solid var(--line);background:none;color:var(--dim);font:11px var(--mono);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+  .chain-btn:hover{border-color:var(--dim);color:var(--ink)}
+  .chain-btn.active{border-color:var(--purple);color:var(--purple)}
+
+  @media(max-width:900px){
+    .shelf{width:160px}
+    .garden{width:200px}
+  }
+  @media(max-width:700px){
+    .shelf,.garden{display:none}
+    .brand-sub{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="20" height="20" viewBox="0 0 40 40" fill="none" stroke="#8b5fbf" stroke-width="2">
+      <path d="M15,35 L15,20 L8,8 L32,8 L25,20 L25,35 Z"/>
+      <line x1="12" y1="8" x2="28" y2="8"/>
+      <circle cx="20" cy="26" r="3" fill="rgba(88,163,106,0.3)" stroke="#58a36a"/>
+    </svg>
+    <div>
+      <div class="brand-name">THE ALCHEMIST'S GARDEN</div>
+      <div class="brand-sub">organic chemistry · learn by growing</div>
+    </div>
+  </div>
+  <div class="hdr-stats">
+    <div class="stat"><div class="num" id="discoveryCount">0</div><div class="lbl">discovered</div></div>
+    <div class="stat"><div class="num" id="reactionCount">0</div><div class="lbl">reactions</div></div>
+    <a class="back" href="axiom.html">axiom ↩</a>
+  </div>
+</header>
+
+<div class="main">
+  <!-- Reagent Shelf -->
+  <div class="shelf">
+    <div class="shelf-title">REAGENT SHELF</div>
+    <div class="shelf-scroll" id="shelf"></div>
+  </div>
+
+  <!-- Workbench -->
+  <div class="bench">
+    <div class="bench-bg">
+      <svg width="100%" height="100%" viewBox="0 0 600 400">
+        <path d="M100,350 Q120,250 100,180 Q130,200 140,150 Q150,200 170,180 Q150,250 100,350Z" fill="none" stroke="#58a36a" stroke-width="1"/>
+        <path d="M500,380 Q480,280 500,210 Q470,230 460,180 Q450,230 430,210 Q450,280 500,380Z" fill="none" stroke="#58a36a" stroke-width="1"/>
+        <path d="M300,400 Q295,340 290,300 Q300,310 305,280 Q310,310 315,300 Q310,340 300,400Z" fill="none" stroke="#58a36a" stroke-width="0.8"/>
+        <path d="M150,400 Q150,200 300,150 Q450,200 450,400" fill="none" stroke="#8b5fbf" stroke-width="0.8"/>
+      </svg>
+    </div>
+
+    <div class="workspace">
+      <div class="mol-area" id="molArea">
+        <div class="reaction-flash" id="reactionFlash"></div>
+        <div id="molDisplay">
+          <div class="hint">drag reagents from the shelf onto the carbon chain<br><span style="font-size:10px;color:#2a3a4c">each combination grows a new molecule in your garden</span></div>
+        </div>
+        <div class="mol-name" id="molName">
+          <div class="name" id="nameText"></div>
+          <div class="iupac" id="iupacText"></div>
+          <div class="type" id="typeText"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bench-controls">
+      <div class="chain-sel">
+        <span style="font-size:9px;color:#5c6875;margin-right:4px">chain:</span>
+        <button class="chain-btn" data-chain="1">C1</button>
+        <button class="chain-btn active" data-chain="2">C2</button>
+        <button class="chain-btn" data-chain="3">C3</button>
+        <button class="chain-btn" data-chain="4">C4</button>
+        <button class="chain-btn" data-chain="5">C5</button>
+        <button class="chain-btn" data-chain="6">C6</button>
+      </div>
+      <button class="ctrl-btn" id="clearBtn">clear bench</button>
+      <button class="ctrl-btn" id="reactBtn">⚗ react!</button>
+      <button class="ctrl-btn" id="hintBtn">hint</button>
+    </div>
+  </div>
+
+  <!-- Garden / Discoveries -->
+  <div class="garden">
+    <div class="garden-title">
+      <span>THE GARDEN</span>
+      <span style="font-size:8px;color:#3a4a5c" id="gardenProgress">0 / ??</span>
+    </div>
+    <div class="garden-scroll" id="gardenList">
+      <div style="padding:20px;text-align:center">
+        <div style="font:italic 12px var(--serif);color:#3a4a5c">the garden is bare</div>
+        <div style="font-size:9px;color:#2a3a4c;margin-top:4px">grow your first molecule</div>
+      </div>
+    </div>
+    <div class="reaction-log" id="reactionLog">
+      <div class="title">REACTION LOG</div>
+      <div id="logEntries"><span style="font-size:9px;color:#3a4a5c;font-style:italic">no reactions yet</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ─── Reagents (Functional Groups) ───
+  var REAGENTS=[
+    {id:'oh',name:'Hydroxyl',formula:'-OH',emoji:'💧',color:'#3f7fc1',
+      desc:'makes alcohols. the gateway group.',category:'nucleophile'},
+    {id:'nh2',name:'Amine',formula:'-NH₂',emoji:'🫧',color:'#8b5fbf',
+      desc:'nitrogen base. smells like fish.',category:'nucleophile'},
+    {id:'sh',name:'Thiol',formula:'-SH',emoji:'🥚',color:'#d9a83a',
+      desc:'sulfur cousin of hydroxyl. pungent.',category:'nucleophile'},
+    {id:'f',name:'Fluoro',formula:'-F',emoji:'⚡',color:'#58a36a',
+      desc:'halogen. tiny and electronegative.',category:'halogen'},
+    {id:'cl',name:'Chloro',formula:'-Cl',emoji:'🟢',color:'#58a36a',
+      desc:'halogen. the classic substituent.',category:'halogen'},
+    {id:'br',name:'Bromo',formula:'-Br',emoji:'🟤',color:'#c8452c',
+      desc:'halogen. heavier than chlorine.',category:'halogen'},
+    {id:'ch3',name:'Methyl',formula:'-CH₃',emoji:'🌱',color:'#58a36a',
+      desc:'the simplest alkyl. building block.',category:'alkyl'},
+    {id:'c2h5',name:'Ethyl',formula:'-C₂H₅',emoji:'🌿',color:'#58a36a',
+      desc:'two-carbon chain. gets things going.',category:'alkyl'},
+    {id:'cooh',name:'Carboxyl',formula:'-COOH',emoji:'🍋',color:'#d9a83a',
+      desc:'acid group. sour like vinegar.',category:'acid'},
+    {id:'cho',name:'Aldehyde',formula:'-CHO',emoji:'🍎',color:'#c8452c',
+      desc:'terminal carbonyl. reactive end.',category:'carbonyl'},
+    {id:'no2',name:'Nitro',formula:'-NO₂',emoji:'💥',color:'#c8452c',
+      desc:'explosive potential. electron hungry.',category:'electrophile'},
+    {id:'cn',name:'Cyano',formula:'-CN',emoji:'🔗',color:'#3f7fc1',
+      desc:'triple bond to nitrogen. nitrile.',category:'electrophile'},
+    {id:'och3',name:'Methoxy',formula:'-OCH₃',emoji:'✨',color:'#8b5fbf',
+      desc:'ether group. anisole vibes.',category:'ether'},
+    {id:'po4',name:'Phosphate',formula:'-PO₄',emoji:'🦴',color:'#d9a83a',
+      desc:'the energy carrier. ATP backbone.',category:'acid'},
+  ];
+
+  // ─── Molecule Database ───
+  // Key = sorted groups on chain, value = molecule info
+  var MOLECULES={
+    // Single groups on ethane
+    'oh':{name:'Ethanol',iupac:'ethan-1-ol',type:'alcohol',formula:'C₂H₅OH',desc:'the drinking alcohol. fermentation product.'},
+    'nh2':{name:'Ethylamine',iupac:'ethan-1-amine',type:'amine',formula:'C₂H₅NH₂',desc:'fishy smell. basic. used in synthesis.'},
+    'sh':{name:'Ethanethiol',iupac:'ethanethiol',type:'thiol',formula:'C₂H₅SH',desc:'added to natural gas for leak detection.'},
+    'f':{name:'Fluoroethane',iupac:'fluoroethane',type:'haloalkane',formula:'C₂H₅F',desc:'refrigerant. early anesthetic.'},
+    'cl':{name:'Chloroethane',iupac:'chloroethane',type:'haloalkane',formula:'C₂H₅Cl',desc:'topical anesthetic. spray freeze.'},
+    'br':{name:'Bromoethane',iupac:'bromoethane',type:'haloalkane',formula:'C₂H₅Br',desc:'ethylating agent in synthesis.'},
+    'ch3':{name:'Propane',iupac:'propane',type:'alkane',formula:'C₃H₈',desc:'bbq gas. three carbons simple.'},
+    'c2h5':{name:'Butane',iupac:'butane',type:'alkane',formula:'C₄H₁₀',desc:'lighter fluid. four carbons.'},
+    'cooh':{name:'Acetic Acid',iupac:'ethanoic acid',type:'carboxylic acid',formula:'CH₃COOH',desc:'vinegar. the acid of life.'},
+    'cho':{name:'Acetaldehyde',iupac:'ethanal',type:'aldehyde',formula:'CH₃CHO',desc:'the hangover molecule. ethanol metabolite.'},
+    'no2':{name:'Nitroethane',iupac:'nitroethane',type:'nitroalkane',formula:'C₂H₅NO₂',desc:'solvent. racing fuel additive.'},
+    'cn':{name:'Propanenitrile',iupac:'propanenitrile',type:'nitrile',formula:'CH₃CH₂CN',desc:'acrylonitrile precursor.'},
+    'och3':{name:'Methoxyethane',iupac:'ethyl methyl ether',type:'ether',formula:'CH₃OCH₂CH₃',desc:'early anesthetic solvent.'},
+    'po4':{name:'Ethyl Phosphate',iupac:'ethyl phosphate',type:'organophosphate',formula:'C₂H₅OPO₃H₂',desc:'phosphorylation agent.'},
+
+    // Two groups
+    'oh,oh':{name:'Ethylene Glycol',iupac:'ethane-1,2-diol',type:'diol',formula:'HOCH₂CH₂OH',desc:'antifreeze. sweet but deadly.'},
+    'oh,cl':{name:'Chloroethanol',iupac:'2-chloroethan-1-ol',type:'halohydrin',formula:'ClCH₂CH₂OH',desc:'chemical warfare precursor. ethylene oxide route.'},
+    'oh,cooh':{name:'Glycolic Acid',iupac:'2-hydroxyethanoic acid',type:'hydroxy acid',formula:'HOCH₂COOH',desc:'smallest alpha-hydroxy acid. skincare.'},
+    'oh,no2':{name:'Nitroethanol',iupac:'2-nitroethan-1-ol',type:'nitro alcohol',formula:'HOCH₂CH₂NO₂',desc:'synthetic intermediate.'},
+    'nh2,cooh':{name:'Glycine',iupac:'2-aminoethanoic acid',type:'amino acid',formula:'NH₂CH₂COOH',desc:'simplest amino acid. protein building block!'},
+    'nh2,oh':{name:'Ethanolamine',iupac:'2-aminoethan-1-ol',type:'amino alcohol',formula:'NH₂CH₂CH₂OH',desc:'cell membrane component. phospholipid head.'},
+    'cl,cl':{name:'Dichloroethane',iupac:'1,2-dichloroethane',type:'dihalide',formula:'ClCH₂CH₂Cl',desc:'PVC precursor. industrial solvent.'},
+    'f,f':{name:'Difluoroethane',iupac:'1,1-difluoroethane',type:'dihalide',formula:'CHF₂CH₃',desc:'refrigerant R-152a.'},
+    'ch3,oh':{name:'Isopropanol',iupac:'propan-2-ol',type:'alcohol',formula:'(CH₃)₂CHOH',desc:'rubbing alcohol. hand sanitizer.'},
+    'ch3,ch3':{name:'Isobutane',iupac:'2-methylpropane',type:'alkane',formula:'(CH₃)₃CH',desc:'refrigerant. aerosol propellant.'},
+    'ch3,cooh':{name:'Propionic Acid',iupac:'propanoic acid',type:'carboxylic acid',formula:'CH₃CH₂COOH',desc:'preservative. swiss cheese smell.'},
+    'cooh,cooh':{name:'Oxalic Acid',iupac:'ethanedioic acid',type:'dicarboxylic acid',formula:'HOOCCOOH',desc:'found in rhubarb. kidney stones.'},
+    'cho,oh':{name:'Glycolaldehyde',iupac:'2-hydroxyethanal',type:'hydroxy aldehyde',formula:'HOCH₂CHO',desc:'sugar precursor. found in interstellar space.'},
+    'cn,oh':{name:'Cyanohydrin',iupac:'2-hydroxyacetonitrile',type:'cyanohydrin',formula:'HOCH₂CN',desc:'formed from HCN + formaldehyde.'},
+    'sh,sh':{name:'Dithioethane',iupac:'1,2-ethanedithiol',type:'dithiol',formula:'HSCH₂CH₂SH',desc:'stink bomb chemical. odorant.'},
+    'och3,oh':{name:'2-Methoxyethanol',iupac:'2-methoxyethan-1-ol',type:'ether alcohol',formula:'CH₃OCH₂CH₂OH',desc:'industrial solvent. glycol ether.'},
+
+    // Three groups
+    'oh,oh,oh':{name:'Glycerol',iupac:'propane-1,2,3-triol',type:'triol',formula:'HOCH₂CH(OH)CH₂OH',desc:'fat backbone. humectant. sweet.'},
+    'nh2,cooh,oh':{name:'Serine',iupac:'2-amino-3-hydroxypropanoic acid',type:'amino acid',formula:'HOCH₂CH(NH₂)COOH',desc:'amino acid. enzyme active sites.'},
+    'nh2,cooh,sh':{name:'Cysteine',iupac:'2-amino-3-mercaptopropanoic acid',type:'amino acid',formula:'HSCH₂CH(NH₂)COOH',desc:'amino acid. disulfide bonds in proteins!'},
+    'nh2,cooh,ch3':{name:'Alanine',iupac:'2-aminopropanoic acid',type:'amino acid',formula:'CH₃CH(NH₂)COOH',desc:'simplest chiral amino acid.'},
+    'nh2,cooh,oh,sh':{name:'...getting complex',iupac:'polyfunctional',type:'mixed',formula:'see structure',desc:'nature loves stacking groups. this is biochemistry now.'},
+  };
+
+  // ─── State ───
+  var chainLen=2;
+  var chain= []; // array of {groups:[]} for each carbon
+  var discoveries={}; // key -> {name, time}
+  var reactionLog=[];
+  var totalReactions=0;
+  var dragging=null;
+
+  // Load saved
+  try{
+    var saved=JSON.parse(localStorage.getItem('alchemy_garden')||'null');
+    if(saved){discoveries=saved.discoveries||{};reactionLog=saved.log||[];totalReactions=saved.reactions||0;}
+  }catch(e){}
+
+  function save(){
+    localStorage.setItem('alchemy_garden',JSON.stringify({discoveries:discoveries,log:reactionLog,reactions:totalReactions}));
+  }
+
+  // ─── Build shelf ───
+  function buildShelf(){
+    var el=document.getElementById('shelf');
+    el.innerHTML='';
+    REAGENTS.forEach(function(r){
+      var div=document.createElement('div');
+      div.className='reagent';
+      div.setAttribute('data-id',r.id);
+      div.draggable=true;
+      div.innerHTML='<div class="flask" style="background:'+r.color+'15;border-color:'+r.color+'40">'+r.emoji+'</div>'+
+        '<div class="info"><div class="name">'+r.name+'</div><div class="formula">'+r.formula+'</div><div class="desc">'+r.desc+'</div></div>';
+      div.addEventListener('dragstart',function(e){
+        dragging=r.id;
+        div.classList.add('dragging');
+        e.dataTransfer.setData('text/plain',r.id);
+        e.dataTransfer.effectAllowed='copy';
+      });
+      div.addEventListener('dragend',function(){div.classList.remove('dragging');dragging=null;});
+      el.appendChild(div);
+    });
+  }
+
+  // ─── Chain management ───
+  function initChain(){
+    chain=[];
+    for(var i=0;i<chainLen;i++) chain.push({groups:[]});
+  }
+
+  function renderChain(){
+    var display=document.getElementById('molDisplay');
+    if(chain.every(function(c){return c.groups.length===0})){
+      display.innerHTML='<div class="hint">drag reagents from the shelf onto the carbon chain<br><span style="font-size:10px;color:#2a3a4c">each combination grows a new molecule in your garden</span></div>';
+      document.getElementById('nameText').classList.remove('show');
+      document.getElementById('iupacText').classList.remove('show');
+      document.getElementById('typeText').classList.remove('show');
+      return;
+    }
+    var html='<div class="chain">';
+    chain.forEach(function(c,i){
+      if(i>0) html+='<div class="bond"></div>';
+      var hasG=c.groups.length>0;
+      html+='<div class="carbon'+(hasG?' has-group':'')+'" data-pos="'+i+'">';
+      html+='C';
+      if(hasG){
+        var topGroup=c.groups[c.groups.length-1];
+        var r=REAGENTS.find(function(x){return x.id===topGroup});
+        if(r) html+='<div class="group-label" style="color:'+r.color+'">'+r.formula+'</div>';
+        if(c.groups.length>1) html+='<div class="group-sub">+'+( c.groups.length-1)+' more</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+    display.innerHTML=html;
+
+    // Wire up drop zones on carbons
+    display.querySelectorAll('.carbon').forEach(function(el){
+      el.addEventListener('dragover',function(e){e.preventDefault();e.dataTransfer.dropEffect='copy';el.style.borderColor='var(--purple)';el.style.transform='scale(1.1)';});
+      el.addEventListener('dragleave',function(){el.style.borderColor='';el.style.transform='';});
+      el.addEventListener('drop',function(e){
+        e.preventDefault();
+        el.style.borderColor='';el.style.transform='';
+        var pos=parseInt(el.getAttribute('data-pos'));
+        var rid=e.dataTransfer.getData('text/plain');
+        addGroup(pos,rid);
+      });
+      // Click to remove last group
+      el.addEventListener('click',function(){
+        var pos=parseInt(el.getAttribute('data-pos'));
+        if(chain[pos].groups.length>0){
+          chain[pos].groups.pop();
+          renderChain();identifyMolecule();
+        }
+      });
+    });
+  }
+
+  function addGroup(pos,reagentId){
+    if(pos<0||pos>=chain.length) return;
+    if(chain[pos].groups.length>=3) {showToast('carbon is full (max 3 substituents)');return;}
+    if(chain[pos].groups.indexOf(reagentId)!==-1){showToast('already attached here');return;}
+    chain[pos].groups.push(reagentId);
+    renderChain();
+    identifyMolecule();
+    // flash
+    var flash=document.getElementById('reactionFlash');
+    flash.classList.add('active');
+    setTimeout(function(){flash.classList.remove('active')},400);
+  }
+
+  // ─── Identify molecule ───
+  function identifyMolecule(){
+    var allGroups=[];
+    chain.forEach(function(c){c.groups.forEach(function(g){allGroups.push(g)})});
+    if(allGroups.length===0){
+      document.getElementById('nameText').classList.remove('show');
+      document.getElementById('iupacText').classList.remove('show');
+      document.getElementById('typeText').classList.remove('show');
+      return;
+    }
+    var key=allGroups.slice().sort().join(',');
+    var mol=MOLECULES[key];
+    var nameEl=document.getElementById('nameText');
+    var iupacEl=document.getElementById('iupacText');
+    var typeEl=document.getElementById('typeText');
+
+    if(mol){
+      nameEl.textContent=mol.name;
+      iupacEl.textContent=mol.iupac+' · '+mol.formula;
+      typeEl.textContent=mol.type.toUpperCase();
+      nameEl.classList.add('show');
+      iupacEl.classList.add('show');
+      typeEl.classList.add('show');
+
+      // Check if new discovery
+      if(!discoveries[key]){
+        discoveries[key]={name:mol.name,time:Date.now(),type:mol.type,formula:mol.formula,desc:mol.desc,iupac:mol.iupac};
+        totalReactions++;
+        reactionLog.unshift({groups:allGroups,name:mol.name,time:Date.now()});
+        if(reactionLog.length>20) reactionLog.pop();
+        save();
+        showToast('✦ new discovery: '+mol.name);
+        renderGarden();
+        renderLog();
+        updateStats();
+      }
+    } else {
+      nameEl.textContent='unknown compound';
+      iupacEl.textContent=allGroups.length+' groups on C'+chainLen+' chain';
+      typeEl.textContent='try different combinations';
+      nameEl.classList.add('show');
+      iupacEl.classList.add('show');
+      typeEl.classList.add('show');
+    }
+  }
+
+  // ─── Garden ───
+  function renderGarden(){
+    var el=document.getElementById('gardenList');
+    var keys=Object.keys(discoveries);
+    if(keys.length===0){
+      el.innerHTML='<div style="padding:20px;text-align:center"><div style="font:italic 12px var(--serif);color:#3a4a5c">the garden is bare</div><div style="font-size:9px;color:#2a3a4c;margin-top:4px">grow your first molecule</div></div>';
+      return;
+    }
+    // Sort by time, newest first
+    keys.sort(function(a,b){return discoveries[b].time-discoveries[a].time});
+    var html='';
+    keys.forEach(function(k,i){
+      var d=discoveries[k];
+      var isNew=(Date.now()-d.time)<5000;
+      html+='<div class="discovery'+(isNew?' new':'')+'">'+
+        '<div class="d-name">'+d.name+'</div>'+
+        '<div class="d-formula">'+d.formula+'</div>'+
+        '<div class="d-type">'+d.type+'</div>'+
+        '<div class="d-time">'+timeAgo(d.time)+'</div>'+
+        '</div>';
+    });
+    el.innerHTML=html;
+    document.getElementById('gardenProgress').textContent=keys.length+' / '+Object.keys(MOLECULES).length;
+  }
+
+  function timeAgo(ts){
+    var d=Date.now()-ts,m=Math.floor(d/60000);
+    if(m<1)return 'just now';if(m<60)return m+'m ago';
+    var h=Math.floor(m/60);if(h<24)return h+'h ago';
+    return Math.floor(h/24)+'d ago';
+  }
+
+  // ─── Reaction Log ───
+  function renderLog(){
+    var el=document.getElementById('logEntries');
+    if(reactionLog.length===0){el.innerHTML='<span style="font-size:9px;color:#3a4a5c;font-style:italic">no reactions yet</span>';return;}
+    el.innerHTML=reactionLog.slice(0,10).map(function(e){
+      return '<div class="log-entry"><span class="reagent-name">'+e.groups.map(function(g){var r=REAGENTS.find(function(x){return x.id===g});return r?r.formula:g}).join(' + ')+'</span> <span class="arrow">→</span> '+e.name+'</div>';
+    }).join('');
+  }
+
+  function updateStats(){
+    document.getElementById('discoveryCount').textContent=Object.keys(discoveries).length;
+    document.getElementById('reactionCount').textContent=totalReactions;
+  }
+
+  // ─── Toast ───
+  function showToast(msg){
+    var t=document.getElementById('toast');
+    t.textContent=msg;t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show')},2500);
+  }
+
+  // ─── Controls ───
+  document.querySelectorAll('.chain-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.chain-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      chainLen=parseInt(btn.getAttribute('data-chain'));
+      initChain();renderChain();
+    });
+  });
+
+  document.getElementById('clearBtn').onclick=function(){initChain();renderChain();identifyMolecule()};
+
+  document.getElementById('reactBtn').onclick=function(){
+    var allGroups=[];
+    chain.forEach(function(c){c.groups.forEach(function(g){allGroups.push(g)})});
+    if(allGroups.length===0){showToast('add reagents first');return;}
+    var key=allGroups.slice().sort().join(',');
+    if(MOLECULES[key]){
+      showToast('⚗ '+MOLECULES[key].name+' — '+MOLECULES[key].desc);
+    } else {
+      // Suggest what's close
+      var suggestions=[];
+      Object.keys(MOLECULES).forEach(function(k){
+        var parts=k.split(',');
+        var overlap=parts.filter(function(p){return allGroups.indexOf(p)!==-1}).length;
+        if(overlap>=parts.length-1 && overlap>0) suggestions.push({key:k,mol:MOLECULES[k],missing:parts.filter(function(p){return allGroups.indexOf(p)===-1})});
+      });
+      if(suggestions.length>0){
+        var s=suggestions[0];
+        var need=s.missing.map(function(m){var r=REAGENTS.find(function(x){return x.id===m});return r?r.name:m}).join(', ');
+        showToast('almost! try adding: '+need);
+      } else {
+        showToast('novel compound! no record of this combination');
+      }
+    }
+    // Flash
+    var flash=document.getElementById('reactionFlash');
+    flash.classList.add('active');
+    setTimeout(function(){flash.classList.remove('active')},600);
+  };
+
+  document.getElementById('hintBtn').onclick=function(){
+    var undiscovered=Object.keys(MOLECULES).filter(function(k){return !discoveries[k]});
+    if(undiscovered.length===0){showToast('you discovered them all! ✦');return;}
+    var pick=undiscovered[Math.floor(Math.random()*undiscovered.length)];
+    var mol=MOLECULES[pick];
+    var groups=pick.split(',');
+    var hint='try: '+groups.map(function(g){var r=REAGENTS.find(function(x){return x.id===g});return r?r.name:g}).join(' + ');
+    showToast('💡 '+hint+' → '+mol.name);
+  };
+
+  // Also allow drop on the whole mol area
+  var molArea=document.getElementById('molArea');
+  molArea.addEventListener('dragover',function(e){e.preventDefault();molArea.classList.add('drag-over')});
+  molArea.addEventListener('dragleave',function(){molArea.classList.remove('drag-over')});
+  molArea.addEventListener('drop',function(e){
+    e.preventDefault();molArea.classList.remove('drag-over');
+    var rid=e.dataTransfer.getData('text/plain');
+    // Find first carbon with space, or first carbon
+    var pos=chain.findIndex(function(c){return c.groups.length<3});
+    if(pos===-1) pos=0;
+    addGroup(pos,rid);
+  });
+
+  // ─── Init ───
+  buildShelf();
+  initChain();
+  renderChain();
+  renderGarden();
+  renderLog();
+  updateStats();
+})();
+</script>
+</body>
+</html>
