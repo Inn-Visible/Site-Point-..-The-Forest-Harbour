@@ -912,7 +912,7 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
 (function(){
   function byText(sel,needle){ var els=document.querySelectorAll(sel); for(var i=0;i<els.length;i++){ if((els[i].textContent||'').indexOf(needle)>-1) return els[i]; } return null; }
   var TABS=['desk','books','rotas','purse'];
-  var LABEL={desk:'the desk \u00b7 slots & scope',books:'the books \u00b7 chain & works',rotas:'the rotas \u00b7 who holds',purse:'the purse \u00b7 budget & BonzaiCare'};
+  var LABEL={desk:'the desk \u00b7 slots & scope',books:'the books \u00b7 chain & works',rotas:'the rotas \u00b7 who holds',purse:'the purse \u00b7 budget '};
   function start(){
     if(document.getElementById('ksTabs')) return;
     var ks=document.querySelector('section.ks');
