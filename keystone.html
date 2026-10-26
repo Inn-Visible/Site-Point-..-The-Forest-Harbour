@@ -749,15 +749,15 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
 </script>
 
 <script>
-/* ---- Bonzai Care · savings steps · one goal at a time ---- */
+/* ---- BonzaiCare · savings steps · one goal at a time ---- */
 (function(){
-  var KEY='hive_piggy';
+  var KEY='hive_BonzaiCare';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } }
   function save(d){ localStorage.setItem(KEY,JSON.stringify(d)); }
   
   var sec=document.createElement('section');
   sec.style.cssText='max-width:980px;margin:30px auto;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;color:#93a1b0';
-  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">Bonzai Care · savings steps</div>'
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">BonzaiCare · savings steps</div>'
    +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">ONE GOAL · WATCH IT FILL · COUNT THE STEPS</div>'
    
    // Goal setup
@@ -912,14 +912,14 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
 (function(){
   function byText(sel,needle){ var els=document.querySelectorAll(sel); for(var i=0;i<els.length;i++){ if((els[i].textContent||'').indexOf(needle)>-1) return els[i]; } return null; }
   var TABS=['desk','books','rotas','purse'];
-  var LABEL={desk:'the desk \u00b7 slots & scope',books:'the books \u00b7 chain & works',rotas:'the rotas \u00b7 who holds',purse:'the purse \u00b7 budget & piggy'};
+  var LABEL={desk:'the desk \u00b7 slots & scope',books:'the books \u00b7 chain & works',rotas:'the rotas \u00b7 who holds',purse:'the purse \u00b7 budget & BonzaiCare'};
   function start(){
     if(document.getElementById('ksTabs')) return;
     var ks=document.querySelector('section.ks');
     var runway=byText('section','the runway \u00b7');
     var rotas=byText('section','the rotas \u00b7');
     var budget=byText('section','the budget \u00b7');
-    var piggy=byText('section','the Bonzai Care \u00b7');
+    var BonzaiCare=byText('section','the BonzaiCare \u00b7');
     if(!ks&&!rotas&&!budget) return setTimeout(start,400);
     var bar=document.createElement('div'); bar.id='ksTabs';
     bar.style.cssText='max-width:980px;margin:26px auto 0;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding:0 14px';
@@ -941,7 +941,7 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
     moveTo('books',runway);
     Array.prototype.slice.call(document.querySelectorAll('main .dock')).forEach(function(dk){ moveTo('books',dk); });
     moveTo('rotas',rotas);
-    moveTo('purse',budget); moveTo('purse',piggy);
+    moveTo('purse',budget); moveTo('purse',BonzaiCare);
     function show(t){
       if(TABS.indexOf(t)<0) t='desk';
       TABS.forEach(function(x){ P[x].style.display=(x===t)?'block':'none'; });
