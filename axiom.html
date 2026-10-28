@@ -1507,14 +1507,21 @@ function lockdoor(){
     say('the glass is ash \u00b7 reload for a bare house','#c8452c');
     setTimeout(function(){ location.reload(); },1200);
   };
-  function merge(inc){
+   function merge(inc){
     if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
     var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
     var added=0;
     inc.forEach(function(n){ if(n&&n.id&&!ids[n.id]){ n.local=true; L.unshift(n); added++; } });
     localStorage.setItem('arc.local',JSON.stringify(L));
-    say('restored \u2191 '+added+' new \u00b7 '+(inc.length-added)+' already home \u00b7 reloading ..','#58a36a');
-    setTimeout(function(){ location.reload(); },900);
+    say('restored \u2191 '+added+' new \u00b7 '+(inc.length-added)+' already home \u00b7 opening recall ..','#58a36a');
+    setTimeout(function(){
+      var tabs=document.querySelectorAll('button'), i;
+      for(i=0;i<tabs.length;i++){ if((tabs[i].textContent||'').trim()==='workbench'){ tabs[i].click(); break; } }
+      setTimeout(function(){
+        var bs=document.querySelectorAll('button'), j;
+        for(j=0;j<bs.length;j++){ if((bs[j].textContent||'').trim()==='\u2190 recall'){ bs[j].click(); break; } }
+      },250);
+    },300);
   }
   row.querySelector('#stIn').onchange=function(){
     var f=this.files&&this.files[0]; if(!f){ say('no file picked'); return; }
