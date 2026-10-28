@@ -162,7 +162,6 @@ function lockdoor(){
       <line x1="285" y1="35" x2="285" y2="15" stroke-dasharray="3 4"/>
     </svg>
     <div class="meta">FIG 1.1: internal routing of the primary node.</div>
-    
   </section>
 
   <section class="dock">
@@ -252,7 +251,7 @@ function lockdoor(){
   else (document.querySelector('main')||document.body).insertBefore(sec,(document.querySelector('main')||document.body).firstChild);
   function glyph(h){ return (h>=6&&h<18)?'\u2600':'\u263e'; }
   function hourIn(tz){ try{ return +new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour:'numeric',hour12:false}).format(new Date()); }catch(e){ return 12; } }
-   function fmtClock(tz){
+  function fmtClock(tz){
     try{
       if(H24){ var t=new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).split(':');
         return String(+t[0]).padStart(2,'0')+'<i class="hvb">:</i>'+(t[1]||'00'); }
@@ -319,11 +318,11 @@ function lockdoor(){
   elL.style.color='#93a1b0';
   var elW=document.createElement('div'); elW.style.cssText='margin-top:8px;color:#93a1b0';
   var elB=document.createElement('div'); elB.style.cssText='margin-top:8px';
-    var elH=document.createElement('div'); elH.style.cssText='margin-top:8px';
+  var elH=document.createElement('div'); elH.style.cssText='margin-top:8px';
   var elF=document.createElement('div'); elF.style.cssText='margin-top:8px;color:#93a1b0';
   var elA=document.createElement('div'); elA.style.cssText='margin-top:6px;font-size:10px;letter-spacing:.16em;display:none';
   el.appendChild(elR); el.appendChild(elP); el.appendChild(document.createTextNode(' ')); el.appendChild(elL); el.appendChild(elS);
-   el.appendChild(elW); el.appendChild(elH); el.appendChild(elB); el.appendChild(elF); el.appendChild(elA);
+  el.appendChild(elW); el.appendChild(elH); el.appendChild(elB); el.appendChild(elF); el.appendChild(elA);
   var od=document.getElementById('obsdeck');
   if(od&&od.parentNode) od.parentNode.insertBefore(el,od.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(el,f); }
@@ -346,7 +345,7 @@ function lockdoor(){
     if(c<=77) return 'snow over the shore';
     if(c<=82) return 'squalls off the bay';
     if(c<=94) return 'the lake breathes hard';
-     return 'the lake growls';
+    return 'the lake growls';
   }
   function wicon(code,wt){
     if(code===0) return wt==='night'?'\u263e':'\u2600';
@@ -369,10 +368,10 @@ function lockdoor(){
   }
   function paint(j,stale){
     var c=j.current;
-         var tArr=trendArrow('hive_wx_tlast',c.temperature_2m,0.3), hArr=trendArrow('hive_wx_hlast',c.relative_humidity_2m,2);
+    var tArr=trendArrow('hive_wx_tlast',c.temperature_2m,0.3), hArr=trendArrow('hive_wx_hlast',c.relative_humidity_2m,2);
     elW.innerHTML='<span style="font-size:15px;color:#e8e4d8">'+wicon(c.weather_code,watch(new Date()))+'</span> <b style="color:#e8e4d8;font-size:13px">'+Math.round(c.temperature_2m)+'\u00b0 '+tArr+'</b> \u00b7 wind '+Math.round(c.wind_speed_10m)+' \u00b7 cloud '+c.cloud_cover+'% \u00b7 humid '+(c.relative_humidity_2m!=null?Math.round(c.relative_humidity_2m)+'% '+hArr:'\u2014')+' \u00b7 '+desc(c.weather_code)+(stale?' \u00b7 last light':'');
     var hrs=(j.hourly&&j.hourly.precipitation_probability)?j.hourly.precipitation_probability.slice(new Date().getHours(),new Date().getHours()+12):[];
-      elB.innerHTML='<span style="color:#5c6875">next 12h rain </span>'+hrs.map(function(p,idx){ p=p||0;
+    elB.innerHTML='<span style="color:#5c6875">next 12h rain </span>'+hrs.map(function(p,idx){ p=p||0;
       return '<i style="display:inline-block;width:7px;margin:0 1px;background:rgba(63,127,193,'+(0.15+p/140).toFixed(2)+');height:'+(3+Math.round(p*0.22))+'px;vertical-align:bottom;transform-origin:bottom;animation:hivebar 2.8s ease-in-out '+(idx*0.12).toFixed(2)+'s infinite alternate"></i>'; }).join('');
     var rh=c.relative_humidity_2m;
     if(rh!=null){ var lit=Math.max(1,Math.min(10,Math.round(rh/10))), seg='';
@@ -386,7 +385,7 @@ function lockdoor(){
     function mx(a){ return a.length?Math.max.apply(null,a):null; }
     function av(a){ return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null; }
     var ts=sl(h.temperature_2m), fs=sl(h.apparent_temperature), ws=sl(h.wind_speed_10m), cs=sl(h.cloud_cover);
-       var lo=mn(ts), flo=mn(fs), whi=mx(ws), cav=av(cs);
+    var lo=mn(ts), flo=mn(fs), whi=mx(ws), cav=av(cs);
     var fhi=mx(fs), dws=sl(h.dew_point_2m), rhnow=c.relative_humidity_2m;
     function humidex(T,Td){ if(Td==null||T==null) return null;
       return T+0.5555*(6.11*Math.exp(5417.7530*(1/273.16-1/(273.15+Td)))-10); }
@@ -434,10 +433,10 @@ function lockdoor(){
 <!-- xenofolders · follows the schema · workbench persists with pages & sizing -->
 <script>
 (function(){
-    if(window.self!==window.top) return;
+  if(window.self!==window.top) return;
   var P={axiom:'#e8e4d8',eigen:'#58a36a',baseline:'#3f7fc1',keystone:'#d9a83a'};
   var cur=localStorage.getItem('hive_pillar_theme')||'axiom';
-    function hexA(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';}
+  function hexA(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';}
   if(!document.getElementById('hvmotion')){ var stm=document.createElement('style'); stm.id='hvmotion';
     stm.textContent='@keyframes hiveblink{50%{opacity:.2}} .hvb{font-style:normal;animation:hiveblink 2s steps(1) infinite} @keyframes hivebar{from{transform:scaleY(.8)}to{transform:scaleY(1.08)}}';
     document.head.appendChild(stm); }
@@ -449,21 +448,21 @@ function lockdoor(){
   sec.appendChild(head);
   var tabs=document.createElement('div'); tabs.style.cssText='display:flex;gap:4px;padding:10px 12px 0;flex-wrap:wrap'; sec.appendChild(tabs);
   var body=document.createElement('div'); body.style.cssText='padding:16px'; sec.appendChild(body);
-    var mb=document.querySelector('.molbox');
+  var mb=document.querySelector('.molbox');
   if(mb&&mb.parentNode) mb.parentNode.insertBefore(sec,mb.nextSibling);
   else { var f=document.querySelector('footer')||document.body; f.parentNode.insertBefore(sec,f); }
   var F=['workbench','gis','cad','3d print','schematics','archive','kit','grid']; var curF='workbench';
-  
+
   // Page system state
   var curPage = parseInt(localStorage.getItem('hive_xeno_page')||'1',10);
   var fontSize = parseInt(localStorage.getItem('hive_xeno_font')||'11',10);
   var unfolded = localStorage.getItem('hive_xeno_unfolded')==='1';
-  
+
   function getPages(){
     try{ return JSON.parse(localStorage.getItem('hive_xeno_pages')||'{}'); }catch(e){ return {}; }
   }
   function savePages(p){ localStorage.setItem('hive_xeno_pages',JSON.stringify(p)); }
-     function getPageContent(target){
+  function getPageContent(target){
     var pages = getPages();
     var raw = pages[curPage] || '';
     if(!raw) return '';
@@ -485,7 +484,7 @@ function lockdoor(){
     if(!window.vaultIsOpen()){ window.vaultPrompt(function(){ ta.value=getPageContent(ta); var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; } }); return; }
     ta.value=getPageContent(ta);
   }
-  window.hiveBenchReload=reloadLeaf;  
+  window.hiveBenchReload=reloadLeaf;
   var _pend={};
   function saveEnc(txt){
     window.vaultEncrypt(txt).then(function(ct){
@@ -496,7 +495,7 @@ function lockdoor(){
       if(lbl) lbl.textContent='leaf '+curPage+' / '+totalPages();
     }).catch(function(){});
   }
-   function flushPend(){
+  function flushPend(){
     window._vaultAsked=false;
     var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; }
     if(_pend[curPage]!=null){ var t=_pend[curPage]; _pend[curPage]=null; saveEnc(t); }
@@ -516,7 +515,6 @@ function lockdoor(){
   });
   function totalPages(){
     var pages = getPages();
-    
     return Math.max(1, Object.keys(pages).length);
   }
   function wipeBench(){
@@ -526,11 +524,11 @@ function lockdoor(){
     curPage=1; localStorage.setItem('hive_xeno_page','1');
     renderBody();
   }
-  
+
   function renderTabs(){ tabs.innerHTML=''; F.forEach(function(x){ var b=document.createElement('button'); b.textContent=x;
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
     b.onclick=function(){ curF=x; renderTabs(); renderBody(); }; tabs.appendChild(b); }); }
-    
+
   function renderBody(){
     var cv0=document.getElementById('mapCv'); var s0=cv0?cv0.closest('section'):null;
     if(s0 && window._gParent && s0.parentNode===body){ window._gParent.insertBefore(s0, window._gAnchor||null); }
@@ -556,22 +554,22 @@ function lockdoor(){
         +'<button id="sz_minus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer;margin-left:auto">A\u2212</button>'
         +'<span id="sz_label" style="font-size:9px;color:#5c6875">'+fontSize+'px</span>'
         +'<button id="sz_plus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">A+</button>'
-               +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
+        +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
         +'<button id="pg_refresh" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 re-unlock</button>'
         +'<button id="pg_wipe" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>';
-           var vs=document.createElement('span'); vs.id='vState';
+      var vs=document.createElement('span'); vs.id='vState';
       vs.style.cssText='font-size:9px;letter-spacing:.15em;margin-left:10px;color:'+(window.vaultIsOpen()?'#58a36a':'#c8452c');
       vs.textContent='vault \u00b7 '+(window.vaultIsOpen()?'open':'shut');
       nav.appendChild(vs);
       body.appendChild(nav);
-      
+
       var ta=document.createElement('textarea');
       ta.style.cssText='width:100%;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:'+fontSize+'px;padding:10px;line-height:1.6;'+(unfolded?'height:70vh':'height:'+(Math.max(160,fontSize*10))+'px');
       ta.placeholder='the workbench \u00b7 leaf '+curPage+' \u00b7 drafts persist on this glass ..';
-            ta.value=getPageContent(ta);
+      ta.value=getPageContent(ta);
       ta.oninput=function(){ if(ta._pending) return; setPageContent(ta.value); };
       body.appendChild(ta);
-      
+
       // Wire up controls
       document.getElementById('pg_prev').onclick=function(){
         if(curPage>1){ curPage--; localStorage.setItem('hive_xeno_page',String(curPage)); renderBody(); }
@@ -605,10 +603,10 @@ function lockdoor(){
         renderBody();
       };
       document.getElementById('pg_wipe').onclick=wipeBench;
-            document.getElementById('pg_refresh').onclick=function(){ reloadLeaf(); };
+      document.getElementById('pg_refresh').onclick=function(){ reloadLeaf(); };
     }
-       else if(curF==='kit'||curF==='grid'){
-           body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html?v='+Date.now())+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
+    else if(curF==='kit'||curF==='grid'){
+      body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html?v='+Date.now())+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
     }
     else { var d=document.createElement('div'); d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
       d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
@@ -620,18 +618,18 @@ function lockdoor(){
   renderTabs(); renderBody();
 })();
 </script>
-  
+
 <!-- the lantern deck · 5 taps on open glass -->
 <script>
 (function(){
-    var on=localStorage.getItem('hive_pip')==='1';   var PH={hex:'#e8e4d8',rgb:'232,228,216'};
+  var on=localStorage.getItem('hive_pip')==='1';   var PH={hex:'#e8e4d8',rgb:'232,228,216'};
   var wash=null, scan=null;
   function build(){
     var st=document.createElement('style');
     st.textContent='body.pip{animation:pipflick 5s infinite}@keyframes pipflick{0%,91%,94%,98%,100%{opacity:1}92%{opacity:.85}96%{opacity:.93}}';
     document.head.appendChild(st);
     wash=document.createElement('div');
-        wash.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:998;background:'+PH.hex+';mix-blend-mode:color;opacity:.14';
+    wash.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:998;background:'+PH.hex+';mix-blend-mode:color;opacity:.14';
     scan=document.createElement('div');
     scan.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 45%,transparent 58%,rgba(0,0,0,.55))';
   }
@@ -697,10 +695,10 @@ function lockdoor(){
   cv.style.touchAction='none';
   cv.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
   cv.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
-   var STYLE={ink:'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-             night:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-             contour:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-             deep:'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'};
+  var STYLE={ink:'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+            night:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            contour:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+            deep:'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'};
   var HINT={ink:'the sleek chart \u00b7 no labels',night:'the night chart \u00b7 labeled',
             contour:'the land\u2019s bones \u00b7 modern relief',deep:'the water\u2019s floor \u00b7 darker = deeper \u00b7 zoom out for the basin'};
   var BASEBG={ink:'#0a0d12',night:'#0a0d12',contour:'#e8e4d8',deep:'#06121f'};
@@ -716,7 +714,7 @@ function lockdoor(){
   function undoMarks(){ var s=mHist.pop(); if(s==null) return; mFuture.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   function redoMarks(){ var s=mFuture.pop(); if(s==null) return; mHist.push(JSON.stringify(marks)); marks=JSON.parse(s); saveMarks(); draw(); }
   var HP=(function(){try{var s=JSON.parse(sessionStorage.getItem('hive_pos'));if(s&&s.lat!=null)return[s.lon,s.lat];}catch(e){}return[-79.0,43.54];})(); var HOME=HP;
-    function maxZ(){ return style==='deep'?9:(style==='ink'?16:18); }
+  function maxZ(){ return style==='deep'?9:(style==='ink'?16:18); }
   function world(z){ return 256*Math.pow(2,z); }
   function project(lon,lat,z){ var s=world(z);
     return [(lon+180)/360*s, (1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*s]; }
@@ -734,7 +732,7 @@ function lockdoor(){
         return direct(u).then(function(r){ if(r && (r.headers.get('content-type')||'').indexOf('svg')<0){ caches.open('hive-topo').then(function(c){c.put(u,r.clone());}).catch(function(){}); } return r; });
       });
     }catch(e){ return direct(u); } }
-   var CHARTK={};
+  var CHARTK={};
   function ensureZ(z,tx,ty){ var k=style+'_'+z+'_'+tx+'_'+ty; if(IMG[k]||pending[k]) return; pending[k]=true;
     loadTile(z,tx,ty).then(function(r){ pending[k]=false; if(!r) return;
       CHARTK[k]=(((r.headers&&r.headers.get('content-type'))||'').indexOf('svg')>-1)?1:0;
@@ -763,14 +761,14 @@ function lockdoor(){
     var tlx=cx-cv.width/2, tly=cy-cv.height/2;
     var x0=Math.floor(tlx/256), x1=Math.floor((tlx+cv.width)/256);
     var y0=Math.floor(tly/256), y1=Math.floor((tly+cv.height)/256);
-       for(var ty=y0;ty<=y1;ty++) for(var tx=x0;tx<=x1;tx++){
+    for(var ty=y0;ty<=y1;ty++) for(var tx=x0;tx<=x1;tx++){
       var k=style+'_'+zoom+'_'+tx+'_'+ty;
       var dxp=tx*256-tlx, dyp=ty*256-tly;
       if(IMG[k]){
         if(style==='night'&&!CHARTK[k]){ try{ x.filter='invert(1) hue-rotate(180deg) brightness(.82) saturate(.4)'; }catch(e){} }
         x.drawImage(IMG[k], dxp, dyp, 256,256);
         try{ x.filter='none'; }catch(e){}
-       } else {
+      } else {
         var got=false;
         for(var d=1;d<=4&&!got;d++){ var az=zoom-d; if(az<1) break; var ax=tx>>d, ay=ty>>d; var ak=style+'_'+az+'_'+ax+'_'+ay;
           if(IMG[ak]){ var ss=256/Math.pow(2,d); var sx=(tx-(ax<<d))*ss, sy=(ty-(ay<<d))*ss;
@@ -781,7 +779,7 @@ function lockdoor(){
       if(!IMG[k]) ensureZ(zoom,tx,ty);
     }
     if(showMarks) drawMarks(tlx,tly);
-        drawPing(tlx,tly);
+    drawPing(tlx,tly);
     var i=document.getElementById('mapInfo'); if(i) i.textContent=style+' \u00b7 z'+zoom+(landscape?' \u00b7 landscape':'');
   }
   function commitLift(){ if(!lifted) return; pushHist();
@@ -811,7 +809,7 @@ function lockdoor(){
     liftStart=null; }
   var lastFrac=[0,0], drag=false, lx=0, ly=0;
   cv.addEventListener('pointerdown',function(e){ e.preventDefault(); lastFrac=screenToFrac(e);
-        if(tool==='lift'){
+    if(tool==='lift'){
       if(lifted){ holdLift=true; lifted.gx=lastFrac[0]-lifted.ox; lifted.gy=lastFrac[1]-lifted.oy; return; }
       if(grabOne(lastFrac)){ holdLift=true; return; }
       startLift(e); return; }
@@ -836,12 +834,12 @@ function lockdoor(){
     if(tool==='draw'&&curStroke){ curStroke.pts.push(lastFrac); draw(); return; }
     if(!drag) return; cx-=e.clientX-lx; cy-=e.clientY-ly; lx=e.clientX; ly=e.clientY; draw();
   });
-   cv.addEventListener('pointerup',function(e){
+  cv.addEventListener('pointerup',function(e){
     if(holdLift){ holdLift=false; commitLift(); draw(); }
     else if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
     drag=false; cv.style.cursor=(tool==='pan')?'grab':'crosshair'; });
-      cv.addEventListener('pointercancel',function(e){
+  cv.addEventListener('pointercancel',function(e){
     if(holdLift){ holdLift=false; commitLift(); draw(); }
     else if(tool==='lift'&&liftSel){ endLift(e); draw(); }
     if(curStroke){ pushHist(); marks.strokes.push(curStroke); curStroke=null; saveMarks(); draw(); }
@@ -876,7 +874,7 @@ function lockdoor(){
     b.onclick=function(){ setStyle(k); }; row.appendChild(b); });
   window.hiveGround={ project:project, HOME:HOME, STYLE:STYLE, ctx:function(){ return x; }, state:function(){ return {cx:cx,cy:cy,zoom:zoom,w:cv.width,h:cv.height,style:style}; }, center:function(lon,lat){ var p=project(lon,lat,zoom); cx=p[0]; cy=p[1]; draw(); } };
 
-  /* ==== the ping \u00b7 an orb that orients, wire or no wire ==== */
+  /* ==== the ping · an orb that orients, wire or no wire ==== */
   function pingGet(){ try{ return JSON.parse(localStorage.getItem('hive_map_ping')||'null'); }catch(e){ return null; } }
   function acquirePing(){ if(!navigator.geolocation) return;
     try{ navigator.geolocation.getCurrentPosition(function(p){
@@ -910,7 +908,7 @@ function lockdoor(){
   acquirePing(); setInterval(acquirePing, 60000);
   setInterval(function(){ if(!document.hidden) draw(); }, 1400);
   (function(){ var pg=pingGet(); if(pg && Date.now()-pg.t < 864e5){ var p=project(pg.lon,pg.lat,zoom); cx=p[0]; cy=p[1]; draw(); } })();
- 
+
   /* ==== the pour · bulk-cache the cove, z10–z14, while online ==== */
   var pourBtn=document.createElement('button');
   pourBtn.textContent='pour the cove';
@@ -919,11 +917,8 @@ function lockdoor(){
     if(!navigator.onLine){ alert('the pour needs the wire'); return; }
     pourBtn.disabled=true; pourBtn.textContent='pouring ..';
     var z0=10, z1=14, total=0, done=0;
-    var p=project(HOME[0],HOME[1],z0);
-    var cx0=p[0], cy0=p[1];
     var tiles=[];
     for(var z=z0;z<=z1;z++){
-      var s=world(z);
       var p2=project(HOME[0],HOME[1],z);
       var cxz=p2[0], cyz=p2[1];
       var span=4;
@@ -951,7 +946,6 @@ function lockdoor(){
   };
   var toolRow=document.getElementById('toolRow');
   if(toolRow) toolRow.appendChild(pourBtn);
-  
 })();
 </script>
 
@@ -1067,7 +1061,7 @@ function lockdoor(){
     var sec=document.createElement('section');
     sec.style.cssText='max-width:900px;margin:26px auto 0;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;text-align:center';
     sec.innerHTML='<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:6px">the wind & the weight of the sky \u00b7 maritime</div>'
-     +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:10px">READING '+POSLABEL+' SKY \u00b7 '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W</div>'  
+     +'<div style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:10px">READING '+POSLABEL+' SKY \u00b7 '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W</div>'
       +'<div style="font-size:12px;color:#d9a83a;letter-spacing:.1em">wind '+w+' km/h from the '+comp+' \u00b7 force '+b[0]+' \u00b7 '+b[1]+'</div>'
       +'<div style="font-size:11px;color:#5c6875;font-style:italic;margin-top:6px">'+b[2]+'</div>'
       +'<div style="font-size:12px;color:#93a1b0;margin-top:10px">the sky weighs <b style="color:#e8e4d8">'+p+' hPa</b> \u00b7 '+tr+'</div>'
@@ -1075,7 +1069,7 @@ function lockdoor(){
     var f=document.querySelector('footer'); f.parentNode.insertBefore(sec,f);
     var ar=document.getElementById('atRead');
     if(ar){ var line=document.createElement('div'); line.style.cssText='font-size:10px;color:#5c6875;margin-top:12px;letter-spacing:.08em';
-      line.textContent='now \u00b7 '+p+' hPa '+tr+' \u00b7 wind '+w+' km/h '+comp+' \u00b7 force '+b[0]+' \u00b7 pos '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W';    
+      line.textContent='now \u00b7 '+p+' hPa '+tr+' \u00b7 wind '+w+' km/h '+comp+' \u00b7 force '+b[0]+' \u00b7 pos '+Math.abs(LAT).toFixed(1)+'\u00b0N '+Math.abs(LON).toFixed(1)+'\u00b0W';
       ar.appendChild(line); }
   }
   fetch('https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+'&current=temperature_2m,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m&timezone=auto')
@@ -1206,7 +1200,7 @@ function lockdoor(){
     for(var i=0;i<ds.length;i++){
       if(ds[i].getAttribute('data-ax')) return ds[i];
       var cs=getComputedStyle(ds[i]);
-           if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1) return ds[i];
+      if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1) return ds[i];
     }
     return null;
   }
@@ -1227,7 +1221,7 @@ function lockdoor(){
     var ds=document.querySelectorAll('div');
     for(var i=0;i<ds.length;i++){
       var cs=getComputedStyle(ds[i]);
-            if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1&&!ds[i].querySelector('iframe')){ fill(); return; }
+      if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1&&!ds[i].querySelector('iframe')){ fill(); return; }
     }
   },800);
 })();
@@ -1261,6 +1255,18 @@ function lockdoor(){
     var parts=[];
     ks.forEach(function(k){ var t=(pg[k]||'').trim(); if(t) parts.push('[leaf '+k+']\n'+t); });
     return {n:parts.length, body:parts.join('\n\n')};
+  }
+  function bookBodyAsync(cb){
+    var pg=leaves(), ks=Object.keys(pg).map(function(k){return +k;}).sort(function(a,b){return a-b;});
+    var parts=[], pend=0;
+    ks.forEach(function(k,i){ var t=(pg[k]||'').trim(); if(!t){ parts[i]=''; return; }
+      if(t.startsWith('{"iv":')&&window.vaultIsOpen&&window.vaultIsOpen()){ pend++;
+        window.vaultDecrypt(t).then(function(pt){ parts[i]='[leaf '+k+']\n'+pt; if(--pend===0) finish(); })
+          .catch(function(){ parts[i]='[leaf '+k+']\n'+t; if(--pend===0) finish(); });
+      } else parts[i]='[leaf '+k+']\n'+t;
+    });
+    function finish(){ var live=parts.filter(function(p){return p;}); cb({n:live.length, body:parts.join('\n\n')}); }
+    if(!pend) finish();
   }
   function parseBook(body){
     var re=/\[leaf (\d+)\]\n/g, m, segs=[];
@@ -1308,7 +1314,7 @@ function lockdoor(){
     refreshBenchView(placed);
     return placed;
   }
-    function entryBody(en){
+  function entryBody(en){
     if(!en) return '';
     if(typeof en.body==='string' && en.body.trim()) return en.body;
     var keys=['text','content','note','notes','value','data','pages','leaves'];
@@ -1319,7 +1325,7 @@ function lockdoor(){
         if(s.trim()) return s; } }
     return '';
   }
-     function miniSlate(en,src){
+  function miniSlate(en,src){
     function arcThumb(e){
       if(!e) return '';
       var s=e.img||e.image||e.thumb||e.pic||'';
@@ -1446,17 +1452,18 @@ function lockdoor(){
       +'<button id="wbNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:7px 12px;cursor:pointer">keep editing</button></div>';
     document.getElementById('wbArc').insertAdjacentElement('afterend',box);
     var bl=box.querySelector('#wbLeaf'); if(bl) bl.onclick=function(){ send(titleOf(leafTxt,'bench note'),leafTxt,['bench','leaf-'+n]); box.remove(); };
-    var bb=box.querySelector('#wbBook'); if(bb) bb.onclick=function(){ send('workbench \u00b7 the whole book \u00b7 '+bk.n+' page'+(bk.n===1?'':'s'),bk.body,['bench','book']); box.remove(); };
+    var bb=box.querySelector('#wbBook'); if(bb) bb.onclick=function(){ bookBodyAsync(function(bk2){ send('workbench \u00b7 the whole book \u00b7 '+bk2.n+' page'+(bk2.n===1?'':'s'),bk2.body,['bench','book']); box.remove(); }); };
     box.querySelector('#wbNo').onclick=function(){ box.remove(); };
   }
-     function recallBox(){
+  function recallBox(){
     var old=document.getElementById('wbRecBox'); if(old){ old.remove(); return; }
     var box=document.createElement('div'); box.id='wbRecBox';
     box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid #3f7fc1;background:#0e141b;padding:14px 16px';
     box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">recall \u00b7 the archive desk \u00b7 every note, scrollable, nothing cut</div>'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
       +'<button id="rbFresh" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 refresh list</button>'
-           +'<button id="rbZero" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">clear drawer \u2620</button>'
+      +'<button id="rbZero" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">clear drawer \u2620</button>'
+      +'<button id="rbDec" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer">decrypt \u00b7 off</button>'
       +'<span id="rbCount" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span></div>'
       +'<div id="rbList" style="max-height:56vh;overflow-y:auto;border:1px solid #223041;padding:8px"></div>'
       +'<div style="margin-top:14px;border:1px solid #d9a83a;background:rgba(217,168,58,.05);padding:12px 14px">'
@@ -1482,13 +1489,42 @@ function lockdoor(){
       if(!src&&b){ var m2=/https?:\/\/\S+\.(png|jpe?g|gif|webp)/i.exec(b); if(m2) src=m2[0]; }
       return (typeof src==='string'&&src)?src:'';
     }
+    var DEC=localStorage.getItem('hive_rb_dec')==='1';
+    var cache=window._ctCache=(window._ctCache||{});
+    function decBody(b,done){
+      var envs=b.match(/\{"iv":"[^"]+","ct":"[^"]+"\}/g)||[]; if(!envs.length){ done(b,'plain'); return; }
+      if(!window.vaultIsOpen()){ done(b,'shut'); return; }
+      var left=envs.length, out=b, failed=false;
+      envs.forEach(function(e){
+        if(cache[e]){ out=out.split(e).join(cache[e]); if(--left===0) done(out,failed?'part':'ok'); return; }
+        window.vaultDecrypt(e).then(function(pt){ cache[e]=pt; out=out.split(e).join(pt); if(--left===0) done(out,failed?'part':'ok'); })
+          .catch(function(){ failed=true; if(--left===0) done(out,'part'); });
+      });
+    }
+    function decCard(card,en){
+      var body=entryBody(en); if(body.indexOf('{"iv":"')<0) return;
+      var pv=card.querySelector('.rbPrev'), fu=card.querySelector('.rbFull');
+      if(!window.vaultIsOpen()){ if(pv) pv.textContent='sealed \u00b7 vault shut \u00b7 re-unlock then refresh'; return; }
+      if(pv) pv.textContent='decrypting ..';
+      decBody(body,function(txt,st){
+        if(st==='shut'){ if(pv) pv.textContent='sealed \u00b7 vault shut \u00b7 re-unlock then refresh'; return; }
+        var flat=txt.replace(/\s+/g,' ');
+        if(pv) pv.textContent=flat.slice(0,160)+(flat.length>160?' \u2026':'')+(st==='part'?' \u00b7 (one envelope refused)':'');
+        if(fu) fu.textContent=txt;
+      });
+    }
+    var decBtn=box.querySelector('#rbDec');
+    function decLabel(){ if(decBtn) decBtn.textContent=DEC?'decrypt \u00b7 on':'decrypt \u00b7 off'; }
+    decLabel();
+    if(decBtn) decBtn.onclick=function(){ DEC=!DEC; localStorage.setItem('hive_rb_dec',DEC?'1':'0'); decLabel();
+      if(DEC&&window.vaultPrompt&&!window.vaultIsOpen()){ window.vaultPrompt(function(){ render(); }); } else render(); };
     var sig=null;
     function render(){
       var L=LOCAL(); sig=localStorage.getItem('arc.local')||'';
       var cnt=box.querySelector('#rbCount'); if(cnt) cnt.textContent=L.length+' notes in the drawer \u00b7 scroll the pane, every one is here';
       var list=box.querySelector('#rbList'); if(!list) return;
       list.innerHTML='';
-      if(!L.length){ list.innerHTML='<div style="font-size:10px;color:#5c6875;font-style:italic">the local drawer is empty \u00b4 restore a stone or paste json below.</div>'; return; }
+      if(!L.length){ list.innerHTML='<div style="font-size:10px;color:#5c6875;font-style:italic">the local drawer is empty \u00b7 restore a stone or paste json below.</div>'; return; }
       L.forEach(function(en,i){
         var card=document.createElement('div');
         card.style.cssText='border:1px solid #223041;background:#0a0d12;padding:8px 10px;margin-bottom:8px';
@@ -1516,14 +1552,14 @@ function lockdoor(){
         };
         head.appendChild(lb);
         card.appendChild(head);
-        if(body){ var full=document.createElement('div');
+        if(body){ var full=document.createElement('div'); full.className='rbFull';
           full.style.cssText='display:none;font-size:10px;color:#93a1b0;margin-top:6px;white-space:pre-wrap;max-height:40vh;overflow-y:auto;border-top:1px dashed #223041;padding-top:6px';
           full.textContent=body;
           card.appendChild(full);
           var pv=mid.querySelector('.rbPrev');
           if(pv) pv.onclick=function(){ full.style.display=(full.style.display==='none')?'block':'none'; };
         }
-        list.appendChild(card);
+        list.appendChild(card); if(DEC) decCard(card,en);
       });
     }
     function proxy(mine,id){ var b=box.querySelector(mine); if(!b) return;
@@ -1536,7 +1572,7 @@ function lockdoor(){
       if((localStorage.getItem('arc.local')||'')!==sig) render();
     },1500);
     box.querySelector('#rbFresh').onclick=function(){ render(); if(window.hiveBenchReload) window.hiveBenchReload(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes \u00b7 bench leaf re-unlocked'; } };
-       box.querySelector('#rbZero').onclick=function(){
+    box.querySelector('#rbZero').onclick=function(){
       var L=LOCAL();
       var m=box.querySelector('#rbMsg');
       if(!L.length){ if(m){ m.style.color='#58a36a'; m.textContent='the drawer is already at zero'; } return; }
@@ -1544,7 +1580,7 @@ function lockdoor(){
       localStorage.setItem('arc.local','[]'); render();
       if(m){ m.style.color='#58a36a'; m.textContent='drawer at zero \u00b7 the shelf is bare on this glass'; }
     };
-       box.querySelector('#rbLoad').onclick=function(){
+    box.querySelector('#rbLoad').onclick=function(){
       var raw=(box.querySelector('#rbPaste').value||'').trim();
       if(!raw){ say(box,[],'paste json first'); return; }
       var obj=null; try{ obj=JSON.parse(raw); }catch(e){ say(box,[],'not valid json'); return; }
@@ -1656,7 +1692,7 @@ function lockdoor(){
         function(){ openTab(pkg); });
       } else { openTab(pkg); }
     }); }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
-    row.querySelector('#stScorch').onclick=function(){
+  row.querySelector('#stScorch').onclick=function(){
     var oldP=document.getElementById('scorchPanel'); if(oldP){ oldP.remove(); return; }
     var p=document.createElement('div'); p.id='scorchPanel';
     p.style.cssText='margin:10px auto 0;max-width:680px;border:1px solid #c8452c;background:rgba(200,69,44,.08);padding:12px 14px;text-align:left;font-size:10px;color:#93a1b0;line-height:1.9';
@@ -1686,7 +1722,7 @@ function lockdoor(){
       setTimeout(function(){ location.reload(); },1200);
     };
   };
-   function merge(inc){
+  function merge(inc){
     if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
     var L=localNotes(), ids={}; L.forEach(function(n){ ids[n.id]=1; });
     var added=0;
@@ -1708,7 +1744,7 @@ function lockdoor(){
     r.onload=function(){
       var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ say('the stone would not open \u00b7 not json','#c8452c'); return; }
       if(inc&&inc.v===2){
-                var p2=prompt('passphrase for this stone');
+        var p2=prompt('passphrase for this stone');
         if(!p2){ say('restore cancelled'); return; }
         var keyPromise=null;
         try{ keyPromise=derive(p2,unb64(inc.salt)); }catch(e){ say('the stone is rotted \u00b7 salt unreadable \u00b7 not a v2 stone','#c8452c'); return; }
@@ -1739,7 +1775,6 @@ function lockdoor(){
     r.readAsText(f);
   };
 })();
-  
 </script>
 
 <script id="hive-vault">
@@ -1747,9 +1782,9 @@ function lockdoor(){
   var _key=null;
   function b64(buf){ var a=new Uint8Array(buf), s=''; for(var i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); }
   function unb64(str){ var bin=atob(str), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
-  function derive(pass,salt){ 
+  function derive(pass,salt){
     return crypto.subtle.importKey('raw',new TextEncoder().encode(pass),{name:'PBKDF2'},false,['deriveKey'])
-      .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }); 
+      .then(function(k){ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); });
   }
   window.vaultUnlock=function(pass){
     var salt=new TextEncoder().encode('hive-vault-v0-salt');
@@ -1778,9 +1813,9 @@ function lockdoor(){
     m.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(4,6,10,.95);align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace';
     m.innerHTML='<div style="background:#0e141b;border:1px solid #223041;padding:24px;max-width:400px;text-align:center">'
       +'<div style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:14px;margin-bottom:12px">the vault is locked</div>'
-          +'<div style="font-size:10px;color:#5c6875;margin-bottom:16px">one key, many doors \u00b7 your house password opens the bench</div>'
+      +'<div style="font-size:10px;color:#5c6875;margin-bottom:16px">one key, many doors \u00b7 your house password opens the bench</div>'
       +'<input id="vaultPass" type="password" placeholder="your house password" style="width:100%;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;padding:10px;font:inherit;margin-bottom:12px">'
-          +'<button id="vaultGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:inherit;padding:8px 16px;cursor:pointer;letter-spacing:.1em">unlock</button> '
+      +'<button id="vaultGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:inherit;padding:8px 16px;cursor:pointer;letter-spacing:.1em">unlock</button> '
       +'<button id="vaultNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:inherit;padding:8px 16px;cursor:pointer;letter-spacing:.1em">not now</button>'
       +'<div id="vaultErr" style="color:#c8452c;font-size:10px;margin-top:10px;min-height:12px"></div></div>';
     document.body.appendChild(m);
@@ -1792,7 +1827,7 @@ function lockdoor(){
         if(window._vaultOnOpen) window._vaultOnOpen();
       }).catch(function(){ document.getElementById('vaultErr').textContent='the vault refused'; });
     };
-      document.getElementById('vaultPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('vaultGo').click(); });
+    document.getElementById('vaultPass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('vaultGo').click(); });
     document.getElementById('vaultNo').onclick=function(){ m.style.display='none'; };
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&m.style.display==='flex') m.style.display='none'; });
   }
@@ -1831,7 +1866,7 @@ function lockdoor(){
     var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; }
     var ta=null, ts=document.querySelectorAll('textarea');
     for(var i=0;i<ts.length;i++){ if(ts[i].offsetHeight>200){ ta=ts[i]; break; } }
-    if(ta){ ta.readOnly=false; ta.style.visibility='visible'; var raw=getPageContent(); if(raw!=='') ta.value=raw; }
+    if(ta){ ta.readOnly=false; ta.style.visibility='visible'; var raw=getPageContent(ta); if(raw!=='') ta.value=raw; }
   }
   setInterval(function(){
     if(!window.vaultIsOpen) return;
@@ -1849,7 +1884,7 @@ function lockdoor(){
 </script>
 
 <script>
-/* ==== the ping & the pour \u00b7 standalone rider \u00b7 yields if the ground already carries them ==== */
+/* ==== the ping & the pour · standalone rider · yields if the ground already carries them ==== */
 (function(){
   setTimeout(function(){
     var tr=document.getElementById('toolRow'); if(!tr) return;
@@ -1905,7 +1940,7 @@ function lockdoor(){
 </script>
 
 <script>
-/* ==== scorch, tucked away \u00b7 five taps OR a slow 2.5s hold on the stone's title line ==== */
+/* ==== scorch, tucked away · five taps OR a slow 2.5s hold on the stone's title line ==== */
 (function(){
   function tuck(){
     var b=document.getElementById('stScorch');
@@ -1938,7 +1973,7 @@ function lockdoor(){
 </script>
 
 <script>
-/* ==== the fold, ported to the archive \u00b7 tap a note's head to unfold ==== */
+/* ==== the fold, ported to the archive · tap a note's head to unfold ==== */
 (function(){
   function foldAll(){
     var els=document.querySelectorAll('div,article,section');
@@ -1956,7 +1991,7 @@ function lockdoor(){
       var wrap=document.createElement('div');
       wrap.style.cssText='display:none;border-top:1px dashed #223041;margin-top:6px';
       var moved=[];
-      for(var c2=hi+2;c2<el.children.length;c2++){ moved.push(el.children[c2]); }
+      for(var c2=hi+2;c2<el.children.length;c2++){ moved.push(el.children[c2]); });
       moved.forEach(function(m){ wrap.appendChild(m); });
       el.appendChild(wrap);
       var caret=document.createElement('span');
@@ -1973,6 +2008,49 @@ function lockdoor(){
   foldAll(); setInterval(foldAll,1200);
 })();
 </script>
-  
+
+<script>
+/* ==== the bridge · carries the decrypt toggle into the archive iframe ==== */
+(function(){
+  function ON(){ return localStorage.getItem('hive_rb_dec')==='1'; }
+  function lab(b){ if(b) b.textContent=ON()?'decrypt previews \u00b7 on':'decrypt previews \u00b7 off'; }
+  setInterval(function(){
+    var fr=document.querySelector('iframe[src="archive.html"]'); if(!fr) return;
+    var d=null,w=null; try{ w=fr.contentWindow; d=fr.contentDocument; }catch(e){ return; }
+    if(!d||!d.body) return;
+    var old=d.querySelectorAll('button'), i;
+    for(i=0;i<old.length;i++){ if((old[i].textContent||'').indexOf('decrypt previews')>-1 && old[i].id!=='arcDecBtn') return; }
+    var b=d.getElementById('arcDecBtn');
+    if(!b){
+      b=d.createElement('button'); b.id='arcDecBtn';
+      b.style.cssText='background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;padding:4px 10px;cursor:pointer;margin:8px auto;display:block';
+      d.body.insertBefore(b,d.body.firstChild);
+      b.onclick=function(){
+        localStorage.setItem('hive_rb_dec',ON()?'0':'1'); lab(b);
+        if(ON()&&w.vaultPrompt&&w.vaultIsOpen&&!w.vaultIsOpen()){ w.vaultPrompt(function(){ scan(); }); } else scan();
+      };
+    }
+    lab(b);
+    function scan(){
+      var walker=d.createTreeWalker(d.body,NodeFilter.SHOW_TEXT,null);
+      var nodes=[]; while(walker.nextNode()){ var n=walker.currentNode; if((n.nodeValue||'').indexOf('{"iv":"')>-1) nodes.push(n); }
+      nodes.forEach(function(n){
+        if(!ON()){ if(n._orig!=null) n.nodeValue=n._orig; return; }
+        if(n._orig==null) n._orig=n.nodeValue;
+        var envs=n._orig.match(/\{"iv":"[^"]+","ct":"[^"]+"\}/g)||[];
+        if(!envs.length||!w.vaultDecrypt){ return; }
+        var left=envs.length, out=n._orig, cache=window._ctCache=(window._ctCache||{});
+        envs.forEach(function(e){
+          if(cache[e]){ out=out.split(e).join(cache[e]); if(--left===0) n.nodeValue=out; return; }
+          w.vaultDecrypt(e).then(function(pt){ cache[e]=pt; out=out.split(e).join(pt); if(--left===0) n.nodeValue=out; })
+            .catch(function(){ if(--left===0) n.nodeValue=out; });
+        });
+      });
+    }
+    if(!b._scan){ b._scan=1; setInterval(scan,1500); scan(); }
+  },1500);
+})();
+</script>
+
 </body>
 </html>
