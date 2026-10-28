@@ -1301,6 +1301,17 @@ function lockdoor(){
     refreshBenchView(placed);
     return placed;
   }
+    function entryBody(en){
+    if(!en) return '';
+    if(typeof en.body==='string' && en.body.trim()) return en.body;
+    var keys=['text','content','note','notes','value','data','pages','leaves'];
+    for(var i=0;i<keys.length;i++){ var v=en[keys[i]];
+      if(typeof v==='string' && v.trim()) return v;
+      if(Object.prototype.toString.call(v)==='[object Array]'){
+        var s=v.map(function(p){ return (typeof p==='string')?p:((p&&(p.body||p.text||p.content))||''); }).join('\n\n');
+        if(s.trim()) return s; } }
+    return '';
+  }
   function flash(btn,msg){
     if(!btn) return;
     var old=btn.textContent;
@@ -1381,7 +1392,9 @@ function lockdoor(){
     box.querySelectorAll('[data-rb]').forEach(function(btn){
       btn.onclick=function(){
         var en=LOCAL[+btn.getAttribute('data-rb')];
-        say(box,loadIntoBench(en.body||''));
+                var bb2=entryBody(en);
+        if(!bb2){ say(box,[],'no body in entry \u00b7 keys: '+Object.keys(en).join(',')); }
+        else say(box,loadIntoBench(bb2));
       };
     });
     box.querySelector('#rbLoad').onclick=function(){
@@ -1390,7 +1403,7 @@ function lockdoor(){
       var obj=null; try{ obj=JSON.parse(raw); }catch(e){ say(box,[],'not valid json'); return; }
       var list=Object.prototype.toString.call(obj)==='[object Array]'?obj:[obj];
       var all=[];
-      list.forEach(function(en){ if(en&&typeof en==='object'&&en.body){ all=all.concat(loadIntoBench(en.body)); } });
+      list.forEach(function(en){ if(en&&typeof en==='object'){ var b3=entryBody(en); if(b3) all=all.concat(loadIntoBench(b3)); } });
       say(box,all);
     };
     box.querySelector('#rbNo').onclick=function(){ box.remove(); };
