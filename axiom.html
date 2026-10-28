@@ -1312,18 +1312,64 @@ function lockdoor(){
         if(s.trim()) return s; } }
     return '';
   }
-    function miniSlate(en,src){
-    var p=null, ts=document.querySelectorAll('textarea');
-    for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent){ p=ts[i]; break; } }
+      function miniSlate(en,src){
+    function arcThumb(e){
+      if(!e) return '';
+      var s=e.img||e.image||e.thumb||e.pic||'';
+      var b=(typeof e.body==='string')?e.body:'';
+      if(!s&&b){ var m=/data:image\/[a-z+;-]+;base64,[A-Za-z0-9+/=]+/i.exec(b); if(m) s=m[0]; }
+      if(!s&&b){ var m2=/https?:\/\/\S+\.(png|jpe?g|gif|webp)/i.exec(b); if(m2) s=m2[0]; }
+      return (typeof s==='string'&&s)?s:'';
+    }
+    var S=window._slate=(window._slate||{zoom:100,rot:false,idx:0});
+    var list=[]; try{ (JSON.parse(localStorage.getItem('arc.local')||'[]')).forEach(function(e){ var t=arcThumb(e); if(t) list.push({en:e,src:t}); }); }catch(e){}
+    if(!list.length){ var t0=src||arcThumb(en); if(!t0) return; list=[{en:en,src:t0}]; }
+    var found=-1;
+    for(var i=0;i<list.length;i++){ if(list[i].en===en||(src&&list[i].src===src)){ found=i; break; } }
+    S.idx=found>-1?found:0;
+    var cur=list[S.idx];
     var old=document.getElementById('wbSlate'); if(old) old.remove();
+    var p=null, ts=document.querySelectorAll('textarea');
+    for(var i2=0;i2<ts.length;i2++){ if(ts[i2].offsetParent){ p=ts[i2]; break; } }
+    var BS='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 8px;cursor:pointer';
     var v=document.createElement('div'); v.id='wbSlate';
-    v.style.cssText='margin-top:10px;border:1px solid #d9a83a;background:#0a0d12;padding:10px;text-align:center';
-    v.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-      +'<span style="font-size:9px;letter-spacing:.2em;color:#d9a83a">the mini-slate \u00b7 '+clean(en.title||'slate')+' \u00b7 '+clean(en.date||'')+'</span>'
-      +'<button id="wbSlateX" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 8px;cursor:pointer">close \u2715</button></div>'
-      +'<img src="'+src+'" alt="slate picture" style="max-width:100%;max-height:56vh;object-fit:contain;border:1px solid #223041;background:#0e141b">';
+    v.style.cssText='margin-top:10px;border:1px solid #d9a83a;background:#0a0d12;padding:10px';
+    v.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+      +'<span style="font-size:9px;letter-spacing:.2em;color:#d9a83a">the mini-slate \u00b7 '+clean(cur.en.title||'slate')+' \u00b7 '+clean(cur.en.date||'')+' \u00b7 '+(S.idx+1)+'/'+list.length+'</span>'
+      +'<span style="display:flex;gap:6px;flex-wrap:wrap">'
+      +'<button id="slPrev" style="'+BS+'">\u21e6 prev</button>'
+      +'<button id="slNext" style="'+BS+'">next \u21e8</button>'
+      +'<button id="slZm-" style="'+BS+'">zoom \u2212</button>'
+      +'<span id="slZ" style="font-size:9px;color:#5c6875;align-self:center">100%</span>'
+      +'<button id="slZm+" style="'+BS+'">zoom +</button>'
+      +'<button id="slRot" style="'+BS+'">landscape \u21c4</button>'
+      +'<button id="wbSlateX" style="'+BS+'">close \u2715</button></span></div>'
+      +'<div id="slView" style="overflow:auto;max-height:62vh;border:1px solid #223041;background:#0e141b;padding:8px;text-align:center"></div>';
     if(p) p.insertAdjacentElement('afterend',v); else document.body.appendChild(v);
+    var view=v.querySelector('#slView');
+    function put(srcNow){
+      view.innerHTML='';
+      var img=document.createElement('img'); img.alt='slate picture';
+      img.style.cssText='width:'+S.zoom+'%;height:auto;border:1px solid #223041;background:#0a0d12';
+      img.src=srcNow; view.appendChild(img);
+    }
+    function loadCur(){
+      var z=v.querySelector('#slZ'); if(z) z.textContent=S.zoom+'%'+(S.rot?' \u00b7 landscape':' \u00b7 portrait');
+      if(!S.rot){ put(cur.src); return; }
+      var im=new Image();
+      im.onload=function(){ var c=document.createElement('canvas'); c.width=im.naturalHeight; c.height=im.naturalWidth;
+        var g=c.getContext('2d'); g.translate(c.width/2,c.height/2); g.rotate(Math.PI/2); g.drawImage(im,-im.naturalWidth/2,-im.naturalHeight/2);
+        put(c.toDataURL()); };
+      im.onerror=function(){ put(cur.src); };
+      im.src=cur.src;
+    }
+    v.querySelector('#slPrev').onclick=function(){ S.idx=(S.idx-1+list.length)%list.length; miniSlate(list[S.idx].en,list[S.idx].src); };
+    v.querySelector('#slNext').onclick=function(){ S.idx=(S.idx+1)%list.length; miniSlate(list[S.idx].en,list[S.idx].src); };
+    v.querySelector('#slZm-').onclick=function(){ S.zoom=Math.max(25,S.zoom-25); loadCur(); };
+    v.querySelector('#slZm+').onclick=function(){ S.zoom=Math.min(400,S.zoom+25); loadCur(); };
+    v.querySelector('#slRot').onclick=function(){ S.rot=!S.rot; loadCur(); };
     v.querySelector('#wbSlateX').onclick=function(){ v.remove(); };
+    loadCur();
     v.scrollIntoView({block:'nearest'});
   }
   function flash(btn,msg){
@@ -1815,7 +1861,7 @@ function lockdoor(){
 </script>
 
 <script>
-/* ==== scorch, tucked away \u00b7 hold the stone's title line 2.5s to reach it ==== */
+/* ==== scorch, tucked away \u00b7 five taps OR a slow 2.5s hold on the stone's title line ==== */
 (function(){
   function tuck(){
     var b=document.getElementById('stScorch');
@@ -1824,13 +1870,63 @@ function lockdoor(){
     var row=b.parentNode, head=row?row.firstChild:null;
     if(!head||head.nodeType!==1) return;
     head.style.cursor='default';
-    var hold=null;
+    var hold=null, taps=0, last=0;
     head.addEventListener('pointerdown',function(){ hold=setTimeout(function(){ b.click(); },2500); });
     ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
       head.addEventListener(ev,function(){ if(hold){ clearTimeout(hold); hold=null; } });
     });
+    head.addEventListener('click',function(){
+      var n=Date.now(); taps=(n-last<900)?taps+1:1; last=n;
+      if(taps>=5){ taps=0; b.click(); }
+    });
+    setInterval(function(){
+      var s=document.getElementById('rbStone');
+      if(s&&s.parentNode&&!document.getElementById('rbMemo')){
+        var d=document.createElement('div'); d.id='rbMemo';
+        d.style.cssText='margin-top:6px;font-size:9px;color:#5c6875;font-style:italic';
+        d.textContent='the burn switch sleeps \u00b7 five taps \u00b7 or one slow 2.5s hold \u00b7 on the stone\u2019s title line at the page foot';
+        s.parentNode.appendChild(d);
+      }
+    },2000);
   }
   tuck();
+})();
+</script>
+
+<script>
+/* ==== the fold, ported to the archive \u00b7 tap a note's head to unfold ==== */
+(function(){
+  function foldAll(){
+    var els=document.querySelectorAll('div,article,section');
+    for(var i=0;i<els.length;i++){
+      var el=els[i];
+      if(el.getAttribute('data-foldready')) continue;
+      if(el.children.length<3) continue;
+      var head=null, hi=-1;
+      for(var c=0;c<el.children.length;c++){
+        var t=(el.children[c].textContent||'');
+        if(/\b(ax|ex|ba|ke|sl|tp)-W?\d{9,}\b/.test(t) && t.length<220){ head=el.children[c]; hi=c; break; }
+      }
+      if(!head) continue;
+      el.setAttribute('data-foldready','1');
+      var wrap=document.createElement('div');
+      wrap.style.cssText='display:none;border-top:1px dashed #223041;margin-top:6px';
+      var moved=[];
+      for(var c2=hi+2;c2<el.children.length;c2++){ moved.push(el.children[c2]); }
+      moved.forEach(function(m){ wrap.appendChild(m); });
+      el.appendChild(wrap);
+      var caret=document.createElement('span');
+      caret.style.cssText='color:#5c6875;font-size:9px;letter-spacing:.15em;cursor:pointer;margin-left:8px';
+      caret.textContent=' \u25b8 unfold';
+      head.appendChild(caret);
+      head.style.cursor='pointer';
+      var open=false;
+      function toggle(){ open=!open; wrap.style.display=open?'block':'none'; caret.textContent=open?' \u25be fold':' \u25b8 unfold'; }
+      caret.onclick=function(e){ e.stopPropagation(); toggle(); };
+      head.onclick=toggle;
+    }
+  }
+  foldAll(); setInterval(foldAll,1200);
 })();
 </script>
   
