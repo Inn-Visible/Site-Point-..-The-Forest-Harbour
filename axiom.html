@@ -1529,9 +1529,11 @@ function lockdoor(){
     r.onload=function(){
       var inc=null; try{ inc=JSON.parse(r.result); }catch(e){ say('the stone would not open \u00b7 not json','#c8452c'); return; }
       if(inc&&inc.v===2){
-        var p2=prompt('passphrase for this stone');
+                var p2=prompt('passphrase for this stone');
         if(!p2){ say('restore cancelled'); return; }
-        derive(p2,unb64(inc.salt)).then(function(key){
+        var keyPromise=null;
+        try{ keyPromise=derive(p2,unb64(inc.salt)); }catch(e){ say('the stone is rotted \u00b7 salt unreadable \u00b7 not a v2 stone','#c8452c'); return; }
+        keyPromise.then(function(key){
           return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(inc.iv)},key,unb64(inc.ct));
         }).then(function(pt){ merge(JSON.parse(new TextDecoder().decode(pt))); })
           .catch(function(){ say('the stone refused the passphrase','#c8452c'); });
