@@ -1195,13 +1195,11 @@ function lockdoor(){
 
 <script>
 (function(){
-  function host(){
-    var ds=document.querySelectorAll('div');
-    for(var i=0;i<ds.length;i++){
-      if(ds[i].getAttribute('data-ax')) return ds[i];
-      var cs=getComputedStyle(ds[i]);
-      if(cs.borderTopStyle==='dashed'&&ds[i].textContent.indexOf('stacks remember')>-1) return ds[i];
-    }
+   function host(){
+    var s=document.getElementById('xfArcSlot');
+    if(s&&!s.querySelector('iframe')) return s;
+    var ds=document.querySelectorAll('div[data-ax]');
+    for(var i=0;i<ds.length;i++){ if(!ds[i].querySelector('iframe')) return ds[i]; }
     return null;
   }
   function fill(){
