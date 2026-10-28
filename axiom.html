@@ -556,7 +556,8 @@ function lockdoor(){
         +'<button id="sz_minus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer;margin-left:auto">A\u2212</button>'
         +'<span id="sz_label" style="font-size:9px;color:#5c6875">'+fontSize+'px</span>'
         +'<button id="sz_plus" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">A+</button>'
-        +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
+               +'<button id="unfold_btn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u2195 '+(unfolded?'fold':'unfold')+'</button>'
+        +'<button id="pg_refresh" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 re-unlock</button>'
         +'<button id="pg_wipe" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">wipe</button>';
            var vs=document.createElement('span'); vs.id='vState';
       vs.style.cssText='font-size:9px;letter-spacing:.15em;margin-left:10px;color:'+(window.vaultIsOpen()?'#58a36a':'#c8452c');
@@ -567,8 +568,8 @@ function lockdoor(){
       var ta=document.createElement('textarea');
       ta.style.cssText='width:100%;background:rgba(3,4,7,.6);border:1px solid #223041;color:#e8e4d8;font-family:inherit;font-size:'+fontSize+'px;padding:10px;line-height:1.6;'+(unfolded?'height:70vh':'height:'+(Math.max(160,fontSize*10))+'px');
       ta.placeholder='the workbench \u00b7 leaf '+curPage+' \u00b7 drafts persist on this glass ..';
-      ta.value=getPageContent();
-      ta.oninput=function(){ setPageContent(ta.value); };
+            ta.value=getPageContent(ta);
+      ta.oninput=function(){ if(ta._pending) return; setPageContent(ta.value); };
       body.appendChild(ta);
       
       // Wire up controls
@@ -604,6 +605,7 @@ function lockdoor(){
         renderBody();
       };
       document.getElementById('pg_wipe').onclick=wipeBench;
+            document.getElementById('pg_refresh').onclick=function(){ reloadLeaf(); };
     }
        else if(curF==='kit'||curF==='grid'){
            body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html?v='+Date.now())+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
@@ -1533,7 +1535,7 @@ function lockdoor(){
       if(m&&s&&m.textContent&&s.textContent!==m.textContent){ s.textContent=m.textContent; s.style.color=m.style.color||'#5c6875'; }
       if((localStorage.getItem('arc.local')||'')!==sig) render();
     },1500);
-    box.querySelector('#rbFresh').onclick=function(){ render(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes'; } };
+    box.querySelector('#rbFresh').onclick=function(){ render(); if(window.hiveBenchReload) window.hiveBenchReload(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes \u00b7 bench leaf re-unlocked'; } };
        box.querySelector('#rbZero').onclick=function(){
       var L=LOCAL();
       var m=box.querySelector('#rbMsg');
