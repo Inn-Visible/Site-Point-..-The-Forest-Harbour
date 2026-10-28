@@ -1312,6 +1312,20 @@ function lockdoor(){
         if(s.trim()) return s; } }
     return '';
   }
+    function miniSlate(en,src){
+    var p=null, ts=document.querySelectorAll('textarea');
+    for(var i=0;i<ts.length;i++){ if(ts[i].offsetParent){ p=ts[i]; break; } }
+    var old=document.getElementById('wbSlate'); if(old) old.remove();
+    var v=document.createElement('div'); v.id='wbSlate';
+    v.style.cssText='margin-top:10px;border:1px solid #d9a83a;background:#0a0d12;padding:10px;text-align:center';
+    v.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<span style="font-size:9px;letter-spacing:.2em;color:#d9a83a">the mini-slate \u00b7 '+clean(en.title||'slate')+' \u00b7 '+clean(en.date||'')+'</span>'
+      +'<button id="wbSlateX" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 8px;cursor:pointer">close \u2715</button></div>'
+      +'<img src="'+src+'" alt="slate picture" style="max-width:100%;max-height:56vh;object-fit:contain;border:1px solid #223041;background:#0e141b">';
+    if(p) p.insertAdjacentElement('afterend',v); else document.body.appendChild(v);
+    v.querySelector('#wbSlateX').onclick=function(){ v.remove(); };
+    v.scrollIntoView({block:'nearest'});
+  }
   function flash(btn,msg){
     if(!btn) return;
     var old=btn.textContent;
@@ -1372,15 +1386,15 @@ function lockdoor(){
     var bb=box.querySelector('#wbBook'); if(bb) bb.onclick=function(){ send('workbench \u00b7 the whole book \u00b7 '+bk.n+' page'+(bk.n===1?'':'s'),bk.body,['bench','book']); box.remove(); };
     box.querySelector('#wbNo').onclick=function(){ box.remove(); };
   }
-    function recallBox(){
+     function recallBox(){
     var old=document.getElementById('wbRecBox'); if(old){ old.remove(); return; }
     var box=document.createElement('div'); box.id='wbRecBox';
     box.style.cssText='margin-top:14px;border:1px dashed #223041;border-left:2px solid #3f7fc1;background:#0e141b;padding:14px 16px';
-    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">recall \u00b7 the archive desk \u00b7 pulls fresh every time it opens</div>'
+    box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">recall \u00b7 the archive desk \u00b7 every note, scrollable, nothing cut</div>'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
       +'<button id="rbFresh" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 refresh list</button>'
       +'<span id="rbCount" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span></div>'
-      +'<div id="rbList"></div>'
+      +'<div id="rbList" style="max-height:56vh;overflow-y:auto;border:1px solid #223041;padding:8px"></div>'
       +'<div style="margin-top:14px;border:1px solid #d9a83a;background:rgba(217,168,58,.05);padding:12px 14px">'
       +'<div style="font-size:9px;letter-spacing:.25em;color:#d9a83a;margin-bottom:8px">the stone \u00b7 portable copy \u00b7 remote controls for the row below</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
@@ -1407,31 +1421,45 @@ function lockdoor(){
     var sig=null;
     function render(){
       var L=LOCAL(); sig=localStorage.getItem('arc.local')||'';
-      var cnt=box.querySelector('#rbCount'); if(cnt) cnt.textContent=L.length+' notes in the drawer';
+      var cnt=box.querySelector('#rbCount'); if(cnt) cnt.textContent=L.length+' notes in the drawer \u00b7 scroll the pane, every one is here';
       var list=box.querySelector('#rbList'); if(!list) return;
       list.innerHTML='';
-      if(!L.length){ list.innerHTML='<div style="font-size:10px;color:#5c6875;font-style:italic;margin-bottom:8px">the local drawer is empty \u2014 restore a stone or paste json below.</div>'; return; }
-      L.slice(0,12).forEach(function(en,i){
+      if(!L.length){ list.innerHTML='<div style="font-size:10px;color:#5c6875;font-style:italic">the local drawer is empty \u00b4 restore a stone or paste json below.</div>'; return; }
+      L.forEach(function(en,i){
         var card=document.createElement('div');
-        card.style.cssText='display:flex;gap:10px;align-items:flex-start;border:1px solid #223041;background:#0a0d12;padding:8px 10px;margin-bottom:8px';
-        var th=thumbOf(en); var prev=entryBody(en).replace(/\s+/g,' ').slice(0,110);
-        card.innerHTML='<div style="flex:1;min-width:0">'
-          +'<div style="font-size:10px;color:#93a1b0;letter-spacing:.08em">'+clean(en.title||'untitled')+' \u00b7 '+clean(en.date||'')+' \u00b7 '+((en.tags||[]).map(clean).join(' '))+'</div>'
-          +(prev?'<div style="font-size:9px;color:#5c6875;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+clean(prev)+'</div>'
-                :'<div style="font-size:9px;color:#c8452c;margin-top:4px">no body \u00b7 keys: '+Object.keys(en).join(',')+'</div>')
-          +'</div>'
-          +(th?'<img src="'+th+'" alt="slate image" style="width:64px;height:48px;object-fit:cover;border:1px solid #223041;flex:0 0 auto">':'')
-          +'<button data-rb="'+i+'" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer;flex:0 0 auto">load \u21e4</button>';
-        list.appendChild(card);
-      });
-      if(L.length>12){ var more=document.createElement('div'); more.style.cssText='font-size:9px;color:#5c6875;font-style:italic'; more.textContent='..and '+(L.length-12)+' older \u00b7 the drawer holds them all'; list.appendChild(more); }
-      list.querySelectorAll('[data-rb]').forEach(function(btn){
-        btn.onclick=function(){
-          var en=LOCAL()[+btn.getAttribute('data-rb')];
-          var b=entryBody(en);
-          if(!b){ say(box,[],'no body in entry \u00b7 keys: '+Object.keys(en).join(',')); return; }
-          say(box,loadIntoBench(b)); render();
+        card.style.cssText='border:1px solid #223041;background:#0a0d12;padding:8px 10px;margin-bottom:8px';
+        var th=thumbOf(en); var body=entryBody(en);
+        var prev=body.replace(/\s+/g,' ').slice(0,160);
+        var head=document.createElement('div');
+        head.style.cssText='display:flex;gap:10px;align-items:flex-start';
+        var mid=document.createElement('div'); mid.style.cssText='flex:1;min-width:0';
+        mid.innerHTML='<div style="font-size:10px;color:#93a1b0;letter-spacing:.08em">'+clean(en.title||'untitled')+' \u00b7 '+clean(en.date||'')+' \u00b7 '+((en.tags||[]).map(clean).join(' '))+'</div>'
+          +(prev?'<div class="rbPrev" style="font-size:9px;color:#5c6875;margin-top:4px;cursor:pointer">'+clean(prev)+(body.length>160?' \u2026':'')+'</div>'
+                :'<div style="font-size:9px;color:#c8452c;margin-top:4px">no body \u00b7 keys: '+Object.keys(en).join(',')+'</div>');
+        head.appendChild(mid);
+        if(th){ var im=document.createElement('img'); im.src=th; im.alt='slate image';
+          im.style.cssText='width:64px;height:48px;object-fit:cover;border:1px solid #223041;flex:0 0 auto;cursor:pointer';
+          im.title='tap to open on the mini-slate';
+          im.onclick=function(){ miniSlate(en,th); };
+          head.appendChild(im); }
+        var lb=document.createElement('button'); lb.textContent='load \u21e4';
+        lb.style.cssText='background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer;flex:0 0 auto';
+        lb.onclick=function(){
+          var b=entryBody(en); var t=thumbOf(en);
+          if(!b&&!t){ say(box,[],'no body in entry \u00b7 keys: '+Object.keys(en).join(',')); return; }
+          if(b) say(box,loadIntoBench(b));
+          if(t){ miniSlate(en,t); if(!b){ var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='slate picture seated on the mini-slate \u00b7 this entry carries no text body'; } } }
         };
+        head.appendChild(lb);
+        card.appendChild(head);
+        if(body){ var full=document.createElement('div');
+          full.style.cssText='display:none;font-size:10px;color:#93a1b0;margin-top:6px;white-space:pre-wrap;max-height:40vh;overflow-y:auto;border-top:1px dashed #223041;padding-top:6px';
+          full.textContent=body;
+          card.appendChild(full);
+          var pv=mid.querySelector('.rbPrev');
+          if(pv) pv.onclick=function(){ full.style.display=(full.style.display==='none')?'block':'none'; };
+        }
+        list.appendChild(card);
       });
     }
     function proxy(mine,id){ var b=box.querySelector(mine); if(!b) return;
@@ -1450,7 +1478,7 @@ function lockdoor(){
       var obj=null; try{ obj=JSON.parse(raw); }catch(e){ say(box,[],'not valid json'); return; }
       var arr=Object.prototype.toString.call(obj)==='[object Array]'?obj:[obj];
       var all=[];
-      arr.forEach(function(en){ if(en&&typeof en==='object'){ var b=entryBody(en); if(b) all=all.concat(loadIntoBench(b)); } });
+      arr.forEach(function(en){ if(en&&typeof en==='object'){ var b=entryBody(en); if(b) all=all.concat(loadIntoBench(b)); var t=thumbOf(en); if(t) miniSlate(en,t); } });
       say(box,all); render();
     };
     box.querySelector('#rbNo').onclick=function(){ box.remove(); };
@@ -1783,6 +1811,26 @@ function lockdoor(){
         fetch(u).then(function(r){ if(r&&r.ok&&(r.headers.get('content-type')||'').indexOf('svg')<0){ caches.open('hive-topo').then(function(c){ c.put(u,r.clone()); }); done++; } pour.textContent='pouring \u00b7 '+done+'/'+total; next(); }).catch(next); })();
     },true);
   }
+})();
+</script>
+
+<script>
+/* ==== scorch, tucked away \u00b7 hold the stone's title line 2.5s to reach it ==== */
+(function(){
+  function tuck(){
+    var b=document.getElementById('stScorch');
+    if(!b){ setTimeout(tuck,600); return; }
+    b.style.display='none';
+    var row=b.parentNode, head=row?row.firstChild:null;
+    if(!head||head.nodeType!==1) return;
+    head.style.cursor='default';
+    var hold=null;
+    head.addEventListener('pointerdown',function(){ hold=setTimeout(function(){ b.click(); },2500); });
+    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+      head.addEventListener(ev,function(){ if(hold){ clearTimeout(hold); hold=null; } });
+    });
+  }
+  tuck();
 })();
 </script>
   
