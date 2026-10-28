@@ -1312,7 +1312,7 @@ function lockdoor(){
         if(s.trim()) return s; } }
     return '';
   }
-      function miniSlate(en,src){
+     function miniSlate(en,src){
     function arcThumb(e){
       if(!e) return '';
       var s=e.img||e.image||e.thumb||e.pic||'';
@@ -1334,14 +1334,18 @@ function lockdoor(){
     var BS='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 8px;cursor:pointer';
     var v=document.createElement('div'); v.id='wbSlate';
     v.style.cssText='margin-top:10px;border:1px solid #d9a83a;background:#0a0d12;padding:10px';
+    var opts='';
+    for(var o=0;o<list.length;o++){ opts+='<option value="'+o+'"'+(o===S.idx?' selected':'')+'>'+(o+1)+' \u00b7 '+(list[o].en.title||'slate').replace(/[<>&"]/g,'').slice(0,40)+' \u00b7 '+(list[o].en.date||'')+'</option>'; }
     v.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
       +'<span style="font-size:9px;letter-spacing:.2em;color:#d9a83a">the mini-slate \u00b7 '+clean(cur.en.title||'slate')+' \u00b7 '+clean(cur.en.date||'')+' \u00b7 '+(S.idx+1)+'/'+list.length+'</span>'
-      +'<span style="display:flex;gap:6px;flex-wrap:wrap">'
+      +'<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+      +'<select id="slSel" style="background:#0e141b;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 6px;max-width:220px">'+opts+'</select>'
       +'<button id="slPrev" style="'+BS+'">\u21e6 prev</button>'
       +'<button id="slNext" style="'+BS+'">next \u21e8</button>'
-      +'<button id="slZm-" style="'+BS+'">zoom \u2212</button>'
-      +'<span id="slZ" style="font-size:9px;color:#5c6875;align-self:center">100%</span>'
-      +'<button id="slZm+" style="'+BS+'">zoom +</button>'
+      +'<button id="slZmDn" style="'+BS+'">zoom \u2212</button>'
+      +'<span id="slZ" style="font-size:9px;color:#5c6875">100% \u00b7 fit</span>'
+      +'<button id="slZmUp" style="'+BS+'">zoom +</button>'
+      +'<button id="slFit" style="'+BS+'">fit \u22c4</button>'
       +'<button id="slRot" style="'+BS+'">landscape \u21c4</button>'
       +'<button id="wbSlateX" style="'+BS+'">close \u2715</button></span></div>'
       +'<div id="slView" style="overflow:auto;max-height:62vh;border:1px solid #223041;background:#0e141b;padding:8px;text-align:center"></div>';
@@ -1349,12 +1353,15 @@ function lockdoor(){
     var view=v.querySelector('#slView');
     function put(srcNow){
       view.innerHTML='';
+      var wrap=document.createElement('div');
+      wrap.style.cssText='width:'+S.zoom+'%;margin:0 auto;';
       var img=document.createElement('img'); img.alt='slate picture';
-      img.style.cssText='width:'+S.zoom+'%;height:auto;border:1px solid #223041;background:#0a0d12';
-      img.src=srcNow; view.appendChild(img);
+      img.style.cssText='width:100%;height:auto;'+(S.zoom<=100?'max-height:56vh;':'')+'border:1px solid #223041;background:#0a0d12';
+      img.src=srcNow;
+      wrap.appendChild(img); view.appendChild(wrap);
     }
     function loadCur(){
-      var z=v.querySelector('#slZ'); if(z) z.textContent=S.zoom+'%'+(S.rot?' \u00b7 landscape':' \u00b7 portrait');
+      var z=v.querySelector('#slZ'); if(z) z.textContent=S.zoom+'%'+(S.zoom<=100?' \u00b7 fit':' \u00b7 zoomed')+(S.rot?' \u00b7 landscape':' \u00b7 portrait');
       if(!S.rot){ put(cur.src); return; }
       var im=new Image();
       im.onload=function(){ var c=document.createElement('canvas'); c.width=im.naturalHeight; c.height=im.naturalWidth;
@@ -1363,10 +1370,13 @@ function lockdoor(){
       im.onerror=function(){ put(cur.src); };
       im.src=cur.src;
     }
-    v.querySelector('#slPrev').onclick=function(){ S.idx=(S.idx-1+list.length)%list.length; miniSlate(list[S.idx].en,list[S.idx].src); };
-    v.querySelector('#slNext').onclick=function(){ S.idx=(S.idx+1)%list.length; miniSlate(list[S.idx].en,list[S.idx].src); };
-    v.querySelector('#slZm-').onclick=function(){ S.zoom=Math.max(25,S.zoom-25); loadCur(); };
-    v.querySelector('#slZm+').onclick=function(){ S.zoom=Math.min(400,S.zoom+25); loadCur(); };
+    function jump(n){ S.idx=(n+list.length)%list.length; miniSlate(list[S.idx].en,list[S.idx].src); }
+    v.querySelector('#slSel').onchange=function(){ jump(+this.value); };
+    v.querySelector('#slPrev').onclick=function(){ jump(S.idx-1); };
+    v.querySelector('#slNext').onclick=function(){ jump(S.idx+1); };
+    v.querySelector('#slZmDn').onclick=function(){ S.zoom=Math.max(25,S.zoom-25); loadCur(); };
+    v.querySelector('#slZmUp').onclick=function(){ S.zoom=Math.min(400,S.zoom+25); loadCur(); };
+    v.querySelector('#slFit').onclick=function(){ S.zoom=100; loadCur(); };
     v.querySelector('#slRot').onclick=function(){ S.rot=!S.rot; loadCur(); };
     v.querySelector('#wbSlateX').onclick=function(){ v.remove(); };
     loadCur();
@@ -1630,17 +1640,35 @@ function lockdoor(){
         function(){ openTab(pkg); });
       } else { openTab(pkg); }
     }); }).catch(function(e){ say('gather failed \u00b7 '+e,'#c8452c'); }); };
-  row.querySelector('#stScorch').onclick=function(){
-    if(!confirm('scorch the glass? every leaf, note, mark and key on THIS browser burns. stones already in your downloads survive. this cannot be undone.')) return;
-    say('scorching ..');
-    try{
-      var keys=[], i2;
-      for(i2=0;i2<localStorage.length;i2++){ var k=localStorage.key(i2); if(/^hive_|^arc\./.test(k)) keys.push(k); }
-      keys.forEach(function(k){ localStorage.removeItem(k); });
-      sessionStorage.clear();
-    }catch(e){}
-    say('the glass is ash \u00b7 reload for a bare house','#c8452c');
-    setTimeout(function(){ location.reload(); },1200);
+    row.querySelector('#stScorch').onclick=function(){
+    var oldP=document.getElementById('scorchPanel'); if(oldP){ oldP.remove(); return; }
+    var p=document.createElement('div'); p.id='scorchPanel';
+    p.style.cssText='margin:10px auto 0;max-width:680px;border:1px solid #c8452c;background:rgba(200,69,44,.08);padding:12px 14px;text-align:left;font-size:10px;color:#93a1b0;line-height:1.9';
+    p.innerHTML='<b style="color:#c8452c;letter-spacing:.2em">SCORCH \u00b7 PLAINLY, WHAT IT DOES</b><br>'
+      +'<span style="color:#e8e4d8">burns, on THIS browser only:</span> every workbench leaf (the encrypted book), every note in the local drawer, every map mark and pin, the vault\u2019s open state, your login session (you re-knock at the gate), obs-deck and ping preferences.<br>'
+      +'<span style="color:#e8e4d8">survives:</span> stones already in your downloads or folder, the poured map tile shelf, notes committed to archive/notes.json, the house files themselves, every other glass and device.<br>'
+      +'<span style="color:#c8452c">it cannot be undone.</span><br>'
+      +'<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+      +'<span style="color:#5c6875">type BURN to arm it:</span>'
+      +'<input id="scorchWord" style="background:rgba(3,4,7,.6);border:1px solid #c8452c;color:#e8e4d8;font:10px ui-monospace;padding:6px 8px;width:90px" autocomplete="off">'
+      +'<button id="scorchGo" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:6px 12px;cursor:pointer">burn it all \u2620</button>'
+      +'<button id="scorchNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:6px 12px;cursor:pointer">stand down</button></div>'
+      +'<div id="scorchMsg" style="margin-top:8px;color:#c8452c;min-height:12px"></div>';
+    row.parentNode.insertBefore(p, row.nextSibling);
+    p.querySelector('#scorchNo').onclick=function(){ p.remove(); };
+    p.querySelector('#scorchGo').onclick=function(){
+      if((p.querySelector('#scorchWord').value||'').trim().toUpperCase()!=='BURN'){ p.querySelector('#scorchMsg').textContent='not armed \u00b7 type the word BURN exactly, or stand down'; return; }
+      say('scorching ..');
+      p.remove();
+      try{
+        var keys=[], i2;
+        for(i2=0;i2<localStorage.length;i2++){ var k=localStorage.key(i2); if(/^hive_|^arc\./.test(k)) keys.push(k); }
+        keys.forEach(function(k){ localStorage.removeItem(k); });
+        sessionStorage.clear();
+      }catch(e){}
+      say('the glass is ash \u00b7 reload for a bare house','#c8452c');
+      setTimeout(function(){ location.reload(); },1200);
+    };
   };
    function merge(inc){
     if(!inc||!inc.length){ say('the stone is empty','#c8452c'); return; }
