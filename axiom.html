@@ -1449,6 +1449,7 @@ function lockdoor(){
     box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">recall \u00b7 the archive desk \u00b7 every note, scrollable, nothing cut</div>'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
       +'<button id="rbFresh" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 refresh list</button>'
+           +'<button id="rbZero" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">clear drawer \u2620</button>'
       +'<span id="rbCount" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span></div>'
       +'<div id="rbList" style="max-height:56vh;overflow-y:auto;border:1px solid #223041;padding:8px"></div>'
       +'<div style="margin-top:14px;border:1px solid #d9a83a;background:rgba(217,168,58,.05);padding:12px 14px">'
@@ -1528,7 +1529,15 @@ function lockdoor(){
       if((localStorage.getItem('arc.local')||'')!==sig) render();
     },1500);
     box.querySelector('#rbFresh').onclick=function(){ render(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes'; } };
-    box.querySelector('#rbLoad').onclick=function(){
+       box.querySelector('#rbZero').onclick=function(){
+      var L=LOCAL();
+      var m=box.querySelector('#rbMsg');
+      if(!L.length){ if(m){ m.style.color='#58a36a'; m.textContent='the drawer is already at zero'; } return; }
+      if(!confirm('clear the local drawer on THIS glass?\n\n'+L.length+' notes leave the recall list.\nstones already cut survive in your downloads.\nnotes committed to archive/notes.json stay in the archive pull.\nthis only empties this browser\u2019s drawer \u00b7 cannot be undone.')) return;
+      localStorage.setItem('arc.local','[]'); render();
+      if(m){ m.style.color='#58a36a'; m.textContent='drawer at zero \u00b7 the shelf is bare on this glass'; }
+    };
+       box.querySelector('#rbLoad').onclick=function(){
       var raw=(box.querySelector('#rbPaste').value||'').trim();
       if(!raw){ say(box,[],'paste json first'); return; }
       var obj=null; try{ obj=JSON.parse(raw); }catch(e){ say(box,[],'not valid json'); return; }
