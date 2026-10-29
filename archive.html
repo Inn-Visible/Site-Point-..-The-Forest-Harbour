@@ -506,5 +506,86 @@
 })();
 </script>
 
+<script>
+/* ==== the fold, v2 \u00b7 archive density \u00b7 as much or as little as you like ==== */
+(function(){
+  var DKEY='hive_arc_density';
+  var mode=localStorage.getItem(DKEY)||'full'; /* full | preview | compact */
+  function metaEls(){
+    var out=[], all=document.querySelectorAll('div,span,p');
+    for(var i=0;i<all.length;i++){
+      var t=(all[i].textContent||'');
+      if(t.length>220) continue;
+      if(/\b(ax|ex|ba|ke|sl|tp|eg)-[A-Za-z0-9]{3,}\b/.test(t) && /local|unpushed|rooted|stoned|\d{4}-\d{2}-\d{2}/.test(t)) out.push(all[i]);
+    }
+    return out;
+  }
+  function cardOf(meta){
+    var el=meta;
+    for(var up=0; up<3 && el; up++){ el=el.parentElement; if(el && el.children.length>=3) return el; }
+    return null;
+  }
+  function parts(card, meta){
+    var kids=[], i;
+    for(i=0;i<card.children.length;i++) kids.push(card.children[i]);
+    var hi=kids.indexOf(meta);
+    if(hi<0){ for(i=0;i<kids.length;i++){ if(kids[i].contains&&kids[i].contains(meta)){ hi=i; break; } } }
+    var btnIdx=-1, tagsIdx=-1;
+    for(i=hi+1;i<kids.length;i++){
+      if(btnIdx<0 && kids[i].querySelector && kids[i].querySelector('button')) btnIdx=i;
+      if(tagsIdx<0 && /^\s*#/.test(kids[i].textContent||'')) tagsIdx=i;
+    }
+    var end=(btnIdx>-1)?btnIdx:kids.length;
+    var body=[];
+    for(i=hi+2;i<end;i++){ if(i!==tagsIdx) body.push(kids[i]); }
+    return {body:body, tags:(tagsIdx>-1&&tagsIdx<end)?kids[tagsIdx]:null};
+  }
+  function applyCard(card, meta, m){
+    var p=parts(card, meta);
+    p.body.forEach(function(b){
+      if(m==='compact'){ b.style.display='none'; }
+      else if(m==='preview'){ b.style.display=''; b.style.maxHeight='4.8em'; b.style.overflow='hidden'; }
+      else { b.style.display=''; b.style.maxHeight=''; b.style.overflow=''; }
+    });
+    if(p.tags) p.tags.style.display=(m==='compact')?'none':'';
+    var caret=meta.querySelector('.foldCaret');
+    if(caret) caret.textContent={full:' \u25be full', preview:' \u25d0 preview', compact:' \u25b8 compact'}[m];
+  }
+  function applyAll(){
+    metaEls().forEach(function(meta){
+      var card=cardOf(meta); if(!card) return;
+      if(!meta.querySelector('.foldCaret')){
+        var c=document.createElement('span'); c.className='foldCaret';
+        c.style.cssText='color:#5c6875;font-size:9px;letter-spacing:.15em;cursor:pointer;margin-left:8px';
+        meta.appendChild(c);
+        c.onclick=function(e){
+          e.stopPropagation();
+          var cur=card.getAttribute('data-fold')||mode;
+          var next=(cur==='full')?'preview':(cur==='preview'?'compact':'full');
+          card.setAttribute('data-fold',next); applyCard(card,meta,next);
+        };
+      }
+      applyCard(card, meta, card.getAttribute('data-fold')||mode);
+    });
+  }
+  var bar=document.createElement('div');
+  bar.style.cssText='text-align:center;margin:6px 0 10px';
+  bar.innerHTML='<span style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-right:8px">density</span>'+
+    ['full','preview','compact'].map(function(m){
+      return '<button data-d="'+m+'" style="background:none;border:1px solid '+(m===mode?'#d9a83a':'#223041')+';color:'+(m===mode?'#d9a83a':'#93a1b0')+';font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:3px 9px;cursor:pointer;margin:0 2px">'+m+'</button>';
+    }).join('');
+  function placeBar(){ if(!bar.parentNode && document.body) document.body.insertBefore(bar, document.body.firstChild); }
+  bar.querySelectorAll('[data-d]').forEach(function(b){
+    b.onclick=function(){
+      mode=b.getAttribute('data-d'); localStorage.setItem(DKEY,mode);
+      document.querySelectorAll('[data-fold]').forEach(function(c){ c.removeAttribute('data-fold'); });
+      bar.querySelectorAll('[data-d]').forEach(function(x){ var on=x.getAttribute('data-d')===mode; x.style.borderColor=on?'#d9a83a':'#223041'; x.style.color=on?'#d9a83a':'#93a1b0'; });
+      applyAll();
+    };
+  });
+  placeBar(); applyAll(); setInterval(function(){ placeBar(); applyAll(); },1200);
+})();
+</script>
+  
 </body>
 </html>
