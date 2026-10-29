@@ -2139,5 +2139,31 @@ function lockdoor(){
 })();
 </script>
 
+<script>
+/* ==== trap de-fanger \u00b7 paste anywhere before </body> \u00b7 supersedes the two unfound stitches ==== */
+(function(){
+  /* trap 1: the greedy archive-slot matcher only pounces on DASHED boxes whose text
+     quotes the page source ("stacks remember"). your recall desk and send-preview are
+     dashed by design \u00b7 so they stop being dashed. solid borders, same colors, matcher blind. */
+  function solidify(){
+    ['wbRecBox','wbPrev'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && el.style.borderTopStyle!=='solid'){ el.style.borderStyle='solid'; }
+    });
+  }
+  solidify(); setInterval(solidify,700);
+  /* trap 2: send() yanks you off the bench by clicking the archive tab PROGRAMMATICALLY.
+     programmatic clicks are untrusted; your finger is trusted. block only the ghost hand. */
+  document.addEventListener('click',function(e){
+    if(e.isTrusted===false){
+      var t=e.target;
+      if(t && t.tagName==='BUTTON' && (t.textContent||'').trim()==='archive'){
+        e.stopImmediatePropagation(); e.preventDefault();
+      }
+    }
+  },true);
+})();
+</script>
+  
 </body>
 </html>
