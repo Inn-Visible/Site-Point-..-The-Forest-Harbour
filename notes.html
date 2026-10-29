@@ -477,7 +477,42 @@
 
   // helpers
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){}}
+    function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){}
+    // shadow-copy to house drawer so stones and root packs carry it
+    try{
+      var L=[]; try{ L=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(ex){}
+      var egIds={}, newL=[], existingIds={};
+      notes.forEach(function(n){ if(n&&n.id) egIds['eg-'+n.id]=n; });
+      L.forEach(function(n){
+        if(!n||!n.id) return;
+        if(String(n.id).indexOf('eg-')===0){
+          if(egIds[n.id]){
+            var src=egIds[n.id];
+            n.title=src.title||'untitled'; n.body=src.body||'';
+            n.tags=(src.tags||[]).concat(['eigen','tablet']);
+            n.date=new Date(src.updated||src.created||Date.now()).toISOString().slice(0,10);
+            if(src.images) n.images=src.images; else delete n.images;
+            if(src.imageStyles) n.imageStyles=src.imageStyles; else delete n.imageStyles;
+            newL.push(n); existingIds[n.id]=1;
+          }
+          // else: deleted in tablet, drop the shadow from the drawer
+        } else { newL.push(n); existingIds[n.id]=1; }
+      });
+      notes.forEach(function(n){
+        if(!n||!n.id) return;
+        var sid='eg-'+n.id;
+        if(!existingIds[sid]){
+          var obj={id:sid,pillar:'eigen',date:new Date(n.updated||n.created||Date.now()).toISOString().slice(0,10),
+            title:n.title||'untitled',body:n.body||'',tags:(n.tags||[]).concat(['eigen','tablet']),local:true};
+          if(n.images) obj.images=n.images;
+          if(n.imageStyles) obj.imageStyles=n.imageStyles;
+          newL.unshift(obj);
+        }
+      });
+      localStorage.setItem('arc.local',JSON.stringify(newL));
+    }catch(ex){}
+  }
   function load(){try{var r=localStorage.getItem(KEY);notes=r?JSON.parse(r):[];}catch(e){notes=[];}}
   function timeAgo(ts){
     var d=Date.now()-ts,m=Math.floor(d/60000);
