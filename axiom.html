@@ -1571,14 +1571,36 @@ function lockdoor(){
       if((localStorage.getItem('arc.local')||'')!==sig) render();
     },1500);
     box.querySelector('#rbFresh').onclick=function(){ render(); if(window.hiveBenchReload) window.hiveBenchReload(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes \u00b7 bench leaf re-unlocked'; } };
+        function CRYPT(){ try{ return JSON.parse(localStorage.getItem('arc.crypt')||'[]'); }catch(e){ return []; } }
+    function saveCrypt(c){ try{ localStorage.setItem('arc.crypt',JSON.stringify(c)); }catch(e){} }
+    function paintRaise(){
+      var b=box.querySelector('#rbRaise'); if(!b) return;
+      var c=CRYPT(); var n=c.length?c[0].notes.length:0;
+      b.style.display=c.length?'':'none';
+      b.textContent='raise \u21ba'+(c.length?' ('+n+')':'');
+      b.title=c.length?('newest burial \u00b7 '+new Date(c[0].t).toISOString().slice(0,10)+' \u00b7 '+c.length+' burial'+(c.length===1?'':'s')+' kept'):'the crypt is empty';
+    }
     box.querySelector('#rbZero').onclick=function(){
       var L=LOCAL();
       var m=box.querySelector('#rbMsg');
       if(!L.length){ if(m){ m.style.color='#58a36a'; m.textContent='the drawer is already at zero'; } return; }
-      if(!confirm('clear the local drawer on THIS glass?\n\n'+L.length+' notes leave the recall list.\nstones already cut WILL survive if in your downloads.\nnotes committed to archive/notes.json DO NOT stay in the archive pull.\nthis empties axiom local storage\u2019s drawer \u00b7 cannot be undone.')) return;
-      localStorage.setItem('arc.local','[]'); render();
-      if(m){ m.style.color='#58a36a'; m.textContent='drawer at zero \u00b7 the shelf is bare on this glass'; }
+      if(!confirm('crypt the drawer on THIS glass?\n\n'+L.length+' notes leave the shelf and sleep in the crypt (last 3 burials kept).\nraise \u21ba wakes the newest burial whole.\nstones already cut survive in your downloads.\nnotes committed to archive/notes.json stay in the archive pull.\n\nthis is torchwood, not deathnote \u00b7 the dead here are recoverable.')) return;
+      var c=CRYPT(); c.unshift({t:Date.now(), notes:L}); while(c.length>3) c.pop();
+      saveCrypt(c);
+      localStorage.setItem('arc.local','[]'); render(); paintRaise();
+      if(m){ m.style.color='#58a36a'; m.textContent='drawer at zero \u00b7 '+L.length+' notes sleep in the crypt \u00b7 raise \u21ba wakes them'; }
     };
+    box.querySelector('#rbRaise').onclick=function(){
+      var c=CRYPT(); var m=box.querySelector('#rbMsg');
+      if(!c.length){ if(m){ m.style.color='#58a36a'; m.textContent='the crypt is empty \u00b7 nothing to raise'; } return; }
+      var b=c.shift(); saveCrypt(c);
+      var L=LOCAL(), ids={}; L.forEach(function(n){ if(n&&n.id) ids[n.id]=1; });
+      var raised=0;
+      (b.notes||[]).slice().reverse().forEach(function(n){ if(n&&n.id&&!ids[n.id]){ L.unshift(n); ids[n.id]=1; raised++; } });
+      localStorage.setItem('arc.local',JSON.stringify(L)); render(); paintRaise();
+      if(m){ m.style.color='#58a36a'; m.textContent='raised '+raised+' notes from the crypt \u00b7 the dead walk (briefly) \u00b7 '+(b.notes.length-raised)+' were already home'; }
+    };
+    paintRaise();
     box.querySelector('#rbLoad').onclick=function(){
       var raw=(box.querySelector('#rbPaste').value||'').trim();
       if(!raw){ say(box,[],'paste json first'); return; }
