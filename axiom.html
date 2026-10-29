@@ -2164,6 +2164,56 @@ function lockdoor(){
   },true);
 })();
 </script>
+
+<script>
+/* ==== the crypt ledger \u00b7 additive raise + burial single-select \u00b7 paste before </body>, no surgery ==== */
+(function(){
+  function CRYPT(){ try{ return JSON.parse(localStorage.getItem('arc.crypt')||'[]'); }catch(e){ return []; } }
+  function saveCrypt(c){ try{ localStorage.setItem('arc.crypt',JSON.stringify(c)); }catch(e){} }
+  function LOCAL(){ try{ return JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){ return []; } }
+  function saveLocal(L){ try{ localStorage.setItem('arc.local',JSON.stringify(L)); }catch(e){} }
+  function build(){
+    var old=document.getElementById('rbCryptLedger'); if(old) return old;
+    var anchor=document.getElementById('rbZero')||document.getElementById('rbFresh');
+    if(!anchor) return null;
+    var s=document.createElement('span'); s.id='rbCryptLedger';
+    s.style.cssText='display:inline-flex;gap:6px;align-items:center;margin-left:6px';
+    s.innerHTML='<select id="clSel" title="choose which burial to wake" style="background:#0e141b;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:3px 6px;max-width:240px"></select>'
+      +'<button id="clRaise" style="background:none;border:1px solid #58a36a;color:#58a36a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">raise \u21ba</button>';
+    anchor.insertAdjacentElement('afterend',s);
+    var sel=s.querySelector('#clSel'), btn=s.querySelector('#clRaise');
+    sel.onchange=function(){ var c=CRYPT(); var b=c[+sel.value]; btn.textContent=b?('raise \u21ba ('+b.notes.length+')'):'raise \u21ba'; };
+    btn.onclick=function(){
+      var c=CRYPT(); if(!c.length) return;
+      var idx=+sel.value; if(!(idx>=0&&idx<c.length)) idx=0;
+      var b=c.splice(idx,1)[0]; saveCrypt(c);
+      var L=LOCAL(), ids={}; L.forEach(function(n){ if(n&&n.id) ids[n.id]=1; });
+      var raised=0;
+      (b.notes||[]).slice().reverse().forEach(function(n){ if(n&&n.id&&!ids[n.id]){ L.unshift(n); ids[n.id]=1; raised++; } });
+      saveLocal(L); paint();
+      var m=document.getElementById('rbMsg');
+      if(m){ m.style.color='#58a36a'; m.textContent='raised '+raised+' notes from the '+new Date(b.t).toISOString().slice(0,10)+' burial \u00b7 the dead walk \u00b7 '+(b.notes.length-raised)+' were already home'; }
+    };
+    return s;
+  }
+  function paint(){
+    var dr=document.getElementById('rbRaise'); if(dr) dr.style.display='none'; /* the stillborn door stays shut; the ledger raises now */
+    var c=CRYPT();
+    var s=build(); if(!s) return;
+    s.style.display=c.length?'inline-flex':'none';
+    if(!c.length) return;
+    var sel=s.querySelector('#clSel'), btn=s.querySelector('#clRaise');
+    var sig=c.length+':'+c.map(function(b){return b.t;}).join(',');
+    if(sel.getAttribute('data-sig')!==sig){
+      sel.innerHTML=c.map(function(b,i){ return '<option value="'+i+'">'+new Date(b.t).toISOString().slice(0,10)+' \u00b7 '+(b.filter||'hand-picked')+' \u00b7 '+b.notes.length+' asleep</option>'; }).join('');
+      sel.setAttribute('data-sig',sig);
+    }
+    var b=c[+sel.value||0];
+    btn.textContent='raise \u21ba ('+(b?b.notes.length:0)+')';
+  }
+  paint(); setInterval(paint,1200);
+})();
+</script>
   
 </body>
 </html>
