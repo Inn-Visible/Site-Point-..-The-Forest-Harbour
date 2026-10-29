@@ -1680,6 +1680,11 @@ function lockdoor(){
       .then(function(){ btn.disabled=false; });
   };
   row.querySelector('#stUp').onclick=function(){ say('pick a stone file ..'); row.querySelector('#stIn').click(); };
+   row.querySelector('#stRoot').onclick=function(){ say('gathering the rooted pack ..');
+     gather().then(function(ns){
+       download('notes.json', new Blob([JSON.stringify(ns,null,1)],{type:'application/json'}));
+       say('root pack \u21e9 '+ns.length+' notes \u00b7 drop it into archive/ and commit \u00b7 every glass then reads it','#58a36a');
+     }); };
   row.querySelector('#stProve').onclick=function(){ say('pick a stone to prove ..'); row.querySelector('#stIn2').click(); };
   row.querySelector('#stText').onclick=function(){ say('gathering ..');
     gather().then(function(ns){ return cutStone(ns).then(function(pkg){
