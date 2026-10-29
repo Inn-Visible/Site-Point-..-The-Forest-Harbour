@@ -507,33 +507,47 @@
 </script>
 
 <script>
-/* ==== the fold, v2 \u00b7 archive density \u00b7 as much or as little as you like ==== */
+/* ==== the fold, v3 \u00b7 density for the archive \u00b7 reaches through iframe glass ==== */
 (function(){
   var DKEY='hive_arc_density';
-  var mode=localStorage.getItem(DKEY)||'full'; /* full | preview | compact */
-  function metaEls(){
-    var out=[], all=document.querySelectorAll('div,span,p');
+  function modeGet(){ return localStorage.getItem(DKEY)||'full'; }
+  function modeSet(m){ localStorage.setItem(DKEY,m); }
+  function docs(){
+    var out=[document];
+    if(window.self===window.top){
+      var frs=document.querySelectorAll('iframe');
+      for(var i=0;i<frs.length;i++){ try{ var d=frs[i].contentDocument; if(d&&d.body) out.push(d); }catch(e){} }
+    }
+    return out;
+  }
+  function metaEls(d){
+    var out=[], all=d.querySelectorAll('div,span,p,li');
     for(var i=0;i<all.length;i++){
-      var t=(all[i].textContent||'');
-      if(t.length>220) continue;
-      if(/\b(ax|ex|ba|ke|sl|tp|eg)-[A-Za-z0-9]{3,}\b/.test(t) && /local|unpushed|rooted|stoned|\d{4}-\d{2}-\d{2}/.test(t)) out.push(all[i]);
+      var el=all[i], t=(el.textContent||'');
+      if(t.length>220||t.length<8) continue;
+      var dup=false; for(var j=0;j<out.length;j++){ if(out[j].contains(el)){ dup=true; break; } }
+      if(dup) continue;
+      var hasId=/\b(ax|ex|ba|ke|sl|tp|eg)-[A-Za-z0-9]{3,}\b/.test(t);
+      var hasDate=/\b\d{4}-\d{2}-\d{2}\b/.test(t);
+      var hasState=/(local|unpushed|rooted|stoned)/.test(t);
+      if((hasId||hasDate)&&hasState) out.push(el);
     }
     return out;
   }
   function cardOf(meta){
     var el=meta;
-    for(var up=0; up<3 && el; up++){ el=el.parentElement; if(el && el.children.length>=3) return el; }
+    for(var up=0; up<4 && el; up++){ el=el.parentElement; if(el&&el.children&&el.children.length>=3) return el; }
     return null;
   }
   function parts(card, meta){
-    var kids=[], i;
-    for(i=0;i<card.children.length;i++) kids.push(card.children[i]);
-    var hi=kids.indexOf(meta);
-    if(hi<0){ for(i=0;i<kids.length;i++){ if(kids[i].contains&&kids[i].contains(meta)){ hi=i; break; } } }
+    var kids=[],i; for(i=0;i<card.children.length;i++) kids.push(card.children[i]);
+    var hi=-1;
+    for(i=0;i<kids.length;i++){ if(kids[i]===meta||(kids[i].contains&&kids[i].contains(meta))){ hi=i; break; } }
+    if(hi<0) return null;
     var btnIdx=-1, tagsIdx=-1;
     for(i=hi+1;i<kids.length;i++){
-      if(btnIdx<0 && kids[i].querySelector && kids[i].querySelector('button')) btnIdx=i;
-      if(tagsIdx<0 && /^\s*#/.test(kids[i].textContent||'')) tagsIdx=i;
+      if(btnIdx<0&&kids[i].querySelector&&kids[i].querySelector('button,a')) btnIdx=i;
+      if(tagsIdx<0&&/^\s*#/.test(kids[i].textContent||'')) tagsIdx=i;
     }
     var end=(btnIdx>-1)?btnIdx:kids.length;
     var body=[];
@@ -541,7 +555,7 @@
     return {body:body, tags:(tagsIdx>-1&&tagsIdx<end)?kids[tagsIdx]:null};
   }
   function applyCard(card, meta, m){
-    var p=parts(card, meta);
+    var p=parts(card, meta); if(!p) return;
     p.body.forEach(function(b){
       if(m==='compact'){ b.style.display='none'; }
       else if(m==='preview'){ b.style.display=''; b.style.maxHeight='4.8em'; b.style.overflow='hidden'; }
@@ -549,41 +563,51 @@
     });
     if(p.tags) p.tags.style.display=(m==='compact')?'none':'';
     var caret=meta.querySelector('.foldCaret');
-    if(caret) caret.textContent={full:' \u25be full', preview:' \u25d0 preview', compact:' \u25b8 compact'}[m];
+    if(caret) caret.textContent={full:' \u25be full',preview:' \u25d0 preview',compact:' \u25b8 compact'}[m];
+    card.setAttribute('data-fold',m);
+  }
+  function barFor(d){
+    var b=d.getElementById('arcFoldBar'); if(b) return b;
+    b=d.createElement('div'); b.id='arcFoldBar';
+    b.style.cssText='text-align:center;margin:6px 0 10px';
+    b.innerHTML='<span style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-right:8px">density</span>'+
+      ['full','preview','compact'].map(function(m){ return '<button data-d="'+m+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:3px 9px;cursor:pointer;margin:0 2px">'+m+'</button>'; }).join('');
+    d.body.insertBefore(b, d.body.firstChild);
+    b.querySelectorAll('[data-d]').forEach(function(btn){
+      btn.onclick=function(){
+        modeSet(btn.getAttribute('data-d'));
+        docs().forEach(function(dd){ dd.querySelectorAll('[data-fold]').forEach(function(c){ c.removeAttribute('data-fold'); }); });
+        applyAll();
+      };
+    });
+    return b;
+  }
+  function paintBar(b){
+    var m=modeGet();
+    b.querySelectorAll('[data-d]').forEach(function(x){ var on=x.getAttribute('data-d')===m; x.style.borderColor=on?'#d9a83a':'#223041'; x.style.color=on?'#d9a83a':'#93a1b0'; });
   }
   function applyAll(){
-    metaEls().forEach(function(meta){
-      var card=cardOf(meta); if(!card) return;
-      if(!meta.querySelector('.foldCaret')){
-        var c=document.createElement('span'); c.className='foldCaret';
-        c.style.cssText='color:#5c6875;font-size:9px;letter-spacing:.15em;cursor:pointer;margin-left:8px';
-        meta.appendChild(c);
-        c.onclick=function(e){
-          e.stopPropagation();
-          var cur=card.getAttribute('data-fold')||mode;
-          var next=(cur==='full')?'preview':(cur==='preview'?'compact':'full');
-          card.setAttribute('data-fold',next); applyCard(card,meta,next);
-        };
-      }
-      applyCard(card, meta, card.getAttribute('data-fold')||mode);
+    var m=modeGet();
+    docs().forEach(function(d){
+      paintBar(barFor(d));
+      metaEls(d).forEach(function(meta){
+        var card=cardOf(meta); if(!card) return;
+        if(!meta.querySelector('.foldCaret')){
+          var c=d.createElement('span'); c.className='foldCaret';
+          c.style.cssText='color:#5c6875;font-size:9px;letter-spacing:.15em;cursor:pointer;margin-left:8px';
+          meta.appendChild(c);
+          c.onclick=function(e){
+            e.stopPropagation();
+            var cur=card.getAttribute('data-fold')||m;
+            var next=(cur==='full')?'preview':(cur==='preview'?'compact':'full');
+            applyCard(card,meta,next);
+          };
+        }
+        applyCard(card,meta,card.getAttribute('data-fold')||m);
+      });
     });
   }
-  var bar=document.createElement('div');
-  bar.style.cssText='text-align:center;margin:6px 0 10px';
-  bar.innerHTML='<span style="font-size:9px;color:#5c6875;letter-spacing:.2em;margin-right:8px">density</span>'+
-    ['full','preview','compact'].map(function(m){
-      return '<button data-d="'+m+'" style="background:none;border:1px solid '+(m===mode?'#d9a83a':'#223041')+';color:'+(m===mode?'#d9a83a':'#93a1b0')+';font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:3px 9px;cursor:pointer;margin:0 2px">'+m+'</button>';
-    }).join('');
-  function placeBar(){ if(!bar.parentNode && document.body) document.body.insertBefore(bar, document.body.firstChild); }
-  bar.querySelectorAll('[data-d]').forEach(function(b){
-    b.onclick=function(){
-      mode=b.getAttribute('data-d'); localStorage.setItem(DKEY,mode);
-      document.querySelectorAll('[data-fold]').forEach(function(c){ c.removeAttribute('data-fold'); });
-      bar.querySelectorAll('[data-d]').forEach(function(x){ var on=x.getAttribute('data-d')===mode; x.style.borderColor=on?'#d9a83a':'#223041'; x.style.color=on?'#d9a83a':'#93a1b0'; });
-      applyAll();
-    };
-  });
-  placeBar(); applyAll(); setInterval(function(){ placeBar(); applyAll(); },1200);
+  applyAll(); setInterval(applyAll,900);
 })();
 </script>
   
