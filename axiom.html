@@ -1224,7 +1224,7 @@ function lockdoor(){
   },800);
 })();
 </script>
-
+  
 <script>
 (function(){
   function pad(){
@@ -1460,7 +1460,7 @@ function lockdoor(){
     box.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#5c6875;margin-bottom:10px">recall \u00b7 the archive desk \u00b7 every note, scrollable, nothing cut</div>'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">'
       +'<button id="rbFresh" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:4px 10px;cursor:pointer">\u27f3 refresh list</button>'
-            +'<button id="rbZero" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">crypt drawer \u26b0</button>'
+      +'<button id="rbZero" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:4px 10px;cursor:pointer">crypt drawer \u26b0</button>'
       +'<button id="rbRaise" style="background:none;border:1px solid #58a36a;color:#58a36a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">raise \u21ba</button>'
       +'<button id="rbDec" style="background:none;border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace;padding:4px 10px;cursor:pointer">decrypt \u00b7 off</button>'
       +'<span id="rbCount" style="font-size:9px;color:#5c6875;letter-spacing:.12em"></span></div>'
@@ -1517,6 +1517,79 @@ function lockdoor(){
     decLabel();
     if(decBtn) decBtn.onclick=function(){ DEC=!DEC; localStorage.setItem('hive_rb_dec',DEC?'1':'0'); decLabel();
       if(DEC&&window.vaultPrompt&&!window.vaultIsOpen()){ window.vaultPrompt(function(){ render(); }); } else render(); };
+    function CRYPT(){ try{ return JSON.parse(localStorage.getItem('arc.crypt')||'[]'); }catch(e){ return []; } }
+    function saveCrypt(c){ try{ localStorage.setItem('arc.crypt',JSON.stringify(c)); }catch(e){} }
+    function paintRaise(){
+      var b=box.querySelector('#rbRaise'); if(!b) return;
+      var c=CRYPT(); var n=c.length?c[0].notes.length:0;
+      b.style.display=c.length?'':'none';
+      b.textContent='raise \u21ba'+(c.length?' ('+n+')':'');
+      b.title=c.length?('newest burial \u00b7 '+new Date(c[0].t).toISOString().slice(0,10)+' \u00b7 '+(c[0].filter||'hand-picked')+' \u00b7 '+c.length+' burial'+(c.length===1?'':'s')+' kept'):'the crypt is empty';
+    }
+    function tagCounts(L){ var m={}; L.forEach(function(n){ (n.tags||[]).forEach(function(t){ m[t]=(m[t]||0)+1; }); }); return m; }
+    function matchNotes(L,f){
+      var now=Date.now();
+      return L.filter(function(n){
+        switch(f){
+          case 'all': return true;
+          case 'stoned': return !!n.stoned;
+          case 'unstoned': return !n.stoned;
+          case 'old30': return (now-new Date((n.date||'1970-01-01')+'T00:00:00Z').getTime())>30*864e5;
+          case 'old90': return (now-new Date((n.date||'1970-01-01')+'T00:00:00Z').getTime())>90*864e5;
+          default:
+            if(f.indexOf('pillar:')===0) return n.pillar===f.slice(7);
+            if(f.indexOf('tag:')===0) return (n.tags||[]).indexOf(f.slice(4))>-1;
+            return true;
+        }
+      });
+    }
+    function cryptPanel(){
+      var oldP=document.getElementById('rbCryptPanel'); if(oldP){ oldP.remove(); return; }
+      var L=LOCAL();
+      var p=document.createElement('div'); p.id='rbCryptPanel';
+      p.style.cssText='margin:10px 0;padding:12px 14px;border:1px solid #c8452c;background:rgba(200,69,44,.07)';
+      var tc=tagCounts(L), tagOpts='';
+      Object.keys(tc).sort(function(a,b){return tc[b]-tc[a];}).slice(0,10).forEach(function(t){ tagOpts+='<option value="tag:'+t+'">tag #'+t+' ('+tc[t]+')</option>'; });
+      var pilOpts='';
+      ['axiom','eigen','baseline','keystone'].forEach(function(pl){ var c=L.filter(function(n){return n.pillar===pl;}).length; if(c) pilOpts+='<option value="pillar:'+pl+'">pillar '+pl+' ('+c+')</option>'; });
+      p.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#c8452c;margin-bottom:8px">the crypt \u00b7 choose what sleeps \u00b7 torchwood rules, the dead return</div>'
+        +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+        +'<select id="cpF" style="background:#0e141b;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 8px;max-width:280px">'
+        +'<option value="all">bury ALL '+L.length+' notes (think twice)</option>'
+        +pilOpts+tagOpts
+        +'<option value="stoned">only already-stoned (safe to hide)</option>'
+        +'<option value="unstoned">only NOT-yet-stoned (risky \u00b7 cut a stone first)</option>'
+        +'<option value="old30">older than 30 days</option>'
+        +'<option value="old90">older than 90 days</option>'
+        +'</select>'
+        +'<span id="cpCount" style="font-size:10px;color:#93a1b0"></span></div>'
+        +'<div id="cpPrev" style="margin-top:8px;font-size:9px;color:#5c6875;line-height:1.7"></div>'
+        +'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button id="cpGo" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:6px 12px;cursor:pointer">bury matched \u26b0</button>'
+        +'<button id="cpNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:6px 12px;cursor:pointer">stand down</button></div>'
+        +'<div id="cpMsg" style="margin-top:8px;font-size:10px;color:#58a36a;min-height:12px"></div>';
+      box.querySelector('#rbZero').insertAdjacentElement('afterend',p);
+      var sel=p.querySelector('#cpF'), cnt=p.querySelector('#cpCount'), prev=p.querySelector('#cpPrev');
+      function upd(){
+        var m=matchNotes(L,sel.value);
+        cnt.textContent=m.length+' of '+L.length+' will sleep \u00b7 '+(L.length-m.length)+' stay on the shelf';
+        cnt.style.color=(m.length===L.length)?'#c8452c':'#93a1b0';
+        prev.textContent=m.length?('sleeping: '+m.slice(0,3).map(function(n){return clean(n.title||'untitled');}).join(' \u00b7 ')+(m.length>3?' \u2026 +'+(m.length-3)+' more':'')):'nothing matches \u00b7 nothing sleeps';
+      }
+      sel.onchange=upd; upd();
+      p.querySelector('#cpNo').onclick=function(){ p.remove(); };
+      p.querySelector('#cpGo').onclick=function(){
+        var m=matchNotes(L,sel.value);
+        if(!m.length){ var mm=p.querySelector('#cpMsg'); mm.style.color='#c8452c'; mm.textContent='nothing matched \u00b7 nothing buried \u00b7 the shelf stands'; return; }
+        var ids={}; m.forEach(function(n){ ids[n.id]=1; });
+        var stay=L.filter(function(n){ return !ids[n.id]; });
+        var c=CRYPT(); c.unshift({t:Date.now(), notes:m, filter:sel.value}); while(c.length>3) c.pop();
+        saveCrypt(c);
+        localStorage.setItem('arc.local',JSON.stringify(stay)); render(); paintRaise(); p.remove();
+        var msg=box.querySelector('#rbMsg');
+        if(msg){ msg.style.color='#58a36a'; msg.textContent=m.length+' notes sleep in the crypt \u00b7 '+stay.length+' stay on the shelf \u00b7 raise \u21ba wakes the newest burial'; }
+      };
+    }
     var sig=null;
     function render(){
       var L=LOCAL(); sig=localStorage.getItem('arc.local')||'';
@@ -1571,79 +1644,6 @@ function lockdoor(){
       if((localStorage.getItem('arc.local')||'')!==sig) render();
     },1500);
     box.querySelector('#rbFresh').onclick=function(){ render(); if(window.hiveBenchReload) window.hiveBenchReload(); var m=box.querySelector('#rbMsg'); if(m){ m.style.color='#58a36a'; m.textContent='list pulled fresh \u00b7 '+LOCAL().length+' notes \u00b7 bench leaf re-unlocked'; } };
-          function CRYPT(){ try{ return JSON.parse(localStorage.getItem('arc.crypt')||'[]'); }catch(e){ return []; } }
-    function saveCrypt(c){ try{ localStorage.setItem('arc.crypt',JSON.stringify(c)); }catch(e){} }
-    function paintRaise(){
-      var b=box.querySelector('#rbRaise'); if(!b) return;
-      var c=CRYPT(); var n=c.length?c[0].notes.length:0;
-      b.style.display=c.length?'':'none';
-      b.textContent='raise \u21ba'+(c.length?' ('+n+')':'');
-      b.title=c.length?('newest burial \u00b7 '+new Date(c[0].t).toISOString().slice(0,10)+' \u00b7 '+(c[0].filter||'hand-picked')+' \u00b7 '+c.length+' burial'+(c.length===1?'':'s')+' kept'):'the crypt is empty';
-    }
-    function tagCounts(L){ var m={}; L.forEach(function(n){ (n.tags||[]).forEach(function(t){ m[t]=(m[t]||0)+1; }); }); return m; }
-    function matchNotes(L,f){
-      var now=Date.now();
-      return L.filter(function(n){
-        switch(f){
-          case 'all': return true;
-          case 'stoned': return !!n.stoned;
-          case 'unstoned': return !n.stoned;
-          case 'old30': return (now-new Date((n.date||'1970-01-01')+'T00:00:00Z').getTime())>30*864e5;
-          case 'old90': return (now-new Date((n.date||'1970-01-01')+'T00:00:00Z').getTime())>90*864e5;
-          default:
-            if(f.indexOf('pillar:')===0) return n.pillar===f.slice(7);
-            if(f.indexOf('tag:')===0) return (n.tags||[]).indexOf(f.slice(4))>-1;
-            return true;
-        }
-      });
-    }
-    function cryptPanel(){
-      var old=document.getElementById('rbCryptPanel'); if(old){ old.remove(); return; }
-      var L=LOCAL();
-      var p=document.createElement('div'); p.id='rbCryptPanel';
-      p.style.cssText='margin:10px 0;padding:12px 14px;border:1px solid #c8452c;background:rgba(200,69,44,.07)';
-      var tc=tagCounts(L), tagOpts='';
-      Object.keys(tc).sort(function(a,b){return tc[b]-tc[a];}).slice(0,10).forEach(function(t){ tagOpts+='<option value="tag:'+t+'">tag #'+t+' ('+tc[t]+')</option>'; });
-      var pilOpts='';
-      ['axiom','eigen','baseline','keystone'].forEach(function(pl){ var c=L.filter(function(n){return n.pillar===pl;}).length; if(c) pilOpts+='<option value="pillar:'+pl+'">pillar '+pl+' ('+c+')</option>'; });
-      p.innerHTML='<div style="font-size:9px;letter-spacing:.25em;color:#c8452c;margin-bottom:8px">the crypt \u00b7 choose what sleeps \u00b7 torchwood rules, the dead return</div>'
-        +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-        +'<select id="cpF" style="background:#0e141b;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 8px;max-width:280px">'
-        +'<option value="all">bury ALL '+L.length+' notes (think twice)</option>'
-        +pilOpts+tagOpts
-        +'<option value="stoned">only already-stoned (safe to hide)</option>'
-        +'<option value="unstoned">only NOT-yet-stoned (risky \u00b7 cut a stone first)</option>'
-        +'<option value="old30">older than 30 days</option>'
-        +'<option value="old90">older than 90 days</option>'
-        +'</select>'
-        +'<span id="cpCount" style="font-size:10px;color:#93a1b0"></span></div>'
-        +'<div id="cpPrev" style="margin-top:8px;font-size:9px;color:#5c6875;line-height:1.7"></div>'
-        +'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
-        +'<button id="cpGo" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:6px 12px;cursor:pointer">bury matched \u26b0</button>'
-        +'<button id="cpNo" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:6px 12px;cursor:pointer">stand down</button></div>'
-        +'<div id="cpMsg" style="margin-top:8px;font-size:10px;color:#58a36a;min-height:12px"></div>';
-      box.querySelector('#rbZero').insertAdjacentElement('afterend',p);
-      var sel=p.querySelector('#cpF'), cnt=p.querySelector('#cpCount'), prev=p.querySelector('#cpPrev');
-      function upd(){
-        var m=matchNotes(L,sel.value);
-        cnt.textContent=m.length+' of '+L.length+' will sleep \u00b7 '+(L.length-m.length)+' stay on the shelf';
-        cnt.style.color=(m.length===L.length)?'#c8452c':'#93a1b0';
-        prev.textContent=m.length?('sleeping: '+m.slice(0,3).map(function(n){return clean(n.title||'untitled');}).join(' \u00b7 ')+(m.length>3?' \u2026 +'+(m.length-3)+' more':'')):'nothing matches \u00b7 nothing sleeps';
-      }
-      sel.onchange=upd; upd();
-      p.querySelector('#cpNo').onclick=function(){ p.remove(); };
-      p.querySelector('#cpGo').onclick=function(){
-        var m=matchNotes(L,sel.value);
-        if(!m.length){ var mm=p.querySelector('#cpMsg'); mm.style.color='#c8452c'; mm.textContent='nothing matched \u00b7 nothing buried \u00b7 the shelf stands'; return; }
-        var ids={}; m.forEach(function(n){ ids[n.id]=1; });
-        var stay=L.filter(function(n){ return !ids[n.id]; });
-        var c=CRYPT(); c.unshift({t:Date.now(), notes:m, filter:sel.value}); while(c.length>3) c.pop();
-        saveCrypt(c);
-        localStorage.setItem('arc.local',JSON.stringify(stay)); render(); paintRaise(); p.remove();
-        var msg=box.querySelector('#rbMsg');
-        if(msg){ msg.style.color='#58a36a'; msg.textContent=m.length+' notes sleep in the crypt \u00b7 '+stay.length+' stay on the shelf \u00b7 raise \u21ba wakes the newest burial'; }
-      };
-    }
     box.querySelector('#rbZero').onclick=function(){
       var L=LOCAL();
       var m=box.querySelector('#rbMsg');
@@ -1660,20 +1660,6 @@ function lockdoor(){
       localStorage.setItem('arc.local',JSON.stringify(L)); render(); paintRaise();
       if(m){ m.style.color='#58a36a'; m.textContent='raised '+raised+' notes from the crypt \u00b7 the dead walk (briefly) \u00b7 '+(b.notes.length-raised)+' were already home'; }
     };
-    paintRaise();
-      if(m){ m.style.color='#58a36a'; m.textContent='drawer at zero \u00b7 '+L.length+' notes sleep in the crypt \u00b7 raise \u21ba wakes them'; }
-    };
-    box.querySelector('#rbRaise').onclick=function(){
-      var c=CRYPT(); var m=box.querySelector('#rbMsg');
-      if(!c.length){ if(m){ m.style.color='#58a36a'; m.textContent='the crypt is empty \u00b7 nothing to raise'; } return; }
-      var b=c.shift(); saveCrypt(c);
-      var L=LOCAL(), ids={}; L.forEach(function(n){ if(n&&n.id) ids[n.id]=1; });
-      var raised=0;
-      (b.notes||[]).slice().reverse().forEach(function(n){ if(n&&n.id&&!ids[n.id]){ L.unshift(n); ids[n.id]=1; raised++; } });
-      localStorage.setItem('arc.local',JSON.stringify(L)); render(); paintRaise();
-      if(m){ m.style.color='#58a36a'; m.textContent='raised '+raised+' notes from the crypt \u00b7 the dead walk (briefly) \u00b7 '+(b.notes.length-raised)+' were already home'; }
-    };
-    paintRaise();
     box.querySelector('#rbLoad').onclick=function(){
       var raw=(box.querySelector('#rbPaste').value||'').trim();
       if(!raw){ say(box,[],'paste json first'); return; }
@@ -1684,20 +1670,22 @@ function lockdoor(){
       say(box,all); render();
     };
     box.querySelector('#rbNo').onclick=function(){ box.remove(); };
+    paintRaise();
     render();
   }
   function send(title,body,tags){
-    var LOCAL=[]; try{ LOCAL=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
-    LOCAL.unshift({id:'ax-W'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
+    var L=[]; try{ L=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(e){}
+    L.unshift({id:'ax-W'+Date.now(), pillar:'axiom', date:new Date().toISOString().slice(0,10),
       title:title, body:body, tags:tags, local:true});
-       localStorage.setItem('arc.local',JSON.stringify(LOCAL));
-    var b=document.getElementById('wbArc'); if(b){ flash(b,'sent \u2713 '+LOCAL.length+' in the drawer'); }
+    localStorage.setItem('arc.local',JSON.stringify(L));
+    var b=document.getElementById('wbArc'); if(b){ flash(b,'sent \u2713 '+L.length+' in drawer'); }
   }
   setInterval(ensure,600);
   document.addEventListener('click',function(){ setTimeout(ensure,60); });
   ensure();
 })();
 </script>
+
 
 <script>
 (function(){
