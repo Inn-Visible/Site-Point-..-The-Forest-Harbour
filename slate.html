@@ -359,6 +359,21 @@ resize(); pgLabel(); paintSw();
   btn.addEventListener('click',function(){ renderList(); dr.style.display='flex'; });
 })();
 </script>
+
+<script>
+/* ---- the carryback bell \u00b7 slate hears the kit ---- */
+(function(){
+  var mine=localStorage.getItem('hive_slate_v2');
+  addEventListener('storage',function(e){
+    if(e.key!=='hive_slate_v2'||e.newValue===mine) return;
+    mine=e.newValue;
+    var f=document.getElementById('flash'); if(!f) return;
+    f.textContent='the kit carried ink back \u00b7 tap here to hold it';
+    f.style.cursor='pointer';
+    f.onclick=function(){ location.reload(); };
+  });
+})();
+</script>
  
 </body>
 </html>
