@@ -124,9 +124,17 @@ function bbox(o){ if(o.t==='t') return [o.p[0],o.p[1]-o.w,o.p[0]+o.s.length*o.w*
   return [X0,Y0,X1,Y1]; }
 function inSel(o){ var b=bbox(o); return b[0]<Math.max(sel.x0,sel.x1)&&b[2]>Math.min(sel.x0,sel.x1)&&b[1]<Math.max(sel.y0,sel.y1)&&b[3]>Math.min(sel.y0,sel.y1); }
 function shift(o,dx,dy){ if(o.t==='i'||o.t==='t'){ o.p[0]+=dx; o.p[1]+=dy; } else o.pts.forEach(function(p){ p[0]+=dx; p[1]+=dy; }); }
-function inkShot(){ var w=900,h=Math.round(900*innerHeight/Math.max(1,innerWidth));
-  var c=document.createElement('canvas'); c.width=w; c.height=h;
-  var g=c.getContext('2d'); g.scale(w/innerWidth,w/innerWidth); paint(g,S.pages[S.cur],innerWidth,innerHeight);
+function inkShot(){ var CW=1000, CH=1400;
+  var c=document.createElement('canvas'); c.width=CW; c.height=CH; var g=c.getContext('2d');
+  g.fillStyle='#f2efe6'; g.fillRect(0,0,CW,CH);
+  g.fillStyle='#1c2430'; g.font='28px ui-monospace,Consolas,monospace';
+  g.fillText('slate \u00b7 page '+(S.cur+1)+' \u00b7 '+new Date().toISOString().slice(0,10), 40, 56);
+  var fit=Math.min((CW-80)/innerWidth,(CH-140)/innerHeight);
+  g.save(); g.translate(40,100); g.scale(fit,fit);
+  g.fillStyle=light?'#f2efe6':'#0a0d12'; g.fillRect(0,0,innerWidth,innerHeight);
+  var pg=S.pages[S.cur]; for(var i=0;i<pg.length;i++) drawObj(g,pg[i]);
+  g.restore();
+  g.strokeStyle='#1c2430'; g.lineWidth=2; g.strokeRect(40,100,innerWidth*fit,innerHeight*fit);
   return c.toDataURL('image/png'); }
 var mirrorT=null;
 function mirrorSlate(){ if(mirrorT) return; mirrorT=setTimeout(function(){ mirrorT=null;
@@ -263,14 +271,23 @@ resize(); pgLabel(); paintSw();
     else { c.strokeStyle=o.c; c.shadowColor=o.c; c.shadowBlur=6; }
     var P=o.pts||[]; if(P.length){ c.beginPath(); c.moveTo(P[0][0],P[0][1]); for(var i=1;i<P.length;i++) c.lineTo(P[i][0],P[i][1]); if(P.length===1) c.lineTo(P[0][0]+.1,P[0][1]); c.stroke(); }
     c.restore(); }
-  function bookImg(pages){ var s=700/innerWidth, H=0, caps=pages.slice(0,6);
-    caps.forEach(function(){ H+=Math.round(innerHeight*s); });
-    var c=document.createElement('canvas'); c.width=700; c.height=H; var g=c.getContext('2d');
-    var y=0; caps.forEach(function(pg,i){ g.save(); g.translate(0,y); g.scale(s,s);
-      g.fillStyle=lightNow()?'#f2efe6':'#0a0d12'; g.fillRect(0,0,innerWidth,innerHeight);
-      pg.forEach(function(o){ if(o.t==='i'&&o.src&&!o.im){ o.im=new Image(); o.im.src=o.src; } drawO(g,o); });
-      g.restore(); y+=Math.round(innerHeight*s); });
-    return c.toDataURL('image/png'); }
+ function bookImg(pages){ var CW=1000, PH=500, caps=pages.slice(0,8);
+  var CH=80+caps.length*(PH+30);
+  var c=document.createElement('canvas'); c.width=CW; c.height=CH; var g=c.getContext('2d');
+  g.fillStyle='#f2efe6'; g.fillRect(0,0,CW,CH);
+  g.fillStyle='#1c2430'; g.font='28px ui-monospace,Consolas,monospace';
+  g.fillText('slate book \u00b7 '+pages.length+' pages \u00b7 '+new Date().toISOString().slice(0,10), 40, 52);
+  var y=80;
+  caps.forEach(function(pg,i){
+    g.fillStyle='#1c2430'; g.font='20px ui-monospace,Consolas,monospace'; g.fillText('page '+(i+1), 40, y+18);
+    var fit=Math.min((CW-80)/innerWidth,(PH-26)/innerHeight);
+    g.save(); g.translate(40,y+26); g.scale(fit,fit);
+    g.fillStyle=lightNow()?'#f2efe6':'#0a0d12'; g.fillRect(0,0,innerWidth,innerHeight);
+    pg.forEach(function(o){ if(o.t==='i'&&o.src&&!o.im){ o.im=new Image(); o.im.src=o.src; } drawO(g,o); });
+    g.restore();
+    g.strokeStyle='#1c2430'; g.lineWidth=2; g.strokeRect(40,y+26,innerWidth*fit,innerHeight*fit);
+    y+=PH+30; });
+  return c.toDataURL('image/png'); }
   var sendB=document.getElementById('send');
   if(sendB&&sendB.parentNode){ var sb=document.createElement('button'); sb.textContent='send book \u2713';
     sendB.parentNode.insertBefore(sb,sendB.nextSibling);
