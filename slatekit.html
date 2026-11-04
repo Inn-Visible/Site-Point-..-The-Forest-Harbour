@@ -74,8 +74,9 @@
   function baseNote(){ noteEl.textContent='editing slate page '+(pageIdx+1)+' \u00b7 carried forward'; }
   function note(m){ noteEl.textContent=m; clearTimeout(noteT); noteT=setTimeout(baseNote,2600); }
   function ovlKey(){ return 'hive_kit_ovl_'+pageIdx; }
-  function dims(){ var s=null; try{ s=localStorage.getItem('hive_slate'); }catch(e){}
-    if(s){ var im=new Image(); im.onload=function(){ bw=im.width; bh=im.height; redraw(); }; im.src=s; } }
+ function dims(cb){ var s=null; try{ s=localStorage.getItem('hive_slate'); }catch(e){}
+  if(s){ var im=new Image(); im.onload=function(){ if(bw<2){ bw=im.width; bh=im.height; } redraw(); if(cb) cb(); }; im.src=s; }
+  else if(cb){ if(bw<2){ bw=innerWidth; bh=innerHeight; } cb(); } } 
   function readV(){ try{ return JSON.parse(localStorage.getItem('hive_slate_v2')); }catch(e){ return null; } }
   function toItem(o){ if(o.t==='t') return {k:'t',s:o.s,c:o.c,w:o.w,p:[o.p[0]/bw,o.p[1]/bh]};
     if(o.t==='i') return {k:'i',src:o.src||null,p:[o.p[0]/bw,o.p[1]/bh],nw:(o.w||bw)/bw,nh:(o.h||bh)/bh};
@@ -203,7 +204,10 @@ function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catc
     if(e.key==='hive_slate_v2'){ var v=readV(); var n=v&&typeof v.cur==='number'?v.cur:pageIdx;
       if(n!==pageIdx){ saveOvl(); pageIdx=n; loadOvl(); redraw(); baseNote(); note('the slate turned to page '+(n+1)+' \u00b7 its ink follows'); } } });
   pageIdx=(function(){ var v=readV(); return v&&typeof v.cur==='number'?v.cur:0; })();
-  dims(); loadOvl(); baseNote(); fit(); markTools();
+ (function(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catch(e){}
+  if(raw){ loadOvl(); baseNote(); fit(); markTools(); }
+  else dims(function(){ seed(); baseNote(); fit(); markTools(); });
+})();
 })();
 </script>
 </body>
