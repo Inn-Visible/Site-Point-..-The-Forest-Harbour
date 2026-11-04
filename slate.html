@@ -222,6 +222,7 @@ function paintSw(){ var p=pal(); swBox.querySelectorAll('.sw').forEach(function(
 document.getElementById('size').addEventListener('input',function(){ size=+this.value; });
 document.getElementById('tsize').addEventListener('input',function(){ tsize=+this.value; });
 resize(); pgLabel(); paintSw();
+ window.hiveSlate={S:S,render:render,save:save,pgLabel:pgLabel,flash:flash};
 })();
 </script>
 
@@ -285,6 +286,44 @@ resize(); pgLabel(); paintSw();
         document.getElementById('modal').style.display='none';
         flash('book sent \u2713 '+S.pages.length+' pages, one leaf'); eyes(); }catch(e){ flash('the book would not bind'); } }); }
   setInterval(eyes,2000); eyes();
+})();
+</script>
+
+<script>
+/* ---- the page drawer \u00b7 pick, name, jump ---- */
+(function(){
+  var H=window.hiveSlate; if(!H) return;
+  function labels(){ try{ return JSON.parse(localStorage.getItem('hive_slate_labels')||'[]'); }catch(e){ return []; } }
+  function setLabels(L){ try{ localStorage.setItem('hive_slate_labels',JSON.stringify(L)); }catch(e){} }
+  function desc(pg,i){ var L=labels(); if(L[i]) return L[i];
+    for(var k=0;k<pg.length;k++){ if(pg[k].t==='t') return '\u201c'+pg[k].s.slice(0,18)+'\u201d'; }
+    return pg.length? 'ink' : 'empty'; }
+  var btn=document.createElement('button'); btn.textContent='pages';
+  var add=document.getElementById('pgAdd');
+  if(add&&add.parentNode) add.parentNode.insertBefore(btn,add); else document.getElementById('top').appendChild(btn);
+  var dr=document.createElement('div');
+  dr.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9;display:none;align-items:center;justify-content:center;padding:16px';
+  dr.innerHTML='<div id="pgList" style="background:#0e141b;border:1px solid #3f7fc1;max-width:420px;width:100%;max-height:70vh;overflow:auto;padding:12px;font:11px ui-monospace,Consolas,monospace;color:#93a1b0"></div>';
+  document.body.appendChild(dr);
+  var list=dr.querySelector('#pgList');
+  function closeDr(){ dr.style.display='none'; }
+  dr.addEventListener('click',function(e){ if(e.target===dr) closeDr(); });
+  function renderList(){
+    var html='<div style="color:#d9a83a;letter-spacing:.2em;margin-bottom:10px">the book \u00b7 '+H.S.pages.length+' pages</div>';
+    H.S.pages.forEach(function(pg,i){
+      html+='<div style="display:flex;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid #223041">'
+        +'<span data-jump="'+i+'" style="cursor:pointer;flex:1;color:'+(i===H.S.cur?'#d9a83a':'#93a1b0')+'">page '+(i+1)+(i===H.S.cur?' \u00b7 here':'')+' \u00b7 '+desc(pg,i)+'</span>'
+        +'<button data-ren="'+i+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:2px 6px;cursor:pointer">\u270e</button></div>'; });
+    html+='<div style="margin-top:10px;display:flex;gap:8px"><input id="pgGo" placeholder="jump to page #" style="flex:1;background:#0a0d12;border:1px solid #223041;color:#e8e4d8;font:11px ui-monospace,Consolas,monospace;padding:6px 8px"><button id="pgGoB" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;cursor:pointer">go</button></div>';
+    list.innerHTML=html;
+    list.querySelectorAll('[data-jump]').forEach(function(el){ el.addEventListener('click',function(){ var i=+el.getAttribute('data-jump');
+      H.S.cur=i; H.pgLabel(); H.render(); closeDr(); H.flash('page '+(i+1)); }); });
+    list.querySelectorAll('[data-ren]').forEach(function(el){ el.addEventListener('click',function(){ var i=+el.getAttribute('data-ren');
+      var L=labels(); var s=prompt('name page '+(i+1)+':',L[i]||''); if(s===null) return; L[i]=s.slice(0,24); setLabels(L); renderList(); }); });
+    list.querySelector('#pgGoB').addEventListener('click',function(){ var n=parseInt(list.querySelector('#pgGo').value,10);
+      if(n>=1&&n<=H.S.pages.length){ H.S.cur=n-1; H.pgLabel(); H.render(); closeDr(); H.flash('page '+n); } else H.flash('no page '+(list.querySelector('#pgGo').value||'')); });
+  }
+  btn.addEventListener('click',function(){ renderList(); dr.style.display='flex'; });
 })();
 </script>
  
