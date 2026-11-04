@@ -100,7 +100,7 @@ function drawObj(c,o){
   if(o.t==='t'){ c.globalAlpha=o.o; c.fillStyle=o.c; c.font=o.w+'px ui-monospace,Consolas,monospace'; c.fillText(o.s,o.p[0],o.p[1]); c.restore(); return; }
   c.globalAlpha=o.o; c.lineCap='round'; c.lineJoin='round'; c.lineWidth=o.w;
   if(o.t==='e'){ c.globalCompositeOperation='destination-out'; c.strokeStyle='rgba(0,0,0,1)'; }
-  else { c.strokeStyle=o.c; c.shadowColor=o.c; c.shadowBlur=6; }
+  else { c.strokeStyle=o.c; shadowBlur=1.5}
   var P=o.pts; c.beginPath(); c.moveTo(P[0][0],P[0][1]);
   for(var i=1;i<P.length;i++) c.lineTo(P[i][0],P[i][1]);
   if(P.length===1) c.lineTo(P[0][0]+.1,P[0][1]);
