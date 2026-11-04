@@ -224,5 +224,69 @@ document.getElementById('tsize').addEventListener('input',function(){ tsize=+thi
 resize(); pgLabel(); paintSw();
 })();
 </script>
+
+<script>
+/* ---- outbox eyes \u00b7 burn page \u00b7 send book ---- */
+(function(){
+  function inbox(){ try{ return JSON.parse(localStorage.getItem('arc.inbox')||'[]'); }catch(e){ return []; } }
+  function pushInbox(leaf){ try{ var L=inbox(); L.push(leaf); while(L.length>20) L.shift(); localStorage.setItem('arc.inbox',JSON.stringify(L)); }catch(e){} }
+  function lightNow(){ return localStorage.getItem('hive_slate_mode')==='1'; }
+  function flash(m){ var f=document.getElementById('flash'); if(!f) return; f.textContent=m; clearTimeout(f._h); f._h=setTimeout(function(){ f.textContent='draw \u00b7 share \u00b7 erase \u00b7 tiaga-mode'; },1800); }
+  /* eyes on the outbox */
+  var shareBtn=document.getElementById('share');
+  function eyes(){ var n=inbox().length; if(shareBtn) shareBtn.textContent = n? 'share ('+n+' waiting)' : 'share';
+    if(ub) ub.style.display = localStorage.getItem('hive_slate_burned')? 'inline-block':'none'; }
+  /* burn page · two taps · undo of the burn is the unburn button */
+  var del=document.createElement('button'); del.textContent='del page';
+  var ub=document.createElement('button'); ub.textContent='unburn \u21a9'; ub.style.display='none';
+  var bot=document.getElementById('bot'); if(bot){ bot.insertBefore(del,bot.lastElementChild); bot.insertBefore(ub,del); }
+  var armed=0;
+  del.addEventListener('click',function(){
+    if(Date.now()-armed<2500){
+      try{ var S=JSON.parse(localStorage.getItem('hive_slate_v2')); if(!S||S.pages.length<2){ flash('the last page stays'); armed=0; return; }
+        localStorage.setItem('hive_slate_burned', JSON.stringify(S.pages.splice(S.cur,1)[0]));
+        S.cur=Math.min(S.cur,S.pages.length-1);
+        localStorage.setItem('hive_slate_v2',JSON.stringify(S)); location.reload(); }catch(e){ flash('nothing to burn'); }
+      armed=0; return; }
+    armed=Date.now(); flash('tap again to burn this page'); });
+  ub.addEventListener('click',function(){
+    try{ var b=JSON.parse(localStorage.getItem('hive_slate_burned')); var S=JSON.parse(localStorage.getItem('hive_slate_v2'));
+      S.pages.push(b); S.cur=S.pages.length-1; localStorage.removeItem('hive_slate_burned');
+      localStorage.setItem('hive_slate_v2',JSON.stringify(S)); location.reload(); }catch(e){} });
+  /* send book · every page, one leaf, contact sheet */
+  function drawO(c,o){ c.save();
+    if(o.t==='t'){ c.globalAlpha=o.o||.95; c.fillStyle=o.c; c.font=(o.w||28)+'px ui-monospace,Consolas,monospace'; c.fillText(o.s,o.p[0],o.p[1]); c.restore(); return; }
+    if(o.t==='i'){ if(o.im&&o.im.complete) c.drawImage(o.im,o.p[0],o.p[1],o.w,o.h); c.restore(); return; }
+    c.globalAlpha=o.o||.9; c.lineCap='round'; c.lineJoin='round'; c.lineWidth=o.w||5;
+    if(o.t==='e'){ c.globalCompositeOperation='destination-out'; c.strokeStyle='rgba(0,0,0,1)'; }
+    else { c.strokeStyle=o.c; c.shadowColor=o.c; c.shadowBlur=6; }
+    var P=o.pts||[]; if(P.length){ c.beginPath(); c.moveTo(P[0][0],P[0][1]); for(var i=1;i<P.length;i++) c.lineTo(P[i][0],P[i][1]); if(P.length===1) c.lineTo(P[0][0]+.1,P[0][1]); c.stroke(); }
+    c.restore(); }
+  function bookImg(pages){ var s=700/innerWidth, H=0, caps=pages.slice(0,6);
+    caps.forEach(function(){ H+=Math.round(innerHeight*s); });
+    var c=document.createElement('canvas'); c.width=700; c.height=H; var g=c.getContext('2d');
+    var y=0; caps.forEach(function(pg,i){ g.save(); g.translate(0,y); g.scale(s,s);
+      g.fillStyle=lightNow()?'#f2efe6':'#0a0d12'; g.fillRect(0,0,innerWidth,innerHeight);
+      pg.forEach(function(o){ if(o.t==='i'&&o.src&&!o.im){ o.im=new Image(); o.im.src=o.src; } drawO(g,o); });
+      g.restore(); y+=Math.round(innerHeight*s); });
+    return c.toDataURL('image/png'); }
+  var sendB=document.getElementById('send');
+  if(sendB&&sendB.parentNode){ var sb=document.createElement('button'); sb.textContent='send book \u2713';
+    sendB.parentNode.insertBefore(sb,sendB.nextSibling);
+    sb.addEventListener('click',function(){
+      try{ var S=JSON.parse(localStorage.getItem('hive_slate_v2')); var lines=[];
+        S.pages.forEach(function(pg,i){ var t=pg.filter(function(o){ return o.t==='t'; }).map(function(o){ return o.s; });
+          if(t.length) lines.push('\u2014 page '+(i+1)+' \u2014'); lines=lines.concat(t); });
+        var leaf={ id:'leaf-'+Date.now(), t:Date.now(), kind:'slate-book',
+          title:'slate book \u00b7 '+new Date().toISOString().slice(0,10)+' \u00b7 '+S.pages.length+' pages',
+          body:lines.join('\n')||'(a wordless book)', img:bookImg(S.pages) };
+        pushInbox(leaf);
+        try{ localStorage.setItem('arc.slate',JSON.stringify({title:leaf.title,body:leaf.body,img:leaf.img})); }catch(e){}
+        document.getElementById('modal').style.display='none';
+        flash('book sent \u2713 '+S.pages.length+' pages, one leaf'); eyes(); }catch(e){ flash('the book would not bind'); } }); }
+  setInterval(eyes,2000); eyes();
+})();
+</script>
+ 
 </body>
 </html>
