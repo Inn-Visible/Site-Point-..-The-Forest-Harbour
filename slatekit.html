@@ -88,7 +88,7 @@
   function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catch(e){}
     if(raw){ try{ items=JSON.parse(raw); }catch(e){ items=[]; } } else seed();
     undoS=[]; redoS=[]; }
-  function saveOvl(){ try{ localStorage.setItem(ovlKey(),JSON.stringify(items)); }catch(e){} }
+  function saveOvl(){ try{ localStorage.setItem(ovlKey(),JSON.stringify({d:[bw,bh],it:items})); }catch(e){} }
   function pushU(){ undoS.push(JSON.stringify(items)); if(undoS.length>9) undoS.shift(); redoS=[]; }
   function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=Math.max(1,r.width); H=cv.height=Math.max(1,r.height); redraw(); }
   addEventListener('resize',fit);
