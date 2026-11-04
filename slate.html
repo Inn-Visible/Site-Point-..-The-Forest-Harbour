@@ -153,9 +153,11 @@ cv.addEventListener('pointerdown',function(e){
   cv.setPointerCapture(e.pointerId); var w=W([e.clientX,e.clientY]);
   if(tool==='move'){ drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y}; return; }
   if(moving){ var mb=moving.b;
-    if(w[0]>mb[0]-12&&w[0]<mb[2]+12&&w[1]>mb[1]-12&&w[1]<mb[3]+12){ drag={k:'grp',dx:w[0],dy:w[1]}; return; }
+    if(w[0]>mb[0]-14&&w[0]<mb[2]+14&&w[1]>mb[1]-14&&w[1]<mb[3]+14){ drag={k:'grp',dx:w[0],dy:w[1]}; return; }
     moving=null; save(); render(); }
-  if(tool==='lift'){ sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; drag={k:'sel'}; return; }
+  if(tool==='lift'){ var hi=hit(w);
+    if(hi>=0){ moving={idx:[hi],b:bbox(S.pages[S.cur][hi])}; drag={k:'grp',dx:w[0],dy:w[1]}; flash('lifted \u00b7 drag to set down'); return; }
+    sel={x0:w[0],y0:w[1],x1:w[0],y1:w[1]}; drag={k:'sel'}; return; }
   if(tool==='text'){ var s=prompt('chalk text:'); if(s){ S.pages[S.cur].push({t:'t',s:s,c:pal()[ci],w:tsize,o:.95,p:w}); S.redo[S.cur]=[]; save(); render(); } return; }
   if(erase||tool==='erase'){ live={t:'e',w:size*3,o:1,pts:[w]}; drag={k:'draw'}; return; }
   live={t:'s',c:pal()[ci],w:size,o:.9,pts:[w]}; drag={k:'draw'};
@@ -171,14 +173,24 @@ cv.addEventListener('pointermove',function(e){
 addEventListener('pointerup',function(){
   if(!drag) return;
   if(drag.k==='draw'&&live){ S.pages[S.cur].push(live); S.redo[S.cur]=[]; live=null; save(); }
+  if(drag.k==='grp'){ save(); }
   if(drag.k==='sel'){ var pg=S.pages[S.cur], idx=[];
-    for(var i=0;i<pg.length;i++) if(sel&&Math.abs(sel.x1-sel.x0)>8&&Math.abs(sel.y1-sel.y0)>8&&inSel(pg[i])) idx.push(i);
-    if(idx.length){ var b=[1e9,1e9,-1e9,-1e9]; idx.forEach(function(i){ var q=bbox(pg[i]); b[0]=Math.min(b[0],q[0]); b[1]=Math.min(b[1],q[1]); b[2]=Math.max(b[2],q[2]); b[3]=Math.max(b[3],q[3]); });
-      moving={idx:idx,b:b}; flash('lifted \u00b7 drag to set down'); }
+    if(sel&&Math.abs(sel.x1-sel.x0)>8&&Math.abs(sel.y1-sel.y0)>8){
+      for(var i=0;i<pg.length;i++) if(inSel(pg[i])) idx.push(i);
+      if(idx.length){ var b=[1e9,1e9,-1e9,-1e9]; idx.forEach(function(i){ var q=bbox(pg[i]); b[0]=Math.min(b[0],q[0]); b[1]=Math.min(b[1],q[1]); b[2]=Math.max(b[2],q[2]); b[3]=Math.max(b[3],q[3]); });
+        moving={idx:idx,b:b}; flash('lifted \u00b7 drag to set down'); } }
+    else if(sel){ var h2=hit([sel.x0,sel.y0]);
+      if(h2>=0){ moving={idx:[h2],b:bbox(pg[h2])}; flash('lifted \u00b7 drag to set down'); } else flash('tap a stroke \u00b7 or box several'); }
     sel=null; }
-  if(drag.k==='grp') save();
   drag=null; render();
 });
+function hit(w){ var pg=S.pages[S.cur];
+  for(var i=pg.length-1;i>=0;i--){ var o=pg[i];
+    if(o.t==='t'){ if(Math.abs(w[0]-o.p[0])<o.s.length*o.w*0.62&&Math.abs(w[1]-o.p[1])<o.w) return i; continue; }
+    if(o.t==='i'){ var b=bbox(o); if(w[0]>b[0]&&w[0]<b[2]&&w[1]>b[1]&&w[1]<b[3]) return i; continue; }
+    var tol=Math.max(14,o.w*1.6);
+    for(var j=0;j<o.pts.length;j++){ var p=o.pts[j]; if(Math.hypot(p[0]-w[0],p[1]-w[1])<tol) return i; } }
+  return -1; }
 btn('pgAdd',function(){ S.pages.push([]); S.redo.push([]); S.cur=S.pages.length-1; pgLabel(); save(); render(); });
 btn('pgN',function(){ S.cur=(S.cur+1)%S.pages.length; pgLabel(); render(); });
 function pgLabel(){ document.getElementById('pgN').textContent=String(S.cur+1); }
