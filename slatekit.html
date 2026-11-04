@@ -83,7 +83,7 @@
   function toObj(it){ if(it.k==='t') return {t:'t',s:it.s,c:it.c,w:it.w,o:.95,p:[it.p[0]*bw,it.p[1]*bh]};
     if(it.k==='i') return {t:'i',src:it.src,p:[it.p[0]*bw,it.p[1]*bh],w:it.nw*bw,h:it.nh*bh};
     return {t:'s',c:it.c,w:it.w,o:it.o||.9,pts:it.pts.map(function(p){ return [p[0]*bw,p[1]*bh]; })}; }
-  function seed(){ var v=readV(); var pg=v&&v.pages[pageIdx]?v.pages[pageIdx]:[];
+  function seed(){ if(bw<2){ bw=innerWidth; bh=innerHeight; } var v=readV(); var pg=v&&v.pages[pageIdx]?v.pages[pageIdx]:[];
     items=pg.map(toItem); saveOvl(); }
 function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catch(e){}
   if(raw){ try{ var j=JSON.parse(raw);
