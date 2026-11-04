@@ -85,9 +85,13 @@
     return {t:'s',c:it.c,w:it.w,o:it.o||.9,pts:it.pts.map(function(p){ return [p[0]*bw,p[1]*bh]; })}; }
   function seed(){ var v=readV(); var pg=v&&v.pages[pageIdx]?v.pages[pageIdx]:[];
     items=pg.map(toItem); saveOvl(); }
-  function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catch(e){}
-    if(raw){ try{ items=JSON.parse(raw); }catch(e){ items=[]; } } else seed();
-    undoS=[]; redoS=[]; }
+function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catch(e){}
+  if(raw){ try{ var j=JSON.parse(raw);
+      if(j&&j.it){ items=j.it; if(j.d&&j.d[0]>1){ bw=j.d[0]; bh=j.d[1]; } }
+      else if(Object.prototype.toString.call(j)==='[object Array]'){ items=j; }
+    }catch(e){ items=[]; } }
+  else seed();
+  undoS=[]; redoS=[]; }
   function saveOvl(){ try{ localStorage.setItem(ovlKey(),JSON.stringify({d:[bw,bh],it:items})); }catch(e){} }
   function pushU(){ undoS.push(JSON.stringify(items)); if(undoS.length>9) undoS.shift(); redoS=[]; }
   function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=Math.max(1,r.width); H=cv.height=Math.max(1,r.height); redraw(); }
