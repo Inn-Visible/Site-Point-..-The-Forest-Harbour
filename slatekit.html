@@ -68,37 +68,20 @@
 </script>
 
 <script>
-/* ---- deck focus \u00b7 one room at a time + true-aspect ink ---- */
+/* ---- deck fitting \u00b7 nothing spills, nothing crops ---- */
 (function(){
-  function labelEl(t){ var n=document.querySelectorAll('body *');
-    for(var i=0;i<n.length;i++){ if(n[i].children.length===0&&(n[i].textContent||'').trim().indexOf(t)===0) return n[i]; } return null; }
-  function deckOf(el){ var p=el; while(p&&p!==document.body){ if(p.querySelector&&p.querySelector('canvas')) return p; p=p.parentNode; } return null; }
-  var inkDeck=deckOf(labelEl('the slate')), geoDeck=deckOf(labelEl('the geometry'));
-  var inkCv=inkDeck?inkDeck.querySelector('canvas'):null;
-  var state=0;
-  var btn=document.createElement('button'); btn.textContent='focus \u21d5';
-  btn.style.cssText='position:fixed;right:12px;bottom:12px;z-index:70;background:rgba(3,4,7,.7);border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:6px 12px;cursor:pointer';
-  document.body.appendChild(btn);
-  function apply(){
-    [inkDeck,geoDeck].forEach(function(d){ if(d){ d.style.display=''; d.style.minHeight=''; } });
-    if(state===1&&inkDeck&&geoDeck){ geoDeck.style.display='none'; inkDeck.style.minHeight='86vh'; }
-    if(state===2&&inkDeck&&geoDeck){ inkDeck.style.display='none'; geoDeck.style.minHeight='86vh'; }
-    fitInk(); }
-  btn.addEventListener('click',function(){ state=(state+1)%3;
-    btn.textContent= state===1?'focus \u00b7 ink': state===2?'focus \u00b7 grid':'focus \u21d5'; apply(); });
-  var im=null, imSrc='';
-  function fitInk(){ if(!inkCv) return;
-    var src=localStorage.getItem('hive_slate'); if(!src) return;
-    if(src!==imSrc){ imSrc=src; im=new Image(); im.src=src; }
-    if(!im||!im.complete) return;
-    var w=inkCv.clientWidth, h=inkCv.clientHeight; if(!w||!h) return;
-    var D=devicePixelRatio||1;
-    if(inkCv.width!==Math.round(w*D)){ inkCv.width=Math.round(w*D); inkCv.height=Math.round(h*D); }
-    var g=inkCv.getContext('2d'); g.setTransform(D,0,0,D,0,0);
-    g.fillStyle='#0a0d12'; g.fillRect(0,0,w,h);
-    var s=Math.min(w/im.width,h/im.height), dw=im.width*s, dh=im.height*s;
-    g.drawImage(im,(w-dw)/2,(h-dh)/2,dw,dh); }
-  setInterval(fitInk,2500); addEventListener('resize',fitInk); setTimeout(apply,600);
+  function fit(){
+    document.querySelectorAll('canvas').forEach(function(cv){
+      var p=cv.parentNode; if(!p) return;
+      var w=p.clientWidth||0;
+      if(w>60 && cv.width>w){ cv.style.width=w+'px'; cv.style.height='auto'; }
+    });
+  }
+  addEventListener('resize',fit);
+  setTimeout(fit,200); setTimeout(fit,900); setTimeout(fit,2500);
+  var mo=null;
+  try{ mo=new MutationObserver(function(){ fit(); }); mo.observe(document.body,{childList:true,subtree:true});
+    setTimeout(function(){ mo.disconnect(); },6000); }catch(e){}
 })();
 </script>
   
