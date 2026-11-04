@@ -13,7 +13,9 @@
   header .t{font-size:10px;letter-spacing:.3em;color:var(--blue)}
   header .back{color:var(--dim);font-size:10px;letter-spacing:.15em;text-decoration:none}
   .deck{position:relative;flex:1 1 0;min-height:0}
+  .deck.off{display:none}
   .deck .lab{position:absolute;top:6px;left:10px;font-size:9px;letter-spacing:.25em;color:#5c6875;z-index:2;pointer-events:none}
+  .deck.geo .lab{top:auto;bottom:6px}
   #slate{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
   .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(3,4,7,.6)}
   .pip{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);cursor:pointer}
@@ -30,7 +32,7 @@
   <a class="back" href="slate.html">the slate ↩</a>
   <a class="back" href="core.html">core ↩</a>
 </header>
-<div class="deck"><span class="lab">the slate · ink above</span><canvas id="slate"></canvas></div>
+<div class="deck ink"><span class="lab">the slate · ink above</span><canvas id="slate"></canvas></div>
 <div class="bar">
   <span class="pip on" data-c="#e8e4d8" style="background:#e8e4d8"></span>
   <span class="pip" data-c="#d9a83a" style="background:#d9a83a"></span>
@@ -42,15 +44,23 @@
   <button id="clear">clear</button>
   <button id="save">save png ⤓</button>
   <button id="swap">swap decks ⇵</button>
+  <button id="focus">focus ⇵</button>
 </div>
-<div class="deck"><span class="lab">the geometry · sticks live inside</span><iframe id="kit" src="grid3d.html"></iframe></div>
+<div class="deck geo"><span class="lab">the geometry · sticks live inside</span><iframe id="kit" src="grid3d.html"></iframe></div>
 <script>
 (function(){
   var cv=document.getElementById('slate'), x=cv.getContext('2d');
   var strokes=[], cur=null, col='#e8e4d8', W, H;
-  function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=r.width; H=cv.height=r.height; redraw(); }
+  var uIm=null, uSrc='';
+  function loadU(){ var s=null; try{ s=localStorage.getItem('hive_slate'); }catch(e){}
+    if(s && s!==uSrc){ uSrc=s; uIm=new Image(); uIm.src=s; } }
+  function fit(){ var r=cv.getBoundingClientRect(); W=cv.width=Math.max(1,r.width); H=cv.height=Math.max(1,r.height); redraw(); }
   addEventListener('resize',fit);
-  function redraw(){ x.clearRect(0,0,W,H); x.lineCap='round'; x.lineJoin='round';
+  function under(g,w,h){ if(!uIm||!uIm.complete||!uIm.width) return;
+    var s=Math.min(w/uIm.width,h/uIm.height), dw=uIm.width*s, dh=uIm.height*s;
+    g.save(); g.globalAlpha=.85; g.drawImage(uIm,(w-dw)/2,(h-dh)/2,dw,dh); g.restore(); }
+  function redraw(){ x.clearRect(0,0,W,H); under(x,W,H);
+    x.lineCap='round'; x.lineJoin='round';
     strokes.forEach(function(s){ if(s.pts.length<2) return; x.strokeStyle=s.c; x.lineWidth=s.w; x.beginPath();
       s.pts.forEach(function(p,i){ i?x.lineTo(p[0]*W,p[1]*H):x.moveTo(p[0]*W,p[1]*H); }); x.stroke(); }); }
   function pt(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]; }
@@ -61,29 +71,39 @@
     document.querySelectorAll('.pip').forEach(function(q){ q.classList.remove('on'); }); p.classList.add('on'); }; });
   document.getElementById('undo').onclick=function(){ strokes.pop(); redraw(); };
   document.getElementById('clear').onclick=function(){ strokes=[]; redraw(); };
-  document.getElementById('save').onclick=function(){ var a=document.createElement('a'); a.download='slatekit-'+Date.now()+'.png'; a.href=cv.toDataURL('image/png'); a.click(); };
-  document.getElementById('swap').onclick=function(){ var d=document.querySelectorAll('.deck'); d[0].parentNode.appendChild(d[0]); };
-  fit();
+  document.getElementById('save').onclick=function(){ var t=document.createElement('canvas'); t.width=W; t.height=H;
+    var g=t.getContext('2d'); g.fillStyle='#0a0d12'; g.fillRect(0,0,W,H); under(g,W,H);
+    g.lineCap='round'; g.lineJoin='round';
+    strokes.forEach(function(s){ if(s.pts.length<2) return; g.strokeStyle=s.c; g.lineWidth=s.w; g.beginPath();
+      s.pts.forEach(function(p,i){ i?g.lineTo(p[0]*W,p[1]*H):g.moveTo(p[0]*W,p[1]*H); }); g.stroke(); });
+    var a=document.createElement('a'); a.download='slatekit-'+Date.now()+'.png'; a.href=t.toDataURL('image/png'); a.click(); };
+  document.getElementById('swap').onclick=function(){ var d=document.querySelectorAll('.deck'); d[0].parentNode.appendChild(d[0]); fit(); };
+  var fs=0;
+  document.getElementById('focus').onclick=function(){ fs=(fs+1)%3;
+    var d=document.querySelectorAll('.deck');
+    d[0].classList.toggle('off',fs===2); d[1].classList.toggle('off',fs===1);
+    this.textContent= fs===1?'focus · ink': fs===2?'focus · grid':'focus ⇵';
+    fit(); };
+  addEventListener('storage',function(e){ if(e.key==='hive_slate'){ loadU(); redraw(); } });
+  setInterval(function(){ var before=uSrc; loadU(); if(uSrc!==before && uIm) uIm.onload=redraw; redraw(); },2500);
+  loadU(); fit();
 })();
 </script>
-
 <script>
-/* ---- deck fitting \u00b7 nothing spills, nothing crops ---- */
+/* ---- the hand inside the iframe · grid3d, tamed ---- */
 (function(){
-  function fit(){
-    document.querySelectorAll('canvas').forEach(function(cv){
-      var p=cv.parentNode; if(!p) return;
-      var w=p.clientWidth||0;
-      if(w>60 && cv.width>w){ cv.style.width=w+'px'; cv.style.height='auto'; }
-    });
+  var fr=document.getElementById('kit');
+  function tame(){
+    var doc=null; try{ doc=fr.contentDocument; }catch(e){} if(!doc) return;
+    var st=doc.createElement('style');
+    st.textContent='canvas{max-width:100%!important;height:auto!important;display:block;margin:6px auto!important}';
+    doc.head.appendChild(st);
+    doc.addEventListener('click',function(){ setTimeout(function(){
+      var c=doc.querySelector('canvas'); if(c&&c.scrollIntoView) c.scrollIntoView({block:'center',behavior:'smooth'}); },60); },true);
+    setTimeout(function(){ var c=doc.querySelector('canvas'); if(c&&c.scrollIntoView) c.scrollIntoView({block:'center'}); },400);
   }
-  addEventListener('resize',fit);
-  setTimeout(fit,200); setTimeout(fit,900); setTimeout(fit,2500);
-  var mo=null;
-  try{ mo=new MutationObserver(function(){ fit(); }); mo.observe(document.body,{childList:true,subtree:true});
-    setTimeout(function(){ mo.disconnect(); },6000); }catch(e){}
+  fr.addEventListener('load',tame);
 })();
 </script>
-  
 </body>
 </html>
