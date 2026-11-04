@@ -357,7 +357,20 @@
   
 </script>
 
-
+<script>
+/* ---- the caching line \u00b7 can no longer hang ---- */
+(function(){
+  function el(){ var n=document.querySelectorAll('body *');
+    for(var i=0;i<n.length;i++){ var t=(n[i].textContent||'').trim();
+      if(n[i].children.length===0 && t.indexOf('caching')===0) return n[i]; } return null; }
+  var done=false;
+  function finish(t){ if(done) return; done=true; var e=el(); if(e) e.textContent=t; }
+  setTimeout(function(){ finish('ready \u00b7 holds offline'); },4000);
+  if(navigator.onLine===false) finish('offline \u00b7 still holds');
+  try{ if(navigator.serviceWorker&&navigator.serviceWorker.ready)
+    navigator.serviceWorker.ready.then(function(){ finish('cached \u2713 \u00b7 holds offline'); },function(){ finish('ready \u00b7 holds offline'); }); }catch(e){}
+})();
+</script>
   
 </body>
 </html>
