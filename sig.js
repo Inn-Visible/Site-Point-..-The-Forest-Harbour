@@ -372,7 +372,7 @@
 
 
 (function(){
-/* ---- the chibi radio \u00b7 the dial's own voice, carried house-wide ---- */
+/* ---- the chibi radio \u00b7 the dial's own voice, carried house-wide \u00b7 v2 ---- */
 var KEY='hive_radio';
 var onBase=/baseline\.html(\?|#|$)/.test(location.href);
 function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
@@ -380,29 +380,35 @@ function set(s){ try{ sessionStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
 function hostName(src){ try{ var h=(new URL(src)).hostname.replace(/^www\./,'');
   if(/somafm/.test(h)) return 'somafm'; if(/radioparadise/.test(h)) return 'radio paradise';
   if(/fip|radiofrance/.test(h)) return 'fip'; return h; }catch(e){ return 'stream'; } }
-var hooked=null, pendingTitle='';
+var medias=[], pendingTitle='';
+function attach(a){
+  a.addEventListener('play',function(){ var s=st()||{}; s.src=a.currentSrc||a.src||s.src; s.on=true; s.vol=a.volume;
+    if(onBase&&pendingTitle) s.title=pendingTitle; if(!s.title&&s.src) s.title=hostName(s.src); set(s); paint(); });
+  a.addEventListener('pause',function(){ var s=st()||{}; s.on=false; set(s); paint(); });
+  a.addEventListener('ended',function(){ var s=st()||{}; s.on=false; set(s); paint(); });
+  a.addEventListener('volumechange',function(){ var s=st()||{}; s.vol=a.volume; set(s); }); }
+function reg(a){ if(a&&medias.indexOf(a)<0){ medias.push(a); attach(a); } }
+try{
+  var OP=HTMLMediaElement.prototype.play, OZ=HTMLMediaElement.prototype.pause;
+  HTMLMediaElement.prototype.play=function(){ reg(this); return OP.apply(this,arguments); };
+  HTMLMediaElement.prototype.pause=function(){ reg(this); return OZ.apply(this,arguments); };
+  var OA=window.Audio; window.Audio=function(src){ var a=src?new OA(src):new OA(); reg(a); return a; };
+  window.Audio.prototype=OA.prototype;
+  var ODC=document.createElement.bind(document);
+  document.createElement=function(t){ var el=ODC(String(t)); if(String(t).toLowerCase()==='audio') reg(el); return el; };
+}catch(e){}
+function activeMedia(){ for(var i=medias.length-1;i>=0;i--){ if(!medias[i].paused) return medias[i]; }
+  return medias.length?medias[medias.length-1]:null; }
 if(onBase){
   document.addEventListener('click',function(e){
     var t=e.target, b=t&&t.closest? t.closest('button'):null;
     if(b){ var tx=(b.textContent||'').trim(); if(tx&&tx.length<40) pendingTitle=tx; } },true);
-  var hook=function(){
-    var a=document.querySelector('audio'); if(!a||a===hooked) return; hooked=a;
-    var write=function(on){ var s=st()||{}; s.src=a.currentSrc||a.src; s.on=on; s.vol=a.volume;
-      if(on) s.title=pendingTitle||s.title||hostName(s.src); set(s); paint(); };
-    a.addEventListener('play',function(){ write(true); });
-    a.addEventListener('pause',function(){ write(false); });
-    a.addEventListener('ended',function(){ write(false); });
-    a.addEventListener('volumechange',function(){ var s=st()||{}; s.vol=a.volume; set(s); });
-    addEventListener('pagehide',function(){ if(hooked&&!hooked.paused){ var s=st()||{}; s.on=true; s.src=hooked.currentSrc||hooked.src; set(s); } });
-  };
-  setInterval(hook,1200); hook();
+  addEventListener('pagehide',function(){ var m=activeMedia(); if(m&&!m.paused){ var s=st()||{}; s.on=true; s.src=m.currentSrc||m.src; set(s); } });
 }
 var au=null;
 function ensure(){ if(au) return au; au=new Audio(); au.preload='none';
-  au.addEventListener('play',function(){ var s=st()||{}; s.on=true; set(s); paint(); });
-  au.addEventListener('pause',function(){ var s=st()||{}; s.on=false; set(s); paint(); });
   au.addEventListener('error',function(){ var s=st()||{}; s.on=false; set(s); paint(); msg('the stream went dark'); });
-  document.body.appendChild(au); return au; }
+  return au; }
 var wrap=document.createElement('div'); wrap.id='chibiRadio';
 wrap.style.cssText='position:fixed;right:14px;bottom:14px;z-index:80;cursor:pointer;user-select:none;text-align:center';
 wrap.innerHTML='<svg width="40" height="40" viewBox="0 0 40 40" style="display:block;filter:drop-shadow(0 2px 5px rgba(0,0,0,.55))">'
@@ -420,19 +426,19 @@ stx.textContent='#chibiRadio svg *{transform-origin:center;transform-box:fill-bo
  +'#chibiRadio.on #chibiNeedle{animation:chibiSway 2.4s infinite alternate}'
  +'@keyframes chibiSway{from{transform:rotate(-14deg)}to{transform:rotate(18deg)}}';
 document.head.appendChild(stx);
-function playing(){ return onBase ? (hooked? !hooked.paused : !!(st()&&st().on)) : (au? !au.paused : !!(st()&&st().on)); }
+function playing(){ if(onBase){ var m=activeMedia(); if(m) return !m.paused; }
+  if(!onBase&&au) return !au.paused; return !!(st()&&st().on); }
 function msg(t){ var g=wrap.querySelector('#chibiTag'); if(g){ g.textContent=t; setTimeout(paint,2200); } }
 function paint(){ var s=st(), on=playing();
   wrap.classList.toggle('on',on);
   var g=wrap.querySelector('#chibiTag'); if(!g) return;
-  g.textContent = on? '\u266b '+(s&&s.title||'the dial') : (onBase? 'dial \u00b7 dark' : (s&&s.src? '\u2016 '+(s.title||'the dial') : 'radio \u00b7 quiet'));
+  g.textContent = on? '\u266b '+((s&&s.title)||'the dial')
+    : (onBase? 'dial \u00b7 dark' : (s&&s.src? '\u2016 '+((s&&s.title)||'the dial') : 'radio \u00b7 quiet'));
   wrap.title = on? 'tap \u00b7 tune out' : (s&&s.src? 'tap \u00b7 keep listening' : 'the radio lives in baseline'); }
 function pulse(){ wrap.style.transform='scale(.94)'; setTimeout(function(){ wrap.style.transform=''; },180); }
 wrap.addEventListener('click',function(){
-  if(onBase){
-    if(hooked){ if(hooked.paused){ var s0=st();
-        if(s0&&s0.src&&(!hooked.currentSrc||hooked.paused)) { try{ hooked.src=s0.src; }catch(e){} }
-        hooked.play().catch(function(){}); } else hooked.pause(); return; }
+  if(onBase){ var m=activeMedia();
+    if(m){ if(m.paused){ m.play().catch(function(){}); } else { m.pause(); } return; }
     pulse(); msg('press PWR \u00b7 the dial is yours'); return; }
   var s=st();
   if(!s||!s.src){ pulse(); msg('the radio lives in baseline'); return; }
