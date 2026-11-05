@@ -2300,16 +2300,11 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- the vault stays unlocked \u00b7 memory across backs and reloads ---- */
+/* ---- the vault stays unlocked v2 \u00b7 the key turns itself ---- */
 (function(){
-  var KEY='hive_xeno_unlocked';
-  function leafText(el){ return (el.textContent||'').trim(); }
-  document.addEventListener('click',function(e){
-    var t=e.target; if(!t) return;
-    var tx=leafText(t);
-    if(tx.indexOf('unlock')>-1 && tx.length<16){ try{ localStorage.setItem(KEY,'1'); }catch(err){} }
-    if(tx.indexOf('wipe')>-1 && tx.length<8){ try{ localStorage.setItem(KEY,'0'); }catch(err){} }
-  },true);
+  var FLAG='hive_xeno_unlocked', KEYK='hive_vault_key';
+  var cool=0;
+  function lt(el){ return (el.textContent||'').trim(); }
   function tapEl(el){
     var r=el.getBoundingClientRect();
     var o={bubbles:true,cancelable:true,view:window,clientX:r.left+4,clientY:r.top+4};
@@ -2320,19 +2315,40 @@ function lockdoor(){
     try{ el.dispatchEvent(new MouseEvent('click',o)); }catch(e){}
     try{ el.click(); }catch(e){}
   }
-  var seen=(typeof WeakSet!=='undefined')?new WeakSet():null, fallback=[];
-  function fresh(ta){ if(seen){ if(seen.has(ta)) return false; seen.add(ta); return true; }
-    if(fallback.indexOf(ta)>-1) return false; fallback.push(ta); return true; }
+  function findLeaf(txt){ var n=document.querySelectorAll('button,a');
+    for(var i=0;i<n.length;i++){ if(lt(n[i])===txt) return n[i]; } return null; }
+  function keyInput(){ var n=document.querySelectorAll('input');
+    for(var i=0;i<n.length;i++){ var ph=(n[i].getAttribute('placeholder')||'').toLowerCase();
+      if(ph.indexOf('house password')>-1 || n[i].type==='password') return n[i]; } return null; }
+  document.addEventListener('click',function(e){
+    var t=e.target; if(!t) return; var tx=lt(t);
+    if(tx==='unlock'){
+      try{ localStorage.setItem(FLAG,'1'); }catch(err){}
+      var inp=keyInput();
+      if(inp && inp.value){ try{ localStorage.setItem(KEYK, inp.value); }catch(err){} }
+      cool=0;
+    }
+    if(tx==='not now'){ cool=Date.now()+15000; }
+    if(tx==='wipe'){ cool=0; try{ localStorage.setItem(FLAG,'0'); localStorage.removeItem(KEYK); }catch(err){} }
+  },true);
+  var seen=(typeof WeakSet!=='undefined')?new WeakSet():null, fb=[];
+  function fresh(el){ if(seen){ if(seen.has(el)) return false; seen.add(el); return true; }
+    if(fb.indexOf(el)>-1) return false; fb.push(el); return true; }
   function watch(){
-    var on=false; try{ on=localStorage.getItem(KEY)==='1'; }catch(e){}
+    if(Date.now()<cool) return;
+    var on=false; try{ on=localStorage.getItem(FLAG)==='1'; }catch(e){}
     if(!on) return;
-    var tas=document.querySelectorAll('textarea'), ta=null;
-    for(var i=0;i<tas.length;i++){ var ph=tas[i].getAttribute('placeholder')||'';
-      if(ph.indexOf('drafts persist')>-1){ ta=tas[i]; break; } }
-    if(!ta || !fresh(ta)) return;
-    var n=document.querySelectorAll('button,a');
-    for(var j=0;j<n.length;j++){ var tx=leafText(n[j]);
-      if(tx.indexOf('unlock')>-1 && tx.length<16){ tapEl(n[j]); return; } }
+    var key=null; try{ key=localStorage.getItem(KEYK); }catch(e){}
+    var inp=keyInput();
+    if(inp && key){
+      if(inp.value!==key){ inp.value=key;
+        try{ inp.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}
+        try{ inp.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} }
+      var u=findLeaf('unlock'); if(u && fresh(u)){ tapEl(u); }
+      return;
+    }
+    var shut=findLeaf('unlock the bench');
+    if(shut && fresh(shut)){ tapEl(shut); }
   }
   setInterval(watch,1200); setTimeout(watch,600);
 })();
