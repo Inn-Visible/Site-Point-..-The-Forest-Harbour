@@ -513,7 +513,7 @@
       localStorage.setItem('arc.local',JSON.stringify(newL));
     }catch(ex){}
   }
-  function load(){try{var r=localStorage.getItem(KEY);notes=r?JSON.parse(r):[];}catch(e){notes=[];}}
+  function norm(n){ if(!n||typeof n!=='object') return null;   if(!n.id) n.id=genId();   n.title=typeof n.title==='string'?n.title:'';   n.body=typeof n.body==='string'?n.body:'';   n.tags=Array.isArray(n.tags)?n.tags.filter(function(t){return typeof t==='string';}):[];   n.created=+n.created||Date.now(); n.updated=+n.updated||n.created;   n.pinned=!!n.pinned;   if(!n.images||typeof n.images!=='object') n.images={};   if(!n.imageStyles||typeof n.imageStyles!=='object') n.imageStyles={};   return n; } function load(){ try{ var r=localStorage.getItem(KEY); var p=r?JSON.parse(r):[];   notes=Array.isArray(p)?p.map(norm).filter(Boolean):[]; }catch(e){ notes=[]; } }
   function timeAgo(ts){
     var d=Date.now()-ts,m=Math.floor(d/60000);
     if(m<1)return 'just now';if(m<60)return m+'m ago';
@@ -1001,7 +1001,7 @@
         var imp=JSON.parse(r.result);
         if(Array.isArray(imp)){
           var existing={};notes.forEach(function(n){existing[n.id]=1});
-          imp.forEach(function(n){if(!existing[n.id])notes.push(n)});
+          imp.forEach(function(n){ var m=norm(n); if(m&&!existing[m.id]) notes.push(m); });
           save();renderList();renderEditor();
         }
       }catch(ex){}
