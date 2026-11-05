@@ -369,3 +369,78 @@
   }
   requestAnimationFrame(loop);
 })();
+
+
+(function(){
+/* ---- the chibi radio \u00b7 lives at baseline, wanders house-wide ---- */
+var KEY='hive_radio', HOME='baseline.html';
+var stx=document.createElement('style');
+stx.textContent='#chibiRadio svg *{transform-origin:center;transform-box:fill-box}'
+ +'#chibiRadio .chibiEye{animation:chibiBlink 4.2s infinite}'
+ +'@keyframes chibiBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.12)}}'
+ +'#chibiRadio.on #chibiWaves{display:block!important}'
+ +'#chibiRadio.on #chibiWaves path{animation:chibiWave 1.1s infinite alternate}'
+ +'@keyframes chibiWave{from{opacity:.2}to{opacity:1}}'
+ +'#chibiRadio.on #chibiNeedle{animation:chibiNeedle 1.6s infinite alternate}'
+ +'@keyframes chibiNeedle{from{transform:rotate(-10deg)}to{transform:rotate(16deg)}}';
+document.head.appendChild(stx);
+function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
+function set(s){ try{ sessionStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }
+function isStream(src){ return !/\.(mp3|ogg|wav|m4a|flac|opus)(\?|$)/i.test(src||''); }
+var hooked=null;
+function hookHome(){
+  var a=document.querySelector('audio');
+  if(!a||a===hooked) return;
+  hooked=a;
+  function write(playing){ var s=st()||{};
+    s.src=a.currentSrc||a.src; s.at=a.currentTime||0; s.t=Date.now(); s.playing=playing;
+    s.title=a.getAttribute('data-title')||((s.src||'').split('/').pop()||'bassline');
+    s.stream=isStream(s.src); set(s); }
+  a.addEventListener('play',function(){ write(true); paint(); });
+  a.addEventListener('pause',function(){ write(false); paint(); });
+  a.addEventListener('ended',function(){ write(false); paint(); });
+  addEventListener('pagehide',function(){ if(hooked&&!hooked.paused) write(true); });
+}
+setInterval(hookHome,1500); hookHome();
+var wrap=document.createElement('div'); wrap.id='chibiRadio';
+wrap.style.cssText='position:fixed;right:14px;bottom:14px;z-index:80;cursor:pointer;user-select:none;opacity:.45';
+wrap.innerHTML='<svg width="54" height="58" viewBox="0 0 54 58" style="display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))">'
+ +'<line x1="38" y1="12" x2="46" y2="3" stroke="#93a1b0" stroke-width="2"/><circle cx="47" cy="2" r="2.4" fill="#d9a83a"/>'
+ +'<rect x="6" y="12" width="42" height="34" rx="7" fill="#10161f" stroke="#3f7fc1" stroke-width="2"/>'
+ +'<circle cx="19" cy="26" r="7" fill="#0a0d12" stroke="#d9a83a" stroke-width="2"/>'
+ +'<line id="chibiNeedle" x1="19" y1="26" x2="23" y2="21" stroke="#d9a83a" stroke-width="2"/>'
+ +'<circle class="chibiEye" cx="36" cy="22" r="2.2" fill="#e8e4d8"/><circle class="chibiEye" cx="42" cy="22" r="2.2" fill="#e8e4d8"/>'
+ +'<path d="M35 30 q4 3 8 0" stroke="#e8e4d8" stroke-width="1.6" fill="none"/>'
+ +'<rect x="12" y="38" width="30" height="3" rx="1.5" fill="#223041"/>'
+ +'<g id="chibiWaves" style="display:none"><path d="M2 20 q-3 6 0 12" stroke="#78dcc8" stroke-width="2" fill="none"/>'
+ +'<path d="M52 20 q3 6 0 12" stroke="#78dcc8" stroke-width="2" fill="none"/></g></svg>'
+ +'<div id="chibiTag" style="font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#93a1b0;text-align:center;margin-top:2px;max-width:74px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>';
+document.body.appendChild(wrap);
+var au=null;
+function ensureAudio(){ if(au) return au; au=new Audio(); document.body.appendChild(au);
+  au.addEventListener('play',function(){ var s=st()||{}; s.playing=true; s.at=au.currentTime; s.t=Date.now(); set(s); paint(); });
+  au.addEventListener('pause',function(){ var s=st()||{}; s.playing=false; s.at=au.currentTime; s.t=Date.now(); set(s); paint(); });
+  au.addEventListener('ended',function(){ var s=st()||{}; s.playing=false; s.at=0; set(s); paint(); });
+  return au; }
+function pos(s){ if(!s||s.stream) return 0;
+  return Math.max(0,(s.at||0)+((Date.now()-(s.t||Date.now()))/1000)); }
+function paint(){ var s=st(); var on=!!(s&&s.playing);
+  wrap.classList.toggle('on',on);
+  var tag=wrap.querySelector('#chibiTag');
+  if(tag) tag.textContent = s&&s.src ? (on?'\u266b ':'\u2016 ')+(s.title||'bassline') : 'bassline radio';
+  wrap.style.opacity = s&&s.src ? '1' : '.45';
+  wrap.title = on? 'tap to pause \u00b7 the song travels with you'
+    : (s&&s.src? 'tap to resume where the wasteland left off' : 'the bassline radio lives next door'); }
+wrap.addEventListener('click',function(){
+  var s=st();
+  if(hooked){ if(hooked.paused){ hooked.play().catch(function(){}); } else { hooked.pause(); } return; }
+  if(!s||!s.src){ location.href=HOME; return; }
+  var a=ensureAudio();
+  if(s.playing && !a.paused){ a.pause(); return; }
+  if(a.getAttribute('data-src')!==s.src){ a.src=s.src; a.setAttribute('data-src',s.src); }
+  var target=pos(s);
+  var done=function(){ if(!s.stream){ try{ a.currentTime=target; }catch(e){} } a.play().catch(function(){ paint(); }); };
+  if(a.readyState>=1) done(); else a.addEventListener('loadedmetadata',done,{once:true}); });
+addEventListener('pagehide',function(){ if(au&&!au.paused){ var s=st()||{}; s.playing=true; s.at=au.currentTime; s.t=Date.now(); set(s); } });
+setInterval(paint,1500); paint();
+})();
