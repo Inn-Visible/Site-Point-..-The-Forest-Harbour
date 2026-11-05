@@ -2214,6 +2214,38 @@ function lockdoor(){
   paint(); setInterval(paint,1200);
 })();
 </script>
+
+<script>
+/* ---- the gem takes the poured slot \u00b7 schematics gets its board ---- */
+(function(){
+  var MARK='gemSeated';
+  function seat(){
+    if(document.getElementById(MARK)) return;
+    var n=document.querySelectorAll('body *'), host=null;
+    for(var i=0;i<n.length;i++){
+      var t=(n[i].textContent||'');
+      if(t.indexOf('the slot is poured')>-1 && t.length<220){ host=n[i]; break; }
+    }
+    if(!host) return;
+    var box=host; if(box.textContent.length<60) box=box.parentNode;
+    box.id=MARK;
+    box.style.cssText='padding:10px;border:1px dashed #223041';
+    box.innerHTML='';
+    var head=document.createElement('div');
+    head.style.cssText='font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#d9a83a;margin-bottom:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+    head.innerHTML='<span>the schematics board \u00b7 arrived</span>'
+      +'<a href="schematic.html" style="color:#8ab4ff;text-decoration:none;border:1px solid #3f7fc1;padding:3px 8px">open in its own room \u2197</a>';
+    var fr=document.createElement('iframe');
+    fr.src='schematic.html';
+    fr.style.cssText='width:100%;height:70vh;border:1px solid #223041;background:#0a0d12;display:block';
+    box.appendChild(head); box.appendChild(fr);
+  }
+  var mo=null;
+  try{ mo=new MutationObserver(function(){ setTimeout(seat,60); }); mo.observe(document.body,{childList:true,subtree:true}); }catch(e){}
+  setInterval(seat,1200);
+  setTimeout(seat,400);
+})();
+</script>
   
 </body>
 </html>
