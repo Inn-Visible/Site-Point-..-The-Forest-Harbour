@@ -2246,6 +2246,35 @@ function lockdoor(){
   setTimeout(seat,400);
 })();
 </script>
+
+<script>
+/* ---- mini-window manners \u00b7 no recursion, filelist kept ---- */
+(function(){
+  function findFr(){ var f=document.querySelectorAll('iframe');
+    for(var i=0;i<f.length;i++){ if((f[i].getAttribute('src')||'').indexOf('schematic')===0) return f[i]; } return null; }
+  function groom(){
+    var f=findFr(); if(!f) return; var doc=null;
+    try{ doc=f.contentDocument; }catch(e){} if(!doc||!doc.body) return;
+    var n=doc.querySelectorAll('a,button');
+    for(var i=0;i<n.length;i++){ var t=(n[i].textContent||'').trim();
+      if(t.indexOf('axiom')===0 && t.length<14){ n[i].style.display='none'; } }
+    if(!doc.getElementById('vaultStrip')){
+      var strip=doc.createElement('div'); strip.id='vaultStrip';
+      strip.style.cssText='display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.6)';
+      ['workbench','gis','cad','3d print','schematics','archive','kit','grid'].forEach(function(name){
+        var b=doc.createElement('button'); b.textContent=name;
+        b.style.cssText='background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
+        b.onclick=function(){ var P=doc.defaultView&&doc.defaultView.parent; if(!P) return;
+          var tabs=P.document.querySelectorAll('body *');
+          for(var j=0;j<tabs.length;j++){ var el=tabs[j];
+            if(el.children.length===0&&(el.textContent||'').trim()===name){ el.click(); return; } } };
+        strip.appendChild(b); });
+      doc.body.insertBefore(strip, doc.body.firstChild);
+    }
+  }
+  setInterval(groom,1200); setTimeout(groom,500);
+})();
+</script>
   
 </body>
 </html>
