@@ -2248,13 +2248,20 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- mini-window manners v3 \u00b7 the strip is the vault's remote, nothing nests ---- */
+/* ---- mini-window manners v4 \u00b7 eight doors forward, one door back ---- */
 (function(){
   var STRIPZ='position:relative;z-index:9999;';
   var FOLDERS=['workbench','gis','cad','3d print','schematics','archive','kit','grid'];
+  var hist=[], cur='workbench';
+  document.addEventListener('click',function(e){
+    var t=e.target; if(!t||!t.children||t.children.length!==0) return;
+    var tx=(t.textContent||'').trim();
+    if(FOLDERS.indexOf(tx)>-1 && tx!==cur){ hist.push(cur); if(hist.length>12) hist.shift(); cur=tx; }
+  },true);
   function seatFr(){ var f=document.querySelectorAll('iframe');
     for(var i=0;i<f.length;i++){ if(f[i].parentNode && f[i].parentNode.id==='gemSeated') return f[i]; } return null; }
-  function hop(name){
+  function hop(name,record){
+    if(record!==false && name!==cur){ hist.push(cur); if(hist.length>12) hist.shift(); cur=name; }
     var tabs=document.querySelectorAll('body *');
     for(var j=0;j<tabs.length;j++){ var el=tabs[j];
       if(el.children.length===0&&(el.textContent||'').trim()===name){
@@ -2271,6 +2278,12 @@ function lockdoor(){
     if(!strip){
       strip=doc.createElement('div'); strip.id='vaultStrip';
       strip.style.cssText=STRIPZ+'display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
+      var bk=doc.createElement('button'); bk.textContent='\u2039 back';
+      bk.style.cssText=STRIPZ+'background:none;border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
+      bk.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
+      bk.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
+        hop(hist.length?hist.pop():'workbench', false); },true);
+      strip.appendChild(bk);
       FOLDERS.forEach(function(name){
         var b=doc.createElement('button'); b.textContent=name;
         var on=(name==='schematics');
