@@ -2355,6 +2355,48 @@ function lockdoor(){
   setInterval(watch,1000); setTimeout(watch,600);
 })();
 </script>
+
+<script>
+/* ---- the night watch \u00b7 lock only \u00b7 the vault keeps its own unlock ---- */
+(function(){
+  try{ localStorage.removeItem('hive_vault_key'); localStorage.setItem('hive_xeno_unlocked','0'); }catch(e){}
+  setInterval(function(){ try{ localStorage.setItem('hive_xeno_unlocked','0'); localStorage.removeItem('hive_vault_key'); }catch(e){} },800);
+  function lt(el){ return (el.textContent||'').trim(); }
+  function vis(el){ return !!(el && el.offsetParent!==null); }
+  function tapEl(el){ if(!el) return;
+    var r=el.getBoundingClientRect();
+    var o={bubbles:true,cancelable:true,view:window,clientX:r.left+4,clientY:r.top+4};
+    try{ el.dispatchEvent(new PointerEvent('pointerdown',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('mousedown',o)); }catch(e){}
+    try{ el.dispatchEvent(new PointerEvent('pointerup',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('mouseup',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('click',o)); }catch(e){}
+    try{ el.click(); }catch(e){} }
+  function findLeaf(txt){ var n=document.querySelectorAll('button,a');
+    for(var i=0;i<n.length;i++){ if(lt(n[i])===txt && vis(n[i])) return n[i]; } return null; }
+  function benchOpen(){ var tas=document.querySelectorAll('textarea');
+    for(var i=0;i<tas.length;i++){ var ph=tas[i].getAttribute('placeholder')||'';
+      if(ph.indexOf('drafts persist')>-1 && vis(tas[i])) return true; } return false; }
+  var btn=null;
+  function mount(){ if(btn&&btn.parentNode) return;
+    var schema=null, as=document.querySelectorAll('a,span,button');
+    for(var i=0;i<as.length;i++){ if(lt(as[i])==='schema'){ schema=as[i]; break; } }
+    if(!schema||!schema.parentNode) return;
+    btn=document.createElement('button');
+    btn.style.cssText='background:none;border:1px solid #e5735a;color:#e5735a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:3px 8px;cursor:pointer;margin-right:6px';
+    btn.textContent='lock';
+    btn.title='shut the bench';
+    btn.addEventListener('click',function(e){ e.stopPropagation();
+      tapEl(findLeaf('gis')||findLeaf('cad'));
+      setTimeout(function(){ tapEl(findLeaf('workbench')); },260); },true);
+    schema.parentNode.insertBefore(btn,schema); }
+  function paint(){ if(!btn||!btn.parentNode) return;
+    btn.style.display = benchOpen() ? '' : 'none'; }
+  setInterval(function(){ mount(); paint(); },1200);
+  setTimeout(function(){ mount(); paint(); },500);
+})();
+</script>
+
   
 </body>
 </html>
