@@ -467,17 +467,29 @@ setInterval(dodge,1500); addEventListener('resize',dodge); setTimeout(dodge,600)
 })();
 
 (function(){
-/* ---- the chibi perch \u00b7 drag it anywhere \u00b7 uncover the witness ---- */
+/* ---- the chibi perch v2 \u00b7 drag that works on glass \u00b7 own spot on core \u00b7 no more jumping ---- */
 var KEY='hive_chibi_pos';
-function place(w,p){ w.style.left=Math.max(4,Math.min(innerWidth-46,p.x))+'px';
-  w.style.top=Math.max(4,Math.min(innerHeight-64,p.y))+'px';
-  w.style.right='auto'; w.style.bottom='auto'; }
+var PERCH={ 'core.html':{top:'64px',right:'14px'}, 'index.html':{top:'64px',right:'14px'} };
+function saved(){ try{ return JSON.parse(localStorage.getItem(KEY))||null; }catch(e){ return null; } }
+function place(w,p){
+  var bw=w.offsetWidth||46, bh=w.offsetHeight||64;
+  w.style.left=Math.max(4,Math.min(innerWidth-bw-4,p.x))+'px';
+  w.style.top=Math.max(4,Math.min(innerHeight-bh-4,p.y))+'px';
+  w.style.right='auto'; w.style.bottom='auto';
+}
+function perch(w){
+  var pg=(location.pathname.split('/').pop()||'');
+  var p=PERCH[pg]||{bottom:'14px',right:'14px'};
+  w.style.top=p.top||'auto'; w.style.bottom=p.bottom||'auto';
+  w.style.left=p.left||'auto'; w.style.right=p.right||'auto';
+}
 function init(){
   var w=document.getElementById('chibiRadio'); if(!w||w.getAttribute('data-drag')) return;
   w.setAttribute('data-drag','1');
-  var p=null; try{ p=JSON.parse(localStorage.getItem(KEY))||null; }catch(e){}
-  if(p) place(w,p);
-  var userPlaced=!!p, sx=0, sy=0, ox=0, oy=0, dragging=false, moved=false;
+  w.style.touchAction='none';
+  w.style.padding='6px';
+  var s=saved(); if(s) place(w,s); else perch(w);
+  var userPlaced=!!s, sx=0, sy=0, ox=0, oy=0, dragging=false, moved=false;
   w.addEventListener('pointerdown',function(e){
     dragging=true; moved=false; sx=e.clientX; sy=e.clientY;
     var r=w.getBoundingClientRect(); ox=r.left; oy=r.top;
@@ -485,36 +497,28 @@ function init(){
   w.addEventListener('pointermove',function(e){
     if(!dragging) return;
     var dx=e.clientX-sx, dy=e.clientY-sy;
-    if(!moved&&Math.hypot(dx,dy)<6) return;
+    if(!moved&&Math.hypot(dx,dy)<8) return;
     if(!moved){ moved=true; w.style.cursor='grabbing'; }
-    place(w,{x:ox+dx,y:oy+dy}); },true);
-  w.addEventListener('pointerup',function(){
+    e.preventDefault();
+    place(w,{x:ox+dx,y:oy+dy}); },{capture:true,passive:false});
+  function endDrag(){
     if(!dragging) return; dragging=false; w.style.cursor='';
     if(moved){ userPlaced=true;
       var r=w.getBoundingClientRect();
       try{ localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top})); }catch(e){}
-      window.__chibiJustDragged=Date.now(); } },true);
+      window.__chibiJustDragged=Date.now(); } }
+  w.addEventListener('pointerup',endDrag,true);
+  w.addEventListener('pointercancel',endDrag,true);
   addEventListener('click',function(e){
     if(window.__chibiJustDragged&&Date.now()-window.__chibiJustDragged<400){
       window.__chibiJustDragged=0; e.stopPropagation(); e.preventDefault(); } },true);
-  function dodge(){
-    if(userPlaced) return;
-    var r=w.getBoundingClientRect(), hit=null;
-    var cands=[document.getElementById('coastBtn'),document.getElementById('hud'),document.getElementById('gyroHud')];
-    var bs=document.querySelectorAll('button,a');
-    for(var i=0;i<bs.length;i++){ var t=((bs[i].textContent||'')+' '+(bs[i].id||'')).toLowerCase();
-      if(t.indexOf('witness')>-1) cands.push(bs[i]); }
-    for(var j=0;j<cands.length;j++){ var el=cands[j]; if(!el) continue;
-      var cs=getComputedStyle(el); if(cs.display==='none'||cs.visibility==='hidden') continue;
-      var b=el.getBoundingClientRect(); if(!b.width&&!b.height) continue;
-      if(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top){ hit=b; break; } }
-    if(hit){ w.style.bottom=Math.max(14,innerHeight-hit.top+10)+'px'; w.style.top='auto'; }
-    else if(!p){ w.style.bottom='14px'; w.style.top='auto'; } }
-  setInterval(dodge,1500);
-  addEventListener('resize',function(){ var s2=null; try{ s2=JSON.parse(localStorage.getItem(KEY))||null; }catch(e){}
-    if(s2) place(w,s2); dodge(); });
-  setTimeout(dodge,600);
+  w.addEventListener('dblclick',function(){ try{ localStorage.removeItem(KEY); }catch(e){}
+    userPlaced=false; perch(w); },true);
+  addEventListener('resize',function(){ var s2=saved(); if(s2) place(w,s2); });
 }
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(init,400); });
 else setTimeout(init,400);
 })();
+
+
+
