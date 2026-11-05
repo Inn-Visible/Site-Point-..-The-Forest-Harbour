@@ -2226,7 +2226,7 @@ function lockdoor(){
       var t=(n[i].textContent||'');
      if(t.indexOf('the slot is poured')>-1 && t.indexOf('schematics')>-1 && t.length<220){ host=n[i]; break; }
     }
-    if(!host) return;
+    if(!host || host.offsetParent===null) return;
     var box=host; if(box.textContent.length<60) box=box.parentNode;
     box.id=MARK;
     box.style.cssText='padding:10px;border:1px dashed #223041';
