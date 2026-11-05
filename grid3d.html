@@ -50,7 +50,7 @@ var cv=document.getElementById('cv'), x=cv.getContext('2d');
 var wrap=document.getElementById('wrap'), fx=document.getElementById('fx');
 var rngEl=document.getElementById('rng'), grdEl=document.getElementById('grd');
 var st1=document.getElementById('st1'), st2=document.getElementById('st2'), presets=document.getElementById('presets');
-var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null;
+var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null, bootNote='';
 var roll=0.314, tilt=0.157, zoom=1, sticks=false, solidIdx=0;
 var R=6.5, N=26, G={x:1.5,y:1.0}, view={x:0,y:0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
 var DEF={surface:'sin(r*1.6)*exp(-r/4)*3', curve:'sin(x)', solid:''};
@@ -70,12 +70,12 @@ try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,g:G,v:view,rng:R,grd:N})); }catch(e){} }
 function bin(op,l,r){ return function(px,py){ var a=l(px,py), b=r(px,py);
   return op==='+'?a+b: op==='-'?a-b: op==='*'?a*b: op==='/'?a/b: Math.pow(a,b); }; }
-function compile(src){
-  var s=String(src).replace(/\s+/g,''), i=0;
+function compile(raw){
+  var s=String(raw).replace(/\u2212/g,'-').replace(/[\u00d7\u00b7]/g,'*').replace(/\u00f7/g,'/').replace(/\u03c0/g,'pi').replace(/\s+/g,''), i=0;
   var F={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,ln:Math.log,
     log:function(v){ return Math.log(v)/Math.LN10; }, sqrt:Math.sqrt, abs:Math.abs};
-  function err(m){ throw new Error(m); }
-  function starts(c){ return c==='('||/[a-z\u03c0]/.test(c); }
+  function err(m){ var e=new Error(m); e.pos=i; throw e; }
+  function starts(c){ return c==='('||/[a-z]/.test(c); }
   function primary(){
     var c=s[i];
     if(c==='('){ i++; var v=expr(); if(s[i]!==')') err('paren'); i++; return v; }
@@ -83,7 +83,7 @@ function compile(src){
     if(c==='+'){ i++; return primary(); }
     var fm=/^(sin|cos|tan|exp|ln|log|sqrt|abs)/.exec(s.slice(i));
     if(fm){ i+=fm[0].length; var f=F[fm[0]], a=primary(); return function(px,py){ return f(a(px,py)); }; }
-    var m=/^(pi|\u03c0|e|x|y|r)/.exec(s.slice(i));
+    var m=/^(pi|e|x|y|r)/.exec(s.slice(i));
     if(m){ i+=m[0].length;
       if(m[0]==='x') return function(px){ return px; };
       if(m[0]==='y') return function(px,py){ return py; };
@@ -167,9 +167,11 @@ function plot(){
   var msg=''; GEOM=null;
   readDims();
   if(mode!=='solid'){
-    try{ fn=compile(exprSrc); }catch(e){ fn=null; msg='the grammar refuses · check parens and operators'; }
+    try{ fn=compile(exprSrc); }
+    catch(e){ fn=null; var p=(e&&e.pos!=null)?e.pos:0;
+      msg='the grammar refuses at char '+p+' \u00b7 \u201c'+String(exprSrc).slice(p,p+8)+'\u201d'; }
     if(fn){ try{ if(mode==='surface') buildSurface(); else buildCurve(); }
-      catch(e){ fn=null; GEOM=null; msg='the surface collapsed · try a gentler formula'; } }
+      catch(e2){ fn=null; GEOM=null; msg='the surface collapsed \u00b7 try a gentler formula'; } }
   } else { fn=null; buildSolid(); }
   renderPresets(); draw(msg); save();
 }
@@ -213,8 +215,8 @@ function draw(msg){
     if(fn){ var gy=fn(G.x,0);
       if(isFinite(gy)){ var gx2=cx+(G.x-view.x)*sx, gy2=cy-(gy-ymid-view.y)*sy;
         x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gx2,gy2,5,0,7); x.fill();
-        st1.innerHTML='curve · y = '+exprSrc+' · x ±'+R+' · y '+GEOM.zmin.toFixed(2)+' .. '+GEOM.zmax.toFixed(2)+' · <span class="g">('+G.x.toFixed(2)+', '+gy.toFixed(2)+')</span>'; } }
-    st2.textContent='drag to pan · drag the gold dot · wheel or + − to zoom';
+        st1.innerHTML='curve \u00b7 y = '+exprSrc+' \u00b7 x \u00b1'+R+' \u00b7 y '+GEOM.zmin.toFixed(2)+' .. '+GEOM.zmax.toFixed(2)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+gy.toFixed(2)+')</span>'; } }
+    st2.textContent='drag to pan \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom';
   } else {
     x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
     var stp2=R>10?4:2;
@@ -247,14 +249,14 @@ function draw(msg){
       var gz=fn(G.x,G.y);
       if(isFinite(gz)){ var gp=proj([G.x,G.y,gz]);
         x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gp[0],gp[1],5,0,7); x.fill();
-        st1.innerHTML='surface · z = '+exprSrc+' · ±'+R+' · '+N+'×'+N+' · roll '+Math.round(roll*57.3)+'° · tilt '+Math.round(tilt*57.3)+'° · z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' · <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
-      st2.textContent='drag to roll · drag the gold dot · wheel or + − to zoom · sticks live here';
+        st1.innerHTML='surface \u00b7 z = '+exprSrc+' \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
+      st2.textContent='drag to roll \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom \u00b7 sticks live here';
     } else if(mode==='solid'&&GEOM){
-      st1.textContent='solid · '+PRE.solid[solidIdx][0]+' · roll '+Math.round(roll*57.3)+'° · tilt '+Math.round(tilt*57.3)+'° · '+EQ[PRE.solid[solidIdx][0]];
-      st2.textContent='drag to roll · wheel or + − to zoom · presets speak their math';
+      st1.textContent='solid \u00b7 '+PRE.solid[solidIdx][0]+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 '+EQ[PRE.solid[solidIdx][0]];
+      st2.textContent='drag to roll \u00b7 wheel or + \u2212 to zoom \u00b7 presets speak their math';
     }
   }
-  if(!GEOM&&!msg) st1.textContent=mode+' · awaiting a formula';
+  if(!GEOM&&!msg) st1.textContent=mode+' \u00b7 awaiting a formula';
   if(msg) st1.innerHTML='<span class="r">'+msg+'</span>';
 }
 function renderPresets(){
@@ -307,7 +309,7 @@ cv.addEventListener('pointerdown',function(e){
   var gp=null;
   if(fn&&GEOM){
     if(mode==='curve'&&window.__cfit){ var gy=fn(G.x,0);
-      if(isFinite(gy)) gp=[cx+(G.x-view.x)*__cfit.sx, cy-(gy-__cfit.ymid-view.y)*__cfit.sy]; }
+      if(isFinite(gy)) gp=[cx+(G.x-view.x)*window.__cfit.sx, cy-(gy-window.__cfit.ymid-view.y)*window.__cfit.sy]; }
     else if(mode==='surface'){ var gz=fn(G.x,G.y);
       if(isFinite(gz)) gp=proj([G.x,G.y,gz]); } }
   if(gp&&Math.hypot(gp[0]-px,gp[1]-py)<20) drag={k:'dot'};
@@ -317,21 +319,35 @@ cv.addEventListener('pointermove',function(e){
   if(!drag) return;
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
   if(drag.k==='rot'&&mode==='curve'&&window.__cfit){
-    view.x=drag.vx0-(px-drag.sx)/__cfit.sx; view.y=drag.vy0+(py-drag.sy)/__cfit.sy; draw(); return; }
+    view.x=drag.vx0-(px-drag.sx)/window.__cfit.sx; view.y=drag.vy0+(py-drag.sy)/window.__cfit.sy; draw(); return; }
   if(drag.k==='rot'){ roll=drag.r0+(px-drag.sx)*0.008; tilt=Math.max(-1.4,Math.min(1.4,drag.t0+(py-drag.sy)*0.008)); draw(); return; }
   if(drag.k==='dot'&&fn){
-    if(mode==='curve'&&window.__cfit){ G.x+= (px-(drag.lx||px))/__cfit.sx; drag.lx=px; }
+    if(mode==='curve'&&window.__cfit){ G.x+= (px-(drag.lx||px))/window.__cfit.sx; drag.lx=px; }
     else { var s=base*zoom;
       var dx=(px-(drag.lx||px))/s, dy=(py-(drag.ly||py))/s; drag.lx=px; drag.ly=py;
       var cr=Math.cos(roll), sr=Math.sin(roll);
       G.x+= dx*cr - dy*sr; G.y+= dx*sr + dy*cr; }
     G.x=Math.max(-R,Math.min(R,G.x)); G.y=Math.max(-R,Math.min(R,G.y)); draw(); } });
 addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
+/* ---- boot · never open dead ---- */
+if(mode!=='solid'){
+  try{ compile(exprSrc); }catch(e){ exprSrc=DEF[mode];
+    bootNote='the stored formula refused \u00b7 loaded the house default'; } }
 rngEl.value=R; grdEl.value=N;
 fx.value= mode==='solid'? '' : exprSrc;
 document.getElementById('sticks').className=sticks?'on':'';
 setMode(mode);
 fit();
+(function selfTest(){
+  var bat=['sin(r*1.6)*exp(-r/4)*3','sin(x)','(x^2-y^2)/4','3*exp(-(r^2)/8)','(x+y)/4','e','pi','2x','sin(x)*cos(y)'];
+  for(var i=0;i<bat.length;i++){
+    try{ compile(bat[i]); }catch(e){
+      var m='parser self-test failed \u00b7 "'+bat[i]+'" at char '+(e&&e.pos!=null?e.pos:'?')+' \u00b7 the deployed file may be mangled or cached \u00b7 hard-reload or re-paste fresh';
+      st1.innerHTML='<span class="r">'+m+'</span>';
+      try{ console.error('grid3d self-test:',bat[i],e); }catch(e2){}
+      return; } }
+  if(bootNote) st1.innerHTML='<span class="r">'+bootNote+'</span>';
+})();
 })();
 </script>
 </body>
