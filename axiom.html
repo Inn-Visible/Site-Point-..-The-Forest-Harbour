@@ -2248,11 +2248,26 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- mini-window manners v5 \u00b7 one door back, nothing extra ---- */
+/* ---- mini-window manners v6 \u00b7 the full-hand knock, the old row, a guaranteed back ---- */
 (function(){
   var STRIPZ='position:relative;z-index:9999;';
+  var FOLDERS=['workbench','gis','cad','3d print','schematics','archive','kit','grid'];
   function seatFr(){ var f=document.querySelectorAll('iframe');
     for(var i=0;i<f.length;i++){ if(f[i].parentNode && f[i].parentNode.id==='gemSeated') return f[i]; } return null; }
+  function tapLeaf(name){
+    var tabs=document.querySelectorAll('body *');
+    for(var j=0;j<tabs.length;j++){ var el=tabs[j];
+      if(el.children.length===0&&(el.textContent||'').trim()===name){
+        var r=el.getBoundingClientRect();
+        var o={bubbles:true,cancelable:true,view:window,clientX:r.left+4,clientY:r.top+4};
+        try{ el.dispatchEvent(new PointerEvent('pointerdown',o)); }catch(e){ try{ el.dispatchEvent(new MouseEvent('mousedown',o)); }catch(e2){} }
+        try{ el.dispatchEvent(new MouseEvent('mousedown',o)); }catch(e){}
+        try{ el.dispatchEvent(new PointerEvent('pointerup',o)); }catch(e){ try{ el.dispatchEvent(new MouseEvent('mouseup',o)); }catch(e2){} }
+        try{ el.dispatchEvent(new MouseEvent('mouseup',o)); }catch(e){}
+        try{ el.dispatchEvent(new MouseEvent('click',o)); }catch(e){}
+        try{ el.click(); }catch(e){}
+        return true; } }
+    return false; }
   function groom(){
     var f=seatFr(); if(!f) return; var doc=null;
     try{ doc=f.contentDocument; }catch(e){} if(!doc||!doc.body) return;
@@ -2262,18 +2277,21 @@ function lockdoor(){
     var strip=doc.getElementById('vaultStrip');
     if(!strip){
       strip=doc.createElement('div'); strip.id='vaultStrip';
-      strip.style.cssText=STRIPZ+'display:flex;gap:4px;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
-      var bk=doc.createElement('button'); bk.textContent='\u2039 back to the vault';
+      strip.style.cssText=STRIPZ+'display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
+      var bk=doc.createElement('button'); bk.textContent='\u2039 back';
       bk.style.cssText=STRIPZ+'background:none;border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 10px;cursor:pointer';
       bk.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
       bk.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
-        var tabs=document.querySelectorAll('body *');
-        for(var j=0;j<tabs.length;j++){ var el=tabs[j];
-          if(el.children.length===0&&(el.textContent||'').trim()==='workbench'){
-            try{ el.click(); }catch(err){}
-            try{ if(el.parentElement) el.parentElement.click(); }catch(err){}
-            break; } } },true);
+        tapLeaf('workbench');
+        setTimeout(function(){ if(seatFr()){ try{ window.location.reload(); }catch(er){} } },350); },true);
       strip.appendChild(bk);
+      FOLDERS.forEach(function(name){
+        var b=doc.createElement('button'); b.textContent=name;
+        var on=(name==='schematics');
+        b.style.cssText=STRIPZ+'background:none;border:1px solid '+(on?'#d9a83a':'#223041')+';color:'+(on?'#d9a83a':'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
+        b.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
+        b.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); tapLeaf(name); },true);
+        strip.appendChild(b); });
       doc.body.insertBefore(strip, doc.body.firstChild);
     } else { strip.style.position='relative'; strip.style.zIndex='9999'; }
   }
