@@ -187,19 +187,17 @@ function loadOvl(){ var raw=null; try{ raw=localStorage.getItem(ovlKey()); }catc
     d[0].classList.toggle('off',fs===2); d[1].classList.toggle('off',fs===1);
     this.textContent= fs===1?'focus · ink': fs===2?'focus · grid':'focus ⇵';
     fit(); };
-  var fr=document.getElementById('kit'), gs=1;
-  function applyZoom(){ var wrap=document.getElementById('kitWrap');
-    fr.style.width=(100/gs)+'%'; fr.style.height=(100/gs)+'%'; fr.style.transform='scale('+gs+')';
-    note('grid view '+Math.round(gs*100)+'%'); }
+   var fr=document.getElementById('kit'), gs=1;
+  function applyZoom(){ fr.style.width=(100/gs)+'%'; fr.style.height=(100/gs)+'%'; fr.style.transform='scale('+gs+')'; }
+  function fitView(){ var doc=null; try{ doc=fr.contentDocument; }catch(e){}
+    var h=600; if(doc&&doc.body) h=Math.max(doc.body.scrollHeight,400);
+    var wh=document.getElementById('kitWrap').clientHeight||600;
+    gs=Math.min(1, wh/h); applyZoom();
+    note('grid fitted \u00b7 '+Math.round(gs*100)+'% \u00b7 the whole room at once'); }
   document.getElementById('gIn').onclick=function(){ gs=Math.min(1.6,gs+0.1); applyZoom(); };
-  document.getElementById('gOut').onclick=function(){ gs=Math.max(0.45,gs-0.1); applyZoom(); };
-  document.getElementById('gHome').onclick=function(){ gs=1; applyZoom(); };
-  function tame(){ var doc=null; try{ doc=fr.contentDocument; }catch(e){} if(!doc) return;
-    if(!doc.getElementById('kitTame')){ var st=doc.createElement('style'); st.id='kitTame';
-      st.textContent='canvas{max-width:100%!important;height:auto!important;display:block;margin:6px auto!important}';
-      doc.head.appendChild(st); }
-    doc.addEventListener('click',function(){ setTimeout(function(){ var c=doc.querySelector('canvas'); if(c&&c.scrollIntoView) c.scrollIntoView({block:'center',behavior:'smooth'}); },60); },true); }
-  fr.addEventListener('load',tame);
+  document.getElementById('gOut').onclick=function(){ gs=Math.max(0.3,gs-0.1); applyZoom(); };
+  document.getElementById('gHome').onclick=fitView;
+  fr.addEventListener('load',function(){ setTimeout(fitView,300); });
   addEventListener('storage',function(e){
     if(e.key==='hive_slate_v2'){ var v=readV(); var n=v&&typeof v.cur==='number'?v.cur:pageIdx;
       if(n!==pageIdx){ saveOvl(); pageIdx=n; loadOvl(); redraw(); baseNote(); note('the slate turned to page '+(n+1)+' \u00b7 its ink follows'); } } });
