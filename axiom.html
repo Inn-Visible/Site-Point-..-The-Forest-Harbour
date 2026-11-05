@@ -2224,7 +2224,7 @@ function lockdoor(){
     var n=document.querySelectorAll('body *'), host=null;
     for(var i=0;i<n.length;i++){
       var t=(n[i].textContent||'');
-      if(t.indexOf('the slot is poured')>-1 && t.length<220){ host=n[i]; break; }
+     if(t.indexOf('the slot is poured')>-1 && t.indexOf('schematics')>-1 && t.length<220){ host=n[i]; break; }
     }
     if(!host) return;
     var box=host; if(box.textContent.length<60) box=box.parentNode;
@@ -2248,26 +2248,11 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- mini-window manners v4 \u00b7 eight doors forward, one door back ---- */
+/* ---- mini-window manners v5 \u00b7 one door back, nothing extra ---- */
 (function(){
   var STRIPZ='position:relative;z-index:9999;';
-  var FOLDERS=['workbench','gis','cad','3d print','schematics','archive','kit','grid'];
-  var hist=[], cur='workbench';
-  document.addEventListener('click',function(e){
-    var t=e.target; if(!t||!t.children||t.children.length!==0) return;
-    var tx=(t.textContent||'').trim();
-    if(FOLDERS.indexOf(tx)>-1 && tx!==cur){ hist.push(cur); if(hist.length>12) hist.shift(); cur=tx; }
-  },true);
   function seatFr(){ var f=document.querySelectorAll('iframe');
     for(var i=0;i<f.length;i++){ if(f[i].parentNode && f[i].parentNode.id==='gemSeated') return f[i]; } return null; }
-  function hop(name,record){
-    if(record!==false && name!==cur){ hist.push(cur); if(hist.length>12) hist.shift(); cur=name; }
-    var tabs=document.querySelectorAll('body *');
-    for(var j=0;j<tabs.length;j++){ var el=tabs[j];
-      if(el.children.length===0&&(el.textContent||'').trim()===name){
-        try{ el.click(); }catch(e){}
-        try{ if(el.parentElement) el.parentElement.click(); }catch(e){}
-        return; } } }
   function groom(){
     var f=seatFr(); if(!f) return; var doc=null;
     try{ doc=f.contentDocument; }catch(e){} if(!doc||!doc.body) return;
@@ -2277,20 +2262,18 @@ function lockdoor(){
     var strip=doc.getElementById('vaultStrip');
     if(!strip){
       strip=doc.createElement('div'); strip.id='vaultStrip';
-      strip.style.cssText=STRIPZ+'display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
-      var bk=doc.createElement('button'); bk.textContent='\u2039 back';
-      bk.style.cssText=STRIPZ+'background:none;border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
+      strip.style.cssText=STRIPZ+'display:flex;gap:4px;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
+      var bk=doc.createElement('button'); bk.textContent='\u2039 back to the vault';
+      bk.style.cssText=STRIPZ+'background:none;border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 10px;cursor:pointer';
       bk.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
       bk.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
-        hop(hist.length?hist.pop():'workbench', false); },true);
+        var tabs=document.querySelectorAll('body *');
+        for(var j=0;j<tabs.length;j++){ var el=tabs[j];
+          if(el.children.length===0&&(el.textContent||'').trim()==='workbench'){
+            try{ el.click(); }catch(err){}
+            try{ if(el.parentElement) el.parentElement.click(); }catch(err){}
+            break; } } },true);
       strip.appendChild(bk);
-      FOLDERS.forEach(function(name){
-        var b=doc.createElement('button'); b.textContent=name;
-        var on=(name==='schematics');
-        b.style.cssText=STRIPZ+'background:none;border:1px solid '+(on?'#d9a83a':'#223041')+';color:'+(on?'#d9a83a':'#93a1b0')+';font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
-        b.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
-        b.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); hop(name); },true);
-        strip.appendChild(b); });
       doc.body.insertBefore(strip, doc.body.firstChild);
     } else { strip.style.position='relative'; strip.style.zIndex='9999'; }
   }
