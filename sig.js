@@ -452,5 +452,16 @@ wrap.addEventListener('click',function(){
   if(typeof s.vol==='number'){ try{ a.volume=s.vol; }catch(e){} }
   a.play().catch(function(){ msg('the stream refused \u00b7 tap again'); }); });
 addEventListener('pagehide',function(){ if(!onBase&&au&&!au.paused){ var s=st()||{}; s.on=true; set(s); } });
-setInterval(paint,1500); paint();
+function dodge(){
+  var r=wrap.getBoundingClientRect(), hit=null;
+  var cands=[document.getElementById('coastBtn'),document.getElementById('hud'),document.getElementById('gyroHud')];
+  for(var i=0;i<cands.length;i++){ var el=cands[i]; if(!el) continue;
+    var cs=getComputedStyle(el); if(cs.display==='none'||cs.visibility==='hidden') continue;
+    var b=el.getBoundingClientRect(); if(!b.width&&!b.height) continue;
+    if(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top){ hit=b; break; } }
+  if(hit){ wrap.style.bottom=Math.max(14, innerHeight-hit.top+10)+'px'; }
+  else { wrap.style.bottom='14px'; }
+}
+setInterval(dodge,1500); addEventListener('resize',dodge); setTimeout(dodge,600);
+  setInterval(paint,1500); paint();
 })();
