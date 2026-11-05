@@ -34,34 +34,40 @@
 <div class="bar">
   <button id="mCurve">curve</button><button id="mSurface" class="on">surface</button><button id="mSolid">solid</button>
   <input id="fx" type="text" spellcheck="false" placeholder="z = f(x, y) · curve reads y = f(x)">
-  <input id="rng" type="text" title="domain \u00b1 (x and y range)" placeholder="\u00b16.5">
-  <input id="grd" type="text" title="grid resolution (8\u201364)" placeholder="26">
+  <input id="rng" type="text" title="domain ± (x and y range)" placeholder="±6.5">
+  <input id="grd" type="text" title="grid resolution (8–64)" placeholder="26">
   <button id="plot">plot it</button>
   <span id="presets" style="display:contents"></span>
   <span class="sp"></span>
   <button id="zin">+</button><button id="zout">−</button><button id="vhome">⌂ view</button><button id="rst">reset</button><button id="sticks">sticks</button>
 </div>
 <div id="wrap"><canvas id="cv"></canvas></div>
-<div id="status"><span id="st1"></span><span class="sp"></span><span id="st2">drag to roll · drag the gold dot · wheel or + − to zoom · sticks live in surface</span></div>
+<div id="status"><span id="st1"></span><span class="sp"></span><span id="st2"></span></div>
 <script>
 (function(){
 var KEY='hive_grid3d';
 var cv=document.getElementById('cv'), x=cv.getContext('2d');
 var wrap=document.getElementById('wrap'), fx=document.getElementById('fx');
 var rngEl=document.getElementById('rng'), grdEl=document.getElementById('grd');
-var st1=document.getElementById('st1'), presets=document.getElementById('presets');
+var st1=document.getElementById('st1'), st2=document.getElementById('st2'), presets=document.getElementById('presets');
 var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null;
 var roll=0.314, tilt=0.157, zoom=1, sticks=false, solidIdx=0;
-var R=6.5, N=26, G={x:1.5,y:1.0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
+var R=6.5, N=26, G={x:1.5,y:1.0}, view={x:0,y:0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
 var DEF={surface:'sin(r*1.6)*exp(-r/4)*3', curve:'sin(x)', solid:''};
 var PRE={surface:[['wave','sin(x)*cos(y)'],['saddle','(x^2-y^2)/4'],['ripple','sin(r*1.6)*exp(-r/4)*3'],['gauss','3*exp(-(r^2)/8)'],['plane','(x+y)/4']],
          solid:[['sphere',''],['torus',''],['box',''],['cone','']]};
+var EQ={sphere:'x=3.5·cos v·cos u · y=3.5·cos v·sin u · z=3.5·sin v · u∈[0,2π] · v∈[−π/2,π/2]',
+  torus:'x=(3.2+1.2·cos v)·cos u · y=(3.2+1.2·cos v)·sin u · z=1.2·sin v · u,v∈[0,2π]',
+  box:'vertices (±2.6, ±2.6, ±2.6) · 12 edges · 8 corners · the honest cube',
+  cone:'base circle r=3 @ z=−2 · apex (0,0,4) · 16 spokes · the party hat'};
+var BUCK=[];
+(function(){ for(var i=0;i<8;i++){ var t=i/7;
+  BUCK.push('rgba('+Math.round(120+(217-120)*t)+','+Math.round(220+(168-220)*t)+','+Math.round(200+(58-200)*t)+',.75)'); } })();
 try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
   if(S){ mode=S.mode||mode; exprSrc=typeof S.expr==='string'?S.expr:exprSrc; roll=+S.roll||roll; tilt=+S.tilt||tilt;
-    zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; if(S.g) G=S.g;
+    zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; if(S.g) G=S.g; if(S.v) view=S.v;
     if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,g:G,rng:R,grd:N})); }catch(e){} }
-/* ---- the grammar · function names BEFORE constants, always ---- */
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,g:G,v:view,rng:R,grd:N})); }catch(e){} }
 function bin(op,l,r){ return function(px,py){ var a=l(px,py), b=r(px,py);
   return op==='+'?a+b: op==='-'?a-b: op==='*'?a*b: op==='/'?a/b: Math.pow(a,b); }; }
 function compile(src){
@@ -100,7 +106,6 @@ function compile(src){
   var f=expr(); if(i<s.length) err('trail');
   return f;
 }
-/* ---- geometry builds · obey R and N ---- */
 function buildSurface(){
   var pts=[], lines=[], zmin=1e9, zmax=-1e9, grid=[];
   for(var i=0;i<N;i++){ grid[i]=[];
@@ -118,14 +123,15 @@ function buildSurface(){
   GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax};
 }
 function buildCurve(){
-  var pts=[], lines=[], M=Math.max(80,N*6), zmin=1e9, zmax=-1e9, prev=-1;
+  var pts=[], lines=[], M=Math.max(120,N*8), zmin=1e9, zmax=-1e9, prev=-1;
   for(var i=0;i<M;i++){
     var px=-R+2*R*i/(M-1), py=fn(px,0);
     if(!isFinite(py)){ prev=-1; continue; }
-    py=Math.max(-40,Math.min(40,py));
+    py=Math.max(-1e4,Math.min(1e4,py));
     var idx=pts.length; pts.push([px,py,0]);
     if(prev>=0) lines.push([prev,idx]); prev=idx;
     if(py<zmin) zmin=py; if(py>zmax) zmax=py; }
+  if(zmin>zmax){ zmin=-1; zmax=1; }
   GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax};
 }
 function buildSolid(){
@@ -161,13 +167,12 @@ function plot(){
   var msg=''; GEOM=null;
   readDims();
   if(mode!=='solid'){
-    try{ fn=compile(exprSrc); }catch(e){ fn=null; msg='the grammar refuses \u00b7 check parens and operators'; }
+    try{ fn=compile(exprSrc); }catch(e){ fn=null; msg='the grammar refuses · check parens and operators'; }
     if(fn){ try{ if(mode==='surface') buildSurface(); else buildCurve(); }
-      catch(e){ fn=null; GEOM=null; msg='the surface collapsed \u00b7 try a gentler formula'; } }
+      catch(e){ fn=null; GEOM=null; msg='the surface collapsed · try a gentler formula'; } }
   } else { fn=null; buildSolid(); }
   renderPresets(); draw(msg); save();
 }
-/* ---- projection + draw ---- */
 function proj(p){
   var cr=Math.cos(roll), sr=Math.sin(roll);
   var x1=p[0]*cr-p[1]*sr, y1=p[0]*sr+p[1]*cr;
@@ -175,40 +180,81 @@ function proj(p){
   var y2=y1*ct-p[2]*st;
   return [cx+x1*base*zoom, cy-y2*base*zoom];
 }
+function nice(v){ var p=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)); var m=v/p;
+  return (m>5?10:m>2?5:m>1?2:1)*p; }
 function draw(msg){
   x.clearRect(0,0,W,H);
-  x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
-  var stp=R>10?4:2, i;
-  for(i=-Math.floor(R/stp)*stp;i<=R;i+=stp){
-    var a=proj([i,-R,0]), b=proj([i,R,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke();
-    a=proj([-R,i,0]); b=proj([R,i,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
-  x.strokeStyle='rgba(92,104,117,.8)';
-  var ax=proj([0,0,0]), az=proj([0,0,R*0.7]);
-  x.beginPath(); x.moveTo(ax[0],ax[1]); x.lineTo(az[0],az[1]); x.stroke();
-  if(GEOM){
-    if(sticks&&mode==='surface'){
-      x.strokeStyle='rgba(120,220,200,.6)';
-      for(i=0;i<GEOM.pts.length;i+=2){ var p=GEOM.pts[i];
-        var g0=proj([p[0],p[1],0]), g1=proj(p);
-        x.beginPath(); x.moveTo(g0[0],g0[1]); x.lineTo(g1[0],g1[1]); x.stroke(); }
-    } else {
-      x.strokeStyle= mode==='curve'?'rgba(232,228,216,.85)':'rgba(120,220,200,.65)';
-      x.lineWidth= mode==='curve'?2:1;
-      for(i=0;i<GEOM.lines.length;i++){ var L=GEOM.lines[i];
-        var p1=proj(GEOM.pts[L[0]]), p2=proj(GEOM.pts[L[1]]);
-        x.beginPath(); x.moveTo(p1[0],p1[1]); x.lineTo(p2[0],p2[1]); x.stroke(); }
-      x.lineWidth=1; } }
-  if(mode!=='solid'&&fn){
-    var gz= mode==='curve'? fn(G.x,0) : fn(G.x,G.y);
-    if(isFinite(gz)){ var gp=proj(mode==='curve'?[G.x,gz,0]:[G.x,G.y,gz]);
-      x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gp[0],gp[1],5,0,7); x.fill();
-      st1.innerHTML=(mode==='curve'
-        ? 'curve \u00b7 y = '+exprSrc+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+gz.toFixed(2)+')</span>'
-        : 'surface \u00b7 z = '+exprSrc+' \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>');
+  var i, a, b;
+  if(mode==='curve'&&GEOM){
+    var span=Math.max(0.5,GEOM.zmax-GEOM.zmin), ymid=(GEOM.zmax+GEOM.zmin)/2;
+    var sx=(W*0.92)/(2*R)*zoom, sy=(H*0.8)/span*zoom;
+    window.__cfit={sx:sx,sy:sy,ymid:ymid};
+    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
+    var stp=nice(2*R/6), yst=nice(span/5);
+    var y0=cy-(0-ymid-view.y)*sy;
+    if(y0>0&&y0<H){ x.beginPath(); x.moveTo(0,y0); x.lineTo(W,y0); x.stroke(); }
+    var x0=cx+(0-view.x)*sx;
+    if(x0>0&&x0<W){ x.beginPath(); x.moveTo(x0,0); x.lineTo(x0,H); x.stroke(); }
+    x.fillStyle='#5c6875'; x.font='9px ui-monospace,Consolas,monospace';
+    for(i=Math.ceil((-R+view.x)/stp)*stp;i<=R+view.x;i+=stp){
+      var tx=cx+(i-view.x)*sx;
+      if(tx<14||tx>W-8) continue;
+      x.fillText(String(+i.toFixed(2)), tx+2, Math.max(10,Math.min(H-4,y0+12))); }
+    for(i=Math.ceil((ymid-span/2+view.y)/yst)*yst;i<=ymid+span/2+view.y;i+=yst){
+      var ty=cy-(i-ymid-view.y)*sy;
+      if(ty<10||ty>H-6) continue;
+      x.fillText(String(+i.toFixed(2)), Math.max(2,Math.min(W-30,x0+4)), ty-2); }
+    x.strokeStyle='rgba(232,228,216,.9)'; x.lineWidth=2; x.beginPath();
+    var started=false;
+    for(i=0;i<GEOM.pts.length;i++){ var p=GEOM.pts[i];
+      var px2=cx+(p[0]-view.x)*sx, py2=cy-(p[1]-ymid-view.y)*sy;
+      if(!started){ x.moveTo(px2,py2); started=true; } else x.lineTo(px2,py2); }
+    x.stroke(); x.lineWidth=1;
+    if(fn){ var gy=fn(G.x,0);
+      if(isFinite(gy)){ var gx2=cx+(G.x-view.x)*sx, gy2=cy-(gy-ymid-view.y)*sy;
+        x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gx2,gy2,5,0,7); x.fill();
+        st1.innerHTML='curve · y = '+exprSrc+' · x ±'+R+' · y '+GEOM.zmin.toFixed(2)+' .. '+GEOM.zmax.toFixed(2)+' · <span class="g">('+G.x.toFixed(2)+', '+gy.toFixed(2)+')</span>'; } }
+    st2.textContent='drag to pan · drag the gold dot · wheel or + − to zoom';
+  } else {
+    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
+    var stp2=R>10?4:2;
+    for(i=-Math.floor(R/stp2)*stp2;i<=R;i+=stp2){
+      a=proj([i,-R,0]); b=proj([i,R,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke();
+      a=proj([-R,i,0]); b=proj([R,i,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+    x.strokeStyle='rgba(92,104,117,.8)';
+    var ax=proj([0,0,0]), az=proj([0,0,R*0.7]);
+    x.beginPath(); x.moveTo(ax[0],ax[1]); x.lineTo(az[0],az[1]); x.stroke();
+    if(GEOM){
+      if(sticks&&mode==='surface'){
+        x.strokeStyle='rgba(120,220,200,.6)';
+        for(i=0;i<GEOM.pts.length;i+=2){ var q=GEOM.pts[i];
+          var g0=proj([q[0],q[1],0]), g1=proj(q);
+          x.beginPath(); x.moveTo(g0[0],g0[1]); x.lineTo(g1[0],g1[1]); x.stroke(); }
+      } else if(mode==='surface'){
+        var zr=Math.max(1e-6,GEOM.zmax-GEOM.zmin);
+        for(i=0;i<GEOM.lines.length;i++){ var L=GEOM.lines[i];
+          var p1=GEOM.pts[L[0]], p2=GEOM.pts[L[1]];
+          var t=((p1[2]+p2[2])/2-GEOM.zmin)/zr;
+          x.strokeStyle=BUCK[Math.max(0,Math.min(7,Math.round(t*7)))];
+          a=proj(p1); b=proj(p2);
+          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+      } else {
+        x.strokeStyle='rgba(120,220,200,.7)';
+        for(i=0;i<GEOM.lines.length;i++){ var L2=GEOM.lines[i];
+          a=proj(GEOM.pts[L2[0]]); b=proj(GEOM.pts[L2[1]]);
+          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); } } }
+    if(mode==='surface'&&fn&&GEOM){
+      var gz=fn(G.x,G.y);
+      if(isFinite(gz)){ var gp=proj([G.x,G.y,gz]);
+        x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gp[0],gp[1],5,0,7); x.fill();
+        st1.innerHTML='surface · z = '+exprSrc+' · ±'+R+' · '+N+'×'+N+' · roll '+Math.round(roll*57.3)+'° · tilt '+Math.round(tilt*57.3)+'° · z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' · <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
+      st2.textContent='drag to roll · drag the gold dot · wheel or + − to zoom · sticks live here';
+    } else if(mode==='solid'&&GEOM){
+      st1.textContent='solid · '+PRE.solid[solidIdx][0]+' · roll '+Math.round(roll*57.3)+'° · tilt '+Math.round(tilt*57.3)+'° · '+EQ[PRE.solid[solidIdx][0]];
+      st2.textContent='drag to roll · wheel or + − to zoom · presets speak their math';
     }
-  } else if(mode==='solid'&&GEOM){
-    st1.textContent='solid \u00b7 '+PRE.solid[solidIdx][0]+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0';
-  } else if(!msg){ st1.textContent=mode+' \u00b7 awaiting a formula'; }
+  }
+  if(!GEOM&&!msg) st1.textContent=mode+' · awaiting a formula';
   if(msg) st1.innerHTML='<span class="r">'+msg+'</span>';
 }
 function renderPresets(){
@@ -249,9 +295,9 @@ rngEl.addEventListener('change',function(){ plot(); });
 grdEl.addEventListener('change',function(){ plot(); });
 document.getElementById('zin').onclick=function(){ zoom=Math.min(4,zoom*1.15); draw(); save(); };
 document.getElementById('zout').onclick=function(){ zoom=Math.max(0.3,zoom/1.15); draw(); save(); };
-document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoom=1; draw(); save(); };
+document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoom=1; view={x:0,y:0}; draw(); save(); };
 document.getElementById('rst').onclick=function(){ if(mode!=='solid'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
-  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; roll=0.314; tilt=0.157; zoom=1; plot(); };
+  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; plot(); };
 document.getElementById('sticks').onclick=function(){ sticks=!sticks; this.className=sticks?'on':''; draw(); save(); };
 cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.3,Math.min(4,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); },{passive:false});
 var drag=null;
@@ -259,19 +305,26 @@ cv.addEventListener('pointerdown',function(e){
   cv.setPointerCapture(e.pointerId);
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
   var gp=null;
-  if(mode!=='solid'&&fn){ var gz= mode==='curve'? fn(G.x,0): fn(G.x,G.y);
-    if(isFinite(gz)) gp=proj(mode==='curve'?[G.x,gz,0]:[G.x,G.y,gz]); }
+  if(fn&&GEOM){
+    if(mode==='curve'&&window.__cfit){ var gy=fn(G.x,0);
+      if(isFinite(gy)) gp=[cx+(G.x-view.x)*__cfit.sx, cy-(gy-__cfit.ymid-view.y)*__cfit.sy]; }
+    else if(mode==='surface'){ var gz=fn(G.x,G.y);
+      if(isFinite(gz)) gp=proj([G.x,G.y,gz]); } }
   if(gp&&Math.hypot(gp[0]-px,gp[1]-py)<20) drag={k:'dot'};
-  else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt}; cv.classList.add('grabbing'); }
+  else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt,vx0:view.x,vy0:view.y}; cv.classList.add('grabbing'); }
   e.preventDefault(); });
 cv.addEventListener('pointermove',function(e){
   if(!drag) return;
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
-  if(drag.k==='rot'){ roll=drag.r0+(px-drag.sx)*0.008; tilt=Math.max(-1.4,Math.min(1.4,drag.t0+(py-drag.sy)*0.008)); draw(); }
-  else if(fn){ var s=base*zoom;
-    var dx=(px-(drag.lx||px))/s, dy=(py-(drag.ly||py))/s; drag.lx=px; drag.ly=py;
-    var cr=Math.cos(roll), sr=Math.sin(roll);
-    G.x+= dx*cr - dy*sr; G.y+= dx*sr + dy*cr;
+  if(drag.k==='rot'&&mode==='curve'&&window.__cfit){
+    view.x=drag.vx0-(px-drag.sx)/__cfit.sx; view.y=drag.vy0+(py-drag.sy)/__cfit.sy; draw(); return; }
+  if(drag.k==='rot'){ roll=drag.r0+(px-drag.sx)*0.008; tilt=Math.max(-1.4,Math.min(1.4,drag.t0+(py-drag.sy)*0.008)); draw(); return; }
+  if(drag.k==='dot'&&fn){
+    if(mode==='curve'&&window.__cfit){ G.x+= (px-(drag.lx||px))/__cfit.sx; drag.lx=px; }
+    else { var s=base*zoom;
+      var dx=(px-(drag.lx||px))/s, dy=(py-(drag.ly||py))/s; drag.lx=px; drag.ly=py;
+      var cr=Math.cos(roll), sr=Math.sin(roll);
+      G.x+= dx*cr - dy*sr; G.y+= dx*sr + dy*cr; }
     G.x=Math.max(-R,Math.min(R,G.x)); G.y=Math.max(-R,Math.min(R,G.y)); draw(); } });
 addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
 rngEl.value=R; grdEl.value=N;
