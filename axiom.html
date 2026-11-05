@@ -2248,38 +2248,57 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- mini-window manners \u00b7 no recursion, filelist kept, clicks heard ---- */
+/* ---- mini-window manners \u00b7 local folder-select, no parent yanking ---- */
 (function(){
+  var ROOMS={ 'schematics':'schematic.html', 'archive':'archive.html', 'kit':'kit.html', 'grid':'grid3d.html' };
   var STRIPZ='position:relative;z-index:9999;';
   function findFr(){ var f=document.querySelectorAll('iframe');
-    for(var i=0;i<f.length;i++){ if((f[i].getAttribute('src')||'').indexOf('schematic')===0) return f[i]; } return null; }
-  function hop(name){ var P=null; try{ P=window.frames ? document.querySelector('iframe[src^="schematic"]').contentWindow.parent : null; }catch(e){}
-    if(!P) return;
-    var tabs=P.document.querySelectorAll('body *');
-    for(var j=0;j<tabs.length;j++){ var el=tabs[j];
-      if(el.children.length===0&&(el.textContent||'').trim()===name){ el.click(); return; } } }
+    for(var i=0;i<f.length;i++){ var s=(f[i].getAttribute('src')||'');
+      if(s.indexOf('schematic')===0||s.indexOf('archive.html')===0||s.indexOf('kit.html')===0||s.indexOf('grid3d')===0) return f[i]; } return null; }
   function groom(){
     var f=findFr(); if(!f) return; var doc=null;
     try{ doc=f.contentDocument; }catch(e){} if(!doc||!doc.body) return;
-    var n=doc.querySelectorAll('a,button');
-    for(var i=0;i<n.length;i++){ var t=(n[i].textContent||'').trim();
-      if(t.indexOf('axiom')===0 && t.length<14){ n[i].style.display='none'; } }
+    var src=f.getAttribute('src')||'';
+    if(src.indexOf('schematic')===0){
+      var n=doc.querySelectorAll('a,button');
+      for(var i=0;i<n.length;i++){ var t=(n[i].textContent||'').trim();
+        if(t.indexOf('axiom')===0 && t.length<14){ n[i].style.display='none'; } } }
     var strip=doc.getElementById('vaultStrip');
     if(!strip){
       strip=doc.createElement('div'); strip.id='vaultStrip';
-      strip.style.cssText=STRIPZ+'display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
+      strip.style.cssText=STRIPZ+'display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:6px 8px;border-bottom:1px solid #223041;background:rgba(3,4,7,.85)';
       ['workbench','gis','cad','3d print','schematics','archive','kit','grid'].forEach(function(name){
-        var b=doc.createElement('button'); b.textContent=name;
+        var b=doc.createElement('button'); b.textContent=name; b.setAttribute('data-f',name);
         b.style.cssText=STRIPZ+'background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 8px;cursor:pointer';
         b.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
-        b.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); hop(name); },true);
+        b.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); pick(name); },true);
         strip.appendChild(b); });
+      var note=doc.createElement('span'); note.id='stripNote';
+      note.style.cssText='font:9px ui-monospace,Consolas,monospace;letter-spacing:.15em;color:#d9a83a;margin-left:6px';
+      strip.appendChild(note);
       doc.body.insertBefore(strip, doc.body.firstChild);
     } else { strip.style.position='relative'; strip.style.zIndex='9999'; }
+    paint(strip, f);
+  }
+  function pick(name){
+    var f=findFr(); if(!f) return; var doc=f.contentDocument;
+    var note=doc&&doc.getElementById('stripNote');
+    if(ROOMS[name]){ f.setAttribute('src',ROOMS[name]); }
+    else if(note){ note.textContent='\u00b7 '+name+' lives in the vault \u00b7 hop out via the tabs above \u00b7';
+      clearTimeout(note._h); note._h=setTimeout(function(){ note.textContent=''; },2600); }
+  }
+  function paint(strip,f){
+    var src=f.getAttribute('src')||'', cur=null;
+    for(var k in ROOMS){ if(src.indexOf(ROOMS[k])===0){ cur=k; break; } }
+    strip.querySelectorAll('button[data-f]').forEach(function(b){
+      var on=b.getAttribute('data-f')===cur;
+      b.style.borderColor=on?'#d9a83a':'#223041'; b.style.color=on?'#d9a83a':'#93a1b0'; });
   }
   setInterval(groom,1200); setTimeout(groom,500);
 })();
 </script>
+
+
   
 </body>
 </html>
