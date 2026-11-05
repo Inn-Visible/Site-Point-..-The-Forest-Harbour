@@ -2298,6 +2298,45 @@ function lockdoor(){
   setInterval(groom,1200); setTimeout(groom,500);
 })();
 </script>
+
+<script>
+/* ---- the vault stays unlocked \u00b7 memory across backs and reloads ---- */
+(function(){
+  var KEY='hive_xeno_unlocked';
+  function leafText(el){ return (el.textContent||'').trim(); }
+  document.addEventListener('click',function(e){
+    var t=e.target; if(!t) return;
+    var tx=leafText(t);
+    if(tx.indexOf('unlock')>-1 && tx.length<16){ try{ localStorage.setItem(KEY,'1'); }catch(err){} }
+    if(tx.indexOf('wipe')>-1 && tx.length<8){ try{ localStorage.setItem(KEY,'0'); }catch(err){} }
+  },true);
+  function tapEl(el){
+    var r=el.getBoundingClientRect();
+    var o={bubbles:true,cancelable:true,view:window,clientX:r.left+4,clientY:r.top+4};
+    try{ el.dispatchEvent(new PointerEvent('pointerdown',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('mousedown',o)); }catch(e){}
+    try{ el.dispatchEvent(new PointerEvent('pointerup',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('mouseup',o)); }catch(e){}
+    try{ el.dispatchEvent(new MouseEvent('click',o)); }catch(e){}
+    try{ el.click(); }catch(e){}
+  }
+  var seen=(typeof WeakSet!=='undefined')?new WeakSet():null, fallback=[];
+  function fresh(ta){ if(seen){ if(seen.has(ta)) return false; seen.add(ta); return true; }
+    if(fallback.indexOf(ta)>-1) return false; fallback.push(ta); return true; }
+  function watch(){
+    var on=false; try{ on=localStorage.getItem(KEY)==='1'; }catch(e){}
+    if(!on) return;
+    var tas=document.querySelectorAll('textarea'), ta=null;
+    for(var i=0;i<tas.length;i++){ var ph=tas[i].getAttribute('placeholder')||'';
+      if(ph.indexOf('drafts persist')>-1){ ta=tas[i]; break; } }
+    if(!ta || !fresh(ta)) return;
+    var n=document.querySelectorAll('button,a');
+    for(var j=0;j<n.length;j++){ var tx=leafText(n[j]);
+      if(tx.indexOf('unlock')>-1 && tx.length<16){ tapEl(n[j]); return; } }
+  }
+  setInterval(watch,1200); setTimeout(watch,600);
+})();
+</script>
   
 </body>
 </html>
