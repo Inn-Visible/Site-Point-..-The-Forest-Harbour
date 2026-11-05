@@ -2300,10 +2300,10 @@ function lockdoor(){
 </script>
 
 <script>
-/* ---- the vault stays unlocked v2 \u00b7 the key turns itself ---- */
+/* ---- the vault stays unlocked v3 \u00b7 never touches a door without a key ---- */
 (function(){
   var FLAG='hive_xeno_unlocked', KEYK='hive_vault_key';
-  var cool=0;
+  var cool=0, attempt=null;
   function lt(el){ return (el.textContent||'').trim(); }
   function tapEl(el){
     var r=el.getBoundingClientRect();
@@ -2322,35 +2322,37 @@ function lockdoor(){
       if(ph.indexOf('house password')>-1 || n[i].type==='password') return n[i]; } return null; }
   document.addEventListener('click',function(e){
     var t=e.target; if(!t) return; var tx=lt(t);
-    if(tx==='unlock'){
-      try{ localStorage.setItem(FLAG,'1'); }catch(err){}
-      var inp=keyInput();
-      if(inp && inp.value){ try{ localStorage.setItem(KEYK, inp.value); }catch(err){} }
-      cool=0;
-    }
-    if(tx==='not now'){ cool=Date.now()+15000; }
-    if(tx==='wipe'){ cool=0; try{ localStorage.setItem(FLAG,'0'); localStorage.removeItem(KEYK); }catch(err){} }
+    if(tx==='unlock'){ try{ localStorage.setItem(FLAG,'1'); }catch(err){}
+      var inp=keyInput(); if(inp&&inp.value){ try{ localStorage.setItem(KEYK,inp.value); }catch(err){} }
+      cool=0; attempt=null; }
+    if(tx==='not now'){ cool=Date.now()+15000; attempt=null; }
+    if(tx==='wipe'){ cool=0; attempt=null; try{ localStorage.setItem(FLAG,'0'); localStorage.removeItem(KEYK); }catch(err){} }
   },true);
-  var seen=(typeof WeakSet!=='undefined')?new WeakSet():null, fb=[];
-  function fresh(el){ if(seen){ if(seen.has(el)) return false; seen.add(el); return true; }
-    if(fb.indexOf(el)>-1) return false; fb.push(el); return true; }
   function watch(){
     if(Date.now()<cool) return;
-    var on=false; try{ on=localStorage.getItem(FLAG)==='1'; }catch(e){}
-    if(!on) return;
-    var key=null; try{ key=localStorage.getItem(KEYK); }catch(e){}
+    var on=false, key=null;
+    try{ on=localStorage.getItem(FLAG)==='1'; key=localStorage.getItem(KEYK); }catch(e){}
+    if(!on||!key) return;
     var inp=keyInput();
-    if(inp && key){
+    if(!inp){
+      var shut=findLeaf('unlock the bench');
+      if(!shut){ attempt=null; return; }
+      if(!attempt){ attempt={t:Date.now(),filled:false}; tapEl(shut); }
+      else if(Date.now()-attempt.t>4000){ attempt=null; }
+      return;
+    }
+    if(!attempt) attempt={t:Date.now(),filled:false};
+    if(!attempt.filled){ attempt.filled=true;
       if(inp.value!==key){ inp.value=key;
         try{ inp.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}
         try{ inp.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} }
-      var u=findLeaf('unlock'); if(u && fresh(u)){ tapEl(u); }
-      return;
-    }
-    var shut=findLeaf('unlock the bench');
-    if(shut && fresh(shut)){ tapEl(shut); }
+      var u=findLeaf('unlock'); if(u) tapEl(u); }
+    else if(Date.now()-attempt.t>900){
+      var nn=findLeaf('not now'); if(nn) tapEl(nn);
+      try{ localStorage.removeItem(KEYK); }catch(e){}
+      cool=Date.now()+120000; attempt=null; }
   }
-  setInterval(watch,1200); setTimeout(watch,600);
+  setInterval(watch,1000); setTimeout(watch,600);
 })();
 </script>
   
