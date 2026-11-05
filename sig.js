@@ -375,7 +375,11 @@
 /* ---- the chibi radio \u00b7 the dial's own voice, carried house-wide \u00b7 v2 ---- */
 var KEY='hive_radio';
 var onBase=/baseline\.html(\?|#|$)/.test(location.href);
-function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
+function keyed(){ return sessionStorage.getItem('hive_session')==='1' && !!localStorage.getItem('hive_access'); }
+var NOCHIBI=['index.html','kit.html','donations.html','wicket.html']; /* the four logged-out faces · edit names here if the house calls them otherwise */
+var pg=(location.pathname.split('/').pop()||'');
+if(!keyed() || NOCHIBI.indexOf(pg)>-1){ return; } /* no chibi, no hooks, no hum · the block ends here, silently */
+  function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
 function set(s){ try{ sessionStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }
 function hostName(src){ try{ var h=(new URL(src)).hostname.replace(/^www\./,'');
   if(/somafm/.test(h)) return 'somafm'; if(/radioparadise/.test(h)) return 'radio paradise';
