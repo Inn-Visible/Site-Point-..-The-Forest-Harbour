@@ -518,6 +518,50 @@ function init(){
 }
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(init,400); });
 else setTimeout(init,400);
+
+(function(){
+/* ---- the killa loading screen \u00b7 house-wide \u00b7 tap to skip \u00b7 six-second cap ---- */
+if(window.__innLoader) return; window.__innLoader=1;
+var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+var ov=document.createElement('div'); ov.id='innLoad';
+ov.style.cssText='position:fixed;inset:0;z-index:999;background:#0a0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;transition:opacity .5s ease;font-family:ui-monospace,Consolas,monospace';
+ov.innerHTML=
+ '<svg width="64" height="64" viewBox="0 0 56 56" fill="none" stroke="#58a36a" stroke-width="2">'
+ +'<path d="M16 40 L24 16 L44 16 L36 40 Z"/><line x1="10" y1="46" x2="44" y2="12"/>'
+ +'<circle cx="28" cy="8" r="2"/><circle cx="48" cy="28" r="2"/><circle cx="28" cy="48" r="2"/><circle cx="8" cy="28" r="2"/></svg>'
+ +'<div id="innWord" style="font-size:12px;letter-spacing:.5em;color:#e8e4d8;transition:letter-spacing .6s ease">INN.VISIBLE</div>'
+ +'<div style="width:min(320px,70vw);height:2px;background:#223041;position:relative;overflow:hidden"><i id="innBar" style="position:absolute;left:0;top:0;bottom:0;width:0%;background:#d9a83a;transition:width .25s ease"></i></div>'
+ +'<div id="innLine" style="font-size:9px;letter-spacing:.18em;color:#5c6875;min-height:14px;text-align:center;padding:0 12px"></div>'
+ +'<div id="innPct" style="font-size:9px;letter-spacing:.2em;color:#3a4a5c">0%</div>';
+var st=document.createElement('style');
+st.textContent='@keyframes innSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}#innLoad svg{animation:innSpin 6s linear infinite;transform-origin:center}#innLoad.bye{opacity:0;pointer-events:none}';
+document.head.appendChild(st);
+(document.body||document.documentElement).appendChild(ov);
+var LINES=['waking the obs deck','tuning the low end','counting the moon-days','oiling the xenofolders','polishing the gold dot','asking the sky its tongue','seating the vault','winding the wind-glyphs'];
+var li=0, pct=0, done=false;
+var bar=ov.querySelector('#innBar'), line=ov.querySelector('#innLine'), pctl=ov.querySelector('#innPct'), word=ov.querySelector('#innWord');
+if(reduce){ var sg=ov.querySelector('svg'); if(sg) sg.style.animation='none'; }
+var tick=setInterval(function(){
+  if(done) return;
+  li=(li+1)%LINES.length;
+  line.textContent=LINES[li]+' \u00b7';
+  pct=Math.min(92, pct+(92-pct)*0.12+1.2);
+  bar.style.width=pct+'%'; pctl.textContent=Math.round(pct)+'%';
+}, reduce?900:420);
+function finish(){
+  if(done) return; done=true; clearInterval(tick);
+  pct=100; bar.style.width='100%'; pctl.textContent='100%';
+  line.textContent='the house is awake \u00b7 welcome home';
+  word.style.letterSpacing='.34em';
+  setTimeout(function(){ ov.classList.add('bye');
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },600); }, reduce?80:420);
+}
+if(document.readyState==='complete') setTimeout(finish,120);
+else addEventListener('load',function(){ setTimeout(finish,150); });
+setTimeout(finish,6000);
+ov.addEventListener('click',finish);
+})();
+  
 })();
 
 
