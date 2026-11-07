@@ -22,17 +22,10 @@
   .bar input:focus{border-color:var(--blue)}
   #fx{flex:1;min-width:120px}
   #rng{width:56px;flex:none} #grd{width:46px;flex:none}
+  #wheelBtn{width:30px;height:30px;padding:0;border-radius:50%;font-size:13px;line-height:1;letter-spacing:0}
   #wrap{position:relative;flex:1 1 0;min-height:0}
   #cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
   #cv.grabbing{cursor:grabbing}
-  #wheelSvg{position:absolute;inset:0;width:100%;height:100%;display:none;touch-action:none}
-  #side{position:absolute;top:0;right:0;bottom:0;width:min(320px,42%);overflow-y:auto;display:none;z-index:4;
-    background:rgba(10,13,18,.93);border-left:1px solid var(--line);padding:12px;
-    font-size:10px;line-height:2;letter-spacing:.08em;color:var(--dim)}
-  #side h3{color:var(--blue);font-size:10px;letter-spacing:.2em;margin:8px 0 2px;font-weight:normal}
-  #side .big{color:var(--ink);font-size:13px;letter-spacing:.1em}
-  #side .g{color:var(--green)} #side .o{color:#e07856} #side .p{color:#b48ce0}
-  #side a{color:#8ab4ff;text-decoration:none}
   #stickOv{position:absolute;right:10px;bottom:10px;z-index:5}
   #gestOv{position:absolute;right:10px;bottom:44px;z-index:5}
   #codOv{position:absolute;left:10px;bottom:10px;z-index:5}
@@ -42,36 +35,48 @@
   #codPanel b{color:var(--gold);font-weight:normal}
   #codPanel h4{color:var(--blue);font-size:9px;letter-spacing:.2em;margin:6px 0 2px;font-weight:normal}
   #codPanel a{color:#8ab4ff;text-decoration:none}
+  #wheelOv{position:fixed;inset:0;z-index:60;display:none;background:rgba(3,4,7,.72);backdrop-filter:blur(4px);
+    flex-direction:column;padding:4vh 6vw}
+  #wheelOv.open{display:flex}
+  #wheelOv .wov-panel{flex:1;display:flex;flex-direction:column;border:1px solid var(--line);background:var(--bg);
+    box-shadow:0 18px 60px rgba(0,0,0,.6);min-height:0}
+  #wheelOv .wov-head{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+  #wheelOv .wov-head .t{font-size:10px;letter-spacing:.25em;color:var(--gold)}
+  #wheelOv .wov-head a{color:#8ab4ff;font-size:9px;letter-spacing:.15em;text-decoration:none}
+  #wheelOv iframe{flex:1;width:100%;border:0;background:var(--bg);min-height:0}
   #status{flex-shrink:0;padding:6px 12px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875;display:flex;gap:10px;flex-wrap:wrap}
   #status .r{color:#e5735a} #status .g{color:var(--green)}
   .sp{flex:1}
-  @media(max-width:700px){ #side{width:70%} }
 </style>
 </head>
 <body>
-<header><span class="t">THE GRID</span><span class="sub">the third dimension, rollable · the wheel lives here now · together forever</span><a href="axiom.html">axiom ↩</a></header>
-<div class="help">curve = flat like desmos · polar = r = f(θ) · surface = z = f(x, y) or img ⌘ · solid = preset shapes · circle = the unit circle · areas = the math wheel · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians · the equation re-samples around the camera forever</div>
+<header><span class="t">THE GRID</span><span class="sub">the third dimension, rollable · the wheel nests here now</span><a href="axiom.html">axiom ↩</a></header>
+<div class="help">curve = flat like desmos · polar = r = f(θ) · surface = z = f(x, y) or img ⌘ heightfield · solid = preset shapes · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians · the equation re-samples around the camera forever · ◉ opens the wheel</div>
 <div class="bar">
   <button id="mCurve">curve</button><button id="mSurface" class="on">surface</button><button id="mSolid">solid</button>
-  <button id="mCircle">circle</button><button id="mAreas">areas</button>
   <input id="fx" type="text" spellcheck="false" placeholder="z = f(x, y) · curve reads y = f(x) · polar reads r = f(θ)">
   <input id="rng" type="text" title="reference scale ±" placeholder="±6.5">
   <input id="grd" type="text" title="grid resolution (8–64)" placeholder="26">
   <button id="plot">plot it</button>
   <button id="polar">polar</button>
   <button id="imgBtn">img ⌘</button>
-  <button id="snapBtn" style="display:none">snap 15°</button>
   <span id="presets" style="display:contents"></span>
   <span class="sp"></span>
-  <button id="zin">+</button><button id="zout">−</button><button id="vhome">⌂ view</button><button id="rst">reset</button><button id="mastBtn">mastery</button>
+  <button id="zin">+</button><button id="zout">−</button><button id="vhome">⌂ view</button><button id="rst">reset</button><button id="mastBtn">mastery</button><button id="wheelBtn" title="the wheel · nested in the grid">◉</button>
 </div>
 <div id="wrap"><canvas id="cv"></canvas>
-  <svg id="wheelSvg" viewBox="0 0 600 600"></svg>
-  <div id="side"></div>
   <button id="codOv">codex ⌄</button>
   <div id="codPanel"></div>
   <button id="gestOv">drag: roll</button>
   <button id="stickOv">sticks ⌄</button>
+</div>
+<div id="wheelOv">
+  <div class="wov-panel">
+    <div class="wov-head"><span class="t">THE WHEEL · NESTED</span><span class="sp"></span>
+      <a href="wheel.html" target="_blank">own room ↗</a>
+      <button id="wheelClose">✕ close</button></div>
+    <iframe id="wheelFrame" src="about:blank" title="the wheel"></iframe>
+  </div>
 </div>
 <div id="status"><span id="st1"></span><span class="sp"></span><span id="st2"></span></div>
 <script>
@@ -83,12 +88,12 @@ var rngEl=document.getElementById('rng'), grdEl=document.getElementById('grd');
 var st1=document.getElementById('st1'), st2=document.getElementById('st2'), presets=document.getElementById('presets');
 var stickOv=document.getElementById('stickOv'), gestOv=document.getElementById('gestOv');
 var codOv=document.getElementById('codOv'), codPanel=document.getElementById('codPanel');
-var side=document.getElementById('side'), svg=document.getElementById('wheelSvg'), snapBtn=document.getElementById('snapBtn');
+var wheelOv=document.getElementById('wheelOv'), wheelFrame=document.getElementById('wheelFrame');
+var wheelBtn=document.getElementById('wheelBtn');
 var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null, bootNote='';
 var roll=0.314, tilt=0.157, zoom=1, sticks=false, solidIdx=0, pol=false, mastOn=false, geomKind='formula', gestPan=false;
 var R=6.5, N=26, G={x:1.5,y:1.0}, view={x:0,y:0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
 var curveLock=null, rebuildT=0;
-var th=Math.PI/4, snap=true, selArea=4, dragC=false;
 var DEF={surface:'sin(r*1.6)*exp(-r/4)*3', curve:'sin(x)', solid:''};
 var PRE={surface:[['wave','sin(x)*cos(y)'],['saddle','(x^2-y^2)/4'],['ripple','sin(r*1.6)*exp(-r/4)*3'],['gauss','3*exp(-(r^2)/8)'],['plane','(x+y)/4']],
          curve:[['sin','sin(x)'],['parabola','x^2/4'],['abs','abs(x)-3']],
@@ -106,120 +111,27 @@ function mastLine(){ var v=FUND.filter(function(f){ return mast[f]; });
 var BUCK=[];
 (function(){ for(var i=0;i<8;i++){ var t=i/7;
   BUCK.push('rgba('+Math.round(120+(217-120)*t)+','+Math.round(220+(168-220)*t)+','+Math.round(200+(58-200)*t)+',.75)'); } })();
-/* ---- the unit circle half ---- */
-var SP={0:['0','1','0'],30:['\u03c0/6','\u221a3/2','1/2'],45:['\u03c0/4','\u221a2/2','\u221a2/2'],60:['\u03c0/3','1/2','\u221a3/2'],90:['\u03c0/2','0','1'],
- 120:['2\u03c0/3','-1/2','\u221a3/2'],135:['3\u03c0/4','-\u221a2/2','\u221a2/2'],150:['5\u03c0/6','-\u221a3/2','1/2'],180:['\u03c0','-1','0'],
- 210:['7\u03c0/6','-\u221a3/2','-1/2'],225:['5\u03c0/4','-\u221a2/2','-\u221a2/2'],240:['4\u03c0/3','-1/2','-\u221a3/2'],270:['3\u03c0/2','0','-1'],
- 300:['5\u03c0/3','1/2','-\u221a3/2'],315:['7\u03c0/4','\u221a2/2','-\u221a2/2'],330:['11\u03c0/6','\u221a3/2','-1/2']};
-var QUAD=[['I','All','every function is positive here'],['II','Students','sin & csc positive; the rest wear minus'],
-          ['III','Take','tan & cot positive; the rest wear minus'],['IV','Calculus','cos & sec positive; the rest wear minus']];
-function qOf(deg){ return QUAD[Math.floor(((deg%360)+360)%360/90)]; }
-function degOf(t){ return ((t*180/Math.PI)%360+360)%360; }
-function drawCircle(){
-  x.clearRect(0,0,W,H);
-  var ccx=W/2, ccy=H/2, r=Math.min(W,H)*0.36;
-  var cols=['rgba(224,120,86,.07)','rgba(127,178,229,.07)','rgba(120,220,200,.07)','rgba(180,140,224,.07)'];
-  for(var q=0;q<4;q++){ x.fillStyle=cols[q]; x.beginPath(); x.moveTo(ccx,ccy);
-    x.arc(ccx,ccy,r,-(q+1)*Math.PI/2,-q*Math.PI/2); x.closePath(); x.fill(); }
-  x.strokeStyle='rgba(34,48,65,1)'; x.lineWidth=1;
-  x.beginPath(); x.moveTo(ccx-r*1.35,ccy); x.lineTo(ccx+r*1.35,ccy); x.stroke();
-  x.beginPath(); x.moveTo(ccx,ccy-r*1.35); x.lineTo(ccx,ccy+r*1.35); x.stroke();
-  x.strokeStyle='rgba(232,228,216,.85)'; x.lineWidth=2;
-  x.beginPath(); x.arc(ccx,ccy,r,0,Math.PI*2); x.stroke();
-  x.lineWidth=1;
-  for(var d=0;d<360;d+=30){ var a=d*Math.PI/180;
-    x.strokeStyle='rgba(92,104,117,.5)';
-    x.beginPath(); x.moveTo(ccx,ccy); x.lineTo(ccx+r*Math.cos(a),ccy-r*Math.sin(a)); x.stroke();
-    x.fillStyle='#58a36a'; x.beginPath(); x.arc(ccx+r*Math.cos(a),ccy-r*Math.sin(a),3.4,0,7); x.fill(); }
-  var px=ccx+r*Math.cos(th), py=ccy-r*Math.sin(th);
-  x.strokeStyle='#b48ce0'; x.beginPath(); x.moveTo(ccx,ccy); x.lineTo(px,ccy); x.stroke();
-  x.strokeStyle='#e07856'; x.beginPath(); x.moveTo(px,ccy); x.lineTo(px,py); x.stroke();
-  x.strokeStyle='rgba(232,228,216,.6)'; x.beginPath(); x.moveTo(ccx,ccy); x.lineTo(px,py); x.stroke();
-  x.fillStyle='#d9a83a'; x.beginPath(); x.arc(px,py,7,0,7); x.fill();
-  x.fillStyle='#5c6875'; x.font='9px ui-monospace,Consolas,monospace';
-  x.fillText('0', ccx+r+6, ccy+12); x.fillText('\u03c0/2', ccx+4, ccy-r-6);
-  x.fillText('\u03c0', ccx-r-16, ccy+12); x.fillText('3\u03c0/2', ccx+4, ccy+r+14);
-  paintCircleSide();
-}
-function paintCircleSide(){
-  var deg=degOf(th), q=qOf(deg);
-  var near=Math.round(deg/15)*15%360;
-  var sp=(Math.abs(deg-Math.round(deg/15)*15)<0.6)?SP[near]:null;
-  var c=Math.cos(th), s=Math.sin(th), t=Math.abs(c)<1e-9?null:s/c;
-  var radFrac= sp? sp[0] : (deg/180).toFixed(2)+'\u03c0';
-  side.innerHTML=
-   '<h3>THE ANGLE</h3><div class="big">'+deg.toFixed(1)+'\u00b0 \u00b7 '+radFrac+' rad</div>'
-  +'<h3>THE POINT (cos \u03b8, sin \u03b8)</h3><div class="big">'+(sp? '('+sp[1]+', '+sp[2]+')' : '('+c.toFixed(3)+', '+s.toFixed(3)+')')+'</div>'
-  +'<div><span class="p">cos</span> '+(sp?sp[1]:c.toFixed(3))+' \u00b7 <span class="o">sin</span> '+(sp?sp[2]:s.toFixed(3))+' \u00b7 <span class="g">tan</span> '+(t===null?'undefined':t.toFixed(3))+'</div>'
-  +'<h3>QUADRANT '+q[0]+' \u00b7 '+q[1]+'</h3><div>'+q[2]+'</div>'
-  +'<div>sin '+(s>=0?'+':'\u2212')+' \u00b7 cos '+(c>=0?'+':'\u2212')+' \u00b7 tan '+((t===null)?'\u221e':(t>=0?'+':'\u2212'))+'</div>'
-  +'<h3>THE LEGS</h3><div><span class="p">cos leg</span> = x-coordinate \u00b7 <span class="o">sin leg</span> = y-coordinate \u00b7 <span class="g">tan</span> = y/x</div>'
-  +'<h3>ASTC</h3><div>All Students Take Calculus \u00b7 I all \u00b7 II sin \u00b7 III tan \u00b7 IV cos</div>';
-  st1.textContent='circle \u00b7 '+deg.toFixed(1)+'\u00b0 \u00b7 '+radFrac+' \u00b7 quadrant '+q[0];
-  st2.textContent='drag the gold point around her \u00b7 snap 15\u00b0 toggles \u00b7 the signs and exact values follow';
-}
-function moveAngle(e){
-  var r=cv.getBoundingClientRect();
-  var dx=(e.clientX-r.left)-W/2, dy=(e.clientY-r.top)-H/2;
-  var a=Math.atan2(-dy,dx); if(a<0) a+=Math.PI*2;
-  if(snap){ var st15=Math.PI/12; a=Math.round(a/st15)*st15%(Math.PI*2); }
-  th=a; drawCircle();
-}
-/* ---- the math areas half ---- */
-var AREAS=[['Arithmetic','integers · fractions · decimals · percents'],
- ['Algebra','elementary · linear · polynomials · equations'],
- ['Geometry','euclidean · non-euclidean · analytical'],
- ['Trigonometry','functions · identities · applications · spherical'],
- ['Calculus','differential · integral · multivariable · vector'],
- ['Statistics','probability · regression · random variables · stochastic'],
- ['Logic','symbolic · proofs · model theory'],
- ['Set Theory','sets · cardinals · ordinals · axioms'],
- ['Graph Theory','graphs · trees · networks · algorithms'],
- ['Discrete Math','finite structures · coding · cryptography · numerics'],
- ['Abstract Algebra','groups · rings · fields · spaces · eigenvalues'],
- ['Topology','point-set · algebraic · manifolds'],
- ['Applied Math','physics · modelling · optimization · recursion'],
- ['Mathematical Logic','proof theory · recursion theory · number theory']];
-function polarPt(ccx,ccy,r,a){ return [ccx+r*Math.cos(a), ccy+r*Math.sin(a)]; }
-function buildWheel(){
-  var n=AREAS.length, ccx=300, ccy=300, r0=90, r1=210, r2=282;
-  var out='<circle cx="300" cy="300" r="'+r0+'" fill="#0e141b" stroke="#223041"/>';
-  for(var i=0;i<n;i++){
-    var a0=-Math.PI/2+i*2*Math.PI/n, a1=-Math.PI/2+(i+1)*2*Math.PI/n;
-    var p0=polarPt(ccx,ccy,r0,a0), p1=polarPt(ccx,ccy,r1,a0), p2=polarPt(ccx,ccy,r1,a1), p3=polarPt(ccx,ccy,r0,a1);
-    var large=(a1-a0)>Math.PI?1:0;
-    out+='<path d="M'+p0[0]+' '+p0[1]+' L'+p1[0]+' '+p1[1]+' A'+r1+' '+r1+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' L'+p3[0]+' '+p3[1]+' A'+r0+' '+r0+' 0 '+large+' 0 '+p0[0]+' '+p0[1]+' Z" '
-      +'fill="'+(i===selArea?'rgba(217,168,58,.14)':(i%2?'rgba(14,20,27,.9)':'rgba(10,13,18,.9)'))+'" stroke="#223041" data-area="'+i+'" style="cursor:pointer"/>';
-    var am=(a0+a1)/2, lp=polarPt(ccx,ccy,(r1+r2)/2,am);
-    out+='<text x="'+lp[0]+'" y="'+lp[1]+'" fill="'+(i===selArea?'#d9a83a':'#93a1b0')+'" font-size="12" font-family="ui-monospace,Consolas,monospace" text-anchor="middle" transform="rotate('+(am*180/Math.PI+90)+' '+lp[0]+' '+lp[1]+')" style="pointer-events:none">'+AREAS[i][0]+'</text>';
-  }
-  for(var h=1;h<=12;h++){ var ha=-Math.PI/2+h*Math.PI/6;
-    var hp=polarPt(ccx,ccy,r0*0.62,ha);
-    out+='<text x="'+hp[0]+'" y="'+(hp[1]+4)+'" fill="#5c6875" font-size="12" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+h+'</text>'; }
-  out+='<text x="300" y="296" fill="#e8e4d8" font-size="14" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][0]+'</text>'
-     + '<text x="300" y="314" fill="#5c6875" font-size="10" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][1].split('\u00b7').length+' rooms</text>';
-  svg.innerHTML=out;
-  var ps=svg.querySelectorAll('path[data-area]');
-  for(var j=0;j<ps.length;j++){ ps[j].onclick=function(){ selArea=+this.getAttribute('data-area'); buildWheel(); }; }
-  paintWheelSide();
-}
-function paintWheelSide(){
-  side.innerHTML='<h3>'+AREAS[selArea][0].toUpperCase()+'</h3>'
-   +AREAS[selArea][1].split(' \u00b7 ').map(function(s){ return '<div>\u00b7 '+s+'</div>'; }).join('')
-   +'<h3>THE WHEEL SPEAKS</h3><div>fourteen sectors, one house \u00b7 four of them are the grid\u2019s own tongues \u00b7 plot them in curve / surface / polar</div>';
-  st1.textContent='areas \u00b7 '+AREAS[selArea][0]+' \u00b7 '+AREAS[selArea][1].split(' \u00b7 ').length+' rooms';
-  st2.textContent='click a sector \u00b7 its rooms unfold at the right \u00b7 the clock at her heart keeps the hours';
-}
-/* ---- grid core ---- */
 try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
   if(S){ mode=S.mode||mode; exprSrc=typeof S.expr==='string'?S.expr:exprSrc; roll=+S.roll||roll; tilt=+S.tilt||tilt;
     zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; pol=!!S.pol; gestPan=!!S.pan;
     if(S.g) G=S.g; if(S.v) view=S.v;
     if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){}
-var q0=(location.search+' '+location.hash).toLowerCase();
-if(q0.indexOf('areas')>-1) mode='areas'; else if(q0.indexOf('circle')>-1) mode='circle';
-if(mode==='circle'||mode==='areas') mode=mode; 
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:(mode==='circle'||mode==='areas')?'surface':mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,pan:gestPan,g:G,v:view,rng:R,grd:N})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,pan:gestPan,g:G,v:view,rng:R,grd:N})); }catch(e){} }
+/* ---- the wheel overlay · kitslate-style nesting ---- */
+function openWheel(){ if(wheelFrame.getAttribute('src')==='about:blank') wheelFrame.setAttribute('src','wheel.html');
+  wheelOv.classList.add('open'); wheelBtn.className='on'; }
+function closeWheel(){ wheelOv.classList.remove('open'); wheelBtn.className=''; }
+wheelBtn.onclick=function(){ if(wheelOv.classList.contains('open')) closeWheel(); else openWheel(); };
+document.getElementById('wheelClose').onclick=closeWheel;
+wheelOv.addEventListener('pointerdown',function(e){ if(e.target===wheelOv) closeWheel(); });
+addEventListener('keydown',function(e){ if(e.key==='Escape'&&wheelOv.classList.contains('open')) closeWheel(); });
+window.__gridSend=function(expr,usePolar,theta){
+  closeWheel();
+  setMode('curve');
+  var wantP=!!usePolar;
+  if(wantP!==pol){ pol=wantP; document.getElementById('polar').className=pol?'on':''; }
+  if(typeof theta==='number') G.x=theta;
+  fx.value=expr; exprSrc=expr; plot(); };
 function bin(op,l,r){ return function(px,py){ var a=l(px,py), b=r(px,py);
   return op==='+'?a+b: op==='-'?a-b: op==='*'?a*b: op==='/'?a/b: Math.pow(a,b); }; }
 function compile(raw){
@@ -404,8 +316,6 @@ function curveDot(){ if(!fn) return null;
   var gy=fn(G.x,0); if(!isFinite(gy)) return null;
   return {x:G.x, y:gy}; }
 function draw(msg){
-  if(mode==='circle'){ drawCircle(); return; }
-  if(mode==='areas'){ return; }
   x.clearRect(0,0,W,H);
   var i, a, b;
   if(mode==='curve'&&GEOM){
@@ -519,23 +429,10 @@ function setMode(m){ mode=m;
   document.getElementById('mCurve').className=m==='curve'?'on':'';
   document.getElementById('mSurface').className=m==='surface'?'on':'';
   document.getElementById('mSolid').className=m==='solid'?'on':'';
-  document.getElementById('mCircle').className=m==='circle'?'on':'';
-  document.getElementById('mAreas').className=m==='areas'?'on':'';
-  var wheelish=(m==='circle'||m==='areas');
-  fx.style.display=(m==='solid'||wheelish)?'none':'';
-  rngEl.style.display=wheelish?'none':'';
-  grdEl.style.display=wheelish?'none':'';
-  document.getElementById('plot').style.display=(m==='solid'||wheelish)?'none':'';
+  fx.style.display=m==='solid'?'none':'';
+  document.getElementById('plot').style.display=m==='solid'?'none':'';
   document.getElementById('polar').style.display=m==='curve'?'':'none';
   document.getElementById('imgBtn').style.display=m==='surface'?'':'none';
-  snapBtn.style.display=m==='circle'?'':'none';
-  presets.style.display=wheelish?'none':'contents';
-  side.style.display=wheelish?'block':'none';
-  svg.style.display=m==='areas'?'block':'none';
-  cv.style.display=m==='areas'?'none':'block';
-  stickOv.style.display=m==='surface'?'':'none';
-  gestOv.style.display=(m==='surface'||m==='solid')?'':'none';
-  if(wheelish){ if(m==='circle') drawCircle(); else buildWheel(); save(); return; }
   if(m!=='solid'){ if(fx.value) exprSrc=fx.value; else fx.value=exprSrc||DEF[m]; }
   plot(); }
 function paintSticks(){ stickOv.className=sticks?'on':''; stickOv.textContent=sticks?'sticks ⌃':'sticks ⌄'; }
@@ -543,15 +440,12 @@ function paintGest(){ gestOv.className=gestPan?'on':''; gestOv.textContent=gestP
 document.getElementById('mCurve').onclick=function(){ setMode('curve'); };
 document.getElementById('mSurface').onclick=function(){ setMode('surface'); };
 document.getElementById('mSolid').onclick=function(){ setMode('solid'); };
-document.getElementById('mCircle').onclick=function(){ setMode('circle'); };
-document.getElementById('mAreas').onclick=function(){ setMode('areas'); };
 document.getElementById('plot').onclick=function(){ exprSrc=fx.value; plot(); };
 document.getElementById('polar').onclick=function(){ pol=!pol; this.className=pol?'on':'';
   if(pol&&exprSrc===DEF.curve){ exprSrc='1'; fx.value=exprSrc; }
   if(!pol&&exprSrc==='1'){ exprSrc=DEF.curve; fx.value=exprSrc; }
   plot(); };
 document.getElementById('imgBtn').onclick=function(){ imgInput.click(); };
-snapBtn.onclick=function(){ snap=!snap; snapBtn.className=snap?'on':''; drawCircle(); };
 document.getElementById('mastBtn').onclick=function(){ mastOn=!mastOn; this.className=mastOn?'on':''; draw(); };
 stickOv.onclick=function(){ sticks=!sticks; paintSticks(); draw(); save(); };
 gestOv.onclick=function(){ gestPan=!gestPan; paintGest(); save(); };
@@ -560,8 +454,8 @@ codPanel.innerHTML=
   +'<b>\u222b</b> integral \u00b7 <b>\u222c</b> surface integral \u00b7 <b>\u222d</b> volume integral \u00b7 <b>\u222e</b> contour integral \u00b7 <b>\u2202</b> partial derivative \u00b7 <b>\u2207</b> gradient \u00b7 <b>lim</b> limit'
   +'<h4>THE MECHANICS ROSTER</h4>'
   +'<b>F</b> force \u00b7 <b>f</b> frequency \u00b7 <b>J</b> impulse \u00b7 <b>I</b> moment of inertia \u00b7 <b>v</b> velocity \u00b7 <b>L</b> angular momentum \u00b7 <b>k</b> spring constant \u00b7 <b>\u03c4</b> torque \u00b7 <b>r</b> position vector \u00b7 <b>T</b> period \u00b7 <b>P</b> power \u00b7 <b>p</b> momentum \u00b7 <b>U</b> potential energy \u00b7 <b>x</b> position \u00b7 <b>a</b> acceleration \u00b7 <b>m</b> mass \u00b7 <b>\u03c1</b> density \u00b7 <b>\u03c6</b> angle \u00b7 <b>\u03c9</b> angular speed \u00b7 <b>\u03b1</b> angular acceleration'
-  +'<h4>THE WHEEL LIVES HERE</h4>'
-  +'the unit circle & the math areas are modes on the bar now \u00b7 circle & areas \u00b7 together forever \u00b7 wheel.html forwards home'
+  +'<h4>THE WHEEL NESTS HERE</h4>'
+  +'tap the round \u25c9 on the bar \u00b7 the unit circle & the math areas open inside the grid \u00b7 she keeps her own room at wheel.html too'
   +'<h4>ONE FLOOR UP</h4>'
   +'the bell (gauss) is the same shape as the ground-state wave packet \u00b7 from calculus to quantum, the surface remembers';
 codOv.onclick=function(){ var open=codPanel.style.display==='block';
@@ -573,15 +467,11 @@ grdEl.addEventListener('change',function(){ plot(); });
 document.getElementById('zin').onclick=function(){ zoom=Math.min(8,zoom*1.15); draw(); save(); scheduleRebuild(); };
 document.getElementById('zout').onclick=function(){ zoom=Math.max(0.15,zoom/1.15); draw(); save(); scheduleRebuild(); };
 document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoom=1; view={x:0,y:0}; draw(); save(); scheduleRebuild(); };
-document.getElementById('rst').onclick=function(){ if(mode==='curve'||mode==='surface'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
-  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; geomKind='formula';
-  if(mode==='circle'||mode==='areas'){ setMode('surface'); return; } plot(); };
-cv.addEventListener('wheel',function(e){ if(mode==='circle'||mode==='areas') return;
-  e.preventDefault(); zoom=Math.max(0.15,Math.min(8,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); scheduleRebuild(); },{passive:false});
+document.getElementById('rst').onclick=function(){ if(mode!=='solid'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
+  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; geomKind='formula'; plot(); };
+cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.15,Math.min(8,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); scheduleRebuild(); },{passive:false});
 var drag=null;
 cv.addEventListener('pointerdown',function(e){
-  if(mode==='areas') return;
-  if(mode==='circle'){ dragC=true; cv.setPointerCapture(e.pointerId); moveAngle(e); e.preventDefault(); return; }
   cv.setPointerCapture(e.pointerId);
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
   var gp=null;
@@ -595,7 +485,6 @@ cv.addEventListener('pointerdown',function(e){
   else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt}; cv.classList.add('grabbing'); }
   e.preventDefault(); });
 cv.addEventListener('pointermove',function(e){
-  if(mode==='circle'){ if(dragC) moveAngle(e); return; }
   if(!drag) return;
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
   if(drag.k==='panC'&&window.__cfit){
@@ -624,16 +513,15 @@ cv.addEventListener('pointermove',function(e){
     G.x=Math.max(-1e4,Math.min(1e4,w[0]));
     G.y=Math.max(-1e4,Math.min(1e4,w[1]));
     draw(); return; } });
-addEventListener('pointerup',function(){ dragC=false; if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
+addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
 try{
-  if(mode!=='solid'&&mode!=='circle'&&mode!=='areas'){
+  if(mode!=='solid'){
     try{ compile(exprSrc); }catch(e){ exprSrc=DEF[mode];
       bootNote='the stored formula refused \u00b7 loaded the house default'; } }
   rngEl.value=R; grdEl.value=N;
-  fx.value= (mode==='solid')? '' : exprSrc;
+  fx.value= mode==='solid'? '' : exprSrc;
   paintSticks(); paintGest();
   document.getElementById('polar').className=pol?'on':'';
-  snapBtn.className=snap?'on':'';
   setMode(mode);
   fit();
   (function selfTest(){
