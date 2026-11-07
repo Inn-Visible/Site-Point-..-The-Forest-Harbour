@@ -26,10 +26,12 @@
   #drop{border:2px dashed var(--line);padding:26px 14px;text-align:center;color:#5c6875;font-size:10px;letter-spacing:.15em;cursor:pointer;transition:all .2s;margin-bottom:12px}
   #drop.over{border-color:var(--gold);color:var(--gold);background:rgba(217,168,58,.05)}
   .qrow,.irow{display:flex;gap:8px;align-items:center;font-size:10px;letter-spacing:.08em;color:var(--dim);padding:6px 0;border-top:1px solid rgba(34,48,65,.5);flex-wrap:wrap}
-  .qn{color:var(--ink);max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qn{color:var(--ink);max-width:36%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .qb{display:inline-block;width:110px;height:4px;background:var(--line);position:relative;overflow:hidden}
   .qb i{position:absolute;inset:0;width:0%;background:var(--gold);transition:width .15s}
   .irow a{color:var(--gold);text-decoration:none;border:1px solid rgba(217,168,58,.4);padding:3px 8px}
+  .thumb{width:34px;height:34px;object-fit:cover;border:1px solid var(--line);border-radius:3px;flex-shrink:0}
+  .hint{font-size:9px;color:#3a4a5c;letter-spacing:.12em}
   details{margin-top:14px;font-size:9.5px;line-height:1.9;color:#5c6875;letter-spacing:.08em}
   details b{color:var(--dim);font-weight:normal}
   h4{font-size:9px;letter-spacing:.2em;color:var(--blue);margin:10px 0 4px;font-weight:normal}
@@ -45,15 +47,20 @@
   <div class="row"><input id="theirCode" placeholder="other glass's code · inn-xxxx" spellcheck="false">
     <button id="callBtn">call the ferry</button></div>
   <div id="peerState">no wire yet · share your code, or call theirs</div>
-  <div id="drop">drop files here · or tap to choose · they sail straight to the other glass</div>
+  <div id="drop">drop files or images here · or tap to choose · they sail straight to the other glass</div>
   <input type="file" id="pick" multiple style="display:none">
+  <input type="file" id="snapIn" accept="image/*" capture="environment" style="display:none">
+  <div class="row"><button id="clipBtn">pull clipboard</button><button id="snapBtn">snap ⌾</button>
+    <span class="hint">ctrl+v / long-press paste anywhere on this page also sails</span></div>
+  <div class="row"><input id="urlIn" placeholder="or paste an image url (pinterest media, imgur, cdn…)"><button id="urlBtn">fetch & sail</button></div>
   <h4>OUTBOUND</h4><div id="queue"></div>
   <h4>INBOUND</h4><div id="inbox"></div>
   <details><summary style="cursor:pointer;letter-spacing:.15em">how the ferry works</summary>
-    <b>peer-to-peer.</b> a public broker introduces the two glasses by code, then steps out — the file travels encrypted (DTLS) directly phone↔desktop.<br>
-    <b>no ground touched.</b> nothing is uploaded to any server; the cargo exists only in the two glasses and the wire between them.<br>
-    <b>both sides sail.</b> once connected, either glass can drop files; the ferry carries both ways.<br>
-    <b>text cargo?</b> received .html / .js / .json / .txt / .md / .css under 2 MB can be seated straight into the house drawer (arc.local) instead of downloaded.<br>
+    <b>peer-to-peer.</b> a public broker introduces the two glasses by code, then steps out — the cargo travels encrypted (DTLS) directly phone↔desktop.<br>
+    <b>no ground touched.</b> nothing is uploaded to any server; files exist only in the two glasses and the wire between them.<br>
+    <b>both sides sail.</b> once connected, either glass can drop, paste, snap or fetch; the ferry carries both ways.<br>
+    <b>image cargo</b> wears thumbnails at both ends; photos under 1.5 MB can be seated into the garden (arc.local image note) instead of downloaded; text under 2 MB seats as a plain note.<br>
+    <b>the pinterest flow:</b> long-press the picture → copy image → ferry → <i>pull clipboard</i> → sailed. or paste its media url → <i>fetch & sail</i>. seven logins, retired.<br>
     <b>if the broker sleeps</b> (offline, blocked, unlucky), the ferry says so plainly — retry, or fall back to the old bridge until the wire clears.
   </details>
 </div></main>
@@ -66,6 +73,8 @@ function rid(){ var s='inn-', a=new Uint8Array(4);
   cr.getRandomValues(a);
   for(var i=0;i<4;i++) s+=CH[a[i]%CH.length];
   return s; }
+function stamp(){ var d=new Date(), p=function(n){ return (n<10?'0':'')+n; };
+  return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds()); }
 var myId=rid(), peer=null, conn=null, queue=[], sending=false, pendingAck=null, inMeta=null, inRow=null;
 $('myCode').textContent=myId;
 function say(t,col){ var s=$('state'); s.textContent=t; s.style.color=col||'#5c6875'; }
@@ -85,7 +94,7 @@ function boot(){
 }
 function adopt(c){
   conn=c;
-  c.on('open',function(){ psay('connected \u00b7 the water is calm \u00b7 drop files on either glass','#58a36a'); pump(); });
+  c.on('open',function(){ psay('connected \u00b7 the water is calm \u00b7 drop, paste, snap or fetch on either glass','#58a36a'); pump(); });
   c.on('data',onData);
   c.on('close',function(){ conn=null; sending=false; pendingAck=null; psay('the other glass let go \u00b7 call again or share your code','#d9a83a'); });
   c.on('error',function(){ psay('the wire snagged \u00b7 reconnect','#e5735a'); });
@@ -97,30 +106,79 @@ $('callBtn').onclick=function(){
   say('calling '+t+' \u2026');
   try{ adopt(peer.connect(t,{reliable:true})); }catch(e){ say('the call failed \u00b7 '+e,'#e5735a'); }
 };
-var drop=$('drop'), pick=$('pick');
+/* ---- cargo doors ---- */
+var drop=$('drop'), pick=$('pick'), snapIn=$('snapIn');
 drop.onclick=function(){ pick.click(); };
 pick.onchange=function(){ addFiles(pick.files); pick.value=''; };
+snapIn.onchange=function(){ addFiles(snapIn.files); snapIn.value=''; };
+$('snapBtn').onclick=function(){ snapIn.click(); };
 ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
 ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
 drop.addEventListener('drop',function(e){ addFiles(e.dataTransfer.files); });
+document.addEventListener('paste',function(e){
+  var items=e.clipboardData&&e.clipboardData.items; if(!items) return;
+  for(var i=0;i<items.length;i++){
+    if(items[i].type&&items[i].type.indexOf('image')===0){
+      var f=items[i].getAsFile();
+      if(f){ enqueueBlob(f,'paste-'+stamp()+'.png'); e.preventDefault(); } } } });
+$('clipBtn').onclick=function(){
+  if(!navigator.clipboard||!navigator.clipboard.read){ say('this glass cannot read its clipboard \u00b7 use ctrl+v or drop the file','#e5735a'); return; }
+  navigator.clipboard.read().then(function(items){
+    var got=0;
+    items.forEach(function(it){
+      (it.types||[]).forEach(function(tp){
+        if(tp.indexOf('image')===0){ got++;
+          it.getType(tp).then(function(b){ enqueueBlob(b,'clip-'+stamp()+'.png'); }); } }); });
+    if(!got) say('the clipboard holds no picture right now','#d9a83a');
+  }).catch(function(){ say('clipboard permission refused \u00b7 ctrl+v still works','#e5735a'); });
+};
+$('urlBtn').onclick=function(){
+  var u=$('urlIn').value.trim(); if(!u) return;
+  say('fetching the picture \u2026');
+  fetch(u).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.blob(); }).then(function(b){
+    var nm=''; try{ nm=decodeURIComponent(u.split('?')[0].split('/').pop()||''); }catch(e){}
+    if(!nm||nm.indexOf('.')<0) nm='fetch-'+stamp()+'.jpg';
+    enqueueBlob(b,nm); say('fetched \u00b7 '+nm+' \u00b7 queued to sail','#58a36a');
+  }).catch(function(){ say('the site refused the fetch (CORS or hotlink) \u00b7 long-press save it, then drop it here','#e5735a'); });
+};
+function enqueueBlob(blob,name){
+  queue.push({name:name,size:blob.size||0,type:blob.type||'application/octet-stream',blob:blob});
+  pump();
+}
 function addFiles(fl){
   if(!conn||!conn.open){ psay('connect first \u00b7 the ferry needs both glasses on the water','#e5735a'); return; }
-  for(var i=0;i<fl.length;i++) queue.push(fl[i]);
+  for(var i=0;i<fl.length;i++){ var f=fl[i];
+    queue.push({name:f.name,size:f.size,type:f.type||'application/octet-stream',blob:f}); }
   pump();
+}
+function thumbFor(blob,type){
+  if(!type||type.indexOf('image')!==0) return '';
+  try{ return '<img class="thumb" src="'+URL.createObjectURL(blob)+'" alt="">'; }catch(e){ return ''; }
 }
 function pump(){
   if(sending||!conn||!conn.open||!queue.length) return;
   sending=true;
-  var f=queue.shift();
+  var it=queue.shift();
   var row=document.createElement('div'); row.className='qrow';
-  row.innerHTML='<span class="qn">'+f.name+'</span><span>'+fmt(f.size)+'</span><span class="qb"><i></i></span><span class="qp">0%</span>';
+  row.innerHTML=thumbFor(it.blob,it.type)+'<span class="qn">'+it.name+'</span><span>'+fmt(it.size)+'</span><span class="qb"><i></i></span><span class="qp">0%</span>';
   $('queue').appendChild(row);
   var barEl=row.querySelector('.qb i'), pEl=row.querySelector('.qp'), p=0;
   var iv=setInterval(function(){ p=Math.min(90,p+(90-p)*0.2+2); barEl.style.width=p+'%'; pEl.textContent=Math.round(p)+'%'; },120);
-  var stall=setTimeout(function(){ clearInterval(iv); barEl.style.width='100%'; barEl.querySelector?'':0; pEl.textContent='stalled'; sending=false; pendingAck=null; pump(); },25000);
+  var stall=setTimeout(function(){ clearInterval(iv); barEl.style.width='100%'; pEl.textContent='stalled'; sending=false; pendingAck=null; pump(); },25000);
   pendingAck=function(){ clearTimeout(stall); clearInterval(iv); barEl.style.width='100%'; pEl.textContent='sailed'; sending=false; pump(); };
-  try{ conn.send({t:'meta',name:f.name,size:f.size,type:f.type||'application/octet-stream'}); conn.send(f); }
+  try{ conn.send({t:'meta',name:it.name,size:it.size,type:it.type}); conn.send(it.blob); }
   catch(e){ clearTimeout(stall); clearInterval(iv); pEl.textContent='refused'; sending=false; pendingAck=null; pump(); }
+}
+function seatNote(name,body,images){
+  try{
+    var L=JSON.parse(localStorage.getItem('arc.local')||'[]');
+    var n={id:'ferry-'+Date.now(),pillar:'keystone',date:new Date().toISOString().slice(0,10),
+      title:name,tags:['ferry'],local:true};
+    if(images){ n.body='{{img:f0}}'; n.images=images; n.imageStyles={f0:'size-medium'}; }
+    else n.body=body;
+    L.unshift(n); localStorage.setItem('arc.local',JSON.stringify(L));
+    return true;
+  }catch(e){ return false; }
 }
 function onData(d){
   if(d&&d.t==='ack'){ if(pendingAck){ var fn=pendingAck; pendingAck=null; fn(); } return; }
@@ -128,26 +186,30 @@ function onData(d){
     inRow=document.createElement('div'); inRow.className='irow';
     inRow.innerHTML='<span class="qn">'+d.name+'</span><span>'+fmt(d.size)+'</span><span style="color:#5c6875">sailing in\u2026</span>';
     $('inbox').appendChild(inRow); return; }
-  if((window.Blob&&d instanceof Blob)||d instanceof Blob){
-    var m=inMeta||{name:'cargo-'+Date.now(),type:d.type||'application/octet-stream',size:d.size};
+  if(d instanceof Blob){
+    var m=inMeta||{name:'cargo-'+stamp(),type:d.type||'application/octet-stream',size:d.size};
     var url=URL.createObjectURL(new Blob([d],{type:m.type}));
     var row=inRow||document.createElement('div');
     if(!inRow) $('inbox').appendChild(row);
     row.className='irow';
-    row.innerHTML='<span class="qn">'+m.name+'</span><span>'+fmt(m.size||d.size)+'</span><a href="'+url+'" download="'+m.name+'">download \u2193</a>';
+    row.innerHTML=(m.type&&m.type.indexOf('image')===0? '<img class="thumb" src="'+url+'" alt="">' : '')
+      +'<span class="qn">'+m.name+'</span><span>'+fmt(m.size||d.size)+'</span><a href="'+url+'" download="'+m.name+'">download \u2193</a>';
     var ext=(m.name.split('.').pop()||'').toLowerCase();
-    if(['html','htm','js','json','txt','md','css'].indexOf(ext)>-1 && (m.size||d.size)<2000000){
-      var seat=document.createElement('button'); seat.textContent='seat in drawer';
+    var sz=m.size||d.size;
+    if(m.type&&m.type.indexOf('image')===0 && sz<1500000){
+      var seat=document.createElement('button'); seat.textContent='seat in garden';
       seat.onclick=function(){ var rd=new FileReader();
-        rd.onload=function(){ try{
-          var L=JSON.parse(localStorage.getItem('arc.local')||'[]');
-          L.unshift({id:'ferry-'+Date.now(),pillar:'keystone',date:new Date().toISOString().slice(0,10),
-            title:m.name,body:String(rd.result),tags:['ferry'],local:true});
-          localStorage.setItem('arc.local',JSON.stringify(L));
-          seat.textContent='seated \u2713'; seat.disabled=true;
-        }catch(e){ seat.textContent='drawer refused'; } };
-        rd.readAsText(new Blob([d],{type:m.type})); };
+        rd.onload=function(){ var ok=seatNote(m.name,null,{f0:String(rd.result)});
+          seat.textContent=ok?'seated \u2713':'garden refused'; seat.disabled=ok; };
+        rd.readAsDataURL(new Blob([d],{type:m.type})); };
       row.appendChild(seat);
+    } else if(['html','htm','js','json','txt','md','css'].indexOf(ext)>-1 && sz<2000000){
+      var seat2=document.createElement('button'); seat2.textContent='seat in drawer';
+      seat2.onclick=function(){ var rd=new FileReader();
+        rd.onload=function(){ var ok=seatNote(m.name,String(rd.result),null);
+          seat2.textContent=ok?'seated \u2713':'drawer refused'; seat2.disabled=ok; };
+        rd.readAsText(new Blob([d],{type:m.type})); };
+      row.appendChild(seat2);
     }
     try{ conn.send({t:'ack',name:m.name}); }catch(e){}
     inMeta=null; inRow=null; return; }
