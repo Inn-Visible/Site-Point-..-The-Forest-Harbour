@@ -519,39 +519,61 @@ function init(){
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(init,400); });
 else setTimeout(init,400);
 
+
 (function(){
-/* ---- the killa loading screen \u00b7 house-wide \u00b7 tap to skip \u00b7 six-second cap ---- */
+/* ---- the killa loading screen v2 \u00b7 pillar-dynamic \u00b7 tap to skip \u00b7 six-second cap ---- */
 if(window.__innLoader) return; window.__innLoader=1;
 var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
-var ov=document.createElement('div'); ov.id='innLoad';
-ov.style.cssText='position:fixed;inset:0;z-index:999;background:#0a0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;transition:opacity .5s ease;font-family:ui-monospace,Consolas,monospace';
+var P=(localStorage.getItem('hive_pillar')||'').toLowerCase();
+if(!P){ var mm=(location.pathname.split('/').pop()||'').replace(/\.html.*$/,'');
+  if(['axiom','eigen','baseline','keystone'].indexOf(mm)>-1) P=mm; }
+var TH={
+ axiom:{col:'#d8dde3',name:'AXIOM INDUSTRIES',anim:'innSpin 9s linear infinite',
+  sig:'<circle cx="32" cy="32" r="6"/><line x1="32" y1="26" x2="32" y2="14"/><line x1="38" y1="32" x2="50" y2="32"/><line x1="32" y1="38" x2="32" y2="50"/><line x1="26" y1="32" x2="14" y2="32"/><circle cx="32" cy="10" r="4"/><circle cx="54" cy="32" r="4"/><circle cx="32" cy="54" r="4"/><circle cx="10" cy="32" r="4"/>',
+  lines:['waking the obs deck','counting the bonds','torquing the supply chain','polishing the ledger specs','seating the matter','verifying the teardown']},
+ eigen:{col:'#58a36a',name:'EIGEN DYNAMICS',anim:'innSway 3.4s ease-in-out infinite alternate',
+  sig:'<path d="M20 50 Q18 26 46 12 Q44 40 26 52 Z"/><path d="M20 50 Q30 34 46 12"/>',
+  lines:['watering the garden','sharpening the quill','counting the tags','jumbling the solarium','pressing the leaves','whispering to the tablet']},
+ baseline:{col:'#3f7fc1',name:'BASELINE EVOLUTIONS',anim:'innMarch 2.2s linear infinite',
+  sig:'<path d="M6 32 Q13 16 20 32 T34 32 T48 32 T62 32"/><path d="M6 40 Q13 28 20 40 T34 40 T48 40 T62 40" opacity=".45"/>',
+  lines:['tuning the low end','winding the frets','warming the studio','docking the protocol','spooling the honey tapes','asking the neck for a song']},
+ keystone:{col:'#d9a83a',name:'KEYSTONE SOLUTIONS',anim:'innPulse 2.6s ease-in-out infinite',
+  sig:'<path d="M14 52 V30 A18 18 0 0 1 50 30 V52"/><path d="M27 14 L37 14 L34 24 L30 24 Z"/>',
+  lines:['setting the keystone','balancing the books','grinding the glyph','quieting the math','promising the promises','opening the archive']}};
+var T=TH[P]||{col:'#d9a83a',name:'INN.VISIBLE',anim:'innSpin 6s linear infinite',
+  sig:'<path d="M16 40 L24 16 L44 16 L36 40 Z"/><line x1="10" y1="46" x2="44" y2="12"/><circle cx="28" cy="8" r="2"/><circle cx="48" cy="28" r="2"/><circle cx="28" cy="48" r="2"/><circle cx="8" cy="28" r="2"/>',
+  lines:['waking the obs deck','tuning the low end','counting the moon-days','oiling the xenofolders','polishing the gold dot','asking the sky its tongue']};
+var ov=document.createElement('div'); ov.id='innLoad'; ov.setAttribute('data-p',P||'house');
+ov.style.cssText='position:fixed;inset:0;z-index:999;background:#0a0d12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;cursor:pointer;transition:opacity .5s ease;font-family:ui-monospace,Consolas,monospace';
 ov.innerHTML=
- '<svg width="64" height="64" viewBox="0 0 56 56" fill="none" stroke="#58a36a" stroke-width="2">'
- +'<path d="M16 40 L24 16 L44 16 L36 40 Z"/><line x1="10" y1="46" x2="44" y2="12"/>'
- +'<circle cx="28" cy="8" r="2"/><circle cx="48" cy="28" r="2"/><circle cx="28" cy="48" r="2"/><circle cx="8" cy="28" r="2"/></svg>'
- +'<div id="innWord" style="font-size:12px;letter-spacing:.5em;color:#e8e4d8;transition:letter-spacing .6s ease">INN.VISIBLE</div>'
- +'<div style="width:min(320px,70vw);height:2px;background:#223041;position:relative;overflow:hidden"><i id="innBar" style="position:absolute;left:0;top:0;bottom:0;width:0%;background:#d9a83a;transition:width .25s ease"></i></div>'
+ '<svg id="innSig" width="66" height="66" viewBox="0 0 64 64" fill="none" stroke="'+T.col+'" stroke-width="2" stroke-linecap="round" style="animation:'+(reduce?'none':T.anim)+';transform-origin:center">'+T.sig+'</svg>'
+ +'<div style="font-size:12px;letter-spacing:.5em;color:#e8e4d8;transition:letter-spacing .6s ease" id="innWord">INN.VISIBLE</div>'
+ +'<div style="font-size:9px;letter-spacing:.34em;color:'+T.col+';opacity:.85">'+T.name+'</div>'
+ +'<div style="width:min(320px,70vw);height:3px;background:#223041;position:relative;overflow:hidden"><i id="innBar" style="position:absolute;left:0;top:0;bottom:0;width:0%;background-color:'+T.col+';background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px);transition:width .25s ease"></i></div>'
  +'<div id="innLine" style="font-size:9px;letter-spacing:.18em;color:#5c6875;min-height:14px;text-align:center;padding:0 12px"></div>'
  +'<div id="innPct" style="font-size:9px;letter-spacing:.2em;color:#3a4a5c">0%</div>';
 var st=document.createElement('style');
-st.textContent='@keyframes innSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}#innLoad svg{animation:innSpin 6s linear infinite;transform-origin:center}#innLoad.bye{opacity:0;pointer-events:none}';
+st.textContent='@keyframes innSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}'
+ +'@keyframes innSway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}'
+ +'@keyframes innMarch{from{stroke-dashoffset:0}to{stroke-dashoffset:-32}}'
+ +'@keyframes innPulse{0%,100%{opacity:.55;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}'
+ +'#innLoad[data-p="baseline"] svg path{stroke-dasharray:10 6}'
+ +'#innLoad.bye{opacity:0;pointer-events:none}';
 document.head.appendChild(st);
 (document.body||document.documentElement).appendChild(ov);
-var LINES=['waking the obs deck','tuning the low end','counting the moon-days','oiling the xenofolders','polishing the gold dot','asking the sky its tongue','seating the vault','winding the wind-glyphs'];
 var li=0, pct=0, done=false;
 var bar=ov.querySelector('#innBar'), line=ov.querySelector('#innLine'), pctl=ov.querySelector('#innPct'), word=ov.querySelector('#innWord');
-if(reduce){ var sg=ov.querySelector('svg'); if(sg) sg.style.animation='none'; }
 var tick=setInterval(function(){
   if(done) return;
-  li=(li+1)%LINES.length;
-  line.textContent=LINES[li]+' \u00b7';
+  li=(li+1)%T.lines.length;
+  line.textContent=T.lines[li]+' \u00b7';
   pct=Math.min(92, pct+(92-pct)*0.12+1.2);
   bar.style.width=pct+'%'; pctl.textContent=Math.round(pct)+'%';
 }, reduce?900:420);
 function finish(){
   if(done) return; done=true; clearInterval(tick);
   pct=100; bar.style.width='100%'; pctl.textContent='100%';
-  line.textContent='the house is awake \u00b7 welcome home';
+  line.textContent='the house is awake \u00b7 welcome home, '+T.name.toLowerCase();
   word.style.letterSpacing='.34em';
   setTimeout(function(){ ov.classList.add('bye');
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },600); }, reduce?80:420);
@@ -561,7 +583,6 @@ else addEventListener('load',function(){ setTimeout(finish,150); });
 setTimeout(finish,6000);
 ov.addEventListener('click',finish);
 })();
-  
 })();
 
 
