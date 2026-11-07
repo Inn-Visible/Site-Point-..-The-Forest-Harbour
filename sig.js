@@ -10,7 +10,7 @@
 
 (function(){
   var year='\u00a9 '+new Date().getFullYear()+' The Inn.Visible Foundation \u00b7 all rights reserved';
-  var gift='<a href="donations.html" style="color:#5c6875;text-decoration:none">the forge runs on gifts \u00b7 keep the fire lit \u2197</a>';
+  var gift=' <a href="donations.html" style="color:#5c6875;text-decoration:none">the forge runs on gifts \u00b7 keep the fire lit \u2197</a> \u00b7 <a href="ferry.html" style="color:#5c6875;text-decoration:none">the ferry carries files between glasses \u26f4 \u2197</a>';
   var f=document.querySelector('footer');
   if(f){
     var a=document.createElement('div'); a.textContent=year;
