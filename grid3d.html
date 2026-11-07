@@ -4,508 +4,166 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0a0d12">
-<title>the grid | Inn.Visible</title>
+<title>the wheel | Inn.Visible</title>
 <style>
   :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--mono:ui-monospace,Consolas,monospace}
   *{box-sizing:border-box;margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--mono);display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
   header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
-  header .t{font-size:11px;letter-spacing:.3em;color:var(--blue)}
+  header .t{font-size:11px;letter-spacing:.3em;color:var(--gold)}
   header .sub{font-size:9px;color:#5c6875;letter-spacing:.15em;font-style:italic}
-  header a{color:var(--dim);font-size:10px;letter-spacing:.15em;text-decoration:none}
-  .help{flex-shrink:0;padding:4px 12px;border-bottom:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875;font-style:italic}
-  .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.6);flex-shrink:0}
+  header a{color:var(--dim);font-size:10px;letter-spacing:.15em;text-decoration:none;margin-left:8px}
+  .bar{display:flex;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.6);flex-shrink:0;flex-wrap:wrap}
   button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.12em;padding:6px 10px;cursor:pointer}
   button:hover{border-color:var(--gold);color:var(--gold)}
   button.on{border-color:var(--gold);color:var(--gold)}
-  .bar input{background:#0e141b;border:1px solid var(--line);color:var(--ink);font:12px var(--mono);padding:7px 10px;outline:none}
-  .bar input:focus{border-color:var(--blue)}
-  #fx{flex:1;min-width:120px}
-  #rng{width:56px;flex:none} #grd{width:46px;flex:none}
-  #wrap{position:relative;flex:1 1 0;min-height:0}
-  #cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
-  #cv.grabbing{cursor:grabbing}
-  #stickOv{position:absolute;right:10px;bottom:10px;z-index:5}
-  #gestOv{position:absolute;right:10px;bottom:44px;z-index:5}
-  #codOv{position:absolute;left:10px;bottom:10px;z-index:5}
-  #codPanel{position:absolute;left:10px;bottom:44px;z-index:6;display:none;max-height:62%;overflow-y:auto;
-    width:min(340px,86%);background:rgba(10,13,18,.94);border:1px solid var(--line);padding:10px 12px;
-    font-size:9.5px;line-height:1.9;color:#93a1b0;letter-spacing:.06em}
-  #codPanel b{color:var(--gold);font-weight:normal}
-  #codPanel h4{color:var(--blue);font-size:9px;letter-spacing:.2em;margin:6px 0 2px;font-weight:normal}
-  #codPanel a{color:#8ab4ff;text-decoration:none}
-  #status{flex-shrink:0;padding:6px 12px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875;display:flex;gap:10px;flex-wrap:wrap}
-  #status .r{color:#e5735a} #status .g{color:var(--green)}
+  #wrap{position:relative;flex:1 1 0;min-height:0;display:flex;gap:0;overflow:hidden}
+  #stage{flex:1;position:relative;min-width:0}
+  canvas,svg#wheelSvg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #side{width:min(320px,42%);border-left:1px solid var(--line);padding:12px;overflow-y:auto;font-size:10px;line-height:2;letter-spacing:.08em;color:var(--dim);flex-shrink:0}
+  #side h3{color:var(--blue);font-size:10px;letter-spacing:.2em;margin:8px 0 2px;font-weight:normal}
+  #side .big{color:var(--ink);font-size:13px;letter-spacing:.1em}
+  #side .g{color:var(--green)} #side .o{color:#e07856} #side .p{color:#b48ce0} #side .q{color:#ff7bb0}
+  #status{flex-shrink:0;padding:6px 12px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875}
   .sp{flex:1}
+  @media(max-width:700px){ #wrap{flex-direction:column} #side{width:100%;max-height:38%;border-left:none;border-top:1px solid var(--line)} }
 </style>
 </head>
 <body>
-<header><span class="t">THE GRID</span><span class="sub">the third dimension, rollable · the floor and the equation are infinite together</span><a href="axiom.html">axiom ↩</a></header>
-<div class="help">curve = flat like desmos · polar = r = f(θ) · surface = z = f(x, y) or img ⌘ heightfield · solid = preset shapes · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians · the equation re-samples around the camera forever · shift-drag or drag:pan walks it</div>
+<header><span class="t">THE WHEEL</span><span class="sub">unit circle & math areas · the two tools that deserved a room</span>
+  <span><a href="grid3d.html">the grid ↗</a><a href="axiom.html">axiom ↩</a></span></header>
 <div class="bar">
-  <button id="mCurve">curve</button><button id="mSurface" class="on">surface</button><button id="mSolid">solid</button>
-  <input id="fx" type="text" spellcheck="false" placeholder="z = f(x, y) · curve reads y = f(x) · polar reads r = f(θ)">
-  <input id="rng" type="text" title="reference scale ±" placeholder="±6.5">
-  <input id="grd" type="text" title="grid resolution (8–64)" placeholder="26">
-  <button id="plot">plot it</button>
-  <button id="polar">polar</button>
-  <button id="imgBtn">img ⌘</button>
-  <span id="presets" style="display:contents"></span>
+  <button id="tabCircle" class="on">unit circle</button>
+  <button id="tabWheel">math areas</button>
+  <button id="snapBtn" class="on">snap 15°</button>
   <span class="sp"></span>
-  <button id="zin">+</button><button id="zout">−</button><button id="vhome">⌂ view</button><button id="rst">reset</button><button id="mastBtn">mastery</button>
+  <span style="font-size:9px;color:#5c6875;letter-spacing:.15em">ASTC = All Students Take Calculus</span>
 </div>
-<div id="wrap"><canvas id="cv"></canvas>
-  <button id="codOv">codex ⌄</button>
-  <div id="codPanel"></div>
-  <button id="gestOv">drag: roll</button>
-  <button id="stickOv">sticks ⌄</button>
+<div id="wrap">
+  <div id="stage"><canvas id="cc"></canvas><svg id="wheelSvg" viewBox="0 0 600 600" style="display:none"></svg></div>
+  <div id="side"></div>
 </div>
-<div id="status"><span id="st1"></span><span class="sp"></span><span id="st2"></span></div>
+<div id="status">drag the gold point around her · the signs and the exact values follow · the wheel tab unfolds the math areas</div>
 <script>
 (function(){
-var KEY='hive_grid3d', MASTKEY='hive_grid_mastery';
-var cv=document.getElementById('cv'), x=cv.getContext('2d');
-var wrap=document.getElementById('wrap'), fx=document.getElementById('fx');
-var rngEl=document.getElementById('rng'), grdEl=document.getElementById('grd');
-var st1=document.getElementById('st1'), st2=document.getElementById('st2'), presets=document.getElementById('presets');
-var stickOv=document.getElementById('stickOv'), gestOv=document.getElementById('gestOv');
-var codOv=document.getElementById('codOv'), codPanel=document.getElementById('codPanel');
-var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null, bootNote='';
-var roll=0.314, tilt=0.157, zoom=1, sticks=false, solidIdx=0, pol=false, mastOn=false, geomKind='formula', gestPan=false;
-var R=6.5, N=26, G={x:1.5,y:1.0}, view={x:0,y:0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
-var curveLock=null, rebuildT=0;
-var DEF={surface:'sin(r*1.6)*exp(-r/4)*3', curve:'sin(x)', solid:''};
-var PRE={surface:[['wave','sin(x)*cos(y)'],['saddle','(x^2-y^2)/4'],['ripple','sin(r*1.6)*exp(-r/4)*3'],['gauss','3*exp(-(r^2)/8)'],['plane','(x+y)/4']],
-         curve:[['sin','sin(x)'],['parabola','x^2/4'],['abs','abs(x)-3']],
-         polar:[['circle','1'],['rose','sin(4*x)'],['spiral','x/2'],['cardioid','1+cos(x)']],
-         solid:[['sphere',''],['torus',''],['box',''],['cone','']]};
-var EQ={sphere:'x=3.5·cos v·cos u · y=3.5·cos v·sin u · z=3.5·sin v · u∈[0,2π] · v∈[−π/2,π/2]',
-  torus:'x=(3.2+1.2·cos v)·cos u · y=(3.2+1.2·cos v)·sin u · z=1.2·sin v · u,v∈[0,2π]',
-  box:'vertices (±2.6, ±2.6, ±2.6) · 12 edges · 8 corners · the honest cube',
-  cone:'base circle r=3 @ z=−2 · apex (0,0,4) · 16 spokes · the party hat'};
-var FUND=['wave','saddle','ripple','gauss','plane','sin','parabola','abs','circle','rose','spiral','cardioid','sphere','torus','box','cone'];
-var mast={}; try{ mast=JSON.parse(localStorage.getItem(MASTKEY)||'{}')||{}; }catch(e){ mast={}; }
-function mark(n){ if(!mast[n]){ mast[n]=1; try{ localStorage.setItem(MASTKEY,JSON.stringify(mast)); }catch(e){} } }
-function mastLine(){ var v=FUND.filter(function(f){ return mast[f]; });
-  return 'mastery \u00b7 '+v.length+' of '+FUND.length+' fundamentals visited'+(v.length? ' \u00b7 '+v.join(' \u00b7 ') : ' \u00b7 plot the set to earn the wheel'); }
-var BUCK=[];
-(function(){ for(var i=0;i<8;i++){ var t=i/7;
-  BUCK.push('rgba('+Math.round(120+(217-120)*t)+','+Math.round(220+(168-220)*t)+','+Math.round(200+(58-200)*t)+',.75)'); } })();
-try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(S){ mode=S.mode||mode; exprSrc=typeof S.expr==='string'?S.expr:exprSrc; roll=+S.roll||roll; tilt=+S.tilt||tilt;
-    zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; pol=!!S.pol; gestPan=!!S.pan;
-    if(S.g) G=S.g; if(S.v) view=S.v;
-    if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,pan:gestPan,g:G,v:view,rng:R,grd:N})); }catch(e){} }
-function bin(op,l,r){ return function(px,py){ var a=l(px,py), b=r(px,py);
-  return op==='+'?a+b: op==='-'?a-b: op==='*'?a*b: op==='/'?a/b: Math.pow(a,b); }; }
-function compile(raw){
-  var s=String(raw).replace(/\u2212/g,'-').replace(/[\u00d7\u00b7]/g,'*').replace(/\u00f7/g,'/').replace(/\u03c0/g,'pi').replace(/\s+/g,''), i=0;
-  var F={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,ln:Math.log,
-    log:function(v){ return Math.log(v)/Math.LN10; }, sqrt:Math.sqrt, abs:Math.abs};
-  function err(m){ var e=new Error(m); e.pos=i; throw e; }
-  function starts(c){ return !!c&&(c==='('||/[a-z]/.test(c)); }
-  function primary(){
-    var c=s[i];
-    if(c==='('){ i++; var v=expr(); if(s[i]!==')') err('paren'); i++; return v; }
-    if(c==='-'){ i++; var n=primary(); return function(px,py){ return -n(px,py); }; }
-    if(c==='+'){ i++; return primary(); }
-    var fm=/^(sin|cos|tan|exp|ln|log|sqrt|abs)/.exec(s.slice(i));
-    if(fm){ i+=fm[0].length; var f=F[fm[0]], a=primary(); return function(px,py){ return f(a(px,py)); }; }
-    var m=/^(pi|e|x|y|r)/.exec(s.slice(i));
-    if(m){ i+=m[0].length;
-      if(m[0]==='x') return function(px){ return px; };
-      if(m[0]==='y') return function(px,py){ return py; };
-      if(m[0]==='r') return function(px,py){ return Math.sqrt(px*px+py*py); };
-      if(m[0]==='e') return function(){ return Math.E; };
-      return function(){ return Math.PI; }; }
-    var nm=/^\d+\.?\d*|^\.\d+/.exec(s.slice(i)); if(!nm) err('term'); i+=nm[0].length;
-    var k=parseFloat(nm[0]); return function(){ return k; };
+var cc=document.getElementById('cc'), g=cc.getContext('2d');
+var side=document.getElementById('side'), svg=document.getElementById('wheelSvg');
+var stage=document.getElementById('stage');
+var tabC=document.getElementById('tabCircle'), tabW=document.getElementById('tabWheel'), snapBtn=document.getElementById('snapBtn');
+var tab='circle', snap=true, th=Math.PI/4, W=1, H=1;
+var SP={0:['0','1','0'],30:['\u03c0/6','\u221a3/2','1/2'],45:['\u03c0/4','\u221a2/2','\u221a2/2'],60:['\u03c0/3','1/2','\u221a3/2'],90:['\u03c0/2','0','1'],
+ 120:['2\u03c0/3','-1/2','\u221a3/2'],135:['3\u03c0/4','-\u221a2/2','\u221a2/2'],150:['5\u03c0/6','-\u221a3/2','1/2'],180:['\u03c0','-1','0'],
+ 210:['7\u03c0/6','-\u221a3/2','-1/2'],225:['5\u03c0/4','-\u221a2/2','-\u221a2/2'],240:['4\u03c0/3','-1/2','-\u221a3/2'],270:['3\u03c0/2','0','-1'],
+ 300:['5\u03c0/3','1/2','-\u221a3/2'],315:['7\u03c0/4','\u221a2/2','-\u221a2/2'],330:['11\u03c0/6','\u221a3/2','-1/2']};
+var QUAD=[['I','All','every function is positive here','#e07856'],['II','Students','sin & csc positive; the rest wear minus','#7fb2e5'],
+          ['III','Take','tan & cot positive; the rest wear minus','#78dcc8'],['IV','Calculus','cos & sec positive; the rest wear minus','#b48ce0']];
+function qOf(deg){ return QUAD[Math.floor(((deg%360)+360)%360/90)]; }
+function fit(){ var d=devicePixelRatio||1; W=stage.clientWidth||1; H=stage.clientHeight||1;
+  cc.width=Math.round(W*d); cc.height=Math.round(H*d); g.setTransform(d,0,0,d,0,0); drawCircle(); }
+addEventListener('resize',fit);
+function drawCircle(){
+  if(tab!=='circle') return;
+  g.clearRect(0,0,W,H);
+  var cx=W/2, cy=H/2, r=Math.min(W,H)*0.36;
+  var cols=['rgba(224,120,86,.07)','rgba(127,178,229,.07)','rgba(120,220,200,.07)','rgba(180,140,224,.07)'];
+  for(var q=0;q<4;q++){ g.fillStyle=cols[q]; g.beginPath(); g.moveTo(cx,cy);
+    g.arc(cx,cy,r,-(q+1)*Math.PI/2,-q*Math.PI/2); g.closePath(); g.fill(); }
+  g.strokeStyle='rgba(34,48,65,1)'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(cx-r*1.35,cy); g.lineTo(cx+r*1.35,cy); g.stroke();
+  g.beginPath(); g.moveTo(cx,cy-r*1.35); g.lineTo(cx,cy+r*1.35); g.stroke();
+  g.strokeStyle='rgba(232,228,216,.85)'; g.lineWidth=2;
+  g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.stroke();
+  g.lineWidth=1;
+  for(var d=0;d<360;d+=30){ var a=d*Math.PI/180;
+    g.strokeStyle='rgba(92,104,117,.5)';
+    g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+r*Math.cos(a),cy-r*Math.sin(a)); g.stroke();
+    g.fillStyle='#58a36a'; g.beginPath(); g.arc(cx+r*Math.cos(a),cy-r*Math.sin(a),3.4,0,7); g.fill(); }
+  var px=cx+r*Math.cos(th), py=cy-r*Math.sin(th);
+  g.strokeStyle='#b48ce0'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(px,cy); g.stroke();
+  g.strokeStyle='#e07856'; g.beginPath(); g.moveTo(px,cy); g.lineTo(px,py); g.stroke();
+  g.strokeStyle='rgba(232,228,216,.6)'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(px,py); g.stroke();
+  g.fillStyle='#d9a83a'; g.beginPath(); g.arc(px,py,7,0,7); g.fill();
+  g.fillStyle='#5c6875'; g.font='9px ui-monospace,Consolas,monospace';
+  g.fillText('0', cx+r+6, cy+12); g.fillText('\u03c0/2', cx+4, cy-r-6);
+  g.fillText('\u03c0', cx-r-16, cy+12); g.fillText('3\u03c0/2', cx+4, cy+r+14);
+  paintSide();
+}
+function degOf(t){ return ((t*180/Math.PI)%360+360)%360; }
+function paintSide(){
+  var deg=degOf(th), q=qOf(deg), sp=SP[Math.round(deg/15)*15%360]&& (Math.abs(deg-Math.round(deg/15)*15)<0.6? SP[Math.round(deg/15)*15%360]:null);
+  var c=Math.cos(th), s=Math.sin(th), t=Math.abs(c)<1e-9?null:s/c;
+  var radFrac= sp? sp[0] : (deg/180).toFixed(2)+'\u03c0';
+  side.innerHTML=
+   '<h3>THE ANGLE</h3><div class="big">'+deg.toFixed(1)+'\u00b0 \u00b7 '+radFrac+' rad</div>'
+  +'<h3>THE POINT (cos \u03b8, sin \u03b8)</h3><div class="big">'+(sp? '('+sp[1]+', '+sp[2]+')' : '('+c.toFixed(3)+', '+s.toFixed(3)+')')+'</div>'
+  +'<div><span class="p">cos</span> '+(sp?sp[1]:c.toFixed(3))+' \u00b7 <span class="o">sin</span> '+(sp?sp[2]:s.toFixed(3))+' \u00b7 <span class="g">tan</span> '+(t===null?'undefined':(Math.abs(Math.abs(t)-1)<1e-9?(t>0?'1':'-1'):t.toFixed(3)))+'</div>'
+  +'<h3>QUADRANT '+q[0]+' \u00b7 '+q[1]+'</h3><div>'+q[2]+'</div>'
+  +'<div>sin '+(s>=0?'+':'\u2212')+' \u00b7 cos '+(c>=0?'+':'\u2212')+' \u00b7 tan '+((t===null)?'\u221e':(t>=0?'+':'\u2212'))+'</div>'
+  +'<h3>THE LEGS</h3><div><span class="p">cos leg</span> = x-coordinate \u00b7 <span class="o">sin leg</span> = y-coordinate \u00b7 <span class="g">tan</span> = y/x</div>'
+  +'<h3>NEXT DOOR</h3><div>plot her in the grid: polar r = 1 \u00b7 <a href="grid3d.html" style="color:#8ab4ff">the grid \u2197</a></div>';
+}
+var dragC=false;
+cc.addEventListener('pointerdown',function(e){ dragC=true; cc.setPointerCapture(e.pointerId); moveC(e); });
+cc.addEventListener('pointermove',function(e){ if(dragC) moveC(e); });
+addEventListener('pointerup',function(){ dragC=false; });
+function moveC(e){ var r=cc.getBoundingClientRect();
+  var dx=(e.clientX-r.left)-W/2, dy=(e.clientY-r.top)-H/2;
+  var a=Math.atan2(-dy,dx); if(a<0) a+=Math.PI*2;
+  if(snap){ var st15=Math.PI/12; a=Math.round(a/st15)*st15% (Math.PI*2); }
+  th=a; drawCircle(); }
+/* ---- the math areas wheel ---- */
+var AREAS=[['Arithmetic','integers · fractions · decimals · percents'],
+ ['Algebra','elementary · linear · polynomials · equations'],
+ ['Geometry','euclidean · non-euclidean · analytical'],
+ ['Trigonometry','functions · identities · applications · spherical'],
+ ['Calculus','differential · integral · multivariable · vector'],
+ ['Statistics','probability · regression · random variables · stochastic'],
+ ['Logic','symbolic · proofs · model theory'],
+ ['Set Theory','sets · cardinals · ordinals · axioms'],
+ ['Graph Theory','graphs · trees · networks · algorithms'],
+ ['Discrete Math','finite structures · coding · cryptography · numerics'],
+ ['Abstract Algebra','groups · rings · fields · spaces · eigenvalues'],
+ ['Topology','point-set · algebraic · manifolds'],
+ ['Applied Math','physics · modelling · optimization · recursion'],
+ ['Mathematical Logic','proof theory · recursion theory · number theory']];
+var selArea=4;
+function polarPt(cx,cy,r,a){ return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
+function buildWheel(){
+  var n=AREAS.length, cx=300, cy=300, r0=90, r1=210, r2=282;
+  var out='<circle cx="300" cy="300" r="'+r0+'" fill="#0e141b" stroke="#223041"/>';
+  for(var i=0;i<n;i++){
+    var a0=-Math.PI/2+i*2*Math.PI/n, a1=-Math.PI/2+(i+1)*2*Math.PI/n;
+    var p0=polarPt(cx,cy,r0,a0), p1=polarPt(cx,cy,r1,a0), p2=polarPt(cx,cy,r1,a1), p3=polarPt(cx,cy,r0,a1);
+    var large=(a1-a0)>Math.PI?1:0;
+    out+='<path d="M'+p0[0]+' '+p0[1]+' L'+p1[0]+' '+p1[1]+' A'+r1+' '+r1+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' L'+p3[0]+' '+p3[1]+' A'+r0+' '+r0+' 0 '+large+' 0 '+p0[0]+' '+p0[1]+' Z" '
+      +'fill="'+(i===selArea?'rgba(217,168,58,.14)':(i%2?'rgba(14,20,27,.9)':'rgba(10,13,18,.9)'))+'" stroke="#223041" data-area="'+i+'" style="cursor:pointer"/>';
+    var am=(a0+a1)/2, lp=polarPt(cx,cy,(r1+r2)/2,am);
+    out+='<text x="'+lp[0]+'" y="'+lp[1]+'" fill="'+(i===selArea?'#d9a83a':'#93a1b0')+'" font-size="12" font-family="ui-monospace,Consolas,monospace" text-anchor="middle" transform="rotate('+(am*180/Math.PI+90)+' '+lp[0]+' '+lp[1]+')" style="pointer-events:none">'+AREAS[i][0]+'</text>';
   }
-  function power(){ var b=primary(); if(s[i]==='^'){ i++; var e=power(); return bin('^',b,e); } return b; }
-  function term(){ var v=power();
-    for(;;){ var c=s[i];
-      if(c==='*'||c==='/'){ i++; v=bin(c,v,power()); }
-      else if(starts(c)){ v=bin('*',v,power()); }
-      else break; }
-    return v; }
-  function expr(){ var v=term();
-    while(s[i]==='+'||s[i]==='-'){ var c=s[i]; i++; v=bin(c,v,term()); }
-    return v; }
-  var f=expr(); if(i<s.length) err('trail');
-  return f;
+  for(var h=1;h<=12;h++){ var ha=-Math.PI/2+h*Math.PI/6;
+    var hp=polarPt(cx,cy,r0*0.62,ha);
+    out+='<text x="'+hp[0]+'" y="'+hp[1]+4+'" fill="#5c6875" font-size="12" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+h+'</text>'; }
+  out+='<text x="300" y="296" fill="#e8e4d8" font-size="14" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][0]+'</text>'
+     + '<text x="300" y="314" fill="#5c6875" font-size="10" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][1].split('·').length+' rooms</text>';
+  svg.innerHTML=out;
+  var ps=svg.querySelectorAll('path[data-area]');
+  for(var j=0;j<ps.length;j++){ ps[j].onclick=function(){ selArea=+this.getAttribute('data-area'); buildWheel(); paintWheelSide(); }; }
 }
-function surfHalf(){ return Math.max(R,(Math.max(W,H)/2)/(base*Math.max(0.05,zoom))*1.15); }
-function buildSurface(){
-  var hw=surfHalf(), c0={x:view.x,y:view.y};
-  var pts=[], lines=[], zmin=1e9, zmax=-1e9, grid=[];
-  for(var i=0;i<N;i++){ grid[i]=[];
-    for(var j=0;j<N;j++){
-      var px=c0.x-hw+2*hw*j/(N-1), py=c0.y-hw+2*hw*i/(N-1), z=fn(px,py);
-      if(!isFinite(z)){ grid[i][j]=-1; continue; }
-      z=Math.max(-40,Math.min(40,z));
-      grid[i][j]=pts.length; pts.push([px,py,z]);
-      if(z<zmin) zmin=z; if(z>zmax) zmax=z; } }
-  for(i=0;i<N;i++) for(j=0;j<N;j++){
-    var a=grid[i][j];
-    if(a<0) continue;
-    if(j+1<N&&grid[i][j+1]>=0) lines.push([a,grid[i][j+1]]);
-    if(i+1<N&&grid[i+1][j]>=0) lines.push([a,grid[i+1][j]]); }
-  GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax,c0:c0,hw:hw};
+function paintWheelSide(){
+  side.innerHTML='<h3>'+AREAS[selArea][0].toUpperCase()+'</h3>'
+   +AREAS[selArea][1].split(' \u00b7 ').map(function(s){ return '<div>\u00b7 '+s+'</div>'; }).join('')
+   +'<h3>THE WHEEL SPEAKS</h3><div>fourteen sectors, one house \u00b7 the grid plots calculus & trigonometry & the shapes between \u00b7 <a href="grid3d.html" style="color:#8ab4ff">plot it \u2197</a></div>';
 }
-function curveHalf(){ return R/(0.9*Math.max(0.05,zoom))+0.5; }
-function buildCurve(keep){
-  var hw=curveHalf(), M=Math.max(160,N*10), prev=-1;
-  var pts=[], lines=[], ymin=1e9, ymax=-1e9;
-  for(var i=0;i<M;i++){
-    var px, py;
-    if(pol){ var th=i/(M-1)*Math.PI*2, rr=fn(th,0);
-      if(!isFinite(rr)){ prev=-1; continue; }
-      px=rr*Math.cos(th); py=rr*Math.sin(th); }
-    else { px=view.x-hw+2*hw*i/(M-1); py=fn(px,0);
-      if(!isFinite(py)){ prev=-1; continue; } }
-    px=Math.max(-1e4,Math.min(1e4,px)); py=Math.max(-1e4,Math.min(1e4,py));
-    var idx=pts.length; pts.push([px,py,0]);
-    if(prev>=0) lines.push([prev,idx]); prev=idx;
-    if(py<ymin)ymin=py; if(py>ymax)ymax=py; }
-  if(ymin>ymax){ ymin=-1; ymax=1; }
-  var span=Math.max(0.5,ymax-ymin), mid=(ymin+ymax)/2;
-  if(keep&&curveLock){ span=curveLock.span; mid=curveLock.mid; }
-  else if(!pol){ curveLock={span:span,mid:mid}; }
-  else { curveLock={span:span,mid:mid}; }
-  GEOM={pts:pts,lines:lines,zmin:mid-span/2,zmax:mid+span/2,xmin:view.x-hw,xmax:view.x+hw,c0:{x:0,y:0}};
-}
-function buildSolid(){
-  var pts=[], lines=[], U=20, V=12, i, j;
-  function mesh(fu){ var g=[];
-    for(i=0;i<U;i++){ g[i]=[];
-      for(j=0;j<V;j++){ g[i][j]=pts.length; pts.push(fu(i/(U-1)*Math.PI*2, -Math.PI/2+j/(V-1)*Math.PI)); } }
-    for(i=0;i<U;i++) for(j=0;j<V;j++){
-      if(j+1<V) lines.push([g[i][j],g[i][j+1]]);
-      if(i+1<U) lines.push([g[i][j],g[i+1][j]]); } }
-  if(solidIdx===1) mesh(function(u,v){ return [(3.2+1.2*Math.cos(v))*Math.cos(u),(3.2+1.2*Math.cos(v))*Math.sin(u),1.2*Math.sin(v)]; });
-  else if(solidIdx===2){ var c=2.6, corners=[];
-    for(i=0;i<8;i++) corners.push([(i&1?c:-c),(i&2?c:-c),(i&4?c:-c)]);
-    var E=[[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
-    E.forEach(function(e){ var a=pts.length; pts.push(corners[e[0]]); pts.push(corners[e[1]]); lines.push([a,a+1]); }); }
-  else if(solidIdx===3){ var apex=pts.length; pts.push([0,0,4]);
-    var B=16, ring=[];
-    for(i=0;i<B;i++){ var u=i/B*Math.PI*2; ring.push(pts.length); pts.push([3*Math.cos(u),3*Math.sin(u),-2]); }
-    for(i=0;i<B;i++){ lines.push([ring[i],ring[(i+1)%B]]); lines.push([ring[i],apex]); } }
-  else mesh(function(u,v){ return [3.5*Math.cos(v)*Math.cos(u),3.5*Math.cos(v)*Math.sin(u),3.5*Math.sin(v)]; });
-  var zmin=1e9, zmax=-1e9;
-  pts.forEach(function(p){ if(p[2]<zmin) zmin=p[2]; if(p[2]>zmax) zmax=p[2]; });
-  GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax,c0:{x:0,y:0}};
-}
-function readDims(){
-  var r=parseFloat(rngEl.value), g=parseFloat(grdEl.value);
-  if(isFinite(r)&&r>0) R=Math.max(1,Math.min(50,r));
-  if(isFinite(g)&&g>0) N=Math.round(Math.max(8,Math.min(64,g)));
-  rngEl.value=R; grdEl.value=N;
-  base=Math.min(W,H)/15;
-}
-function scheduleRebuild(){
-  if(rebuildT) return;
-  rebuildT=setTimeout(function(){ rebuildT=0;
-    if(mode==='surface'&&fn&&geomKind==='formula') buildSurface();
-    else if(mode==='curve'&&!pol&&fn) buildCurve(true);
-    draw(); },90);
-}
-function plot(){
-  var msg=''; GEOM=null; geomKind='formula'; curveLock=null;
-  readDims();
-  if(mode!=='solid'){
-    try{ fn=compile(exprSrc); }
-    catch(e){ fn=null; var p=(e&&e.pos!=null)?e.pos:0;
-      msg='the grammar refuses at char '+p+' \u00b7 \u201c'+String(exprSrc).slice(p,p+8)+'\u201d'; }
-    if(fn){ try{ if(mode==='surface') buildSurface(); else buildCurve(false); }
-      catch(e2){ fn=null; GEOM=null; msg='the surface collapsed \u00b7 try a gentler formula'; } }
-  } else { fn=null; buildSolid(); }
-  renderPresets(); draw(msg); save();
-}
-var imgInput=document.createElement('input'); imgInput.type='file'; imgInput.accept='image/*'; imgInput.style.display='none';
-document.body.appendChild(imgInput);
-imgInput.onchange=function(){ var f=imgInput.files&&imgInput.files[0]; if(!f) return;
-  var rd=new FileReader();
-  rd.onload=function(e){ var im=new Image();
-    im.onload=function(){ readDims();
-      var c0={x:view.x,y:view.y};
-      var c=document.createElement('canvas'); c.width=N; c.height=N;
-      var g=c.getContext('2d'); g.drawImage(im,0,0,N,N);
-      var d=g.getImageData(0,0,N,N).data, pts=[], lines=[], grid=[], i, j;
-      for(i=0;i<N;i++){ grid[i]=[];
-        for(j=0;j<N;j++){ var k=(i*N+j)*4;
-          var lum=(d[k]*0.299+d[k+1]*0.587+d[k+2]*0.114)/255;
-          grid[i][j]=pts.length;
-          pts.push([c0.x-R+2*R*j/(N-1), c0.y-R+2*R*i/(N-1), (1-lum)*4-2]); } }
-      for(i=0;i<N;i++) for(j=0;j<N;j++){ var a=grid[i][j];
-        if(j+1<N) lines.push([a,grid[i][j+1]]);
-        if(i+1<N) lines.push([a,grid[i+1][j]]); }
-      GEOM={pts:pts,lines:lines,zmin:-2,zmax:2,c0:c0,hw:R}; geomKind='image'; fn=null;
-      draw(''); save(); };
-    im.src=e.target.result; };
-  rd.readAsDataURL(f); imgInput.value=''; };
-function K(){ return base*zoom; }
-function proj(p){
-  var cr=Math.cos(roll), sr=Math.sin(roll);
-  var dx=p[0]-view.x, dy=p[1]-view.y;
-  var x1=dx*cr-dy*sr, y1=dx*sr+dy*cr;
-  var ct=Math.cos(tilt), st=Math.sin(tilt);
-  var y2=y1*ct-p[2]*st;
-  return [cx+x1*K(), cy-y2*K()];
-}
-function invFloor(px,py,z){
-  var cr=Math.cos(roll), sr=Math.sin(roll);
-  var ct=Math.cos(tilt), st=Math.sin(tilt);
-  var k=K();
-  var x1=(px-cx)/k, y2=-(py-cy)/k;
-  var y1=(y2+z*st)/ct;
-  return [x1*cr+y1*sr+view.x, -x1*sr+y1*cr+view.y];
-}
-function floorBounds(){
-  var c=[[0,0],[W,0],[0,H],[W,H]];
-  var xn=1e9,xx=-1e9,yn=1e9,yx=-1e9;
-  for(var i=0;i<4;i++){ var w=invFloor(c[i][0],c[i][1],0);
-    if(w[0]<xn)xn=w[0]; if(w[0]>xx)xx=w[0]; if(w[1]<yn)yn=w[1]; if(w[1]>yx)yx=w[1]; }
-  return {xn:xn,xx:xx,yn:yn,yx:yx};
-}
-function nice(v){ var p=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)); var m=v/p;
-  return (m>5?10:m>2?5:m>1?2:1)*p; }
-function cfit(){ var sx=(W*0.9)/(2*R)*zoom;
-  var span=curveLock?curveLock.span:2, mid=curveLock?curveLock.mid:0;
-  var sy=(H*0.8)/span*zoom;
-  return {sx:sx,sy:sy,mid:mid}; }
-function SX(wx,cf){ return cx+(wx-view.x)*cf.sx; }
-function SY(wy,cf){ return cy-((wy-view.y)-cf.mid)*cf.sy; }
-function curveDot(){ if(!fn) return null;
-  if(pol){ var th=G.x, rr=fn(th,0); if(!isFinite(rr)) return null;
-    return {x:rr*Math.cos(th), y:rr*Math.sin(th), r:rr, th:th}; }
-  var gy=fn(G.x,0); if(!isFinite(gy)) return null;
-  return {x:G.x, y:gy}; }
-function draw(msg){
-  x.clearRect(0,0,W,H);
-  var i, a, b;
-  if(mode==='curve'&&GEOM){
-    var cf=cfit(); window.__cfit=cf;
-    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
-    var hw=curveHalf();
-    var stp=nice(2*hw/6), yst=nice(cf.span/5);
-    var y0=SY(0,cf);
-    if(y0>0&&y0<H){ x.beginPath(); x.moveTo(0,y0); x.lineTo(W,y0); x.stroke(); }
-    var x0=SX(0,cf);
-    if(x0>0&&x0<W){ x.beginPath(); x.moveTo(x0,0); x.lineTo(x0,H); x.stroke(); }
-    x.fillStyle='#5c6875'; x.font='9px ui-monospace,Consolas,monospace';
-    for(i=Math.ceil((view.x-hw)/stp)*stp;i<=view.x+hw;i+=stp){
-      var tx=SX(i,cf);
-      if(tx<14||tx>W-8) continue;
-      x.fillText(String(+i.toFixed(2)), tx+2, Math.max(10,Math.min(H-4,y0+12))); }
-    var ylo=view.y+cf.mid-cf.span/2, yhi=view.y+cf.mid+cf.span/2;
-    for(i=Math.ceil(ylo/yst)*yst;i<=yhi;i+=yst){
-      var ty=SY(i,cf);
-      if(ty<10||ty>H-6) continue;
-      x.fillText(String(+i.toFixed(2)), Math.max(2,Math.min(W-30,x0+4)), ty-2); }
-    x.strokeStyle='rgba(232,228,216,.9)'; x.lineWidth=2; x.beginPath();
-    var started=false;
-    for(i=0;i<GEOM.pts.length;i++){ var p=GEOM.pts[i];
-      var px2=SX(p[0],cf), py2=SY(p[1],cf);
-      if(!started){ x.moveTo(px2,py2); started=true; } else x.lineTo(px2,py2); }
-    x.stroke(); x.lineWidth=1;
-    var dot=curveDot();
-    if(dot){ var gx2=SX(dot.x,cf), gy2=SY(dot.y,cf);
-      x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gx2,gy2,5,0,7); x.fill();
-      x.font='9px ui-monospace,Consolas,monospace';
-      x.fillText(pol? '('+dot.r.toFixed(2)+', '+dot.th.toFixed(2)+'\u03b8)' : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')', gx2+9, gy2-9);
-      st1.innerHTML=(pol? 'curve \u00b7 polar \u00b7 r = '+exprSrc+' \u00b7 \u03b8 0..2\u03c0' : 'curve \u00b7 y = '+exprSrc+' \u00b7 infinite in x \u00b7 window \u00b1'+hw.toFixed(1)+' @ '+view.x.toFixed(1))
-        +' \u00b7 <span class="g">'+(pol? 'r '+dot.r.toFixed(2)+' @ \u03b8 '+dot.th.toFixed(2) : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')')+'</span>'; }
-    st2.textContent='drag to pan \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom \u00b7 the curve re-samples forever';
-  } else {
-    var bd=floorBounds();
-    var fstep=nice(Math.max(bd.xx-bd.xn, bd.yx-bd.yn)/10);
-    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
-    for(i=Math.ceil(bd.xn/fstep)*fstep;i<=bd.xx;i+=fstep){
-      a=proj([i,bd.yn,0]); b=proj([i,bd.yx,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
-    for(i=Math.ceil(bd.yn/fstep)*fstep;i<=bd.yx;i+=fstep){
-      a=proj([bd.xn,i,0]); b=proj([bd.xx,i,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
-    x.strokeStyle='rgba(92,104,117,.8)';
-    var ax=proj([0,0,0]), az=proj([0,0,R*0.7]);
-    x.beginPath(); x.moveTo(ax[0],ax[1]); x.lineTo(az[0],az[1]); x.stroke();
-    if(GEOM){
-      if(sticks&&mode==='surface'){
-        x.strokeStyle='rgba(120,220,200,.6)';
-        for(i=0;i<GEOM.pts.length;i+=2){ var q=GEOM.pts[i];
-          var g0=proj([q[0],q[1],0]), g1=proj(q);
-          x.beginPath(); x.moveTo(g0[0],g0[1]); x.lineTo(g1[0],g1[1]); x.stroke(); }
-      } else if(mode==='surface'){
-        var zr=Math.max(1e-6,GEOM.zmax-GEOM.zmin);
-        for(i=0;i<GEOM.lines.length;i++){ var L=GEOM.lines[i];
-          var p1=GEOM.pts[L[0]], p2=GEOM.pts[L[1]];
-          var t=((p1[2]+p2[2])/2-GEOM.zmin)/zr;
-          x.strokeStyle=BUCK[Math.max(0,Math.min(7,Math.round(t*7)))];
-          a=proj(p1); b=proj(p2);
-          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
-      } else {
-        x.strokeStyle='rgba(120,220,200,.7)';
-        for(i=0;i<GEOM.lines.length;i++){ var L2=GEOM.lines[i];
-          a=proj(GEOM.pts[L2[0]]); b=proj(GEOM.pts[L2[1]]);
-          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); } } }
-    if(mastOn){ st1.textContent=mastLine(); }
-    else if(geomKind==='image'&&GEOM){
-      st1.textContent='surface \u00b7 image heightfield \u00b7 object @ ('+GEOM.c0.x.toFixed(1)+', '+GEOM.c0.y.toFixed(1)+') \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0';
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 plot it returns to the formula';
-    }
-    else if(mode==='surface'&&fn&&GEOM){
-      var gz=fn(G.x,G.y);
-      if(isFinite(gz)){ var gp=proj([G.x,G.y,gz]);
-        x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gp[0],gp[1],5,0,7); x.fill();
-        x.font='9px ui-monospace,Consolas,monospace';
-        x.fillText('('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')', gp[0]+9, gp[1]-9);
-        st1.innerHTML='surface \u00b7 z = '+exprSrc+' \u00b7 infinite field \u00b7 sampling \u00b1'+GEOM.hw.toFixed(1)+' @ ('+view.x.toFixed(1)+', '+view.y.toFixed(1)+') \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan \u00b7 the equation re-samples around you forever';
-    } else if(mode==='solid'&&GEOM){
-      st1.textContent='solid \u00b7 '+PRE.solid[solidIdx][0]+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 '+EQ[PRE.solid[solidIdx][0]];
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 wheel to zoom \u00b7 presets speak their math';
-    }
-  }
-  if(mastOn&&mode==='curve') st1.textContent=mastLine();
-  if(!GEOM&&!msg&&!mastOn) st1.textContent=mode+' \u00b7 awaiting a formula';
-  if(msg) st1.innerHTML='<span class="r">'+msg+'</span>';
-}
-function renderPresets(){
-  presets.innerHTML='';
-  var list= mode==='solid'? PRE.solid : (mode==='surface'? PRE.surface : (pol? PRE.polar : PRE.curve));
-  list.forEach(function(p,idx){
-    var b=document.createElement('button'); b.textContent=p[0];
-    var on= mode==='solid'? idx===solidIdx : p[1]===exprSrc;
-    if(on) b.className='on';
-    b.onclick=function(){
-      if(mode==='solid'){ solidIdx=idx; mark(p[0]); }
-      else { exprSrc=p[1]; fx.value=exprSrc; mark(p[0]); }
-      plot(); };
-    presets.appendChild(b); });
-}
-function fit(){
-  var d=devicePixelRatio||1;
-  W=wrap.clientWidth||1; H=wrap.clientHeight||1;
-  cv.width=Math.round(W*d); cv.height=Math.round(H*d);
-  x.setTransform(d,0,0,d,0,0);
-  cx=W/2; cy=H/2; base=Math.min(W,H)/15;
-  draw();
-}
-if(window.ResizeObserver){ new ResizeObserver(function(){ fit(); scheduleRebuild(); }).observe(wrap); } else addEventListener('resize',function(){ fit(); scheduleRebuild(); });
-function setMode(m){ mode=m;
-  document.getElementById('mCurve').className=m==='curve'?'on':'';
-  document.getElementById('mSurface').className=m==='surface'?'on':'';
-  document.getElementById('mSolid').className=m==='solid'?'on':'';
-  fx.style.display=m==='solid'?'none':'';
-  document.getElementById('plot').style.display=m==='solid'?'none':'';
-  document.getElementById('polar').style.display=m==='curve'?'':'none';
-  document.getElementById('imgBtn').style.display=m==='surface'?'':'none';
-  if(m!=='solid'){ if(fx.value) exprSrc=fx.value; else fx.value=exprSrc||DEF[m]; }
-  plot(); }
-function paintSticks(){ stickOv.className=sticks?'on':''; stickOv.textContent=sticks?'sticks ⌃':'sticks ⌄'; }
-function paintGest(){ gestOv.className=gestPan?'on':''; gestOv.textContent=gestPan?'drag: pan':'drag: roll'; }
-document.getElementById('mCurve').onclick=function(){ setMode('curve'); };
-document.getElementById('mSurface').onclick=function(){ setMode('surface'); };
-document.getElementById('mSolid').onclick=function(){ setMode('solid'); };
-document.getElementById('plot').onclick=function(){ exprSrc=fx.value; plot(); };
-document.getElementById('polar').onclick=function(){ pol=!pol; this.className=pol?'on':'';
-  if(pol&&exprSrc===DEF.curve){ exprSrc='1'; fx.value=exprSrc; }
-  if(!pol&&exprSrc==='1'){ exprSrc=DEF.curve; fx.value=exprSrc; }
-  plot(); };
-document.getElementById('imgBtn').onclick=function(){ imgInput.click(); };
-document.getElementById('mastBtn').onclick=function(){ mastOn=!mastOn; this.className=mastOn?'on':''; draw(); };
-stickOv.onclick=function(){ sticks=!sticks; paintSticks(); draw(); save(); };
-gestOv.onclick=function(){ gestPan=!gestPan; paintGest(); save(); };
-codPanel.innerHTML=
-  '<h4>THE CALCULUS GLYPHS</h4>'
-  +'<b>\u222b</b> integral \u00b7 <b>\u222c</b> surface integral \u00b7 <b>\u222d</b> volume integral \u00b7 <b>\u222e</b> contour integral \u00b7 <b>\u2202</b> partial derivative \u00b7 <b>\u2207</b> gradient \u00b7 <b>lim</b> limit'
-  +'<h4>THE MECHANICS ROSTER</h4>'
-  +'<b>F</b> force \u00b7 <b>f</b> frequency \u00b7 <b>J</b> impulse \u00b7 <b>I</b> moment of inertia \u00b7 <b>v</b> velocity \u00b7 <b>L</b> angular momentum \u00b7 <b>k</b> spring constant \u00b7 <b>\u03c4</b> torque \u00b7 <b>r</b> position vector \u00b7 <b>T</b> period \u00b7 <b>P</b> power \u00b7 <b>p</b> momentum \u00b7 <b>U</b> potential energy \u00b7 <b>x</b> position \u00b7 <b>a</b> acceleration \u00b7 <b>m</b> mass \u00b7 <b>\u03c1</b> density \u00b7 <b>\u03c6</b> angle \u00b7 <b>\u03c9</b> angular speed \u00b7 <b>\u03b1</b> angular acceleration'
-  +'<h4>THE WHEEL</h4>'
-  +'algebra \u00b7 geometry \u00b7 trigonometry \u00b7 calculus \u00b7 mechanics \u00b7 quantum \u2014 the grid speaks the middle four fluently'
-  +'<h4>NEXT DOOR</h4>'
-  +'the unit circle & the math areas live at <a href="wheel.html">wheel.html \u2197</a> \u00b7 drag her point, read her signs'
-  +'<h4>ONE FLOOR UP</h4>'
-  +'the bell (gauss) is the same shape as the ground-state wave packet \u00b7 from calculus to quantum, the surface remembers';
-codOv.onclick=function(){ var open=codPanel.style.display==='block';
-  codPanel.style.display=open?'none':'block'; codOv.className=open?'':'on';
-  codOv.textContent=open?'codex \u2304':'codex \u2303'; };
-fx.addEventListener('keydown',function(e){ if(e.key==='Enter'){ exprSrc=fx.value; plot(); } });
-rngEl.addEventListener('change',function(){ plot(); });
-grdEl.addEventListener('change',function(){ plot(); });
-document.getElementById('zin').onclick=function(){ zoom=Math.min(8,zoom*1.15); draw(); save(); scheduleRebuild(); };
-document.getElementById('zout').onclick=function(){ zoom=Math.max(0.15,zoom/1.15); draw(); save(); scheduleRebuild(); };
-document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoom=1; view={x:0,y:0}; draw(); save(); scheduleRebuild(); };
-document.getElementById('rst').onclick=function(){ if(mode!=='solid'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
-  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; geomKind='formula'; plot(); };
-cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.15,Math.min(8,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); scheduleRebuild(); },{passive:false});
-var drag=null;
-cv.addEventListener('pointerdown',function(e){
-  cv.setPointerCapture(e.pointerId);
-  var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
-  var gp=null;
-  if(mode==='curve'&&window.__cfit){ var dot=curveDot();
-    if(dot) gp=[SX(dot.x,window.__cfit), SY(dot.y,window.__cfit)]; }
-  else if(fn&&GEOM&&mode==='surface'&&geomKind==='formula'){ var gz=fn(G.x,G.y);
-    if(isFinite(gz)) gp=proj([G.x,G.y,gz]); }
-  if(gp&&Math.hypot(gp[0]-px,gp[1]-py)<20){ drag={k:'dot'}; }
-  else if(mode==='curve'){ drag={k:'panC',sx:px,sy:py,vx0:view.x,vy0:view.y}; cv.classList.add('grabbing'); }
-  else if(gestPan||e.shiftKey){ drag={k:'pan',lx:px,ly:py}; cv.classList.add('grabbing'); }
-  else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt}; cv.classList.add('grabbing'); }
-  e.preventDefault(); });
-cv.addEventListener('pointermove',function(e){
-  if(!drag) return;
-  var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
-  if(drag.k==='panC'&&window.__cfit){
-    var cf=window.__cfit;
-    view.x=Math.max(-1000,Math.min(1000,drag.vx0-(px-drag.sx)/cf.sx));
-    view.y=Math.max(-1000,Math.min(1000,drag.vy0+(py-drag.sy)/cf.sy));
-    scheduleRebuild(); draw(); return; }
-  if(drag.k==='pan'){
-    var dxp=px-(drag.lx||px), dyp=py-(drag.ly||py); drag.lx=px; drag.ly=py;
-    var k=K(), ct=Math.cos(tilt), cr=Math.cos(roll), sr=Math.sin(roll);
-    var x1=dxp/k, y2=-dyp/k, y1=y2/ct;
-    var wx=x1*cr+y1*sr, wy=-x1*sr+y1*cr;
-    view.x=Math.max(-1000,Math.min(1000,view.x-wx));
-    view.y=Math.max(-1000,Math.min(1000,view.y-wy));
-    scheduleRebuild(); draw(); return; }
-  if(drag.k==='rot'){ roll=drag.r0+(px-drag.sx)*0.008; tilt=Math.max(-1.4,Math.min(1.4,drag.t0+(py-drag.sy)*0.008)); draw(); return; }
-  if(drag.k==='dot'&&fn&&mode==='curve'&&window.__cfit){
-    var cf2=window.__cfit;
-    var wx2=view.x+(px-cx)/cf2.sx, wy2=(view.y+cf2.mid)-(py-cy)/cf2.sy;
-    if(pol){ G.x=(Math.atan2(wy2,wx2)+Math.PI*2)%(Math.PI*2); }
-    else { G.x=Math.max(-1e4,Math.min(1e4,wx2)); }
-    draw(); return; }
-  if(drag.k==='dot'&&fn&&mode==='surface'){
-    var z0=fn(G.x,G.y); if(!isFinite(z0)) z0=0;
-    var w=invFloor(px,py,z0);
-    G.x=Math.max(-1e4,Math.min(1e4,w[0]));
-    G.y=Math.max(-1e4,Math.min(1e4,w[1]));
-    draw(); return; } });
-addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
-try{
-  if(mode!=='solid'){
-    try{ compile(exprSrc); }catch(e){ exprSrc=DEF[mode];
-      bootNote='the stored formula refused \u00b7 loaded the house default'; } }
-  rngEl.value=R; grdEl.value=N;
-  fx.value= mode==='solid'? '' : exprSrc;
-  paintSticks(); paintGest();
-  document.getElementById('polar').className=pol?'on':'';
-  setMode(mode);
-  fit();
-  (function selfTest(){
-    var bat=['sin(r*1.6)*exp(-r/4)*3','sin(x)','(x^2-y^2)/4','3*exp(-(r^2)/8)','(x+y)/4','e','pi','2x','sin(4*x)','1+cos(x)'];
-    for(var i=0;i<bat.length;i++){
-      try{ compile(bat[i]); }catch(e){
-        var m='parser self-test failed \u00b7 "'+bat[i]+'" at char '+(e&&e.pos!=null?e.pos:'?')+' \u00b7 the deployed file may be mangled or cached \u00b7 hard-reload or re-paste fresh';
-        st1.innerHTML='<span class="r">'+m+'</span>';
-        try{ console.error('grid3d self-test:',bat[i],e); }catch(e2){}
-        return; } }
-    if(bootNote) st1.innerHTML='<span class="r">'+bootNote+'</span>';
-  })();
-}catch(fatal){
-  st1.innerHTML='<span class="r">the grid limped \u00b7 '+String(fatal&&fatal.message||fatal)+' \u00b7 the deployed file may be mangled \u00b7 re-paste fresh</span>';
-}
+function setTab(t){ tab=t;
+  tabC.className=t==='circle'?'on':''; tabW.className=t==='wheel'?'on':'';
+  cc.style.display=t==='circle'?'':'none'; svg.style.display=t==='wheel'?'':'none';
+  try{ localStorage.setItem('hive_wheel_tab',t); }catch(e){}
+  if(t==='circle'){ fit(); } else { buildWheel(); paintWheelSide(); } }
+tabC.onclick=function(){ setTab('circle'); };
+tabW.onclick=function(){ setTab('wheel'); };
+snapBtn.onclick=function(){ snap=!snap; snapBtn.className=snap?'on':''; };
+try{ tab=localStorage.getItem('hive_wheel_tab')||'circle'; }catch(e){}
+setTab(tab); fit();
 })();
 </script>
 </body>
