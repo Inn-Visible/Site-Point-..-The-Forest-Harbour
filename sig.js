@@ -524,7 +524,8 @@ else setTimeout(init,400);
 /* ---- the killa loading screen v2 \u00b7 pillar-dynamic \u00b7 tap to skip \u00b7 six-second cap ---- */
 if(window.__innLoader) return; window.__innLoader=1;
 var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
-var P=(localStorage.getItem('hive_pillar')||'').toLowerCase();
+if(/(slate|slatekit|grid3d|wheel|ferry)\.html(\?|#|$)/.test(location.href)) return;
+  var P=(localStorage.getItem('hive_pillar')||'').toLowerCase();
 if(!P){ var mm=(location.pathname.split('/').pop()||'').replace(/\.html.*$/,'');
   if(['axiom','eigen','baseline','keystone'].indexOf(mm)>-1) P=mm; }
 var TH={
