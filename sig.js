@@ -518,7 +518,7 @@ function init(){
 }
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(init,400); });
 else setTimeout(init,400);
-
+})();
 
 (function(){
 /* ---- the killa loading screen v2 \u00b7 pillar-dynamic \u00b7 tap to skip \u00b7 six-second cap ---- */
