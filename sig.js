@@ -583,7 +583,6 @@ if(document.readyState==='complete') setTimeout(finish,120);
 else addEventListener('load',function(){ setTimeout(finish,150); });
 setTimeout(finish,6000);
 ov.addEventListener('click',finish);
-})();
 
   (function(){
 /* ---- the ferry orbit \u00b7 a dotted ring around the four pillars \u00b7 core only ---- */
