@@ -100,8 +100,7 @@ function paintSide(){
   +'<h3>QUADRANT '+q[0]+' \u00b7 '+q[1]+'</h3><div>'+q[2]+'</div>'
   +'<div>sin '+(s>=0?'+':'\u2212')+' \u00b7 cos '+(c>=0?'+':'\u2212')+' \u00b7 tan '+((t===null)?'\u221e':(t>=0?'+':'\u2212'))+'</div>'
   +'<h3>THE LEGS</h3><div><span class="p">cos leg</span> = x-coordinate \u00b7 <span class="o">sin leg</span> = y-coordinate \u00b7 <span class="g">tan</span> = y/x</div>'
-  +'<h3>NEXT DOOR</h3><div>plot her in the grid: polar r = 1 \u00b7 <a href="grid3d.html" style="color:#8ab4ff">the grid \u2197</a></div>';
-}
++(NESTED? '<h3>HAND HER OVER</h3><div><button id="sendGrid" style="border:1px solid #d9a83a;color:#d9a83a;background:none;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:5px 10px;cursor:pointer">send r = 1 & this angle to the grid ↯</button></div>' : '<h3>NEXT DOOR</h3><div>plot her in the grid: polar r = 1 · <a href="grid3d.html" style="color:#8ab4ff">the grid ↗</a></div>')}
 var dragC=false;
 cc.addEventListener('pointerdown',function(e){ dragC=true; cc.setPointerCapture(e.pointerId); moveC(e); });
 cc.addEventListener('pointermove',function(e){ if(dragC) moveC(e); });
