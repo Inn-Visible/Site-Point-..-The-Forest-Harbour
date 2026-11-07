@@ -19,11 +19,12 @@
   button.on{border-color:var(--gold);color:var(--gold)}
   #wrap{position:relative;flex:1 1 0;min-height:0;display:flex;gap:0;overflow:hidden}
   #stage{flex:1;position:relative;min-width:0}
-  canvas,svg#wheelSvg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  canvas,#wheelSvg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
   #side{width:min(320px,42%);border-left:1px solid var(--line);padding:12px;overflow-y:auto;font-size:10px;line-height:2;letter-spacing:.08em;color:var(--dim);flex-shrink:0}
   #side h3{color:var(--blue);font-size:10px;letter-spacing:.2em;margin:8px 0 2px;font-weight:normal}
   #side .big{color:var(--ink);font-size:13px;letter-spacing:.1em}
-  #side .g{color:var(--green)} #side .o{color:#e07856} #side .p{color:#b48ce0} #side .q{color:#ff7bb0}
+  #side .g{color:var(--green)} #side .o{color:#e07856} #side .p{color:#b48ce0}
+  #side a{color:#8ab4ff;text-decoration:none}
   #status{flex-shrink:0;padding:6px 12px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875}
   .sp{flex:1}
   @media(max-width:700px){ #wrap{flex-direction:column} #side{width:100%;max-height:38%;border-left:none;border-top:1px solid var(--line)} }
@@ -50,13 +51,15 @@ var cc=document.getElementById('cc'), g=cc.getContext('2d');
 var side=document.getElementById('side'), svg=document.getElementById('wheelSvg');
 var stage=document.getElementById('stage');
 var tabC=document.getElementById('tabCircle'), tabW=document.getElementById('tabWheel'), snapBtn=document.getElementById('snapBtn');
-var NESTED=window.parent!==window; if(NESTED){ var hd=document.querySelector('header'); if(hd) hd.style.display='none'; }
+var tab='circle', snap=true, th=Math.PI/4, W=1, H=1;
+var NESTED=window.parent!==window;
+if(NESTED){ var hd=document.querySelector('header'); if(hd) hd.style.display='none'; }
 var SP={0:['0','1','0'],30:['\u03c0/6','\u221a3/2','1/2'],45:['\u03c0/4','\u221a2/2','\u221a2/2'],60:['\u03c0/3','1/2','\u221a3/2'],90:['\u03c0/2','0','1'],
  120:['2\u03c0/3','-1/2','\u221a3/2'],135:['3\u03c0/4','-\u221a2/2','\u221a2/2'],150:['5\u03c0/6','-\u221a3/2','1/2'],180:['\u03c0','-1','0'],
  210:['7\u03c0/6','-\u221a3/2','-1/2'],225:['5\u03c0/4','-\u221a2/2','-\u221a2/2'],240:['4\u03c0/3','-1/2','-\u221a3/2'],270:['3\u03c0/2','0','-1'],
  300:['5\u03c0/3','1/2','-\u221a3/2'],315:['7\u03c0/4','\u221a2/2','-\u221a2/2'],330:['11\u03c0/6','\u221a3/2','-1/2']};
-var QUAD=[['I','All','every function is positive here','#e07856'],['II','Students','sin & csc positive; the rest wear minus','#7fb2e5'],
-          ['III','Take','tan & cot positive; the rest wear minus','#78dcc8'],['IV','Calculus','cos & sec positive; the rest wear minus','#b48ce0']];
+var QUAD=[['I','All','every function is positive here'],['II','Students','sin & csc positive; the rest wear minus'],
+          ['III','Take','tan & cot positive; the rest wear minus'],['IV','Calculus','cos & sec positive; the rest wear minus']];
 function qOf(deg){ return QUAD[Math.floor(((deg%360)+360)%360/90)]; }
 function fit(){ var d=devicePixelRatio||1; W=stage.clientWidth||1; H=stage.clientHeight||1;
   cc.width=Math.round(W*d); cc.height=Math.round(H*d); g.setTransform(d,0,0,d,0,0); drawCircle(); }
@@ -90,17 +93,23 @@ function drawCircle(){
 }
 function degOf(t){ return ((t*180/Math.PI)%360+360)%360; }
 function paintSide(){
-  var deg=degOf(th), q=qOf(deg), sp=SP[Math.round(deg/15)*15%360]&& (Math.abs(deg-Math.round(deg/15)*15)<0.6? SP[Math.round(deg/15)*15%360]:null);
+  var deg=degOf(th), q=qOf(deg);
+  var near=Math.round(deg/15)*15%360;
+  var sp=(Math.abs(deg-Math.round(deg/15)*15)<0.6)?SP[near]:null;
   var c=Math.cos(th), s=Math.sin(th), t=Math.abs(c)<1e-9?null:s/c;
   var radFrac= sp? sp[0] : (deg/180).toFixed(2)+'\u03c0';
   side.innerHTML=
    '<h3>THE ANGLE</h3><div class="big">'+deg.toFixed(1)+'\u00b0 \u00b7 '+radFrac+' rad</div>'
   +'<h3>THE POINT (cos \u03b8, sin \u03b8)</h3><div class="big">'+(sp? '('+sp[1]+', '+sp[2]+')' : '('+c.toFixed(3)+', '+s.toFixed(3)+')')+'</div>'
-  +'<div><span class="p">cos</span> '+(sp?sp[1]:c.toFixed(3))+' \u00b7 <span class="o">sin</span> '+(sp?sp[2]:s.toFixed(3))+' \u00b7 <span class="g">tan</span> '+(t===null?'undefined':(Math.abs(Math.abs(t)-1)<1e-9?(t>0?'1':'-1'):t.toFixed(3)))+'</div>'
+  +'<div><span class="p">cos</span> '+(sp?sp[1]:c.toFixed(3))+' \u00b7 <span class="o">sin</span> '+(sp?sp[2]:s.toFixed(3))+' \u00b7 <span class="g">tan</span> '+(t===null?'undefined':t.toFixed(3))+'</div>'
   +'<h3>QUADRANT '+q[0]+' \u00b7 '+q[1]+'</h3><div>'+q[2]+'</div>'
   +'<div>sin '+(s>=0?'+':'\u2212')+' \u00b7 cos '+(c>=0?'+':'\u2212')+' \u00b7 tan '+((t===null)?'\u221e':(t>=0?'+':'\u2212'))+'</div>'
   +'<h3>THE LEGS</h3><div><span class="p">cos leg</span> = x-coordinate \u00b7 <span class="o">sin leg</span> = y-coordinate \u00b7 <span class="g">tan</span> = y/x</div>'
-+(NESTED? '<h3>HAND HER OVER</h3><div><button id="sendGrid" style="border:1px solid #d9a83a;color:#d9a83a;background:none;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:5px 10px;cursor:pointer">send r = 1 & this angle to the grid ↯</button></div>' : '<h3>NEXT DOOR</h3><div>plot her in the grid: polar r = 1 · <a href="grid3d.html" style="color:#8ab4ff">the grid ↗</a></div>')}
+  +(NESTED? '<h3>HAND HER OVER</h3><div><button id="sendGrid" style="border:1px solid #d9a83a;color:#d9a83a;background:none;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:5px 10px;cursor:pointer">send r = 1 & this angle to the grid \u21af</button></div>'
+          : '<h3>NEXT DOOR</h3><div>plot her in the grid: polar r = 1 \u00b7 <a href="grid3d.html">the grid \u2197</a></div>');
+  var sg=document.getElementById('sendGrid');
+  if(sg) sg.onclick=function(){ try{ window.parent.__gridSend('1',true,th); }catch(e){} };
+}
 var dragC=false;
 cc.addEventListener('pointerdown',function(e){ dragC=true; cc.setPointerCapture(e.pointerId); moveC(e); });
 cc.addEventListener('pointermove',function(e){ if(dragC) moveC(e); });
@@ -108,10 +117,8 @@ addEventListener('pointerup',function(){ dragC=false; });
 function moveC(e){ var r=cc.getBoundingClientRect();
   var dx=(e.clientX-r.left)-W/2, dy=(e.clientY-r.top)-H/2;
   var a=Math.atan2(-dy,dx); if(a<0) a+=Math.PI*2;
-  if(snap){ var st15=Math.PI/12; a=Math.round(a/st15)*st15% (Math.PI*2); }
-  th=a; drawCircle();
-    var sg=document.getElementById('sendGrid');
-  if(sg) sg.onclick=function(){ try{ window.parent.__gridSend('1',true,th); }catch(e){} };               }
+  if(snap){ var st15=Math.PI/12; a=Math.round(a/st15)*st15%(Math.PI*2); }
+  th=a; drawCircle(); }
 /* ---- the math areas wheel ---- */
 var AREAS=[['Arithmetic','integers · fractions · decimals · percents'],
  ['Algebra','elementary · linear · polynomials · equations'],
@@ -143,9 +150,9 @@ function buildWheel(){
   }
   for(var h=1;h<=12;h++){ var ha=-Math.PI/2+h*Math.PI/6;
     var hp=polarPt(cx,cy,r0*0.62,ha);
-    out+='<text x="'+hp[0]+'" y="'+hp[1]+4+'" fill="#5c6875" font-size="12" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+h+'</text>'; }
+    out+='<text x="'+hp[0]+'" y="'+(hp[1]+4)+'" fill="#5c6875" font-size="12" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+h+'</text>'; }
   out+='<text x="300" y="296" fill="#e8e4d8" font-size="14" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][0]+'</text>'
-     + '<text x="300" y="314" fill="#5c6875" font-size="10" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][1].split('·').length+' rooms</text>';
+     + '<text x="300" y="314" fill="#5c6875" font-size="10" text-anchor="middle" font-family="ui-monospace,Consolas,monospace">'+AREAS[selArea][1].split('\u00b7').length+' rooms</text>';
   svg.innerHTML=out;
   var ps=svg.querySelectorAll('path[data-area]');
   for(var j=0;j<ps.length;j++){ ps[j].onclick=function(){ selArea=+this.getAttribute('data-area'); buildWheel(); paintWheelSide(); }; }
@@ -153,7 +160,7 @@ function buildWheel(){
 function paintWheelSide(){
   side.innerHTML='<h3>'+AREAS[selArea][0].toUpperCase()+'</h3>'
    +AREAS[selArea][1].split(' \u00b7 ').map(function(s){ return '<div>\u00b7 '+s+'</div>'; }).join('')
-   +'<h3>THE WHEEL SPEAKS</h3><div>fourteen sectors, one house \u00b7 the grid plots calculus & trigonometry & the shapes between \u00b7 <a href="grid3d.html" style="color:#8ab4ff">plot it \u2197</a></div>';
+   +'<h3>THE WHEEL SPEAKS</h3><div>'+(NESTED? 'fourteen sectors, one house \u00b7 the grid holding this overlay speaks four of them fluently' : 'fourteen sectors, one house \u00b7 the grid plots calculus & trigonometry & the shapes between \u00b7 <a href="grid3d.html">plot it \u2197</a>')+'</div>';
 }
 function setTab(t){ tab=t;
   tabC.className=t==='circle'?'on':''; tabW.className=t==='wheel'?'on':'';
