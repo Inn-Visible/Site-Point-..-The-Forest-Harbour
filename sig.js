@@ -584,28 +584,55 @@ else addEventListener('load',function(){ setTimeout(finish,150); });
 setTimeout(finish,6000);
 ov.addEventListener('click',finish);
 
-  (function(){
-/* ---- the ferry orbit \u00b7 a dotted ring around the four pillars \u00b7 core only ---- */
-if(!/core\.html(\?|#|$)/.test(location.href)) return;
-function mount(){
-  if(document.getElementById('ferryOrbit')) return;
-  var ov=document.createElement('div'); ov.id='ferryOrbit';
-  ov.style.cssText='position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);width:min(80vw,580px);height:min(80vw,580px);z-index:40;pointer-events:none';
+(function(){
+/* ---- the ferry orbit v2 \u00b7 finds the cluster wherever she lives \u00b7 scrolls with her ---- */
+if(window.__ferryOrbit) return; window.__ferryOrbit=1;
+var ov=null, tries=0, host=null;
+function styleOnce(){
+  if(document.getElementById('foStyle')) return;
+  var st=document.createElement('style'); st.id='foStyle';
+  st.textContent='@keyframes foSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}'
+   +'@keyframes foSpinR{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(-360deg)}}'
+   +'#foDot:hover{box-shadow:0 0 18px rgba(217,168,58,.85)}';
+  document.head.appendChild(st);
+}
+function place(){
+  if(!ov) return;
+  var cx, cy, size;
+  if(host&&host.getBoundingClientRect){
+    var r=host.getBoundingClientRect();
+    cx=r.left+r.width/2+window.scrollX; cy=r.top+r.height/2+window.scrollY;
+    size=Math.max(r.width,r.height)*1.42;
+  } else { cx=window.scrollX+innerWidth/2; cy=window.scrollY+innerHeight*0.45; size=Math.min(innerWidth*0.8,580); }
+  size=Math.max(240,size);
+  ov.style.left=cx+'px'; ov.style.top=cy+'px';
+  ov.style.width=size+'px'; ov.style.height=size+'px';
+}
+function build(cl){
+  host=cl||null;
+  styleOnce();
+  ov=document.createElement('div'); ov.id='ferryOrbit';
+  ov.style.cssText='position:absolute;transform:translate(-50%,-50%);z-index:6;pointer-events:none';
   ov.innerHTML='<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">'
    +'<circle cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,.45)" stroke-width="0.7" stroke-dasharray="0.5 3.2" stroke-linecap="round"/></svg>'
    +'<div style="position:absolute;inset:0;animation:foSpin 26s linear infinite">'
    +'<a id="foDot" href="ferry.html" title="the ferry \u00b7 file carrying between glasses" style="position:absolute;left:50%;top:0;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:#0a0d12;border:1px solid #d9a83a;display:flex;align-items:center;justify-content:center;pointer-events:auto;text-decoration:none;box-shadow:0 0 10px rgba(217,168,58,.45);animation:foSpinR 26s linear infinite">'
    +'<span style="font-size:12px;color:#d9a83a">\u26f4</span></a></div>'
    +'<div style="position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap">the ferry orbits \u00b7 tap the gold dot</div>';
-  var st=document.createElement('style');
-  st.textContent='@keyframes foSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}'
-   +'@keyframes foSpinR{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(-360deg)}}'
-   +'#foDot:hover{box-shadow:0 0 18px rgba(217,168,58,.85)}';
-  document.head.appendChild(st);
   document.body.appendChild(ov);
+  place();
 }
-if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(mount,600); });
-else setTimeout(mount,600);
+function mount(){
+  if(ov||tries++>40) return;
+  var cl=document.querySelector('.cluster')||document.getElementById('introGrid')||document.querySelector('[class*="cluster"]');
+  var porch=/((core|index)\.html)(\?|#|$)/.test(location.href);
+  if(!cl&&!porch) return;
+  if(porch&&!cl&&document.readyState!=='complete') return; /* wait for the rings to exist */
+  build(cl);
+}
+setInterval(mount,500); setTimeout(mount,400);
+addEventListener('resize',place);
+addEventListener('load',function(){ setTimeout(place,300); });
 })();
 
 
