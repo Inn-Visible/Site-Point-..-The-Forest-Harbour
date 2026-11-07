@@ -2,449 +2,427 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0a0d12">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>the grid | Inn.Visible</title>
 <style>
-  :root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--gold:#d9a83a;--mono:ui-monospace,Consolas,monospace;--serif:Georgia,serif}
-  *{box-sizing:border-box;margin:0} body{background:var(--bg);color:var(--ink);font-family:var(--mono)}
-  header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
-  .brand{font-size:14px;letter-spacing:.3em} .back{color:var(--dim);font-size:11px;text-decoration:none}
-  main{max-width:900px;margin:0 auto;padding:20px 14px}
-  .hook{font-family:var(--serif);font-style:italic;font-size:16px;text-align:center}
-  .man{margin-top:8px;color:var(--dim);font-size:11px;text-align:center;letter-spacing:.06em}
-  .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0 8px;align-items:center}
-  button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:6px 10px;cursor:pointer}
+  :root{--bg:#0a0d12;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--mono:ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+  header .t{font-size:11px;letter-spacing:.3em;color:var(--blue)}
+  header .sub{font-size:9px;color:#5c6875;letter-spacing:.15em;font-style:italic}
+  header a{color:var(--dim);font-size:10px;letter-spacing:.15em;text-decoration:none}
+  .help{flex-shrink:0;padding:4px 12px;border-bottom:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875;font-style:italic}
+  .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(3,4,7,.6);flex-shrink:0}
+  button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.12em;padding:6px 10px;cursor:pointer}
+  button:hover{border-color:var(--gold);color:var(--gold)}
   button.on{border-color:var(--gold);color:var(--gold)}
-  input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:8px 10px;width:min(460px,86vw)}
-  input:disabled{opacity:.4}
-  #g3{width:100%;height:440px;border:1px solid var(--line);background:var(--bg);touch-action:none;cursor:grab;display:block}
-  .info{margin-top:8px;text-align:center;font-size:10px;color:var(--dim);letter-spacing:.12em}
-  .msg{font-size:10px;color:#58a36a;letter-spacing:.1em}
+  .bar input{background:#0e141b;border:1px solid var(--line);color:var(--ink);font:12px var(--mono);padding:7px 10px;outline:none}
+  .bar input:focus{border-color:var(--blue)}
+  #fx{flex:1;min-width:120px}
+  #rng{width:56px;flex:none} #grd{width:46px;flex:none}
+  #wrap{position:relative;flex:1 1 0;min-height:0}
+  #cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+  #cv.grabbing{cursor:grabbing}
+  #stickOv{position:absolute;right:10px;bottom:10px;z-index:5}
+  #status{flex-shrink:0;padding:6px 12px;border-top:1px solid var(--line);font-size:9px;letter-spacing:.12em;color:#5c6875;display:flex;gap:10px;flex-wrap:wrap}
+  #status .r{color:#e5735a} #status .g{color:var(--green)}
+  .sp{flex:1}
 </style>
 </head>
 <body>
-<script>
-(function(){ var KEY='hive_access', SES='hive_session', SPAN=1800000;
-  var a=localStorage.getItem(KEY);
-  var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
-  if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); } })();
-</script>
-<header><div class="brand">THE GRID</div><a class="back" href="axiom.html">axiom ↩</a></header>
-<main>
-  <p class="hook">the third dimension, rollable.</p>
-  <p class="man">curve = flat like desmos · surface = z = f(x, y) · solid = preset shapes · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians</p>
-  <div class="row" id="modes"></div>
-  <div class="row"><input id="fExpr" placeholder="z = f(x, y) · e.g. sin(r*1.6)*exp(-r/4)*3" autocomplete="off"></div>
-  <div class="row"><button id="fPlot" class="on">plot it</button><span class="msg" id="fMsg"></span></div>
-  <div class="row" id="presets"></div>
-  <div class="row" id="solids" style="display:none"></div>
-   <div class="row"><button id="zin">+</button><button id="zout">−</button><button id="home">⌂ view</button><button id="rst">reset</button></div>
-  <canvas id="g3"></canvas>
-  <div class="info" id="gInfo"></div>
-</main>
+<header><span class="t">THE GRID</span><span class="sub">the third dimension, rollable</span><a href="axiom.html">axiom ↩</a></header>
+<div class="help">curve = flat like desmos · polar = r = f(θ) · surface = z = f(x, y) or img ⌘ heightfield · solid = preset shapes · x, y, r, sin cos tan exp ln log sqrt abs ^ ( ) π e · radians</div>
+<div class="bar">
+  <button id="mCurve">curve</button><button id="mSurface" class="on">surface</button><button id="mSolid">solid</button>
+  <input id="fx" type="text" spellcheck="false" placeholder="z = f(x, y) · curve reads y = f(x) · polar reads r = f(θ)">
+  <input id="rng" type="text" title="domain ± (x and y range)" placeholder="±6.5">
+  <input id="grd" type="text" title="grid resolution (8–64)" placeholder="26">
+  <button id="plot">plot it</button>
+  <button id="polar">polar</button>
+  <button id="imgBtn">img ⌘</button>
+  <span id="presets" style="display:contents"></span>
+  <span class="sp"></span>
+  <button id="zin">+</button><button id="zout">−</button><button id="vhome">⌂ view</button><button id="rst">reset</button><button id="mastBtn">mastery</button>
+</div>
+<div id="wrap"><canvas id="cv"></canvas><button id="stickOv">sticks ⌄</button></div>
+<div id="status"><span id="st1"></span><span class="sp"></span><span id="st2"></span></div>
 <script>
 (function(){
-  var NAMES=['asin','acos','atan','sqrt','sin','cos','tan','exp','ln','log','abs'];
-    var PREC={'+':1,'-':1,'*':2,'/':2,'^':3,'u-':2};
-  var RASSOC={'^':1,'u-':1};
-  function tokenize(s){
-    var t=[],i=0;
-    while(i<s.length){ var c=s.charAt(i);
-      if(/\s/.test(c)){ i++; continue; }
-      if(/[0-9.]/.test(c)){ var j=i; while(j<s.length&&/[0-9.]/.test(s.charAt(j)))j++;
-        var n=parseFloat(s.slice(i,j)); if(!isFinite(n)) return null; t.push(['n',n]); i=j; continue; }
-      if(/[a-zπ]/i.test(c)){
-        if(c==='π'){ t.push(['n',Math.PI]); i++; continue; }
-        var k=i; while(k<s.length&&/[a-z]/i.test(s.charAt(k)))k++;
-        var w=s.slice(i,k).toLowerCase();
-        if(w==='x'){ t.push(['v',0]); i=k; continue; }
-        if(w==='y'){ t.push(['v',1]); i=k; continue; }
-        if(w==='r'){ t.push(['v',2]); i=k; continue; }
-        if(w==='e'){ t.push(['n',Math.E]); i=k; continue; }
-        if(w==='pi'){ t.push(['n',Math.PI]); i=k; continue; }
-        if(NAMES.indexOf(w)>-1){ t.push(['f',w]); i=k; continue; }
-        return null; }
-      if('+-*/^()'.indexOf(c)>-1){ t.push(['o',c]); i++; continue; }
-      return null; }
-    return t;
+var KEY='hive_grid3d', MASTKEY='hive_grid_mastery';
+var cv=document.getElementById('cv'), x=cv.getContext('2d');
+var wrap=document.getElementById('wrap'), fx=document.getElementById('fx');
+var rngEl=document.getElementById('rng'), grdEl=document.getElementById('grd');
+var st1=document.getElementById('st1'), st2=document.getElementById('st2'), presets=document.getElementById('presets');
+var stickOv=document.getElementById('stickOv');
+var mode='surface', exprSrc='sin(r*1.6)*exp(-r/4)*3', fn=null, bootNote='';
+var roll=0.314, tilt=0.157, zoom=1, sticks=false, solidIdx=0, pol=false, mastOn=false, geomKind='formula';
+var R=6.5, N=26, G={x:1.5,y:1.0}, view={x:0,y:0}, GEOM=null, W=1, H=1, cx=1, cy=1, base=1;
+var DEF={surface:'sin(r*1.6)*exp(-r/4)*3', curve:'sin(x)', solid:''};
+var PRE={surface:[['wave','sin(x)*cos(y)'],['saddle','(x^2-y^2)/4'],['ripple','sin(r*1.6)*exp(-r/4)*3'],['gauss','3*exp(-(r^2)/8)'],['plane','(x+y)/4']],
+         curve:[['sin','sin(x)'],['parabola','x^2/4'],['abs','abs(x)-3']],
+         polar:[['circle','1'],['rose','sin(4*x)'],['spiral','x/2'],['cardioid','1+cos(x)']],
+         solid:[['sphere',''],['torus',''],['box',''],['cone','']]};
+var EQ={sphere:'x=3.5·cos v·cos u · y=3.5·cos v·sin u · z=3.5·sin v · u∈[0,2π] · v∈[−π/2,π/2]',
+  torus:'x=(3.2+1.2·cos v)·cos u · y=(3.2+1.2·cos v)·sin u · z=1.2·sin v · u,v∈[0,2π]',
+  box:'vertices (±2.6, ±2.6, ±2.6) · 12 edges · 8 corners · the honest cube',
+  cone:'base circle r=3 @ z=−2 · apex (0,0,4) · 16 spokes · the party hat'};
+var FUND=['wave','saddle','ripple','gauss','plane','sin','parabola','abs','circle','rose','spiral','cardioid','sphere','torus','box','cone'];
+var mast={}; try{ mast=JSON.parse(localStorage.getItem(MASTKEY)||'{}')||{}; }catch(e){ mast={}; }
+function mark(n){ if(!mast[n]){ mast[n]=1; try{ localStorage.setItem(MASTKEY,JSON.stringify(mast)); }catch(e){} } }
+function mastLine(){ var v=FUND.filter(function(f){ return mast[f]; });
+  return 'mastery \u00b7 '+v.length+' of '+FUND.length+' fundamentals visited'+(v.length? ' \u00b7 '+v.join(' \u00b7 ') : ' \u00b7 plot the set to earn the wheel'); }
+var BUCK=[];
+(function(){ for(var i=0;i<8;i++){ var t=i/7;
+  BUCK.push('rgba('+Math.round(120+(217-120)*t)+','+Math.round(220+(168-220)*t)+','+Math.round(200+(58-200)*t)+',.75)'); } })();
+try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(S){ mode=S.mode||mode; exprSrc=typeof S.expr==='string'?S.expr:exprSrc; roll=+S.roll||roll; tilt=+S.tilt||tilt;
+    zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; pol=!!S.pol; if(S.g) G=S.g; if(S.v) view=S.v;
+    if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,g:G,v:view,rng:R,grd:N})); }catch(e){} }
+function bin(op,l,r){ return function(px,py){ var a=l(px,py), b=r(px,py);
+  return op==='+'?a+b: op==='-'?a-b: op==='*'?a*b: op==='/'?a/b: Math.pow(a,b); }; }
+function compile(raw){
+  var s=String(raw).replace(/\u2212/g,'-').replace(/[\u00d7\u00b7]/g,'*').replace(/\u00f7/g,'/').replace(/\u03c0/g,'pi').replace(/\s+/g,''), i=0;
+  var F={sin:Math.sin,cos:Math.cos,tan:Math.tan,exp:Math.exp,ln:Math.log,
+    log:function(v){ return Math.log(v)/Math.LN10; }, sqrt:Math.sqrt, abs:Math.abs};
+  function err(m){ var e=new Error(m); e.pos=i; throw e; }
+  function starts(c){ return !!c&&(c==='('||/[a-z]/.test(c)); }
+  function primary(){
+    var c=s[i];
+    if(c==='('){ i++; var v=expr(); if(s[i]!==')') err('paren'); i++; return v; }
+    if(c==='-'){ i++; var n=primary(); return function(px,py){ return -n(px,py); }; }
+    if(c==='+'){ i++; return primary(); }
+    var fm=/^(sin|cos|tan|exp|ln|log|sqrt|abs)/.exec(s.slice(i));
+    if(fm){ i+=fm[0].length; var f=F[fm[0]], a=primary(); return function(px,py){ return f(a(px,py)); }; }
+    var m=/^(pi|e|x|y|r)/.exec(s.slice(i));
+    if(m){ i+=m[0].length;
+      if(m[0]==='x') return function(px){ return px; };
+      if(m[0]==='y') return function(px,py){ return py; };
+      if(m[0]==='r') return function(px,py){ return Math.sqrt(px*px+py*py); };
+      if(m[0]==='e') return function(){ return Math.E; };
+      return function(){ return Math.PI; }; }
+    var nm=/^\d+\.?\d*|^\.\d+/.exec(s.slice(i)); if(!nm) err('term'); i+=nm[0].length;
+    var k=parseFloat(nm[0]); return function(){ return k; };
   }
-  function compile(src){
-      var t=tokenize(src); if(!t||!t.length) return null;
-    var t2=[];
-    for(var q2=0;q2<t.length;q2++){
-      if(q2>0){ var pv=t[q2-1], cu=t[q2];
-        var pvV= pv[0]==='n'||pv[0]==='v'||(pv[0]==='o'&&pv[1]===')');
-        var cuO= cu[0]==='n'||cu[0]==='v'||cu[0]==='f'||(cu[0]==='o'&&cu[1]==='(');
-        if(pvV&&cuO) t2.push(['o','*']); }
-      t2.push(t[q2]); }
-    t=t2;
-    var out=[], st=[], want=true;
-    for(var k=0;k<t.length;k++){ var tk=t[k];
-      if(tk[0]==='n'||tk[0]==='v'){ out.push(tk); want=false; continue; }
-      if(tk[0]==='f'){ st.push(tk); want=true; continue; }
-      var op=tk[1];
-      if(op==='('){ st.push(op); want=true; continue; }
-      if(op===')'){ var found=false;
-        while(st.length){ var p=st.pop(); if(p==='('){ found=true; break; } out.push(p); }
-        if(!found) return null;
-        if(st.length&&Array.isArray(st[st.length-1])&&st[st.length-1][0]==='f') out.push(st.pop());
-        want=false; continue; }
-      if(want){ if(op==='-'){ st.push('u-'); want=true; continue; } if(op==='+'){ continue; } return null; }
-      while(st.length){ var top=st[st.length-1];
-        if(top==='('||Array.isArray(top)) break;
-        var tp=PREC[top]||0, cp=PREC[op]||0;
-        if(RASSOC[op]? tp>cp : tp>=cp){ out.push(st.pop()); } else break; }
-      st.push(op); want=true; }
-    if(want) return null;
-    while(st.length){ var q=st.pop(); if(q==='(') return null; out.push(q); }
-    return out;
-  }
-  function applyF(w,a){
-    switch(w){ case 'sin': return Math.sin(a); case 'cos': return Math.cos(a); case 'tan': return Math.tan(a);
-      case 'asin': return Math.asin(a); case 'acos': return Math.acos(a); case 'atan': return Math.atan(a);
-      case 'exp': return Math.exp(a); case 'ln': return Math.log(a); case 'log': return Math.log(a)/Math.LN10;
-      case 'sqrt': return Math.sqrt(a); case 'abs': return Math.abs(a); }
-    return NaN;
-  }
-  function makeF(rpn){
-    return function(x,y){
-      var r=Math.sqrt(x*x+y*y), ev=[];
-      for(var i=0;i<rpn.length;i++){ var o=rpn[i];
-        if(typeof o==='string') o=['o',o];
-        if(o[0]==='n'){ ev.push(o[1]); continue; }
-        if(o[0]==='v'){ ev.push(o[1]===0?x:o[1]===1?y:r); continue; }
-        if(o[0]==='f'){ if(!ev.length) return NaN; ev.push(applyF(o[1],ev.pop())); continue; }
-        if(o[1]==='u-'){ if(!ev.length) return NaN; ev.push(-ev.pop()); continue; }
-        if(ev.length<2) return NaN;
-        var b=ev.pop(), a=ev.pop(), v;
-        switch(o[1]){ case '+': v=a+b; break; case '-': v=a-b; break; case '*': v=a*b; break;
-          case '/': v=(b===0?NaN:a/b); break; case '^': v=Math.pow(a,b); break; default: return NaN; }
-        ev.push(v); }
-      return ev.length===1?ev[0]:NaN;
-    };
-  }
-  var PRESETS={wave:'sin(x)*cos(y)', saddle:'(x^2-y^2)/6', ripple:'sin(r*1.6)*exp(-r/4)*3',
-    gauss:'3*exp(-(x^2+y^2)/8)', plane:'(x+y)/4'};
-  var mode='surface', curF=null, curName='ripple', solidName='sphere';
-   var yaw=0.7, pitch=1.0, zoom=1, R=6, N=24;
-   var mk={x:1.5,y:1.5,sx:null,sy:null}, dragMk=false, pmx=0, pmy=0, lastS=20, solidPts=[];
-  var cv=document.getElementById('g3'), x=cv.getContext('2d');
-  function ring(cx0,cy0,cz0,rad,ax,steps){
-    var pts=[];
-    for(var i=0;i<=steps;i++){ var u=i/steps*2*Math.PI;
-      if(ax==='z') pts.push([cx0+rad*Math.cos(u), cy0+rad*Math.sin(u), cz0]);
-      else if(ax==='x') pts.push([cx0, cy0+rad*Math.cos(u), cz0+rad*Math.sin(u)]);
-      else pts.push([cx0+rad*Math.cos(u), cy0, cz0+rad*Math.sin(u)]); }
-    return pts;
-  }
-  function solidLines(name){
-    var L=[], S=4, i, j;
-    if(name==='sphere'){
-      for(i=1;i<8;i++){ var phi=i*Math.PI/8; L.push(ring(0,0,S*Math.cos(phi),S*Math.sin(phi),'z',36)); }
-      for(i=0;i<12;i++){ var u=i*Math.PI/6, pts=[];
-        for(j=0;j<=24;j++){ var ph=j*Math.PI/24;
-          pts.push([S*Math.sin(ph)*Math.cos(u), S*Math.sin(ph)*Math.sin(u), S*Math.cos(ph)]); }
-        L.push(pts); }
-    } else if(name==='torus'){
-      var R0=3.4, r0=1.4;
-      for(i=0;i<12;i++){ var v=i*Math.PI/6, pts2=[];
-        for(j=0;j<=36;j++){ var u2=j*2*Math.PI/36;
-          pts2.push([(R0+r0*Math.cos(v))*Math.cos(u2), (R0+r0*Math.cos(v))*Math.sin(u2), r0*Math.sin(v)]); }
-        L.push(pts2); }
-      for(i=0;i<18;i++){ var u3=i*2*Math.PI/18, pts3=[];
-        for(j=0;j<=24;j++){ var v2=j*2*Math.PI/24;
-          pts3.push([(R0+r0*Math.cos(v2))*Math.cos(u3), (R0+r0*Math.cos(v2))*Math.sin(u3), r0*Math.sin(v2)]); }
-        L.push(pts3); }
-    } else if(name==='cone'){
-      L.push(ring(0,0,-S/2,S,'z',36));
-      for(i=0;i<12;i++){ var u4=i*Math.PI/6;
-        L.push([[S*Math.cos(u4),S*Math.sin(u4),-S/2],[0,0,S/2]]); }
-      for(i=1;i<4;i++){ var t=i/4; L.push(ring(0,0,-S/2+t*S,S*(1-t),'z',36)); }
-    } else if(name==='pyramid'){
-      var h=S/2, C=[[h,h,-h],[-h,h,-h],[-h,-h,-h],[h,-h,-h]];
-      L.push(C.concat([C[0]]));
-      for(i=0;i<4;i++) L.push([C[i],[0,0,h]]);
-      for(i=1;i<4;i++){ var t2=i/4, s2=1-t2, z2=-h+t2*S;
-        L.push([[h*s2,h*s2,z2],[-h*s2,h*s2,z2],[-h*s2,-h*s2,z2],[h*s2,-h*s2,z2],[h*s2,h*s2,z2]]); }
-    } else {
-      var q=S/2, E=[[-q,-q,-q],[q,-q,-q],[q,q,-q],[-q,q,-q],[-q,-q,q],[q,-q,q],[q,q,q],[-q,q,q]];
-      [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(function(e){ L.push([E[e[0]],E[e[1]]]); });
-      L.push([[-q,-q,0],[q,-q,0],[q,q,0],[-q,q,0],[-q,-q,0]]);
-      L.push([[0,-q,-q],[0,q,-q],[0,q,q],[0,-q,q],[0,-q,-q]]);
-      L.push([[-q,0,-q],[q,0,-q],[q,0,q],[-q,0,q],[-q,0,-q]]);
+  function power(){ var b=primary(); if(s[i]==='^'){ i++; var e=power(); return bin('^',b,e); } return b; }
+  function term(){ var v=power();
+    for(;;){ var c=s[i];
+      if(c==='*'||c==='/'){ i++; v=bin(c,v,power()); }
+      else if(starts(c)){ v=bin('*',v,power()); }
+      else break; }
+    return v; }
+  function expr(){ var v=term();
+    while(s[i]==='+'||s[i]==='-'){ var c=s[i]; i++; v=bin(c,v,term()); }
+    return v; }
+  var f=expr(); if(i<s.length) err('trail');
+  return f;
+}
+function buildSurface(){
+  var pts=[], lines=[], zmin=1e9, zmax=-1e9, grid=[];
+  for(var i=0;i<N;i++){ grid[i]=[];
+    for(var j=0;j<N;j++){
+      var px=-R+2*R*j/(N-1), py=-R+2*R*i/(N-1), z=fn(px,py);
+      if(!isFinite(z)){ grid[i][j]=-1; continue; }
+      z=Math.max(-40,Math.min(40,z));
+      grid[i][j]=pts.length; pts.push([px,py,z]);
+      if(z<zmin) zmin=z; if(z>zmax) zmax=z; } }
+  for(i=0;i<N;i++) for(j=0;j<N;j++){
+    var a=grid[i][j];
+    if(a<0) continue;
+    if(j+1<N&&grid[i][j+1]>=0) lines.push([a,grid[i][j+1]]);
+    if(i+1<N&&grid[i+1][j]>=0) lines.push([a,grid[i+1][j]]); }
+  GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax};
+}
+function buildCurve(){
+  var pts=[], lines=[], M=Math.max(160,N*10), prev=-1;
+  var xmin=1e9,xmax=-1e9,ymin=1e9,ymax=-1e9;
+  for(var i=0;i<M;i++){
+    var px, py;
+    if(pol){ var th=i/(M-1)*Math.PI*2, rr=fn(th,0);
+      if(!isFinite(rr)){ prev=-1; continue; }
+      px=rr*Math.cos(th); py=rr*Math.sin(th); }
+    else { px=-R+2*R*i/(M-1); py=fn(px,0);
+      if(!isFinite(py)){ prev=-1; continue; } }
+    px=Math.max(-1e4,Math.min(1e4,px)); py=Math.max(-1e4,Math.min(1e4,py));
+    var idx=pts.length; pts.push([px,py,0]);
+    if(prev>=0) lines.push([prev,idx]); prev=idx;
+    if(px<xmin)xmin=px; if(px>xmax)xmax=px; if(py<ymin)ymin=py; if(py>ymax)ymax=py; }
+  if(xmin>xmax){ xmin=-1; xmax=1; } if(ymin>ymax){ ymin=-1; ymax=1; }
+  GEOM={pts:pts,lines:lines,zmin:ymin,zmax:ymax,xmin:xmin,xmax:xmax};
+}
+function buildSolid(){
+  var pts=[], lines=[], U=20, V=12, i, j;
+  function mesh(fu){ var g=[];
+    for(i=0;i<U;i++){ g[i]=[];
+      for(j=0;j<V;j++){ g[i][j]=pts.length; pts.push(fu(i/(U-1)*Math.PI*2, -Math.PI/2+j/(V-1)*Math.PI)); } }
+    for(i=0;i<U;i++) for(j=0;j<V;j++){
+      if(j+1<V) lines.push([g[i][j],g[i][j+1]]);
+      if(i+1<U) lines.push([g[i][j],g[i+1][j]]); } }
+  if(solidIdx===1) mesh(function(u,v){ return [(3.2+1.2*Math.cos(v))*Math.cos(u),(3.2+1.2*Math.cos(v))*Math.sin(u),1.2*Math.sin(v)]; });
+  else if(solidIdx===2){ var c=2.6, corners=[];
+    for(i=0;i<8;i++) corners.push([(i&1?c:-c),(i&2?c:-c),(i&4?c:-c)]);
+    var E=[[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
+    E.forEach(function(e){ var a=pts.length; pts.push(corners[e[0]]); pts.push(corners[e[1]]); lines.push([a,a+1]); }); }
+  else if(solidIdx===3){ var apex=pts.length; pts.push([0,0,4]);
+    var B=16, ring=[];
+    for(i=0;i<B;i++){ var u=i/B*Math.PI*2; ring.push(pts.length); pts.push([3*Math.cos(u),3*Math.sin(u),-2]); }
+    for(i=0;i<B;i++){ lines.push([ring[i],ring[(i+1)%B]]); lines.push([ring[i],apex]); } }
+  else mesh(function(u,v){ return [3.5*Math.cos(v)*Math.cos(u),3.5*Math.cos(v)*Math.sin(u),3.5*Math.sin(v)]; });
+  var zmin=1e9, zmax=-1e9;
+  pts.forEach(function(p){ if(p[2]<zmin) zmin=p[2]; if(p[2]>zmax) zmax=p[2]; });
+  GEOM={pts:pts,lines:lines,zmin:zmin,zmax:zmax};
+}
+function readDims(){
+  var r=parseFloat(rngEl.value), g=parseFloat(grdEl.value);
+  if(isFinite(r)&&r>0) R=Math.max(1,Math.min(50,r));
+  if(isFinite(g)&&g>0) N=Math.round(Math.max(8,Math.min(64,g)));
+  rngEl.value=R; grdEl.value=N;
+  base=Math.min(W,H)/(2*R+3);
+}
+function plot(){
+  var msg=''; GEOM=null; geomKind='formula';
+  readDims();
+  if(mode!=='solid'){
+    try{ fn=compile(exprSrc); }
+    catch(e){ fn=null; var p=(e&&e.pos!=null)?e.pos:0;
+      msg='the grammar refuses at char '+p+' \u00b7 \u201c'+String(exprSrc).slice(p,p+8)+'\u201d'; }
+    if(fn){ try{ if(mode==='surface') buildSurface(); else buildCurve(); }
+      catch(e2){ fn=null; GEOM=null; msg='the surface collapsed \u00b7 try a gentler formula'; } }
+  } else { fn=null; buildSolid(); }
+  renderPresets(); draw(msg); save();
+}
+/* ---- image → heightfield · the Image→2D→3D arrow ---- */
+var imgInput=document.createElement('input'); imgInput.type='file'; imgInput.accept='image/*'; imgInput.style.display='none';
+document.body.appendChild(imgInput);
+imgInput.onchange=function(){ var f=imgInput.files&&imgInput.files[0]; if(!f) return;
+  var rd=new FileReader();
+  rd.onload=function(e){ var im=new Image();
+    im.onload=function(){ readDims();
+      var c=document.createElement('canvas'); c.width=N; c.height=N;
+      var g=c.getContext('2d'); g.drawImage(im,0,0,N,N);
+      var d=g.getImageData(0,0,N,N).data, pts=[], lines=[], grid=[], i, j;
+      for(i=0;i<N;i++){ grid[i]=[];
+        for(j=0;j<N;j++){ var k=(i*N+j)*4;
+          var lum=(d[k]*0.299+d[k+1]*0.587+d[k+2]*0.114)/255;
+          grid[i][j]=pts.length;
+          pts.push([-R+2*R*j/(N-1), -R+2*R*i/(N-1), (1-lum)*4-2]); } }
+      for(i=0;i<N;i++) for(j=0;j<N;j++){ var a=grid[i][j];
+        if(j+1<N) lines.push([a,grid[i][j+1]]);
+        if(i+1<N) lines.push([a,grid[i+1][j]]); }
+      GEOM={pts:pts,lines:lines,zmin:-2,zmax:2}; geomKind='image'; fn=null;
+      draw(''); save(); };
+    im.src=e.target.result; };
+  rd.readAsDataURL(f); imgInput.value=''; };
+function proj(p){
+  var cr=Math.cos(roll), sr=Math.sin(roll);
+  var x1=p[0]*cr-p[1]*sr, y1=p[0]*sr+p[1]*cr;
+  var ct=Math.cos(tilt), st=Math.sin(tilt);
+  var y2=y1*ct-p[2]*st;
+  return [cx+x1*base*zoom, cy-y2*base*zoom];
+}
+function nice(v){ var p=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)); var m=v/p;
+  return (m>5?10:m>2?5:m>1?2:1)*p; }
+function curveDot(){ if(!fn) return null;
+  if(pol){ var th=G.x, rr=fn(th,0); if(!isFinite(rr)) return null;
+    return {x:rr*Math.cos(th), y:rr*Math.sin(th), r:rr, th:th}; }
+  var gy=fn(G.x,0); if(!isFinite(gy)) return null;
+  return {x:G.x, y:gy}; }
+function draw(msg){
+  x.clearRect(0,0,W,H);
+  var i, a, b;
+  if(mode==='curve'&&GEOM){
+    var spanX=Math.max(0.5,GEOM.xmax-GEOM.xmin), spanY=Math.max(0.5,GEOM.zmax-GEOM.zmin);
+    var xmid=(GEOM.xmin+GEOM.xmax)/2, ymid=(GEOM.zmin+GEOM.zmax)/2;
+    var sx=(W*0.9)/spanX*zoom, sy=(H*0.8)/spanY*zoom;
+    window.__cfit={sx:sx,sy:sy,xmid:xmid,ymid:ymid};
+    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
+    var stp=nice(spanX/6), yst=nice(spanY/5);
+    var y0=cy-(0-ymid-view.y)*sy;
+    if(y0>0&&y0<H){ x.beginPath(); x.moveTo(0,y0); x.lineTo(W,y0); x.stroke(); }
+    var x0=cx+(0-xmid-view.x)*sx;
+    if(x0>0&&x0<W){ x.beginPath(); x.moveTo(x0,0); x.lineTo(x0,H); x.stroke(); }
+    x.fillStyle='#5c6875'; x.font='9px ui-monospace,Consolas,monospace';
+    for(i=Math.ceil((xmid-spanX/2)/stp)*stp;i<=xmid+spanX/2;i+=stp){
+      var tx=cx+(i-xmid-view.x)*sx;
+      if(tx<14||tx>W-8) continue;
+      x.fillText(String(+i.toFixed(2)), tx+2, Math.max(10,Math.min(H-4,y0+12))); }
+    for(i=Math.ceil((ymid-spanY/2)/yst)*yst;i<=ymid+spanY/2;i+=yst){
+      var ty=cy-(i-ymid-view.y)*sy;
+      if(ty<10||ty>H-6) continue;
+      x.fillText(String(+i.toFixed(2)), Math.max(2,Math.min(W-30,x0+4)), ty-2); }
+    x.strokeStyle='rgba(232,228,216,.9)'; x.lineWidth=2; x.beginPath();
+    var started=false;
+    for(i=0;i<GEOM.pts.length;i++){ var p=GEOM.pts[i];
+      var px2=cx+(p[0]-xmid-view.x)*sx, py2=cy-(p[1]-ymid-view.y)*sy;
+      if(!started){ x.moveTo(px2,py2); started=true; } else x.lineTo(px2,py2); }
+    x.stroke(); x.lineWidth=1;
+    var dot=curveDot();
+    if(dot){ var gx2=cx+(dot.x-xmid-view.x)*sx, gy2=cy-(dot.y-ymid-view.y)*sy;
+      x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gx2,gy2,5,0,7); x.fill();
+      x.font='9px ui-monospace,Consolas,monospace';
+      x.fillText(pol? '('+dot.r.toFixed(2)+', '+dot.th.toFixed(2)+'\u03b8)' : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')', gx2+9, gy2-9);
+      st1.innerHTML=(pol? 'curve \u00b7 polar \u00b7 r = '+exprSrc+' \u00b7 \u03b8 0..2\u03c0' : 'curve \u00b7 y = '+exprSrc+' \u00b7 x '+GEOM.xmin.toFixed(1)+'..'+GEOM.xmax.toFixed(1))
+        +' \u00b7 <span class="g">'+(pol? 'r '+dot.r.toFixed(2)+' @ \u03b8 '+dot.th.toFixed(2) : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')')+'</span>'; }
+    st2.textContent='drag to pan \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom';
+  } else {
+    x.strokeStyle='rgba(34,48,65,.9)'; x.lineWidth=1;
+    var stp2=R>10?4:2;
+    for(i=-Math.floor(R/stp2)*stp2;i<=R;i+=stp2){
+      a=proj([i,-R,0]); b=proj([i,R,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke();
+      a=proj([-R,i,0]); b=proj([R,i,0]); x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+    x.strokeStyle='rgba(92,104,117,.8)';
+    var ax=proj([0,0,0]), az=proj([0,0,R*0.7]);
+    x.beginPath(); x.moveTo(ax[0],ax[1]); x.lineTo(az[0],az[1]); x.stroke();
+    if(GEOM){
+      if(sticks&&mode==='surface'){
+        x.strokeStyle='rgba(120,220,200,.6)';
+        for(i=0;i<GEOM.pts.length;i+=2){ var q=GEOM.pts[i];
+          var g0=proj([q[0],q[1],0]), g1=proj(q);
+          x.beginPath(); x.moveTo(g0[0],g0[1]); x.lineTo(g1[0],g1[1]); x.stroke(); }
+      } else if(mode==='surface'){
+        var zr=Math.max(1e-6,GEOM.zmax-GEOM.zmin);
+        for(i=0;i<GEOM.lines.length;i++){ var L=GEOM.lines[i];
+          var p1=GEOM.pts[L[0]], p2=GEOM.pts[L[1]];
+          var t=((p1[2]+p2[2])/2-GEOM.zmin)/zr;
+          x.strokeStyle=BUCK[Math.max(0,Math.min(7,Math.round(t*7)))];
+          a=proj(p1); b=proj(p2);
+          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+      } else {
+        x.strokeStyle='rgba(120,220,200,.7)';
+        for(i=0;i<GEOM.lines.length;i++){ var L2=GEOM.lines[i];
+          a=proj(GEOM.pts[L2[0]]); b=proj(GEOM.pts[L2[1]]);
+          x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); } } }
+    if(mastOn){ st1.textContent=mastLine(); }
+    else if(geomKind==='image'&&GEOM){
+      st1.textContent='surface \u00b7 image heightfield \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1);
+      st2.textContent='drag to roll \u00b7 wheel or + \u2212 to zoom \u00b7 plot it returns to the formula';
     }
-    return L;
-  }
-  function buildLines(){
-    var L=[], i, j;
-       if(mode==='solid'){
-      var sl=solidLines(solidName).map(function(line){ return {pts: line.map(function(p){
-        var k=1;
-        if(curF){ var d=curF(p[0],p[1]); if(isFinite(d)) k=1+d/6; }
-        return [p[0]*k, p[1]*k, p[2]*k]; })}; });
-      solidPts=[];
-      sl.forEach(function(ln){ ln.pts.forEach(function(p,i){ if(i%3===0) solidPts.push(p); }); });
-      return sl;
+    else if(mode==='surface'&&fn&&GEOM){
+      var gz=fn(G.x,G.y);
+      if(isFinite(gz)){ var gp=proj([G.x,G.y,gz]);
+        x.fillStyle='#d9a83a'; x.beginPath(); x.arc(gp[0],gp[1],5,0,7); x.fill();
+        x.font='9px ui-monospace,Consolas,monospace';
+        x.fillText('('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')', gp[0]+9, gp[1]-9);
+        st1.innerHTML='surface \u00b7 z = '+exprSrc+' \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
+      st2.textContent='drag to roll \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom';
+    } else if(mode==='solid'&&GEOM){
+      st1.textContent='solid \u00b7 '+PRE.solid[solidIdx][0]+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 '+EQ[PRE.solid[solidIdx][0]];
+      st2.textContent='drag to roll \u00b7 wheel or + \u2212 to zoom \u00b7 presets speak their math';
     }
-    if(mode==='curve'){
-      L.push({faint:true, pts:[[-R,0,0],[R,0,0]]});
-      L.push({faint:true, pts:[[0,0,-3],[0,0,4]]});
-      var pts=[];
-      for(i=0;i<=160;i++){ var px=-R+2*R*i/160, pz=curF?curF(px,0):NaN;
-        pts.push([px,0,isFinite(pz)?pz:NaN]); }
-      L.push({pts:pts});
-      return L;
-    }
-    for(var pass=0;pass<2;pass++){
-      for(i=0;i<=N;i++){
-        var t0=-R+2*R*i/N, line=[];
-        for(j=0;j<=N;j++){
-          var px2= pass===0? -R+2*R*j/N : t0;
-          var py2= pass===0? t0 : -R+2*R*j/N;
-          var pz2=curF?curF(px2,py2):NaN;
-          line.push([px2,py2,isFinite(pz2)?pz2:NaN]); }
-        L.push({pts:line}); }
-    }
-    return L;
   }
-  function fit(){ var r=cv.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; draw(); }
-  addEventListener('resize',fit);
-  function proj(px,py,pz,cx,cy,s){
-    var x1=px*Math.cos(yaw)-py*Math.sin(yaw), y1=px*Math.sin(yaw)+py*Math.cos(yaw), z1=pz;
-    var up=z1*Math.cos(pitch)-y1*Math.sin(pitch);
-    return [cx+x1*s, cy-up*s];
-  }
-  function col(t){ return 'rgba('+Math.round(63+t*154)+','+Math.round(127+t*41)+','+Math.round(193-t*135)+',0.85)'; }
-   function draw(){
-    x.fillStyle='#0a0d12'; x.fillRect(0,0,cv.width,cv.height);
-    try{
-      var lines=buildLines();
-    var mn=1e9, mx=-1e9;
-    lines.forEach(function(ln){ ln.pts.forEach(function(p){ if(isFinite(p[2])){ if(p[2]<mn)mn=p[2]; if(p[2]>mx)mx=p[2]; } }); });
-    if(mn>mx){ mn=0; mx=0; }
-    var rg=(mx-mn)||1;
-    var zext=Math.max(Math.abs(mn),Math.abs(mx));
-    var V=zext*Math.abs(Math.cos(pitch))+R*Math.abs(Math.sin(pitch))+0.5;
-    var s=Math.min(cv.width/(2*R*1.5), cv.height/(2*V))*zoom, cx=cv.width/2, cy=cv.height/2;
-    lastS=s;
-    var g=[];
-    for(var gi=-R;gi<=R;gi+=2){ g.push({faint:true,pts:[[gi,-R,0],[gi,R,0]]}); g.push({faint:true,pts:[[-R,gi,0],[R,gi,0]]}); }
-    lines=g.concat(lines);
-    x.lineWidth=1;
-    lines.forEach(function(ln){
-      var mid=0, cnt=0;
-      ln.pts.forEach(function(p){ if(isFinite(p[2])){ mid+=p[2]; cnt++; } });
-      mid=cnt?mid/cnt:mn;
-      x.strokeStyle= ln.faint? 'rgba(92,104,117,0.45)' : col(Math.max(0,Math.min(1,(mid-mn)/rg)));
-      x.beginPath(); var started=false;
-      ln.pts.forEach(function(p){
-        if(!isFinite(p[2])){ started=false; return; }
-        var q=proj(p[0],p[1],p[2],cx,cy,s);
-        if(!started){ x.moveTo(q[0],q[1]); started=true; } else x.lineTo(q[0],q[1]); });
-          x.stroke(); });
-    x.font='9px ui-monospace,Consolas,monospace'; x.fillStyle='rgba(147,161,176,0.7)';
-    for(var gi2=-R;gi2<=R;gi2+=2){
-      if(gi2!==0){
-        var qa=proj(gi2,0,0,cx,cy,s); x.fillText(String(gi2), qa[0]+2, qa[1]+10);
-        var qb=proj(0,gi2,0,cx,cy,s); x.fillText(String(gi2), qb[0]+2, qb[1]+10);
-      }
-    }
-    var q0=proj(0,0,0,cx,cy,s); x.fillText('0', q0[0]+2, q0[1]+10);
-    if(mode==='curve'){
-      var zst= zext>12?10: zext>5?2:1;
-      for(var zt=Math.ceil(mn/zst)*zst; zt<=mx; zt+=zst){
-        if(zt===0) continue;
-        var qz=proj(0,0,zt,cx,cy,s); x.fillText(String(zt), qz[0]+3, qz[1]-2);
-      }
-    }
-        var mp=null;
-    if(mode==='solid'){
-      var bd=1e9;
-      for(var si2=0;si2<solidPts.length;si2++){ var sp=solidPts[si2];
-        var dd=(sp[0]-mk.x)*(sp[0]-mk.x)+(sp[1]-mk.y)*(sp[1]-mk.y);
-        if(dd<bd){ bd=dd; mp=sp; } }
-    } else if(curF){
-      var myv= mode==='curve'?0:mk.y, mz2=curF(mk.x,myv);
-      if(isFinite(mz2)) mp=[mk.x,myv,mz2];
-    }
-    if(mp){
-      var q=proj(mp[0],mp[1],mp[2],cx,cy,s);
-      mk.sx=q[0]; mk.sy=q[1];
-      x.strokeStyle='rgba(217,168,58,.5)'; x.beginPath();
-      x.moveTo(q[0]-9,q[1]); x.lineTo(q[0]+9,q[1]); x.moveTo(q[0],q[1]-9); x.lineTo(q[0],q[1]+9); x.stroke();
-      x.fillStyle='#d9a83a'; x.beginPath(); x.arc(q[0],q[1],4,0,7); x.fill();
-      x.font='10px ui-monospace,Consolas,monospace';
-      x.fillText(mode==='curve'? '('+mp[0].toFixed(2)+', '+mp[2].toFixed(2)+')' : '('+mp[0].toFixed(2)+', '+mp[1].toFixed(2)+', '+mp[2].toFixed(2)+')', q[0]+10, q[1]-10);
-    } else mk.sx=null;
-    document.getElementById('gInfo').textContent=mode+' \u00b7 '+(mode==='solid'?solidName:'z = '+curName)+' \u00b7 roll '+Math.round(yaw*57)+'\u00b0 \u00b7 tilt '+Math.round(pitch*57)+'\u00b0 \u00b7 z '+mn.toFixed(2)+' .. '+mx.toFixed(2)+' \u00b7 drag the gold dot'; 
-    }catch(e){ document.getElementById('gInfo').textContent='painter error \u00b7 '+e.message; }
-  }
-  function plot(src,name){
-    var msg=document.getElementById('fMsg');
-    var rpn=compile(src);
-    if(!rpn){ msg.style.color='#c8452c'; msg.textContent='the grid refuses \u00b7 check the syntax'; return; }
-    var f=makeF(rpn);
-    curF=f; curName=name||src;
-        var usesY=rpn.some(function(t){ return t[0]==='v'&&t[1]===1; });
-    if(mode==='solid'){ msg.style.color='#58a36a'; msg.textContent='carving \u00b7 cage \u00d7 (1 + f/6)'; }
-    else if(mode==='curve'&&usesY){ msg.style.color='#d9a83a'; msg.textContent='plotting \u00b7 y = f(x) \u00b7 y pins to 0 in curve \u00b7 your y-terms went quiet'; }
-    else { msg.style.color='#58a36a'; msg.textContent='plotting \u00b7 z = '+(name||src); }
-    if(cv.width<10||cv.height<10) fit();
-    draw();
-  }
-  var inp=document.getElementById('fExpr');
-  var modesRow=document.getElementById('modes'), preRow=document.getElementById('presets'), solRow=document.getElementById('solids');
-  function setMode(m){
-    mode=m;
-    modesRow.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.m===m); });
-    solRow.style.display= m==='solid'?'flex':'none';
-    preRow.style.display= m==='surface'?'flex':'none';
-       inp.placeholder= m==='curve'? 'y = f(x) \u00b7 e.g. sin(x^2/2)' : m==='surface'? 'z = f(x, y) \u00b7 e.g. sin(r*1.6)*exp(-r/4)*3' : 'carve the cage \u00b7 f(x, y) bumps the radius \u00b7 0 = pure solid';
-    draw();
-  }
-  ['curve','surface','solid'].forEach(function(m){
-    var b=document.createElement('button'); b.textContent=m; b.dataset.m=m;
-    b.onclick=function(){ setMode(m); };
-    modesRow.appendChild(b);
-  });
-  Object.keys(PRESETS).forEach(function(kk){
-    var b=document.createElement('button'); b.textContent=kk; b.dataset.k=kk;
-    b.onclick=function(){ inp.value=PRESETS[kk];
-      preRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
-      plot(PRESETS[kk],kk); };
-    preRow.appendChild(b); if(kk===curName) b.classList.add('on');
-  });
-  ['sphere','torus','cone','pyramid','cube'].forEach(function(kk){
-    var b=document.createElement('button'); b.textContent=kk; b.dataset.k=kk;
-    b.onclick=function(){ solidName=kk;
-      solRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k===kk); });
-      document.getElementById('fMsg').textContent='';
-      draw(); };
-    solRow.appendChild(b); if(kk===solidName) b.classList.add('on');
-  });
-  document.getElementById('fPlot').onclick=function(){
-    preRow.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
-    plot(inp.value.trim(),null); };
-  var deb=null;
-  inp.oninput=function(){ clearTimeout(deb); deb=setTimeout(function(){
-    preRow.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
-    plot(inp.value.trim(),null); },450); };
-  inp.value=PRESETS.ripple;
-  setMode('surface');
-  plot(PRESETS.ripple,'ripple');
-   var drag=false,lx=0,ly=0;
-  cv.addEventListener('pointerdown',function(e){
-    var r=cv.getBoundingClientRect();
-    if(mk.sx!=null){ var d0x=e.clientX-r.left-mk.sx, d0y=e.clientY-r.top-mk.sy;
-      if(d0x*d0x+d0y*d0y<196){ dragMk=true; pmx=e.clientX; pmy=e.clientY; e.preventDefault(); return; } }
-    drag=true; lx=e.clientX; ly=e.clientY; cv.style.cursor='grabbing'; e.preventDefault(); });
-  addEventListener('pointermove',function(e){
-    if(dragMk){
-      var aX=Math.cos(yaw)*lastS, aY=Math.sin(yaw)*Math.sin(pitch)*lastS;
-      var bX=-Math.sin(yaw)*lastS, bY=Math.cos(yaw)*Math.sin(pitch)*lastS;
-      var dsx=e.clientX-pmx, dsy=e.clientY-pmy; pmx=e.clientX; pmy=e.clientY;
-      var det=aX*bY-aY*bX;
-      if(Math.abs(det)>1e-6){
-        if(mode==='curve'){ mk.x+=(dsx*aX+dsy*aY)/(aX*aX+aY*aY); }
-        else { mk.x+=(dsx*bY-dsy*bX)/det; mk.y+=(aX*dsy-aY*dsx)/det; }
-        mk.x=Math.max(-R,Math.min(R,mk.x)); mk.y=Math.max(-R,Math.min(R,mk.y));
-        draw();
-      }
-      return; }
-    if(!drag) return;
-    yaw+=(e.clientX-lx)*0.01; pitch=Math.max(0.15,Math.min(1.5,pitch+(e.clientY-ly)*0.01));
-    lx=e.clientX; ly=e.clientY; draw(); });
-   addEventListener('pointerup',function(){ drag=false; dragMk=false; cv.style.cursor='grab'; });
-  cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.4,Math.min(3,zoom*(e.deltaY<0?1.1:0.9))); draw(); },{passive:false});
-  document.getElementById('zin').onclick=function(){ zoom=Math.min(3,zoom*1.15); draw(); };
-  document.getElementById('zout').onclick=function(){ zoom=Math.max(0.4,zoom*0.87); draw(); };
-   document.getElementById('home').onclick=function(){ yaw=0.7; pitch=1.0; zoom=1; draw(); };
-  document.getElementById('rst').onclick=function(){
-    yaw=0.7; pitch=1.0; zoom=1; mk.x=1.5; mk.y=1.5;
-    if(mode==='curve'){ inp.value='sin(x^2/2)'; plot(inp.value,null); }
-    else if(mode==='surface'){ inp.value=PRESETS.ripple;
-      preRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k==='ripple'); });
-      plot(PRESETS.ripple,'ripple'); }
-    else { solidName='sphere'; inp.value='0';
-      solRow.querySelectorAll('button').forEach(function(o){ o.classList.toggle('on',o.dataset.k==='sphere'); });
-      plot('0',null); }
-    draw();
-  };
-  function tryFit(n){ var r=cv.getBoundingClientRect();
-    if(r.width>10&&r.height>10){ fit(); }
-    else if(n>0) setTimeout(function(){ tryFit(n-1); },120); }
-  tryFit(25);
-  addEventListener('load',function(){ tryFit(5); });
-  if('ResizeObserver' in window){ new ResizeObserver(function(){ fit(); }).observe(cv); }
+  if(mastOn&&mode==='curve') st1.textContent=mastLine();
+  if(!GEOM&&!msg&&!mastOn) st1.textContent=mode+' \u00b7 awaiting a formula';
+  if(msg) st1.innerHTML='<span class="r">'+msg+'</span>';
+}
+function renderPresets(){
+  presets.innerHTML='';
+  var list= mode==='solid'? PRE.solid : (mode==='surface'? PRE.surface : (pol? PRE.polar : PRE.curve));
+  list.forEach(function(p,idx){
+    var b=document.createElement('button'); b.textContent=p[0];
+    var on= mode==='solid'? idx===solidIdx : p[1]===exprSrc;
+    if(on) b.className='on';
+    b.onclick=function(){
+      if(mode==='solid'){ solidIdx=idx; mark(p[0]); }
+      else { exprSrc=p[1]; fx.value=exprSrc; mark(p[0]); }
+      plot(); };
+    presets.appendChild(b); });
+}
+function fit(){
+  var d=devicePixelRatio||1;
+  W=wrap.clientWidth||1; H=wrap.clientHeight||1;
+  cv.width=Math.round(W*d); cv.height=Math.round(H*d);
+  x.setTransform(d,0,0,d,0,0);
+  cx=W/2; cy=H/2; base=Math.min(W,H)/(2*R+3);
+  draw();
+}
+if(window.ResizeObserver){ new ResizeObserver(fit).observe(wrap); } else addEventListener('resize',fit);
+function setMode(m){ mode=m;
+  document.getElementById('mCurve').className=m==='curve'?'on':'';
+  document.getElementById('mSurface').className=m==='surface'?'on':'';
+  document.getElementById('mSolid').className=m==='solid'?'on':'';
+  fx.style.display=m==='solid'?'none':'';
+  document.getElementById('plot').style.display=m==='solid'?'none':'';
+  document.getElementById('polar').style.display=m==='curve'?'':'none';
+  document.getElementById('imgBtn').style.display=m==='surface'?'':'none';
+  if(m!=='solid'){ if(fx.value) exprSrc=fx.value; else fx.value=exprSrc||DEF[m]; }
+  plot(); }
+function paintSticks(){ stickOv.className=sticks?'on':''; stickOv.textContent=sticks?'sticks ⌃':'sticks ⌄'; }
+document.getElementById('mCurve').onclick=function(){ setMode('curve'); };
+document.getElementById('mSurface').onclick=function(){ setMode('surface'); };
+document.getElementById('mSolid').onclick=function(){ setMode('solid'); };
+document.getElementById('plot').onclick=function(){ exprSrc=fx.value; plot(); };
+document.getElementById('polar').onclick=function(){ pol=!pol; this.className=pol?'on':'';
+  if(pol&&exprSrc===DEF.curve){ exprSrc='1'; fx.value=exprSrc; }
+  if(!pol&&exprSrc==='1'){ exprSrc=DEF.curve; fx.value=exprSrc; }
+  plot(); };
+document.getElementById('imgBtn').onclick=function(){ imgInput.click(); };
+document.getElementById('mastBtn').onclick=function(){ mastOn=!mastOn; this.className=mastOn?'on':''; draw(); };
+fx.addEventListener('keydown',function(e){ if(e.key==='Enter'){ exprSrc=fx.value; plot(); } });
+rngEl.addEventListener('change',function(){ plot(); });
+grdEl.addEventListener('change',function(){ plot(); });
+document.getElementById('zin').onclick=function(){ zoom=Math.min(4,zoom*1.15); draw(); save(); };
+document.getElementById('zout').onclick=function(){ zoom=Math.max(0.3,zoom/1.15); draw(); save(); };
+document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoom=1; view={x:0,y:0}; draw(); save(); };
+document.getElementById('rst').onclick=function(){ if(mode!=='solid'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
+  R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; geomKind='formula'; plot(); };
+stickOv.onclick=function(){ sticks=!sticks; paintSticks(); draw(); save(); };
+cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.3,Math.min(4,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); },{passive:false});
+var drag=null;
+cv.addEventListener('pointerdown',function(e){
+  cv.setPointerCapture(e.pointerId);
+  var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+  var gp=null;
+  if(mode==='curve'&&window.__cfit){ var dot=curveDot();
+    if(dot) gp=[cx+(dot.x-window.__cfit.xmid-view.x)*window.__cfit.sx, cy-(dot.y-window.__cfit.ymid-view.y)*window.__cfit.sy]; }
+  else if(fn&&GEOM&&mode==='surface'){ var gz=fn(G.x,G.y);
+    if(isFinite(gz)) gp=proj([G.x,G.y,gz]); }
+  if(gp&&Math.hypot(gp[0]-px,gp[1]-py)<20) drag={k:'dot'};
+  else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt,vx0:view.x,vy0:view.y}; cv.classList.add('grabbing'); }
+  e.preventDefault(); });
+cv.addEventListener('pointermove',function(e){
+  if(!drag) return;
+  var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+  if(drag.k==='rot'&&mode==='curve'&&window.__cfit){
+    view.x=drag.vx0-(px-drag.sx)/window.__cfit.sx; view.y=drag.vy0+(py-drag.sy)/window.__cfit.sy; draw(); return; }
+  if(drag.k==='rot'){ roll=drag.r0+(px-drag.sx)*0.008; tilt=Math.max(-1.4,Math.min(1.4,drag.t0+(py-drag.sy)*0.008)); draw(); return; }
+  if(drag.k==='dot'&&fn){
+    if(mode==='curve'&&window.__cfit){
+      if(pol){ G.x+= (px-(drag.lx||px))/window.__cfit.sx; G.x=Math.max(0,Math.min(Math.PI*2,G.x)); drag.lx=px; }
+      else { G.x+= (px-(drag.lx||px))/window.__cfit.sx; drag.lx=px; G.x=Math.max(-R,Math.min(R,G.x)); } }
+    else { var s=base*zoom;
+      var dx=(px-(drag.lx||px))/s, dy=(py-(drag.ly||py))/s; drag.lx=px; drag.ly=py;
+      var cr=Math.cos(roll), sr=Math.sin(roll);
+      G.x+= dx*cr - dy*sr; G.y+= dx*sr + dy*cr;
+      G.x=Math.max(-R,Math.min(R,G.x)); G.y=Math.max(-R,Math.min(R,G.y)); }
+    draw(); } });
+addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
+/* ---- boot · never open dead, never die silent ---- */
+try{
+  if(mode!=='solid'){
+    try{ compile(exprSrc); }catch(e){ exprSrc=DEF[mode];
+      bootNote='the stored formula refused \u00b7 loaded the house default'; } }
+  rngEl.value=R; grdEl.value=N;
+  fx.value= mode==='solid'? '' : exprSrc;
+  paintSticks();
+  document.getElementById('polar').className=pol?'on':'';
+  setMode(mode);
+  fit();
+  (function selfTest(){
+    var bat=['sin(r*1.6)*exp(-r/4)*3','sin(x)','(x^2-y^2)/4','3*exp(-(r^2)/8)','(x+y)/4','e','pi','2x','sin(4*x)','1+cos(x)'];
+    for(var i=0;i<bat.length;i++){
+      try{ compile(bat[i]); }catch(e){
+        var m='parser self-test failed \u00b7 "'+bat[i]+'" at char '+(e&&e.pos!=null?e.pos:'?')+' \u00b7 the deployed file may be mangled or cached \u00b7 hard-reload or re-paste fresh';
+        st1.innerHTML='<span class="r">'+m+'</span>';
+        try{ console.error('grid3d self-test:',bat[i],e); }catch(e2){}
+        return; } }
+    if(bootNote) st1.innerHTML='<span class="r">'+bootNote+'</span>';
+  })();
+}catch(fatal){
+  st1.innerHTML='<span class="r">the grid limped \u00b7 '+String(fatal&&fatal.message||fatal)+' \u00b7 the deployed file may be mangled \u00b7 re-paste fresh</span>';
+}
 })();
 </script>
-
-<script>
-/* ---- THE STICKS · twin joysticks for the geometry ---- */
-(function(){
-  var cv=document.querySelector('canvas'); if(!cv) return;
-  var tab=document.createElement('button'); tab.textContent='sticks \u2304';
-  tab.style.cssText='position:fixed;right:10px;bottom:10px;z-index:60;background:rgba(3,4,7,.8);border:1px solid #3f7fc1;color:#3f7fc1;font:10px ui-monospace,Consolas,monospace;letter-spacing:.2em;padding:6px 12px;cursor:pointer';
-  var drawer=document.createElement('div');
-  drawer.style.cssText='display:none;position:fixed;left:0;right:0;bottom:0;z-index:59;padding:16px 12px 14px;background:rgba(3,4,7,.92);border-top:1px dashed #223041;align-items:flex-end;justify-content:space-between';
-  drawer.innerHTML='<div style="font:9px ui-monospace,Consolas,monospace;color:#5c6875;letter-spacing:.15em;position:absolute;top:4px;left:12px">left \u00b7 orbit &nbsp;&nbsp; right \u00b7 dolly/pan</div>';
-  document.body.appendChild(tab); document.body.appendChild(drawer);
-  var open=false;
-  function setOpen(o){ open=o; drawer.style.display=o?'flex':'none'; tab.textContent=o?'sticks \u2305':'sticks \u2304'; }
-  tab.onclick=function(){ setOpen(!open); };
-  if(window.matchMedia&&matchMedia('(pointer:coarse)').matches) setOpen(true);
-  var moon=document.createElement('button'); moon.textContent='\ud83c\udf19';
-  moon.style.cssText='position:absolute;top:2px;right:12px;background:none;border:1px solid #223041;color:#5c6875;font:12px ui-monospace,monospace;padding:2px 8px;cursor:pointer';
-  drawer.appendChild(moon);
-  var moonOn=false;
-  moon.onclick=function(){ moonOn=!moonOn; moon.style.borderColor=moonOn?'#d9a83a':'#223041'; moon.style.color=moonOn?'#d9a83a':'#5c6875'; };
-  function pad(color){
-    var p=document.createElement('div');
-    p.style.cssText='position:relative;width:104px;height:104px;border:1px solid '+color+';border-radius:50%;touch-action:none;flex:0 0 auto';
-    var k=document.createElement('div');
-    k.style.cssText='position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:'+color+';opacity:.85;box-shadow:0 0 10px '+color;
-    p.appendChild(k); drawer.appendChild(p);
-    var st={x:0,y:0,on:false,id:null};
-    function move(e){
-      var r=p.getBoundingClientRect();
-      var dx=(e.clientX-(r.left+r.width/2))/(r.width/2), dy=(e.clientY-(r.top+r.height/2))/(r.height/2);
-      var m=Math.max(1,Math.hypot(dx,dy)); dx/=m; dy/=m; st.x=dx; st.y=dy;
-      k.style.left=(50+dx*32)+'%'; k.style.top=(50+dy*32)+'%';
-    }
-    p.addEventListener('pointerdown',function(e){ st.on=true; st.id=e.pointerId; try{p.setPointerCapture(e.pointerId);}catch(err){} move(e); e.preventDefault(); e.stopPropagation(); });
-    p.addEventListener('pointermove',function(e){ if(st.on&&e.pointerId===st.id){ move(e); e.stopPropagation(); } });
-    function up(e){ if(e.pointerId===st.id){ st.on=false; st.x=0; st.y=0; k.style.left='50%'; k.style.top='50%'; } }
-    p.addEventListener('pointerup',up); p.addEventListener('pointercancel',up);
-    return st;
-  }
-  var L=pad('#3f7fc1'), R=pad('#d9a83a');
-  var vx=0,vy=0,down=false;
-  function pev(t,x,y){
-    var b=t==='pointerup'?0:1;
-    try{ cv.dispatchEvent(new PointerEvent(t,{pointerId:7,bubbles:true,cancelable:true,clientX:x,clientY:y,buttons:b,isPrimary:true,pointerType:'touch'})); }catch(e){}
-    var m=t==='pointerdown'?'mousedown':t==='pointerup'?'mouseup':'mousemove';
-    cv.dispatchEvent(new MouseEvent(m,{bubbles:true,cancelable:true,clientX:x,clientY:y,buttons:b}));
-  }
-  function wheel(dx,dy,x,y){ try{ cv.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaX:dx,deltaY:dy,clientX:x,clientY:y})); }catch(e){} }
-  function frame(){
-    var r=cv.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
-    var lx=L.x, ly=L.y;
-    if(moonOn&&!L.on) lx=0.12;
-    if(lx||ly){
-      if(!down){ vx=cx; vy=cy; pev('pointerdown',vx,vy); down=true; }
-      vx+=lx*6; vy+=ly*6;
-      if(vx<r.left+20||vx>r.right-20||vy<r.top+20||vy>r.bottom-20){ pev('pointerup',vx,vy); vx=cx; vy=cy; pev('pointerdown',vx,vy); }
-      pev('pointermove',vx,vy);
-    } else if(down){ pev('pointerup',vx,vy); down=false; }
-        var nz=performance.now();
-    if(Math.abs(R.y)>0.25&&(!frame.zt||nz-frame.zt>90)){ frame.zt=nz; wheel(0,(R.y>0?1:-1)*120,cx,cy); }
-    if(Math.abs(R.x)>0.25&&(!frame.xt||nz-frame.xt>90)){ frame.xt=nz; wheel((R.x>0?1:-1)*120,0,cx,cy); }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-</script>
-  
 </body>
 </html>
