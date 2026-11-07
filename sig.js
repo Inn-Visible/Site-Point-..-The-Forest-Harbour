@@ -583,7 +583,9 @@ if(document.readyState==='complete') setTimeout(finish,120);
 else addEventListener('load',function(){ setTimeout(finish,150); });
 setTimeout(finish,6000);
 ov.addEventListener('click',finish);
+})();
 
+  
 (function(){
 /* ---- the ferry orbit v2 \u00b7 finds the cluster wherever she lives \u00b7 scrolls with her ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
