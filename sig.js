@@ -587,9 +587,40 @@ ov.addEventListener('click',finish);
 
   
 (function(){
-/* ---- the ferry orbit v3 \u00b7 core only \u00b7 never waits for load \u00b7 adopts the cluster when she shows ---- */
+/* ---- the ferry orbit v4 \u00b7 locks onto the four colored rings themselves \u00b7 core only ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
-var ov=null, host=null, built=false;
+var ov=null, rings=null, built=false;
+var COLS=['216, 221, 227','88, 163, 106','63, 127, 193','232, 144, 26','217, 168, 58','230, 145, 56'];
+function col3(str){ return (str||'').replace(/rgba?\(/,'').replace(/\)/,'').split(',').slice(0,3).join(', '); }
+function boxOf(el){ var r=el.getBoundingClientRect(); return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height}; }
+function isRingEl(el){
+  var w=el.offsetWidth, h=el.offsetHeight;
+  if(!w||!h||w<16||w>110||h<16||h>110||Math.abs(w-h)>8) return false;
+  var cs=getComputedStyle(el);
+  if(parseFloat(cs.borderTopWidth)<2) return false;
+  if((parseFloat(cs.borderTopLeftRadius)||0) < w/2-3) return false;
+  return COLS.indexOf(col3(cs.borderTopColor))>-1;
+}
+function isRingSvg(el){
+  var b=boxOf(el);
+  if(!b.w||b.w<14||b.w>120||Math.abs(b.w-b.h)>8) return false;
+  var cs=getComputedStyle(el);
+  if(parseFloat(cs.strokeWidth)<2) return false;
+  return COLS.indexOf(col3(cs.stroke))>-1;
+}
+function findRings(){
+  var out=[], i, els=document.querySelectorAll('body div, body span, body a, body i, body b');
+  for(i=0;i<els.length;i++){ if(isRingEl(els[i])) out.push(els[i]); if(out.length>=6) break; }
+  if(out.length<3){ out=[]; var cs=document.querySelectorAll('circle');
+    for(i=0;i<cs.length;i++){ if(isRingSvg(cs[i])) out.push(cs[i]); if(out.length>=6) break; } }
+  return out.length>=3? out : null;
+}
+function unionRect(list){
+  var u=boxOf(list[0]), l=u.l, t=u.t, r=u.r, b=u.b;
+  for(var i=1;i<list.length;i++){ var x=boxOf(list[i]);
+    if(x.l<l)l=x.l; if(x.t<t)t=x.t; if(x.r>r)r=x.r; if(x.b>b)b=x.b; }
+  return {l:l,t:t,r:r,b:b};
+}
 function styleOnce(){
   if(document.getElementById('foStyle')) return;
   var st=document.createElement('style'); st.id='foStyle';
@@ -598,25 +629,19 @@ function styleOnce(){
    +'#foDot:hover{box-shadow:0 0 18px rgba(217,168,58,.85)}';
   document.head.appendChild(st);
 }
-function findCluster(){
-  var c=document.getElementById('introGrid')||document.querySelector('.cluster')||document.querySelector('[class*="cluster"]');
-  if(c){ var r=c.getBoundingClientRect(); if(r.width>60&&r.height>60) return c; }
-  return null;
-}
 function place(){
   if(!ov) return;
   var cx, cy, size;
-  if(host){ var r=host.getBoundingClientRect();
-    cx=r.left+r.width/2+window.scrollX; cy=r.top+r.height/2+window.scrollY;
-    size=Math.max(r.width,r.height)*1.42; }
-  else { cx=window.scrollX+innerWidth/2; cy=window.scrollY+innerHeight*0.48; size=Math.min(innerWidth*0.86,640); }
-  size=Math.max(280,Math.min(size,Math.min(innerWidth,innerHeight)*1.05));
+  if(rings){ var u=unionRect(rings);
+    cx=(u.l+u.r)/2+window.scrollX; cy=(u.t+u.b)/2+window.scrollY;
+    size=Math.max(u.r-u.l, u.b-u.t)*1.45; }
+  else { cx=window.scrollX+innerWidth/2; cy=window.scrollY+innerHeight*0.42; size=Math.min(innerWidth*0.86,640); }
+  size=Math.max(280,Math.min(size,Math.min(innerWidth,innerHeight)*1.15));
   ov.style.left=cx+'px'; ov.style.top=cy+'px';
   ov.style.width=size+'px'; ov.style.height=size+'px';
 }
 function build(){
   styleOnce();
-  host=findCluster();
   ov=document.createElement('div'); ov.id='ferryOrbit';
   ov.style.cssText='position:absolute;transform:translate(-50%,-50%);z-index:6;pointer-events:none';
   ov.innerHTML='<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">'
@@ -626,19 +651,18 @@ function build(){
    +'<span style="font-size:12px;color:#d9a83a">\u26f4</span></a></div>'
    +'<div style="position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap">the ferry orbits \u00b7 tap the gold dot</div>';
   document.body.appendChild(ov);
-  built=true;
   place();
 }
 function tick(){
-  if(!/core\.html(\?|#|$)/.test(location.href)) return;  /* core only \u00b7 the porch stays undecorated */
-  if(!built){ if(document.body) build(); return; }
-  var c=findCluster();
-  if(c!==host){ host=c; place(); }
-  else place();
+  if(!/core\.html(\?|#|$)/.test(location.href)) return;
+  if(!built){ if(document.body){ rings=findRings(); build(); built=true; } return; }
+  if(!rings) rings=findRings();
+  place();
 }
 setTimeout(tick,300);
 setInterval(tick,1200);
 addEventListener('resize',place);
+addEventListener('scroll',place,{passive:true});
 })();
 
 
