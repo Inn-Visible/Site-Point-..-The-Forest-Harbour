@@ -587,9 +587,9 @@ ov.addEventListener('click',finish);
 
   
 (function(){
-/* ---- the ferry orbit v2 \u00b7 finds the cluster wherever she lives \u00b7 scrolls with her ---- */
+/* ---- the ferry orbit v3 \u00b7 core only \u00b7 never waits for load \u00b7 adopts the cluster when she shows ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
-var ov=null, tries=0, host=null;
+var ov=null, host=null, built=false;
 function styleOnce(){
   if(document.getElementById('foStyle')) return;
   var st=document.createElement('style'); st.id='foStyle';
@@ -598,21 +598,25 @@ function styleOnce(){
    +'#foDot:hover{box-shadow:0 0 18px rgba(217,168,58,.85)}';
   document.head.appendChild(st);
 }
+function findCluster(){
+  var c=document.getElementById('introGrid')||document.querySelector('.cluster')||document.querySelector('[class*="cluster"]');
+  if(c){ var r=c.getBoundingClientRect(); if(r.width>60&&r.height>60) return c; }
+  return null;
+}
 function place(){
   if(!ov) return;
   var cx, cy, size;
-  if(host&&host.getBoundingClientRect){
-    var r=host.getBoundingClientRect();
+  if(host){ var r=host.getBoundingClientRect();
     cx=r.left+r.width/2+window.scrollX; cy=r.top+r.height/2+window.scrollY;
-    size=Math.max(r.width,r.height)*1.42;
-  } else { cx=window.scrollX+innerWidth/2; cy=window.scrollY+innerHeight*0.45; size=Math.min(innerWidth*0.8,580); }
-  size=Math.max(240,size);
+    size=Math.max(r.width,r.height)*1.42; }
+  else { cx=window.scrollX+innerWidth/2; cy=window.scrollY+innerHeight*0.48; size=Math.min(innerWidth*0.86,640); }
+  size=Math.max(280,Math.min(size,Math.min(innerWidth,innerHeight)*1.05));
   ov.style.left=cx+'px'; ov.style.top=cy+'px';
   ov.style.width=size+'px'; ov.style.height=size+'px';
 }
-function build(cl){
-  host=cl||null;
+function build(){
   styleOnce();
+  host=findCluster();
   ov=document.createElement('div'); ov.id='ferryOrbit';
   ov.style.cssText='position:absolute;transform:translate(-50%,-50%);z-index:6;pointer-events:none';
   ov.innerHTML='<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">'
@@ -622,19 +626,19 @@ function build(cl){
    +'<span style="font-size:12px;color:#d9a83a">\u26f4</span></a></div>'
    +'<div style="position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap">the ferry orbits \u00b7 tap the gold dot</div>';
   document.body.appendChild(ov);
+  built=true;
   place();
 }
-function mount(){
-  if(ov||tries++>40) return;
-  var cl=document.querySelector('.cluster')||document.getElementById('introGrid')||document.querySelector('[class*="cluster"]');
-  var porch=/((core|index)\.html)(\?|#|$)/.test(location.href);
-  if(!cl&&!porch) return;
-  if(porch&&!cl&&document.readyState!=='complete') return; /* wait for the rings to exist */
-  build(cl);
+function tick(){
+  if(!/core\.html(\?|#|$)/.test(location.href)) return;  /* core only \u00b7 the porch stays undecorated */
+  if(!built){ if(document.body) build(); return; }
+  var c=findCluster();
+  if(c!==host){ host=c; place(); }
+  else place();
 }
-setInterval(mount,500); setTimeout(mount,400);
+setTimeout(tick,300);
+setInterval(tick,1200);
 addEventListener('resize',place);
-addEventListener('load',function(){ setTimeout(place,300); });
 })();
 
 
