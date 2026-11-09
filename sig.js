@@ -604,10 +604,11 @@ setTimeout(finish,6000);
 ov.addEventListener('click',finish);
 })();
 
- (function(){
-/* ---- the ferry orbit v6 \u00b7 offset-walk anchor \u00b7 scroll- and refresh-proof \u00b7 core only ---- */
+(function(){
+/* ---- the ferry orbit v7 \u00b7 anchored to .cluster herself \u00b7 font-race proof \u00b7 core only ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
-var ov=null, anchor=null, tries=0;
+var ov=null, anchor=null, built=false;
+function pagePos(el){ var x=0,y=0; while(el){ x+=el.offsetLeft; y+=el.offsetTop; el=el.offsetParent; } return {x:x,y:y}; }
 function byText(frag){
   var els=document.querySelectorAll('h1,h2,h3,p,div,span,i,b,em');
   for(var i=0;i<els.length;i++){ var el=els[i];
@@ -617,17 +618,26 @@ function byText(frag){
     if(t.indexOf(frag)>-1) return el; }
   return null;
 }
-function pagePos(el){ var x=0,y=0; while(el){ x+=el.offsetLeft; y+=el.offsetTop; el=el.offsetParent; } return {x:x,y:y}; }
 function measure(){
+  var cl=document.querySelector('.cluster');
+  if(cl){
+    var w=cl.offsetWidth||0, h=cl.offsetHeight||0;
+    if(w>80&&h>80&&w<2200&&h<2200){
+      var cs=getComputedStyle(cl), p;
+      if(cs.position==='fixed'){ var r=cl.getBoundingClientRect();
+        p={x:r.left+window.scrollX, y:r.top+window.scrollY}; }
+      else p=pagePos(cl);
+      return { cx:p.x+w/2, cy:p.y+h/2, size:Math.max(w,h)*1.42, src:'cluster' };
+    }
+  }
   var top=byText('Refuge in plain sight'), bot=byText('four rooms, one house');
-  if(!top||!bot) return null;
-  var pt=pagePos(top), pb=pagePos(bot);
-  var topH=top.offsetHeight||0;
-  var gap=pb.y-(pt.y+topH);
-  if(gap<120) return null;
-  return { cx:pt.x+(top.offsetWidth||innerWidth)/2,
-           cy:pt.y+topH+gap*0.47,
-           size:Math.max(280,Math.min(gap*0.74, Math.min(innerWidth,innerHeight)*1.05)) };
+  if(top&&bot){
+    var pt=pagePos(top), pb=pagePos(bot), th=top.offsetHeight||0, gap=pb.y-(pt.y+th);
+    if(gap>120) return { cx:pt.x+(top.offsetWidth||innerWidth)/2, cy:pt.y+th+gap*0.47,
+      size:Math.max(280,Math.min(gap*0.74, Math.min(innerWidth,innerHeight)*1.05)), src:'lines' };
+  }
+  return { cx:window.scrollX+innerWidth/2, cy:window.scrollY+innerHeight*0.45,
+    size:Math.min(innerWidth*0.86,640), src:'view' };
 }
 function styleOnce(){ if(document.getElementById('foStyle')) return;
   var st=document.createElement('style'); st.id='foStyle';
@@ -636,31 +646,36 @@ function styleOnce(){ if(document.getElementById('foStyle')) return;
 function apply(){ if(!ov||!anchor) return;
   ov.style.left=anchor.cx+'px'; ov.style.top=anchor.cy+'px';
   ov.style.width=anchor.size+'px'; ov.style.height=anchor.size+'px'; }
-function build(a){
-  styleOnce(); anchor=a;
+function settle(){ var a=measure();
+  if(!anchor||Math.abs(a.cx-anchor.cx)>6||Math.abs(a.cy-anchor.cy)>6||Math.abs(a.size-anchor.size)>6){
+    anchor=a; apply(); } }
+function build(){
+  styleOnce(); anchor=measure();
   ov=document.createElement('div'); ov.id='ferryOrbit';
   ov.style.cssText='position:absolute;transform:translate(-50%,-50%);z-index:6;pointer-events:none';
   ov.innerHTML='<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">'
    +'<circle id="foVis" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,.45)" stroke-width="0.7" stroke-dasharray="0.5 3.2" stroke-linecap="round" style="pointer-events:none;transition:stroke .2s"/>'
    +'<circle id="foHit" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,0.01)" stroke-width="7" style="pointer-events:visibleStroke;cursor:pointer"/>'
    +'</svg>'
-   +'<div style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap;pointer-events:none">the ferry \u00b7 tap the ring</div>';
+   +'<div style="position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#93a1b0;white-space:nowrap;pointer-events:none;background:rgba(10,13,18,.82);padding:2px 8px;border:1px solid rgba(34,48,65,.9)">the ferry \u00b7 tap the ring</div>';
   ov.querySelector('#foHit').addEventListener('click',function(){ location.href='ferry.html'; });
   document.body.appendChild(ov);
+  built=true;
   apply();
 }
 function tick(){
-  if(ov||tries++>30) return;
-  if(!/core\.html(\?|#|$)/.test(location.href)){ tries=99; return; }
+  if(!/core\.html(\?|#|$)/.test(location.href)) return;
   if(!document.body) return;
-  var a=measure(); if(!a) return;
-  build(a);
+  if(!built){ build(); return; }
+  settle();
 }
-setTimeout(tick,300);
-var iv=setInterval(function(){ tick(); if(ov||tries>30) clearInterval(iv); },600);
-addEventListener('resize',function(){ if(!ov) return; var a=measure(); if(a){ anchor=a; apply(); } });
-addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure(); if(a){ anchor=a; apply(); } } },400); });
-})(); 
+setTimeout(tick,250);
+var beats=[700,1600,3000,5200];
+beats.forEach(function(ms){ setTimeout(tick,ms); });
+addEventListener('load',function(){ setTimeout(tick,300); });
+if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){ setTimeout(tick,120); }).catch(function(){}); }
+addEventListener('resize',tick);
+})();
 
 (function(){
   /* ---- the offline hand, house-wide \u00b7 every room registers the keeper \u00b7 and nudges him awake ---- */
