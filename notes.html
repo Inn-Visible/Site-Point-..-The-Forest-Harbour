@@ -788,9 +788,10 @@
 
     var titleEl=$('edTitle'), bodyEl=$('edBody'), tagInput=$('edTagInput'), suggest=$('tagSuggest');
 
-    titleEl.addEventListener('input',function(){n.title=titleEl.value;n.updated=Date.now();save();renderList();});
+      function saveSoon(){ clearTimeout(window.__edSaveT); window.__edSaveT=setTimeout(function(){ window.__edSaveT=0; save(); },450); }
+    titleEl.addEventListener('input',function(){n.title=titleEl.value;n.updated=Date.now();saveSoon();renderList();});
     bodyEl.addEventListener('input',function(){
-      n.body=bodyEl.value;n.updated=Date.now();save();
+      n.body=bodyEl.value;n.updated=Date.now();saveSoon();
       // update word count without full re-render
       var wc=editorContent.querySelector('.wc');
       if(wc){var w=n.body.trim()?n.body.trim().split(/\s+/).length:0;wc.textContent=w+' words · '+n.body.length+' chars';}
