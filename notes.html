@@ -504,8 +504,7 @@
             n.title=src.title||'untitled'; n.body=src.body||'';
             n.tags=(src.tags||[]).concat(['eigen','tablet']);
             n.date=new Date(src.updated||src.created||Date.now()).toISOString().slice(0,10);
-            if(src.images) n.images=src.images; else delete n.images;
-            if(src.imageStyles) n.imageStyles=src.imageStyles; else delete n.imageStyles;
+                       delete n.images; delete n.imageStyles;
             newL.push(n); existingIds[n.id]=1;
           }
           // else: deleted in tablet, drop the shadow from the drawer
@@ -517,8 +516,6 @@
         if(!existingIds[sid]){
           var obj={id:sid,pillar:'eigen',date:new Date(n.updated||n.created||Date.now()).toISOString().slice(0,10),
             title:n.title||'untitled',body:n.body||'',tags:(n.tags||[]).concat(['eigen','tablet']),local:true};
-          if(n.images) obj.images=n.images;
-          if(n.imageStyles) obj.imageStyles=n.imageStyles;
           newL.unshift(obj);
         }
       });
