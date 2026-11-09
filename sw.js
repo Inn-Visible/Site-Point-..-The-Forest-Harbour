@@ -200,3 +200,12 @@ function gisSea(){
   if(!('serviceWorker' in navigator)||window.__swReg) return; window.__swReg=1;
   addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} });
 })();
+
+self.addEventListener('message',function(ev){
+  if(ev.data==='hive-seed'){
+    var all=PAGES.concat(['./kit.html','./parlor.html','./donations.html','./board.html']);
+    caches.open(CORE).then(function(c){
+      return Promise.all(all.map(function(u){ return c.add(u).catch(function(){ return null; }); }));
+    }).then(function(){ try{ ev.source.postMessage('hive-seeded'); }catch(e){} });
+  }
+});
