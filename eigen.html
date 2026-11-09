@@ -479,7 +479,7 @@ requestAnimationFrame(frame);
 
 <script>
 (function(){
-/* ---- the agenda board & the venn \u00b7 eigen's week desk \u00b7 stained glass & boreal fog ---- */
+/* ---- the agenda board \u00b7 the venn \u00b7 the almanac \u00b7 the library \u00b7 eigen's bottom desk, demure ---- */
 if(window.__eigenWeek) return; window.__eigenWeek=1;
 var AKEY='hive_agenda', VKEY='hive_venn';
 function ld(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return (v&&typeof v==='object')?v:d; }catch(e){ return d; } }
@@ -491,7 +491,12 @@ function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&a
 function gid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 var DN=['mon','tue','wed','thu','fri','sat','sun'];
 var MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-var JEWEL=['#2e9e77','#3f7fc1','#d9a83a','#c05a6e','#7fb2d9','#2e9e77','#3f7fc1'];
+var SYN=29.530588853, EPO=Date.UTC(2000,0,6,18,14,0);
+var GL=['\ud83c\udf11','\ud83c\udf12','\ud83c\udf13','\ud83c\udf14','\ud83c\udf15','\ud83c\udf16','\ud83c\udf17','\ud83c\udf18'];
+var NM8=['new moon','waxing crescent','first quarter','waxing gibbous','full moon','waning gibbous','last quarter','waning crescent'];
+function mage(t){ var a=((t-EPO)/86400000)%SYN; if(a<0)a+=SYN; return a; }
+function mgl(t){ return GL[Math.floor((mage(t)/SYN)*8+0.5)%8]; }
+function mlit(t){ return Math.round((1-Math.cos(2*Math.PI*mage(t)/SYN))/2*100); }
 var anchor=monday(new Date());
 var A=ld(AKEY,{});
 var V=ld(VKEY,{topic:'',pros:[],cons:[],both:[]});
@@ -500,77 +505,131 @@ function day(k){ if(!A[k]) A[k]={intent:'',tasks:[]}; return A[k]; }
 var st=document.createElement('style');
 st.textContent=
  '#weekDesk{max-width:1080px;margin:34px auto 0;padding:14px 16px 18px;font-family:ui-monospace,Consolas,monospace;color:#93a8a0;'
- +'background:radial-gradient(ellipse at 50% 0%, rgba(143,199,232,.05), transparent 60%),radial-gradient(ellipse at 15% 100%, rgba(46,158,119,.06), transparent 55%),radial-gradient(ellipse at 85% 90%, rgba(217,168,58,.04), transparent 50%)}'
+ +'background:radial-gradient(ellipse at 50% 0%, rgba(143,199,232,.03), transparent 60%),radial-gradient(ellipse at 15% 100%, rgba(58,122,99,.04), transparent 55%)}'
 +'#weekDesk .wdHead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid #24352c;padding-bottom:10px}'
 +'#weekDesk .wdHead b{font-family:Georgia,serif;font-style:italic;font-weight:normal;font-size:15px;color:#eae6da}'
 +'#weekDesk .wdHead i{font-family:Georgia,serif;font-size:11px;color:#5c6f66}'
 +'#weekDesk button{background:none;border:1px solid #24352c;color:#93a8a0;font:10px ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:5px 10px;cursor:pointer}'
 +'#weekDesk button:hover{border-color:#d9a83a;color:#d9a83a}'
 +'#weekDesk input{background:rgba(4,8,6,.6);border:1px solid #24352c;color:#e8e4d8;font:10px ui-monospace,Consolas,monospace;padding:6px 8px;outline:none}'
-+'#weekDesk input:focus{border-color:#7fb2d9}'
++'#weekDesk input:focus{border-color:#7fa8a0}'
 +'#wdBoard{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}'
 +'@media(max-width:900px){#wdBoard{overflow-x:auto;grid-template-columns:repeat(7,150px)}}'
-+'#wdBoard .wdDay{border:1px solid #24352c;border-top:3px solid #24352c;background:linear-gradient(180deg,rgba(20,32,26,.92),rgba(10,16,13,.96));padding:8px;height:252px;display:flex;flex-direction:column;gap:6px;min-width:0}'
++'#wdBoard .wdDay{border:1px solid #24352c;border-top:3px solid #24352c;background:linear-gradient(180deg,rgba(18,26,22,.9),rgba(10,16,13,.95));padding:8px;height:252px;display:flex;flex-direction:column;gap:6px;min-width:0}'
 +'@media(max-width:900px){#wdBoard .wdDay{height:232px}}'
-+'#wdBoard .wdDay.today{border-color:#d9a83a;box-shadow:0 0 14px rgba(217,168,58,.22)}'
++'#wdBoard .wdDay.today{border-color:#d9a83a;box-shadow:0 0 10px rgba(217,168,58,.12)}'
 +'#wdBoard .wdD{font-size:9px;letter-spacing:.2em;color:#5c6f66}'
 +'#wdBoard .wdDay.today .wdD{color:#d9a83a}'
-+'#wdBoard .wdIntent{width:100%;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#7fb2d9;border:none;border-bottom:1px dashed #24352c;background:none;padding:2px 0}'
++'#wdBoard .wdIntent{width:100%;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#7fa8a0;border:none;border-bottom:1px dashed #24352c;background:none;padding:2px 0}'
 +'#wdBoard .wdTasks{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:0}'
 +'#wdBoard .wdT{display:flex;gap:5px;align-items:flex-start;font-size:10px;color:#93a8a0;line-height:1.5}'
 +'#wdBoard .wdT.done span{text-decoration:line-through;color:#3a4a44}'
-+'#wdBoard .wdT input{accent-color:#2e9e77;margin-top:2px}'
++'#wdBoard .wdT input{accent-color:#3a7a63;margin-top:2px}'
 +'#wdBoard .wdT button{border:none;padding:0 2px;color:#5c6f66}'
-+'#wdBoard .wdT button:hover{color:#c03434}'
++'#wdBoard .wdT button:hover{color:#8a3a34}'
 +'#wdBar{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:10px;letter-spacing:.12em;color:#5c6f66;flex-wrap:wrap}'
 +'#wdBar .wdTrack{flex:1;min-width:120px;height:4px;background:#24352c;position:relative}'
-+'#wdBar .wdTrack i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2e9e77,#d9a83a);width:0%}'
++'#wdBar .wdTrack i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#3a7a63,#8a6a2f);width:0%}'
 +'#wdCarry{margin-top:8px;font-size:10px;color:#5c6f66;display:flex;gap:6px;flex-wrap:wrap}'
-+'#wdCarry button{border-color:#7fb2d9;color:#7fb2d9}'
++'#wdCarry button{border-color:#7fa8a0;color:#7fa8a0}'
 +'#vnWrap{margin-top:26px;border-top:1px solid #24352c;padding-top:14px}'
 +'#vnWrap .vnHead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}'
 +'#vnWrap .vnHead b{font-family:Georgia,serif;font-style:italic;font-weight:normal;font-size:14px;color:#eae6da}'
 +'#vnSvg{display:block;margin:6px auto 0;max-width:420px;width:100%}'
 +'#vnCols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}'
 +'@media(max-width:700px){#vnCols{grid-template-columns:1fr}}'
-+'#vnCols .vnC{border:1px solid #24352c;background:linear-gradient(180deg,rgba(20,32,26,.92),rgba(10,16,13,.96));padding:8px}'
++'#vnCols .vnC{border:1px solid #24352c;background:linear-gradient(180deg,rgba(18,26,22,.9),rgba(10,16,13,.95));padding:8px}'
 +'#vnCols h5{font-size:9px;letter-spacing:.2em;margin-bottom:6px;font-weight:normal}'
 +'#vnCols .vnI{display:flex;gap:5px;align-items:flex-start;font-size:10px;line-height:1.5;color:#93a8a0;margin-bottom:4px}'
 +'#vnCols .vnI button{border:none;padding:0 2px;color:#5c6f66}'
-+'#vnCols .vnI button:hover{color:#c03434}'
-+'#vnRead{margin-top:10px;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:12px;color:#d9a83a;min-height:16px}';
++'#vnCols .vnI button:hover{color:#8a3a34}'
++'#vnRead{margin-top:10px;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:12px;color:#b08c3a;min-height:16px}';
 document.head.appendChild(st);
 
 var sec=document.createElement('section'); sec.id='weekDesk';
 sec.innerHTML=
- '<div class="wdHead"><b>the agenda board \u00b7 the week\u2019s intent</b><i>seven panes of the week \u00b7 light through the pines</i>'
+ '<div class="wdHead"><b>the agenda board \u00b7 the week\u2019s intent</b><i>seven quiet panes \u00b7 light through the pines</i>'
  +'<span style="flex:1"></span>'
- +'<button id="wdPrev">\u2039 week</button><span id="wdLabel" style="font-size:10px;letter-spacing:.15em;color:#d9a83a"></span><button id="wdNext">week \u203a</button><button id="wdToday">today</button><button id="wdSweep">sweep done \u2713</button></div>'
+ +'<button id="wdPrev">\u2039 week</button><span id="wdLabel" style="font-size:10px;letter-spacing:.15em;color:#d9a83a"></span><button id="wdNext">week \u203a</button><button id="wdToday">today</button><button id="wdMonth">month \u00b7 \u263e</button><button id="wdSweep">sweep done \u2713</button></div>'
  +'<div id="wdCarry"></div>'
  +'<div id="wdBoard"></div>'
  +'<div id="wdBar"><span id="wdCount"></span><span class="wdTrack"><i id="wdFill"></i></span></div>'
  +'<div id="vnWrap">'
-   +'<div class="vnHead"><b>the venn \u00b7 what weighs</b><input id="vnTopic" placeholder="name the question\u2026" style="flex:1;min-width:140px;font-family:Georgia,serif;font-style:italic;font-size:12px;color:#7fb2d9"></div>'
+   +'<div class="vnHead"><b>the venn \u00b7 what weighs</b><input id="vnTopic" placeholder="name the question\u2026" style="flex:1;min-width:140px;font-family:Georgia,serif;font-style:italic;font-size:12px;color:#7fa8a0"></div>'
    +'<svg id="vnSvg" viewBox="0 0 320 170">'
-     +'<circle cx="118" cy="88" r="62" fill="rgba(46,158,119,.12)" stroke="#2e9e77" stroke-width="1.4"/>'
-     +'<circle cx="202" cy="88" r="62" fill="rgba(192,52,52,.12)" stroke="#c03434" stroke-width="1.4"/>'
-     +'<ellipse cx="160" cy="88" rx="21" ry="56" fill="rgba(217,168,58,.10)" stroke="#d9a83a" stroke-width="1" stroke-dasharray="3 3"/>'
-     +'<text x="86" y="30" fill="#2e9e77" font-size="10" letter-spacing="2" text-anchor="middle">PROS</text>'
-     +'<text x="160" y="20" fill="#d9a83a" font-size="10" letter-spacing="2" text-anchor="middle">BOTH FACES</text>'
-     +'<text x="234" y="30" fill="#c03434" font-size="10" letter-spacing="2" text-anchor="middle">CONS</text>'
-     +'<text id="vnCp" x="86" y="92" fill="#2e9e77" font-size="16" text-anchor="middle">0</text>'
-     +'<text id="vnCb" x="160" y="92" fill="#d9a83a" font-size="16" text-anchor="middle">0</text>'
-     +'<text id="vnCc" x="234" y="92" fill="#c03434" font-size="16" text-anchor="middle">0</text>'
+     +'<circle cx="118" cy="88" r="62" fill="rgba(58,122,99,.10)" stroke="#3a7a63" stroke-width="1.2"/>'
+     +'<circle cx="202" cy="88" r="62" fill="rgba(138,58,52,.10)" stroke="#8a3a34" stroke-width="1.2"/>'
+     +'<ellipse cx="160" cy="88" rx="21" ry="56" fill="rgba(138,106,47,.08)" stroke="#8a6a2f" stroke-width="1" stroke-dasharray="3 3"/>'
+     +'<text x="86" y="30" fill="#3a7a63" font-size="10" letter-spacing="2" text-anchor="middle">PROS</text>'
+     +'<text x="160" y="20" fill="#8a6a2f" font-size="10" letter-spacing="2" text-anchor="middle">BOTH FACES</text>'
+     +'<text x="234" y="30" fill="#8a3a34" font-size="10" letter-spacing="2" text-anchor="middle">CONS</text>'
+     +'<text id="vnCp" x="86" y="92" fill="#3a7a63" font-size="16" text-anchor="middle">0</text>'
+     +'<text id="vnCb" x="160" y="92" fill="#8a6a2f" font-size="16" text-anchor="middle">0</text>'
+     +'<text id="vnCc" x="234" y="92" fill="#8a3a34" font-size="16" text-anchor="middle">0</text>'
    +'</svg>'
    +'<div id="vnCols">'
-     +'<div class="vnC"><h5 style="color:#2e9e77">PROS \u00b7 the light side</h5><div id="vnListP"></div><div style="display:flex;gap:4px"><input id="vnInP" placeholder="+ pro" style="flex:1"><button id="vnAddP">+</button></div></div>'
-     +'<div class="vnC"><h5 style="color:#d9a83a">BOTH \u00b7 wears two faces</h5><div id="vnListB"></div><div style="display:flex;gap:4px"><input id="vnInB" placeholder="+ both" style="flex:1"><button id="vnAddB">+</button></div></div>'
-     +'<div class="vnC"><h5 style="color:#c03434">CONS \u00b7 the weight</h5><div id="vnListC"></div><div style="display:flex;gap:4px"><input id="vnInC" placeholder="+ con" style="flex:1"><button id="vnAddC">+</button></div></div>'
+     +'<div class="vnC"><h5 style="color:#3a7a63">PROS \u00b7 the light side</h5><div id="vnListP"></div><div style="display:flex;gap:4px"><input id="vnInP" placeholder="+ pro" style="flex:1"><button id="vnAddP">+</button></div></div>'
+     +'<div class="vnC"><h5 style="color:#8a6a2f">BOTH \u00b7 wears two faces</h5><div id="vnListB"></div><div style="display:flex;gap:4px"><input id="vnInB" placeholder="+ both" style="flex:1"><button id="vnAddB">+</button></div></div>'
+     +'<div class="vnC"><h5 style="color:#8a3a34">CONS \u00b7 the weight</h5><div id="vnListC"></div><div style="display:flex;gap:4px"><input id="vnInC" placeholder="+ con" style="flex:1"><button id="vnAddC">+</button></div></div>'
    +'</div>'
    +'<div id="vnRead"></div>'
  +'</div>';
-var f=document.querySelector('footer');
-(f&&f.parentNode||document.body).insertBefore(sec,f||null);
+
+/* ---- the almanac \u00b7 month & moon popup ---- */
+var alm=document.createElement('div'); alm.id='wdAlm';
+alm.style.cssText='position:fixed;inset:0;z-index:1300;background:rgba(4,6,10,.9);display:none;align-items:flex-start;justify-content:center;overflow-y:auto';
+alm.innerHTML='<div style="width:min(560px,94vw);margin:6vh auto 40px;border:1px solid #24352c;background:#0d1512;padding:16px;font-family:ui-monospace,Consolas,monospace;color:#93a8a0">'
+ +'<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid #24352c;padding-bottom:8px">'
+ +'<b style="font-family:Georgia,serif;font-style:italic;font-weight:normal;font-size:14px;color:#eae6da">the almanac \u00b7 month &amp; moon</b>'
+ +'<span style="flex:1"></span>'
+ +'<button id="alPrev" style="background:none;border:1px solid #24352c;color:#93a8a0;font:10px ui-monospace;padding:4px 9px;cursor:pointer">\u2039</button>'
+ +'<span id="alLabel" style="font-size:10px;letter-spacing:.15em;color:#d9a83a"></span>'
+ +'<button id="alNext" style="background:none;border:1px solid #24352c;color:#93a8a0;font:10px ui-monospace;padding:4px 9px;cursor:pointer">\u203a</button>'
+ +'<button id="alClose" style="background:none;border:1px solid #8a3a34;color:#8a3a34;font:10px ui-monospace;padding:4px 9px;cursor:pointer">\u2715</button></div>'
+ +'<div id="alMoon" style="margin:10px 0;font-size:10px;letter-spacing:.12em;color:#7fa8a0;text-align:center"></div>'
+ +'<div id="alGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>'
+ +'<div style="margin-top:10px;text-align:center;font-size:9px;color:#5c6f66;letter-spacing:.15em">tap a day \u00b7 the board walks to that week</div></div>';
+document.body.appendChild(alm);
+var almM=new Date(); almM.setDate(1);
+function renderAlm(){
+  document.getElementById('alLabel').textContent=MO[almM.getMonth()]+' '+almM.getFullYear();
+  var now=new Date();
+  document.getElementById('alMoon').textContent=mgl(now.getTime())+' '+NM8[Math.floor((mage(now.getTime())/SYN)*8+0.5)%8]
+    +' \u00b7 moon-day '+(Math.floor(mage(now.getTime()))+1)+' \u00b7 '+mlit(now.getTime())+'% lit';
+  var g=document.getElementById('alGrid'); g.innerHTML='';
+  DN.forEach(function(d){ var h=document.createElement('div');
+    h.style.cssText='text-align:center;font-size:8px;letter-spacing:.15em;color:#5c6f66'; h.textContent=d.slice(0,2).toUpperCase(); g.appendChild(h); });
+  var first=new Date(almM.getFullYear(),almM.getMonth(),1);
+  var off=(first.getDay()+6)%7;
+  var dim=new Date(almM.getFullYear(),almM.getMonth()+1,0).getDate();
+  for(var b=0;b<off;b++){ g.appendChild(document.createElement('div')); }
+  for(var dd=1;dd<=dim;dd++){
+    var dt=new Date(almM.getFullYear(),almM.getMonth(),dd);
+    var k=iso(dt), D=A[k]||{tasks:[]};
+    var tot=D.tasks.length, dn=D.tasks.filter(function(t){return t.done;}).length;
+    var cell=document.createElement('div');
+    cell.style.cssText='border:1px solid #24352c;background:rgba(4,8,6,.5);padding:4px 2px;min-height:54px;text-align:center;cursor:pointer';
+    if(k===iso(now)) cell.style.borderColor='#d9a83a';
+    cell.innerHTML='<div style="font-size:9px;color:#5c6f66">'+dd+'</div>'
+      +'<div style="font-size:12px;line-height:1.4">'+mgl(dt.getTime())+'</div>'
+      +(tot? '<div style="font-size:8px;color:'+(dn===tot?'#3a7a63':'#8a6a2f')+'">'+(dn===tot?'\u2713':'\u2022')+tot+'</div>' : '');
+    cell.onclick=function(kk){ return function(){ anchor=monday(new Date(kk+'T12:00:00')); renderBoard(); alm.style.display='none'; }; }(k);
+    g.appendChild(cell);
+  }
+}
+document.getElementById('wdMonth').onclick=function(){ alm.style.display='flex'; renderAlm(); };
+document.getElementById('alClose').onclick=function(){ alm.style.display='none'; };
+document.getElementById('alPrev').onclick=function(){ almM.setMonth(almM.getMonth()-1); renderAlm(); };
+document.getElementById('alNext').onclick=function(){ almM.setMonth(almM.getMonth()+1); renderAlm(); };
+alm.addEventListener('click',function(e){ if(e.target===alm) alm.style.display='none'; });
+addEventListener('keydown',function(e){ if(e.key==='Escape') alm.style.display='none'; });
+
+/* ---- mount the desk at the true bottom, after every other injected shelf ---- */
+setTimeout(function(){
+  var f=document.querySelector('footer');
+  (f&&f.parentNode||document.body).insertBefore(sec,f||null);
+  renderBoard(); renderVenn();
+},700);
 
 function renderBoard(){
   document.getElementById('wdLabel').textContent='week of '+MO[anchor.getMonth()]+' '+anchor.getDate();
@@ -579,7 +638,6 @@ function renderBoard(){
   for(var i=0;i<7;i++){
     var d=addD(anchor,i), k=iso(d), D=day(k);
     var card=document.createElement('div'); card.className='wdDay'+(k===tK?' today':'');
-    card.style.borderTopColor=JEWEL[i];
     var h='<div class="wdD">'+DN[i].toUpperCase()+' '+MO[d.getMonth()]+' '+d.getDate()+'</div>'
       +'<input class="wdIntent" data-k="'+k+'" value="'+esc(D.intent)+'" placeholder="the day\u2019s north star\u2026">'
       +'<div class="wdTasks">';
@@ -683,9 +741,32 @@ document.getElementById('vnAddC').onclick=function(){ vnAdd('c'); };
   });
 });
 document.getElementById('vnTopic').addEventListener('input',function(){ V.topic=this.value; sv(VKEY,V); renderVenn(); });
-renderBoard(); renderVenn();
+
+/* ---- the library \u00b7 fold the two shelves into one piece of furniture ---- */
+setTimeout(function(){
+  var desk=document.getElementById('weekDesk');
+  var keeper=null, shelfS=null;
+  var all=document.querySelectorAll('div,section');
+  for(var i=0;i<all.length;i++){
+    var t=all[i].textContent||'';
+    if(!keeper && t.indexOf('the keeper\u2019s shelf \u00b7 published work')>-1 && t.length<400 && all[i].querySelector('a[href*="amazon"]')) keeper=all[i];
+    if(!shelfS && t.indexOf('the shelf \u00b7 your books, your glass')>-1 && t.length<900 && all[i].querySelector('#shList')) shelfS=all[i];
+  }
+  if(!keeper&&!shelfS) return;
+  var lib=document.createElement('section'); lib.id='eigenLibrary';
+  lib.style.cssText='max-width:900px;margin:30px auto 0;border:1px solid #24352c;background:linear-gradient(180deg,rgba(26,20,15,.5),rgba(10,16,13,.65));padding:18px 16px;font-family:ui-monospace,Consolas,monospace';
+  lib.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;font-size:14px;color:#eae6da">the library \u00b7 what the house has read &amp; kept</div>'
+   +'<div style="text-align:center;font-size:9px;color:#5c6f66;letter-spacing:.2em;margin:4px 0 14px">ONE FURNITURE \u00b7 TWO SHELVES \u00b7 NO CLOUD</div>'
+   +'<div id="libLectern"></div>'
+   +'<div style="height:7px;margin:14px 0;background:linear-gradient(180deg,#3a2c20,#241a12 60%,#17110c);border-top:1px solid #4a3826;box-shadow:0 2px 6px rgba(0,0,0,.55);border-radius:2px"></div>'
+   +'<div id="libGlass"></div>';
+  (desk&&desk.parentNode||document.body).insertBefore(lib,desk||null);
+  if(keeper){ keeper.style.cssText='max-width:none;margin:0;padding:10px 12px;border:1px dashed #24352c;background:rgba(4,8,6,.4);text-align:center';
+    lib.querySelector('#libLectern').appendChild(keeper); }
+  if(shelfS){ shelfS.style.cssText='max-width:none;margin:0;border:none;background:none;padding:0';
+    lib.querySelector('#libGlass').appendChild(shelfS); }
+},1100);
 })();
 </script>
   
-</body>
 </html>
