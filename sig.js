@@ -640,7 +640,7 @@ function tick(){
   build(a);
 }
 setTimeout(tick,300);
-var iv=setInterval(function(){ tick(); if(ov) clearInterval(iv); },600);
+var iv=setInterval(function(){ tick(); if(ov||tries>30) clearInterval(iv); },600);
 addEventListener('resize',function(){ if(!ov) return; var a=measure(); if(a){ anchor=a; apply(); } });
 addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure(); if(a){ anchor=a; apply(); } } },400); });
 })();
