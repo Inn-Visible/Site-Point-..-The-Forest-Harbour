@@ -1082,7 +1082,7 @@
   });
 
   // init
-  load();save();renderList();renderEditor();
+   load().then(function(){ renderList(); renderEditor(); });
 
   // ─── Chat Workspace ───
   var chatWindows=[];
