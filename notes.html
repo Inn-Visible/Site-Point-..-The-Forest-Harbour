@@ -907,8 +907,7 @@
           var imgId=img.getAttribute('data-img-id');
           var sizes=['size-small','size-medium','size-full'];
           var current=n.imageStyles[imgId]||'size-medium';
-          var idx=sizes.indexOf(current);
-          var next=sizes[(idx+1)%sizes.length];
+          var next=sizes[(sizes.indexOf(current)+1)%sizes.length];
           n.imageStyles[imgId]=next;
           img.className=next;
           save();
