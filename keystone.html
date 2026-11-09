@@ -385,6 +385,114 @@ const pad64 = x => x.toLowerCase().replace('0x','').padStart(64,'0');
 
 <script src="sig.js" defer></script>
 
+<script>
+/* ---- register the service worker · the house keeps itself ---- */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+</script>
+
+<script>
+/* ---- THE ROCK-LEDGER · what the house holds when the wire dies ---- */
+(function(){
+  var sec=document.createElement('section');
+  sec.style.cssText='max-width:980px;margin:30px auto;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;color:#93a1b0';
+  sec.innerHTML='<div style="text-align:center;font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:13px;margin-bottom:4px">the rock-ledger · offline sanctity</div>'
+   +'<div style="text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em;margin-bottom:12px">THE HOUSE KEEPS ITSELF · WIRE OR NO WIRE</div>'
+   
+   +'<div id="rlStatus" style="text-align:center;padding:14px;border:1px solid #223041;margin-bottom:14px">'
+   +'<div style="font-size:10px;letter-spacing:.15em;color:#5c6875">CONNECTION</div>'
+   +'<div id="rlConn" style="font-size:14px;color:#d9a83a;margin-top:4px">checking…</div></div>'
+   
+   +'<div id="rlCache" style="border:1px dashed #223041;padding:12px;margin-bottom:14px">'
+   +'<div style="font-size:9px;letter-spacing:.2em;color:#5c6875;margin-bottom:8px;text-align:center">CACHED PAGES</div>'
+   +'<div id="rlList" style="font-size:10px;line-height:1.9;color:#93a1b0"></div></div>'
+   
+   +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
+   +'<button id="rlRefresh" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:8px 14px;cursor:pointer">refresh cache</button>'
+   +'<button id="rlClear" style="background:none;border:1px solid #c8452c;color:#c8452c;font:10px ui-monospace;padding:8px 14px;cursor:pointer">clear cache</button></div>'
+   
+   +'<div style="margin-top:14px;font-size:9px;color:#5c6875;letter-spacing:.12em;text-align:center;line-height:1.8">'
+   +'the house caches itself on first visit · open any page once online, and it works forever after<br>'
+   +'the rock-ledger lives in keystone · the house keeps its own books, even when the wire dies</div>';
+   
+  var foot=document.querySelector('footer');
+  if(foot&&foot.parentNode) foot.parentNode.insertBefore(sec,foot);
+  else document.body.appendChild(sec);
+  
+  function paintConn(){
+    var el=document.getElementById('rlConn');
+    if(!el) return;
+    if(navigator.onLine){
+      el.textContent='the wire is live';
+      el.style.color='#58a36a';
+    } else {
+      el.textContent='no wire · the house holds';
+      el.style.color='#d9a83a';
+    }
+  }
+  
+  function paintCache(){
+    var list=document.getElementById('rlList');
+    if(!list||!('caches' in window)) return;
+    caches.open('hive-v3').then(function(c){
+      return c.keys();
+    }).then(function(reqs){
+      if(!reqs.length){
+        list.innerHTML='<div style="text-align:center;color:#5c6875">no cache yet · visit pages online to seed the rock</div>';
+        return;
+      }
+      var lines=reqs.map(function(r){
+        var url=r.url.split('/').pop()||'core';
+        return '<div style="padding:3px 0">· '+url+'</div>';
+      });
+      list.innerHTML='<div style="text-align:center;color:#5c6875;margin-bottom:6px">'+reqs.length+' pages held</div>'+lines.join('');
+    }).catch(function(){
+      list.innerHTML='<div style="text-align:center;color:#5c6875">cache read refused</div>';
+    });
+  }
+  
+  document.getElementById('rlRefresh').onclick=function(){
+    if(!navigator.onLine){
+      alert('the wire is dead · connect to refresh the cache');
+      return;
+    }
+    var btn=this;
+    btn.textContent='refreshing…';
+    btn.disabled=true;
+    caches.delete('hive-v3').then(function(){
+      return caches.open('hive-v3');
+    }).then(function(c){
+      return c.addAll([
+        './','./core.html','./index.html',
+        './axiom.html','./eigen.html','./baseline.html','./keystone.html',
+        './sig.js','./grid3d.html','./wheel.html','./ferry.html'
+      ]);
+    }).then(function(){
+      btn.textContent='refreshed ✓';
+      setTimeout(function(){ btn.textContent='refresh cache'; btn.disabled=false; },2000);
+      paintCache();
+    }).catch(function(){
+      btn.textContent='refresh refused';
+      setTimeout(function(){ btn.textContent='refresh cache'; btn.disabled=false; },2000);
+    });
+  };
+  
+  document.getElementById('rlClear').onclick=function(){
+    if(!confirm('clear the entire cache? the house will need the wire to reload.')) return;
+    caches.delete('hive-v3').then(function(){
+      paintCache();
+    });
+  };
+  
+  addEventListener('online',paintConn);
+  addEventListener('offline',paintConn);
+  paintConn();
+  paintCache();
+  setInterval(paintCache,10000);
+})();
+</script>
+  
 <!-- ======================================================= -->
 <!-- KEYSTONE: The Hotdog Protocol (Resilient Ledger Logic)  -->
 <!-- ======================================================= -->
