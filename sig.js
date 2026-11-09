@@ -532,6 +532,11 @@ function init(){
 }
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',function(){ setTimeout(init,400); });
 else setTimeout(init,400);
+var ptries=0;
+var piv=setInterval(function(){ if(ptries++>90){ clearInterval(piv); return; }
+  init();
+  var w=document.getElementById('chibiRadio');
+  if(w&&w.getAttribute('data-drag')) clearInterval(piv); },800);
 })();
 
 (function(){
