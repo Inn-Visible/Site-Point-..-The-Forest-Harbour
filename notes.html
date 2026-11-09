@@ -321,6 +321,16 @@
 </head>
 <body>
 
+<script>
+window.addEventListener('error',function(e){
+  var d=document.getElementById('bootBeacon');
+  if(!d){ d=document.createElement('div'); d.id='bootBeacon';
+    d.style.cssText='position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:9999;background:#2a1114;border:1px solid #c8452c;color:#e5735a;font:10px ui-monospace,Consolas,monospace;padding:6px 10px;letter-spacing:.1em;max-width:92vw';
+    document.body.appendChild(d); }
+  d.textContent='script wounded \u00b7 line '+(e.lineno||'?')+' \u00b7 '+(e.message||'unknown');
+},true);
+</script>
+  
 <!-- spore particles -->
 <div class="spores" id="spores"></div>
 
