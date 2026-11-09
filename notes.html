@@ -540,33 +540,70 @@ window.addEventListener('error',function(e){
     }catch(ex){}
   }
   function save(){ if(persistT) clearTimeout(persistT); persistT=setTimeout(persistNow,350); return true; }
-  function persistNow(){ if(persistT){ clearTimeout(persistT); persistT=0; }
-    return idbSaveAll(notes).then(function(){ storeKind='rock'; shadow(); renderList(); return true; })
-    .catch(function(){
-      try{ localStorage.setItem(KEY_LS,JSON.stringify(notes)); storeKind='glass'; shadow(); renderList(); return true; }
-      catch(e){ storeKind='none'; quotaAlert(); renderList(); return false; } }); }
+   function persistNow(){
+    if(persistT){ clearTimeout(persistT); persistT=0; }
+    return idbSaveAll(notes).then(function(){
+      storeKind='rock'; shadow(); renderList(); return true;
+    }).catch(function(){
+      try{
+        localStorage.setItem(KEY_LS,JSON.stringify(notes));
+        storeKind='glass'; shadow(); renderList(); return true;
+      }catch(e){
+        storeKind='none'; quotaAlert(); renderList(); return false;
+      }
+    });
+  }
+  function migrateFromGlass(){
+    try{
+      var r=localStorage.getItem(KEY_LS);
+      if(!r) return null;
+      var p=JSON.parse(r);
+      if(!Array.isArray(p)||p.length===0) return null;
+      return p.map(norm).filter(Boolean);
+    }catch(e){
+      return null;
+    }
+  }
   function load(){
     return idbLoadAll().then(function(list){
-      var got=Array.isArray(list)?list.map(norm).filter(Boolean):[];
+      var got=Array.isArray(list)? list.map(norm).filter(Boolean) : [];
       if(got.length===0){
-        try{ var r=localStorage.getItem(KEY_LS);
-          if(r){ var p=JSON.parse(r);
-            if(Array.isArray(p)&&p.length){ notes=p.map(norm).filter(Boolean);
-              return persistNow().then(function(){ try{ localStorage.removeItem(KEY_LS); }catch(e){} return true; }); } } }
-        }catch(e){}
-        notes=got; return true; }
+        var moved=migrateFromGlass();
+        if(moved){
+          notes=moved;
+          return persistNow().then(function(){
+            try{ localStorage.removeItem(KEY_LS); }catch(e){}
+            return true;
+          });
+        }
+        notes=got;
+        return true;
+      }
       notes=got;
       try{ localStorage.removeItem(KEY_LS); }catch(e){}
       return true;
     }).catch(function(){
-      try{ var r=localStorage.getItem(KEY_LS); var p=r?JSON.parse(r):[];
-        notes=Array.isArray(p)?p.map(norm).filter(Boolean):[]; storeKind='glass'; }
-      catch(e){ notes=[]; }
-      return true; }); }
+      var fallback=null;
+      try{
+        var r=localStorage.getItem(KEY_LS);
+        var p=r? JSON.parse(r) : [];
+        fallback=Array.isArray(p)? p.map(norm).filter(Boolean) : [];
+        storeKind='glass';
+      }catch(e){
+        fallback=[];
+      }
+      notes=fallback;
+      return true;
+    });
+  }
   addEventListener('pagehide',function(){
     if(persistT){ clearTimeout(persistT); persistT=0; }
-    if(storeKind==='rock'){ try{ idbSaveAll(notes); }catch(e){} }
-    else { try{ localStorage.setItem(KEY_LS,JSON.stringify(notes)); }catch(e){} } });
+    if(storeKind==='rock'){
+      try{ idbSaveAll(notes); }catch(e){}
+    }else{
+      try{ localStorage.setItem(KEY_LS,JSON.stringify(notes)); }catch(e){}
+    }
+  });
 
   function timeAgo(ts){
     var d=Date.now()-ts,m=Math.floor(d/60000);
