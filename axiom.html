@@ -2505,6 +2505,21 @@ function termsOfYear(y){
   out.sort(function(a,b){ return a.t-b.t; });
   termCache[y]=out; return out;
 }
+  var zCache={};
+function zCrossings(y){
+  if(zCache[y]) return zCache[y];
+  var out=[], t0=new Date(y,0,1).getTime(), step=2*86400000;
+  for(var z=0;z<12;z++){
+    var tg=z*30, prev=t0, pf=wrap(sunLon(prev)-tg), hit=t0;
+    for(var t=t0+step;t<t0+367*86400000;t+=step){ var cf=wrap(sunLon(t)-tg);
+      if(pf<0&&cf>=0&&(cf-pf)<180){ var a=prev,b=t;
+              for(var i=0;i<30;i++){ var m=(a+b)/2; if(wrap(sunLon(m)-tg)<0) a=m; else b=m; }
+        hit=(a+b)/2; break; }
+      prev=t; pf=cf; }
+    out.push(hit);
+  }
+  zCache[y]=out; return out;
+}
 function nextTerm(t){ var y=new Date(t).getFullYear(), L=termsOfYear(y).concat(termsOfYear(y+1));
   for(var i=0;i<L.length;i++){ if(L[i].t>t) return L[i]; } return L[0]; }
 function nextMoon(t,target){ var a=moonAge(t), step=3600000, cur=t;
@@ -2525,11 +2540,12 @@ sec.innerHTML='<div style="display:flex;justify-content:space-between;align-item
  +'<span style="display:flex;gap:6px;flex-wrap:wrap">'
  +'<button id="scDial" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the dial</button>'
  +'<button id="scSphere" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the sphere</button>'
- +'<button id="scSpin" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">spin</button>'
+ +'<button id="scSpin" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">spin</button>'  +'<button id="scLegB" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">legend</button>'
  +'<button id="scToday" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">today</button></span></div>'
  +'<div style="display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap">'
  +'<canvas id="scCv" style="width:min(480px,92vw);height:min(480px,92vw);display:block;cursor:crosshair"></canvas>'
  +'<div id="scRead" style="min-width:230px;max-width:340px;font-size:10px;line-height:2.05;letter-spacing:.08em;color:#93a1b0"></div></div>'
+  +'<div id="scLeg" style="display:none;max-width:640px;margin:12px auto 0;border:1px solid #223041;background:rgba(4,8,6,.5);padding:10px 14px;font-size:9px;line-height:2.0;letter-spacing:.08em;color:#93a1b0;text-align:left"></div>'
  +'<div style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em">TAP THE BEZEL \u00b7 READ ANY DAY OF THE YEAR \u00b7 CLOCK + MATH ONLY \u00b7 THE SKY NEEDS NO WIRE</div>'
  +'<div style="margin-top:6px;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#5c6875">fig. a2 \u2014 the solar calendar \u00b7 keystone keeps the week, axiom keeps the year</div>';
 var atm=null, all=document.querySelectorAll('section,div');
@@ -2582,10 +2598,13 @@ function drawDial(t){
     g.strokeStyle=SEAC[q%4]; g.lineWidth=3;
     g.beginPath(); g.arc(CX,CY,R-32,a0,a1); g.stroke();
   }
-  /* zodiac ring */
-  g.fillStyle='rgba(232,213,176,.4)'; g.font='10px ui-monospace,Consolas,monospace';
+   /* zodiac ring \u00b7 where the sun truly stands, computed by longitude crossing */
+  g.fillStyle='rgba(232,213,176,.4)'; g.font='9px ui-monospace,Consolas,monospace';
+  var cr=zCrossings(y);
   for(var z=0;z<12;z++){
-    var az=(-90+(z*30+15)/360*360)*D2R;
+    var a0=angOf(cr[z],y), a1=angOf(cr[(z+1)%12],y);
+    if(a1<a0) a1+=TAU;
+    var az=(a0+a1)/2;
     g.fillText(ZODA[z], CX+Math.cos(az)*(R-44), CY+Math.sin(az)*(R-44));
   }
   /* starbursts at the four turns */
@@ -2699,6 +2718,24 @@ document.getElementById('scDial').onclick=function(){ view='dial'; localStorage.
 document.getElementById('scSphere').onclick=function(){ view='sphere'; localStorage.setItem('hive_solar_view',view); paintBtns(); };
 document.getElementById('scSpin').onclick=function(){ spinOn=!spinOn; localStorage.setItem('hive_solar_spin',spinOn?'1':'0'); paintBtns(); };
 document.getElementById('scToday').onclick=function(){ sel=Date.now(); paintReadout(); };
+  document.getElementById('scLeg').innerHTML=
+ '<b style="color:#eae6da">the dial \u00b7 read plainly</b><br>'
++'<span style="color:#d9a83a">\u2500 gold ray</span> today \u00b7 <span style="color:#e8d5b0">- - dashed ray</span> the day you tapped<br>'
++'bezel \u00b7 365 ticks \u00b7 long gold = a month\u2019s first day \u00b7 mid-length = mondays<br>'
++'<span style="color:#58a36a">green</span> spring \u00b7 <span style="color:#d9a83a">gold</span> summer \u00b7 <span style="color:#c8452c">rust</span> autumn \u00b7 <span style="color:#3f7fc1">blue</span> winter \u00b7 the season arcs, hand to hand between the bursts<br>'
++'<span style="color:#d9a83a">\u2733 the four bursts</span> \u00b7 equinoxes & solstices, computed to the minute<br>'
++'ari \u00b7 tau \u00b7 gem \u2026 \u00b7 the zodiac ring \u00b7 where the sun truly stands those weeks (by longitude, not horoscope months)<br>'
++'inner rings + orbs \u00b7 the planets at heliocentric longitude \u00b7 the sun\u2019s-eye orrery \u00b7 <span style="color:#7fb2d9">blue orb</span> earth \u00b7 ringed orb saturn<br>'
++'dotted inner ring + disc \u00b7 the moon\u2019s 29.5-day walk \u00b7 the disc wears the selected day\u2019s phase<br>'
++'center sun + day N \u00b7 the year\u2019s count<br>'
++'<b style="color:#eae6da">the sphere \u00b7 read plainly</b><br>'
++'silver fan \u00b7 the meridians, turning \u00b7 horizontal ring \u00b7 the celestial equator<br>'
++'<span style="color:#d9a83a">gold tilted ring</span> \u00b7 the ecliptic, with the sun seated on it \u00b7 nested ellipses \u00b7 the sun\u2019s path spiral through the year \u00b7 <span style="color:#e8d5b0">cream dot</span> \u00b7 the moon';
+document.getElementById('scLegB').onclick=function(){
+  var p=document.getElementById('scLeg'), o=p.style.display!=='none';
+  p.style.display=o?'none':'block';
+  this.style.borderColor=o?'#223041':'#d9a83a'; this.style.color=o?'#93a1b0':'#d9a83a';
+};
 cv.addEventListener('click',function(e){
   if(view!=='dial') return;
   var r=cv.getBoundingClientRect(), x=e.clientX-r.left-CX, yv=e.clientY-r.top-CY;
