@@ -208,39 +208,57 @@ function seatNote(name,body,images){
     return true;
   }catch(e){ return false; }
 }
+var inParts=null, inGot=0;
+function pieceOf(x){
+  if(x instanceof ArrayBuffer) return new Uint8Array(x);
+  if(x&&x.buffer) return new Uint8Array(x.buffer,x.byteOffset||0,x.byteLength);
+  return new Uint8Array(x);
+}
+function finishInbound(blob){
+  var m=inMeta||{name:'cargo-'+stamp(),type:blob.type,size:blob.size};
+  var url=URL.createObjectURL(blob);
+  var row=inRow||document.createElement('div');
+  if(!inRow) $('inbox').appendChild(row);
+  row.className='irow';
+  row.innerHTML=(m.type&&m.type.indexOf('image')===0? '<img class="thumb" src="'+url+'" alt="">' : '')
+    +'<span class="qn">'+m.name+'</span><span>'+fmt(m.size||blob.size)+'</span><a href="'+url+'" download="'+m.name+'">download \u2193</a>';
+  var ext=(m.name.split('.').pop()||'').toLowerCase();
+  var sz=m.size||blob.size;
+  if(m.type&&m.type.indexOf('image')===0&&sz<1500000){
+    var seat=document.createElement('button'); seat.textContent='seat in garden';
+    seat.onclick=function(){ var rd=new FileReader();
+      rd.onload=function(){ var ok=seatNote(m.name,null,{f0:String(rd.result)});
+        seat.textContent=ok?'seated \u2713':'garden refused'; seat.disabled=ok; };
+      rd.readAsDataURL(blob); };
+    row.appendChild(seat);
+  } else if(['html','htm','js','json','txt','md','css'].indexOf(ext)>-1&&sz<2000000){
+    var seat2=document.createElement('button'); seat2.textContent='seat in drawer';
+    seat2.onclick=function(){ var rd=new FileReader();
+      rd.onload=function(){ var ok=seatNote(m.name,String(rd.result),null);
+        seat2.textContent=ok?'seated \u2713':'drawer refused'; seat2.disabled=ok; };
+      rd.readAsText(blob); };
+    row.appendChild(seat2);
+  }
+  inMeta=null; inRow=null; inParts=null; inGot=0;
+}
 function onData(d){
-  if(d&&d.t==='ack'){ if(pendingAck){ var fn=pendingAck; pendingAck=null; fn(); } return; }
-  if(d&&d.t==='meta'){ inMeta=d;
+  if(!d||typeof d!=='object') return;
+  if(d.t==='ack'){ if(pendingAck){ var fn=pendingAck; pendingAck=null; fn(); } return; }
+  if(d.t==='meta'){ inMeta=d; inParts=new Array(d.chunks||0); inGot=0;
     inRow=document.createElement('div'); inRow.className='irow';
-    inRow.innerHTML='<span class="qn">'+d.name+'</span><span>'+fmt(d.size)+'</span><span style="color:#5c6875">sailing in\u2026</span>';
-    $('inbox').appendChild(inRow); return; }
-  if(d instanceof Blob){
-    var m=inMeta||{name:'cargo-'+stamp(),type:d.type||'application/octet-stream',size:d.size};
-    var url=URL.createObjectURL(new Blob([d],{type:m.type}));
-    var row=inRow||document.createElement('div');
-    if(!inRow) $('inbox').appendChild(row);
-    row.className='irow';
-    row.innerHTML=(m.type&&m.type.indexOf('image')===0? '<img class="thumb" src="'+url+'" alt="">' : '')
-      +'<span class="qn">'+m.name+'</span><span>'+fmt(m.size||d.size)+'</span><a href="'+url+'" download="'+m.name+'">download \u2193</a>';
-    var ext=(m.name.split('.').pop()||'').toLowerCase();
-    var sz=m.size||d.size;
-    if(m.type&&m.type.indexOf('image')===0 && sz<1500000){
-      var seat=document.createElement('button'); seat.textContent='seat in garden';
-      seat.onclick=function(){ var rd=new FileReader();
-        rd.onload=function(){ var ok=seatNote(m.name,null,{f0:String(rd.result)});
-          seat.textContent=ok?'seated \u2713':'garden refused'; seat.disabled=ok; };
-        rd.readAsDataURL(new Blob([d],{type:m.type})); };
-      row.appendChild(seat);
-    } else if(['html','htm','js','json','txt','md','css'].indexOf(ext)>-1 && sz<2000000){
-      var seat2=document.createElement('button'); seat2.textContent='seat in drawer';
-      seat2.onclick=function(){ var rd=new FileReader();
-        rd.onload=function(){ var ok=seatNote(m.name,String(rd.result),null);
-          seat2.textContent=ok?'seated \u2713':'drawer refused'; seat2.disabled=ok; };
-        rd.readAsText(new Blob([d],{type:m.type})); };
-      row.appendChild(seat2);
-    }
-    try{ conn.send({t:'ack',name:m.name}); }catch(e){}
-    inMeta=null; inRow=null; return; }
+    inRow.innerHTML='<span class="qn">'+d.name+'</span><span>'+fmt(d.size)+'</span><span class="qb"><i></i></span><span class="qp">0%</span>';
+    $('inbox').appendChild(inRow);
+    return; }
+  if(d.t==='c'&&inParts){ inParts[d.i]=pieceOf(d.d); inGot++;
+    var bar=inRow&&inRow.querySelector('.qb i'), qp=inRow&&inRow.querySelector('.qp');
+    if(bar&&inMeta){ var pct=Math.round(inGot/(inMeta.chunks||1)*100);
+      bar.style.width=pct+'%'; if(qp) qp.textContent=pct+'%'; }
+    return; }
+  if(d.t==='end'){
+    var blob=new Blob(inParts.filter(Boolean),{type:(inMeta&&inMeta.type)||'application/octet-stream'});
+    finishInbound(blob);
+    try{ conn.send({t:'ack',name:d.name||(inMeta&&inMeta.name)}); }catch(e){}
+    return; }
 }
 boot();
 })();
