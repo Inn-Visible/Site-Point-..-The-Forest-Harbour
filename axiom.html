@@ -619,6 +619,65 @@ function lockdoor(){
 })();
 </script>
 
+<script>
+(function(){
+/* ---- the hex tunnel veil \u00b7 the vault's loading screen \u00b7 silver on the dark ---- */
+if(window.__hexVeil) return; window.__hexVeil=1;
+var veil=null, pending=0, shown=false, hideT=0, safeT=0;
+function hexPts(cx,cy,r){ var h=r*Math.sqrt(3)/2;
+  return [[cx+r,cy],[cx+r/2,cy+h],[cx-r/2,cy+h],[cx-r,cy],[cx-r/2,cy-h],[cx+r/2,cy-h]]
+    .map(function(p){ return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' '); }
+function setMsg(t){ var m=veil&&veil.querySelector('#hvMsg'); if(m) m.textContent=t; }
+function build(){
+  veil=document.createElement('div'); veil.id='hexVeil';
+  veil.style.cssText='position:fixed;inset:0;z-index:10001;background:#050708;display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;cursor:pointer';
+  var N=11, R=150, k=0.80, cx0=210, cy0=170, fx=cx0-R*1.15;
+  var svg='<svg width="min(78vw,420px)" viewBox="0 0 420 340" fill="none" style="display:block">';
+  for(var i=0;i<N;i++){
+    var s=Math.pow(k,i), r=R*s, cx=fx+(cx0-fx)*s;
+    svg+='<polygon points="'+hexPts(cx,cy0,r)+'" stroke="#d8dde3" stroke-width="'+Math.max(1,5*s).toFixed(2)
+      +'" style="animation:hvPulse 1.7s ease-in-out '+(i*0.13).toFixed(2)+'s infinite;opacity:.3"/>';
+  }
+  svg+='</svg>';
+  veil.innerHTML=svg
+   +'<div id="hvMsg" style="font:10px ui-monospace,Consolas,monospace;letter-spacing:.25em;color:#93a1b0">the vault turns \u00b7</div>'
+   +'<div style="font:9px ui-monospace,Consolas,monospace;letter-spacing:.18em;color:#3a4a5c">tap to lift the veil</div>';
+  var st=document.createElement('style');
+  st.textContent='@keyframes hvPulse{0%,100%{opacity:.22}50%{opacity:1}}'
+   +'@media(prefers-reduced-motion:reduce){#hexVeil polygon{animation:none!important;opacity:.6}}';
+  document.head.appendChild(st);
+  veil.addEventListener('click',function(){ pending=0; hide(); });
+  document.body.appendChild(veil);
+}
+function show(msg){ if(!veil) build();
+  clearTimeout(hideT); clearTimeout(safeT);
+  veil.style.display='flex'; shown=true;
+  if(msg) setMsg(msg);
+  safeT=setTimeout(function(){ pending=0; hide(); },15000); }
+function hide(){ if(veil) veil.style.display='none'; shown=false; }
+function tickDown(){ if(pending>0) pending--;
+  if(pending===0&&shown){ clearTimeout(hideT); hideT=setTimeout(hide,450); } }
+function hook(){
+  if(window.vaultUnlock&&!window.__hvU){ window.__hvU=1;
+    var OU=window.vaultUnlock;
+    window.vaultUnlock=function(p){ show('the key turns \u00b7');
+      return OU.call(window,p).then(function(ok){ setMsg('the vault opens \u00b7 leaves waking'); return ok; },
+        function(e){ hide(); throw e; }); }; }
+  if(window.vaultDecrypt&&!window.__hvD){ window.__hvD=1;
+    var OD=window.vaultDecrypt;
+    window.vaultDecrypt=function(s){ pending++; show('decrypting \u00b7 the tunnel walks');
+      var pr=OD.call(window,s);
+      pr.then(function(r){ tickDown(); return r; }, function(e){ tickDown(); throw e; });
+      return pr; }; }
+}
+setInterval(hook,500); setTimeout(hook,300);
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t&&(t.textContent||'').trim()==='unlock the bench'){ show('the key turns \u00b7'); } },true);
+window.hexVeil={show:show,hide:hide};
+})();
+</script>
+  
 <!-- the lantern deck · 5 taps on open glass -->
 <script>
 (function(){
