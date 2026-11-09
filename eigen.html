@@ -624,10 +624,14 @@ document.getElementById('alNext').onclick=function(){ almM.setMonth(almM.getMont
 alm.addEventListener('click',function(e){ if(e.target===alm) alm.style.display='none'; });
 addEventListener('keydown',function(e){ if(e.key==='Escape') alm.style.display='none'; });
 
-/* ---- mount the desk at the true bottom, after every other injected shelf ---- */
+/* ---- seat the desk now (so her buttons exist), then re-anchor her to the true bottom ---- */
+(function(){
+  var f0=document.querySelector('footer');
+  (f0&&f0.parentNode||document.body).insertBefore(sec,f0||null);
+})();
 setTimeout(function(){
   var f=document.querySelector('footer');
-  (f&&f.parentNode||document.body).insertBefore(sec,f||null);
+  if(f) (f.parentNode||document.body).insertBefore(sec,f);
   renderBoard(); renderVenn();
 },700);
 
