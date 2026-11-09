@@ -625,13 +625,12 @@
     var filtered=getFiltered();
     noteCount.textContent=notes.length+' note'+(notes.length!==1?'s':'');
 
-       // list info + weight
+          // list info + which store holds the garden
     var weight=0; try{ weight=Math.round(JSON.stringify(notes).length/1024); }catch(ex){}
-    var maxW=4800; // ~5MB safe limit
-    var pct=Math.min(100,Math.round(weight/maxW*100));
-    var col=pct>85?'var(--red)':(pct>60?'var(--gold)':'#3a4a5c');
-    if(filtered.length===notes.length) listInfo.innerHTML=notes.length+' notes <span style="color:'+col+'">\u00b7 '+weight+'kb / ~5mb</span>';
-    else listInfo.innerHTML=filtered.length+' of '+notes.length+' <span style="color:'+col+'">\u00b7 '+weight+'kb</span>';
+    var kindCol=storeKind==='rock'?'var(--green)':(storeKind==='glass'?'var(--gold)':'var(--red)');
+    var kindTxt=storeKind==='rock'?'rock \u00b7 uncapped':(storeKind==='glass'?'glass \u00b7 5mb':'no store');
+    if(filtered.length===notes.length) listInfo.innerHTML=notes.length+' notes <span style="color:'+kindCol+'">\u00b7 '+weight+'kb \u00b7 '+kindTxt+'</span>';
+    else listInfo.innerHTML=filtered.length+' of '+notes.length+' <span style="color:'+kindCol+'">\u00b7 '+weight+'kb</span>';
 
     // tag filter button
     if(tagFilter){tagFilterBtn.style.display='';tagFilterBtn.textContent='#'+tagFilter+' ×';}
