@@ -1044,9 +1044,8 @@
           var existing={};notes.forEach(function(n){existing[n.id]=1});
           var added=0;
           imp.forEach(function(n){ var m=norm(n); if(m&&!existing[m.id]){ notes.push(m); added++; } });
-          var ok=save();
-          renderList();renderEditor();
-          if(!ok) alert('the notes loaded into memory but could not be saved to the glass (quota exceeded)');
+                   renderList();renderEditor();
+          persistNow().then(function(okk){ if(!okk) alert('the notes live in memory only \u00b7 rock and glass both refused'); });
         } else {
           alert('the file did not contain a list of notes');
         }
