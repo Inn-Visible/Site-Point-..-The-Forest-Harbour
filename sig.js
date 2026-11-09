@@ -668,4 +668,157 @@ addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure
   addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} });
 })();
 
-
+(function(){
+/* ---- the time desk \u00b7 egg timer + alarm clock \u00b7 offline workings \u00b7 house-wide bell, porch & left/up pillars desk ---- */
+if(window.__timeDesk) return; window.__timeDesk=1;
+var KEY='hive_timedesk';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
+function pad(n){ return (n<10?'0':'')+n; }
+var PG=(location.pathname.split('/').pop()||'');
+var DESK=(PG===''||PG==='index.html'||PG==='axiom.html'||PG==='eigen.html');
+/* ---- the bells \u00b7 pure WebAudio, no files, no wire ---- */
+var AC=null;
+function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(AC&&AC.state==='suspended'){ AC.resume().catch(function(){}); } return AC; }
+addEventListener('pointerdown',function(){ ctx(); },{once:true});
+function strike(f,t0,vol){ var c=ctx(); if(!c) return;
+  var o=c.createOscillator(), g=c.createGain(), t=c.currentTime+t0;
+  o.type='sine'; o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.3,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+1.1);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+1.2); }
+function eggBell(){ strike(988,0,0.3); strike(1319,0.16,0.26); strike(1568,0.32,0.22); }
+var alarmLoop=null;
+function alarmStop(){ if(alarmLoop){ clearInterval(alarmLoop); alarmLoop=null; } }
+function alarmBell(){ eggBell(); strike(659,0.5,0.25);
+  alarmLoop=setInterval(function(){ strike(988,0,0.3); strike(1319,0.16,0.26); },1600);
+  setTimeout(alarmStop,12000); }
+function buzz(){ try{ if(navigator.vibrate) navigator.vibrate([120,60,120,60,240]); }catch(e){} }
+/* ---- toast + title blink, house-wide ---- */
+var toastEl=null, blink=null;
+function startBlink(){ if(blink) return; var base=document.title, on=false;
+  blink=setInterval(function(){ on=!on; document.title=on?'(\u23f0) '+base:base; },900); }
+function ack(){ alarmStop(); if(blink){ clearInterval(blink); blink=null; } if(toastEl) toastEl.style.display='none'; }
+function toast(t){
+  if(!toastEl){ toastEl=document.createElement('div');
+    toastEl.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:998;background:#0e141b;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace,Consolas,monospace;letter-spacing:.15em;padding:8px 14px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.5)';
+    toastEl.onclick=ack; document.body.appendChild(toastEl); }
+  toastEl.textContent=t; toastEl.style.display='block'; startBlink();
+  clearTimeout(toastEl._h); toastEl._h=setTimeout(function(){ toastEl.style.display='none'; },9000); }
+/* ---- the engine \u00b7 one heartbeat for every room ---- */
+function dayKey(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function tick(){
+  var now=Date.now(), d=load(), changed=false;
+  (d.eggs||[]).forEach(function(g){ if(!g.done&&now>=g.end){ g.done=true; changed=true;
+    eggBell(); buzz(); toast('the egg is done \u00b7 '+(g.label||g.min+' min')); } });
+  (d.alarms||[]).forEach(function(a){ if(!a.on) return;
+    var n=new Date(), t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),a.hh,a.mm,0,0).getTime();
+    var key=dayKey(n)+' '+a.hh+':'+a.mm;
+    if(now>=t&&now<t+90000&&a.last!==key){ a.last=key; changed=true;
+      if(!a.daily) a.on=false;
+      alarmBell(); buzz(); toast('the '+pad(a.hh)+':'+pad(a.mm)+' bell rings'); } });
+  if(changed) save(d);
+  paint();
+}
+setInterval(tick,1000);
+/* ---- the desk \u00b7 porch + axiom + eigen only ---- */
+var pill=null, panel=null;
+if(DESK){
+  pill=document.createElement('button');
+  pill.style.cssText='position:fixed;left:10px;bottom:10px;z-index:70;background:#0e141b;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.18em;padding:6px 10px;cursor:pointer';
+  pill.textContent='time desk \u2304';
+  document.body.appendChild(pill);
+  panel=document.createElement('div');
+  panel.style.cssText='position:fixed;left:10px;bottom:40px;z-index:70;display:none;width:min(300px,92vw);background:rgba(10,13,18,.95);border:1px solid #223041;padding:12px;font:10px ui-monospace,Consolas,monospace;color:#93a1b0;letter-spacing:.08em';
+  panel.innerHTML=
+    '<div id="tdClock" style="text-align:center;font-size:16px;color:#e8e4d8;letter-spacing:.2em"></div>'
+   +'<div id="tdMoon" style="text-align:center;font-size:9px;color:#5c6875;margin:2px 0 10px"></div>'
+   +'<div style="font-size:9px;letter-spacing:.2em;color:#d9a83a;margin-bottom:6px">EGG \u00b7 the little countdown</div>'
+   +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">'
+   +'<button data-egg="1" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">1</button>'
+   +'<button data-egg="5" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">5</button>'
+   +'<button data-egg="10" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">10</button>'
+   +'<button data-egg="25" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">25</button>'
+   +'<input id="tdEggMin" type="number" min="1" max="180" placeholder="min" style="width:52px;background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace;padding:4px">'
+   +'<button id="tdEggGo" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:9px ui-monospace;padding:4px 8px;cursor:pointer">crack it</button></div>'
+   +'<div id="tdEggs"></div>'
+   +'<div style="font-size:9px;letter-spacing:.2em;color:#58a36a;margin:10px 0 6px">ALARM \u00b7 the standing bell</div>'
+   +'<div style="display:flex;gap:4px;align-items:center;margin-bottom:6px">'
+   +'<input id="tdAlTime" type="time" value="07:00" style="flex:1;background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace;padding:4px">'
+   +'<button id="tdAlDaily" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">daily</button>'
+   +'<button id="tdAlArm" style="background:none;border:1px solid #58a36a;color:#58a36a;font:9px ui-monospace;padding:4px 8px;cursor:pointer">arm</button></div>'
+   +'<div id="tdAlarms"></div>'
+   +'<div id="tdNext" style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875"></div>';
+  document.body.appendChild(panel);
+  pill.onclick=function(){ var open=panel.style.display==='block';
+    panel.style.display=open?'none':'block'; pill.textContent=open?'time desk \u2304':'time desk \u2303'; };
+  panel.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('button[data-egg]'):null;
+    if(b){ addEgg(+b.getAttribute('data-egg')); return; } });
+  document.getElementById('tdEggGo').onclick=function(){
+    var m=Math.max(1,Math.min(180,Math.round(+document.getElementById('tdEggMin').value||0)));
+    if(m) addEgg(m); };
+  var daily=false, dBtn=document.getElementById('tdAlDaily');
+  dBtn.onclick=function(){ daily=!daily; dBtn.style.borderColor=daily?'#58a36a':'#223041'; dBtn.style.color=daily?'#58a36a':'#93a1b0'; };
+  document.getElementById('tdAlArm').onclick=function(){
+    var v=document.getElementById('tdAlTime').value||'07:00'.slice(0); var p=v.split(':');
+    var d=load(); d.alarms=d.alarms||[];
+    if(d.alarms.length>=3){ toast('three bells max \u00b7 the tower is full'); return; }
+    d.alarms.push({hh:+p[0]||0,mm:+p[1]||0,on:true,daily:daily,last:''});
+    save(d); paint(); };
+  panel.addEventListener('click',function(e){
+    var t=e.target; if(!t||!t.getAttribute) return;
+    var id=t.getAttribute('data-stop'), aid=t.getAttribute('data-altog'), adel=t.getAttribute('data-aldel');
+    var d=load();
+    if(id){ d.eggs=(d.eggs||[]).filter(function(g){ return String(g.id)!==id; }); save(d); paint(); }
+    if(aid){ (d.alarms||[]).forEach(function(a){ if(String(a.id||'')===aid) a.on=!a.on; });
+      d.alarms=(d.alarms||[]).map(function(a,i){ if(!a.id) a.id=i+1; return a; });
+      (d.alarms||[]).forEach(function(a){ if(String(a.id)===aid) a.on=!a.on; }); save(d); paint(); }
+    if(adel){ d.alarms=(d.alarms||[]).filter(function(a){ return String(a.id)!==adel; }); save(d); paint(); } });
+}
+function addEgg(min){
+  var d=load(); d.eggs=d.eggs||[];
+  if(d.eggs.filter(function(g){ return !g.done; }).length>=3){ toast('three eggs max \u00b7 the pot is full'); return; }
+  d.eggs.push({id:Date.now(),min:min,end:Date.now()+min*60000,done:false,label:min+' min'});
+  d.eggs=d.eggs.slice(-6); save(d); paint();
+}
+function fmtMs(ms){ var s=Math.max(0,Math.round(ms/1000));
+  return pad(Math.floor(s/3600)>0?Math.floor(s/3600):Math.floor(s/60))+':'+pad(s%60); }
+function paint(){
+  if(pill){ var d0=load();
+    var armed=(d0.eggs||[]).some(function(g){return !g.done;})||(d0.alarms||[]).some(function(a){return a.on;});
+    pill.style.borderColor=armed?'#d9a83a':'#223041'; }
+  if(!panel||panel.style.display==='none') return;
+  var n=new Date(), now=Date.now();
+  var SYN=29.530588853, EP=Date.UTC(2000,0,6,18,14,0);
+  var age=((n.getTime()-EP)/86400000)%SYN; if(age<0) age+=SYN;
+  document.getElementById('tdClock').textContent=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+  document.getElementById('tdMoon').textContent='moon-day '+(Math.floor(age)+1)+' \u00b7 the desk keeps time without a wire';
+  var d=load(), eg=document.getElementById('tdEggs'); eg.innerHTML='';
+  (d.eggs||[]).filter(function(g){ return !g.done; }).forEach(function(g){
+    var left=g.end-now, tot=g.min*60000;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:6px;align-items:center;margin:3px 0';
+    row.innerHTML='<span style="color:#d9a83a;width:44px">'+fmtMs(left)+'</span>'
+      +'<span style="flex:1;height:3px;background:#223041;position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:'+Math.max(0,Math.min(100,left/tot*100))+'%;background:#d9a83a"></i></span>'
+      +'<button data-stop="'+g.id+'" style="background:none;border:none;color:#c8452c;font:10px ui-monospace;cursor:pointer">\u2715</button>';
+    eg.appendChild(row); });
+  var al=document.getElementById('tdAlarms'); al.innerHTML='';
+  (d.alarms||[]).forEach(function(a,i){ if(!a.id) a.id=i+1;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:6px;align-items:center;margin:3px 0';
+    row.innerHTML='<span style="color:'+(a.on?'#58a36a':'#5c6875')+';width:44px">'+pad(a.hh)+':'+pad(a.mm)+'</span>'
+      +'<span style="flex:1;font-size:9px;color:#5c6875">'+(a.daily?'daily':'once')+(a.on?' \u00b7 armed':' \u00b7 quiet')+'</span>'
+      +'<button data-altog="'+a.id+'" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:2px 6px;cursor:pointer">'+(a.on?'off':'on')+'</button>'
+      +'<button data-aldel="'+a.id+'" style="background:none;border:none;color:#c8452c;font:10px ui-monospace;cursor:pointer">\u2715</button>';
+    al.appendChild(row); });
+  var next=null;
+  (d.eggs||[]).forEach(function(g){ if(!g.done){ var l=g.end-now; if(next===null||l<next) next=l; } });
+  (d.alarms||[]).forEach(function(a){ if(!a.on) return;
+    var t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),a.hh,a.mm,0,0).getTime();
+    if(t<=now) t+=86400000; var l=t-now; if(next===null||l<next) next=l; });
+  document.getElementById('tdNext').textContent= next===null? 'nothing counting \u00b7 the desk is quiet'
+    : 'next bell in '+fmtMs(next);
+}
+})();
