@@ -575,6 +575,9 @@ sec.innerHTML=
    +'<div id="vnRead"></div>'
  +'</div>';
 
+/* ---- seat the desk in the page NOW, so every button below finds its bone ---- */
+(function(){ var f0=document.querySelector('footer'); (f0&&f0.parentNode||document.body).insertBefore(sec,f0||null); })();
+  
 /* ---- the almanac \u00b7 month & moon popup ---- */
 var alm=document.createElement('div'); alm.id='wdAlm';
 alm.style.cssText='position:fixed;inset:0;z-index:1300;background:rgba(4,6,10,.9);display:none;align-items:flex-start;justify-content:center;overflow-y:auto';
