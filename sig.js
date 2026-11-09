@@ -663,9 +663,16 @@ addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure
 })(); 
 
 (function(){
-  /* ---- the offline hand, house-wide \u00b7 every room registers the keeper ---- */
+  /* ---- the offline hand, house-wide \u00b7 every room registers the keeper \u00b7 and nudges him awake ---- */
   if(!('serviceWorker' in navigator)||window.__swReg) return; window.__swReg=1;
-  addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} });
+  addEventListener('load',function(){
+    try{
+      navigator.serviceWorker.register('./sw.js').then(function(reg){
+        setTimeout(function(){ try{ reg.update(); }catch(e){} },1200);
+        return reg;
+      }).catch(function(){});
+    }catch(e){}
+  });
 })();
 
 (function(){
