@@ -466,7 +466,10 @@
   var KEY='eigen_notes';
   var notes=[], activeId=null, search='', tagFilter=null, sortMode='newest';
   var selected={}, showTags=true;
-
+  window.__edSaveT=0;
+  addEventListener('pagehide',function(){ if(window.__edSaveT){ clearTimeout(window.__edSaveT); window.__edSaveT=0; }
+    try{ localStorage.setItem(KEY,JSON.stringify(notes)); }catch(e){} });
+  
   // dom refs
   var $=function(s){return document.getElementById(s)};
   var noteList=$('noteList'), editorContent=$('editorContent'), searchInput=$('searchInput');
