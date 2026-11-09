@@ -601,9 +601,13 @@
     var filtered=getFiltered();
     noteCount.textContent=notes.length+' note'+(notes.length!==1?'s':'');
 
-    // list info
-    if(filtered.length===notes.length) listInfo.textContent=notes.length+' notes';
-    else listInfo.textContent=filtered.length+' of '+notes.length;
+       // list info + weight
+    var weight=0; try{ weight=Math.round(JSON.stringify(notes).length/1024); }catch(ex){}
+    var maxW=4800; // ~5MB safe limit
+    var pct=Math.min(100,Math.round(weight/maxW*100));
+    var col=pct>85?'var(--red)':(pct>60?'var(--gold)':'#3a4a5c');
+    if(filtered.length===notes.length) listInfo.innerHTML=notes.length+' notes <span style="color:'+col+'">\u00b7 '+weight+'kb / ~5mb</span>';
+    else listInfo.innerHTML=filtered.length+' of '+notes.length+' <span style="color:'+col+'">\u00b7 '+weight+'kb</span>';
 
     // tag filter button
     if(tagFilter){tagFilterBtn.style.display='';tagFilterBtn.textContent='#'+tagFilter+' ×';}
