@@ -477,8 +477,20 @@
 
   // helpers
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-    function save(){
-    try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){}
+     function save(){
+    var payload=JSON.stringify(notes);
+    var ok=true;
+    try{ localStorage.setItem(KEY,payload); }
+    catch(e){
+      ok=false;
+      if(e&&(e.name==='QuotaExceededError'||e.code===22||e.code===1014||/quota/i.test(e.message))){
+        if(!window.__quotaWarned){
+          window.__quotaWarned=true;
+          alert('the garden is too heavy for this glass \u00b7 localStorage quota exceeded \u00b7 the new notes were not saved \u00b7 burn old notes or remove images to make room');
+          setTimeout(function(){ window.__quotaWarned=false; },5000);
+        }
+      }
+    }
     // shadow-copy to house drawer so stones and root packs carry it
     try{
       var L=[]; try{ L=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(ex){}
