@@ -1006,7 +1006,7 @@
     a.click();URL.revokeObjectURL(url);
   };
   $('mImport').onclick=function(){$('importFile').click()};
-  $('importFile').onchange=function(e){
+   $('importFile').onchange=function(e){
     var f=e.target.files[0];if(!f)return;
     var r=new FileReader();
     r.onload=function(){
@@ -1014,10 +1014,17 @@
         var imp=JSON.parse(r.result);
         if(Array.isArray(imp)){
           var existing={};notes.forEach(function(n){existing[n.id]=1});
-          imp.forEach(function(n){ var m=norm(n); if(m&&!existing[m.id]) notes.push(m); });
-          save();renderList();renderEditor();
+          var added=0;
+          imp.forEach(function(n){ var m=norm(n); if(m&&!existing[m.id]){ notes.push(m); added++; } });
+          var ok=save();
+          renderList();renderEditor();
+          if(!ok) alert('the notes loaded into memory but could not be saved to the glass (quota exceeded)');
+        } else {
+          alert('the file did not contain a list of notes');
         }
-      }catch(ex){}
+      }catch(ex){
+        alert('the file could not be read as notes json');
+      }
     };
     r.readAsText(f);e.target.value='';
   };
