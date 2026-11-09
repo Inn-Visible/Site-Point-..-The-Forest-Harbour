@@ -155,6 +155,36 @@ function thumbFor(blob,type){
   if(!type||type.indexOf('image')!==0) return '';
   try{ return '<img class="thumb" src="'+URL.createObjectURL(blob)+'" alt="">'; }catch(e){ return ''; }
 }
+var CHUNK=64*1024;
+function failRow(pEl,msg){ pEl.textContent=msg; sending=false; pendingAck=null; pump(); }
+function sendBlob(it){
+  var reader=new FileReader();
+  reader.onload=function(){
+    var buf=reader.result;
+    var total=Math.max(1,Math.ceil(buf.byteLength/CHUNK));
+    try{ conn.send({t:'meta',name:it.name,size:it.size,type:it.type,chunks:total}); }
+    catch(e){ failRow(it.pEl,'refused'); return; }
+    var i=0;
+    function step(){
+      if(!conn||!conn.open){ failRow(it.pEl,'wire lost'); return; }
+      var dc=conn.dataChannel;
+      if(dc&&dc.bufferedAmount>1048576){ setTimeout(step,60); return; }
+      while(i<total){
+        try{ conn.send({t:'c',i:i,d:buf.slice(i*CHUNK,(i+1)*CHUNK)}); }
+        catch(e){ failRow(it.pEl,'refused'); return; }
+        i++;
+        var pct=Math.round(i/total*100);
+        it.barEl.style.width=pct+'%'; it.pEl.textContent=pct+'%';
+        if(dc&&dc.bufferedAmount>1048576){ setTimeout(step,60); return; }
+      }
+      try{ conn.send({t:'end',name:it.name}); }catch(e){ failRow(it.pEl,'refused'); return; }
+      it.pEl.textContent='awaiting ack\u2026';
+    }
+    step();
+  };
+  reader.onerror=function(){ failRow(it.pEl,'read refused'); };
+  reader.readAsArrayBuffer(it.blob);
+}
 function pump(){
   if(sending||!conn||!conn.open||!queue.length) return;
   sending=true;
@@ -162,12 +192,10 @@ function pump(){
   var row=document.createElement('div'); row.className='qrow';
   row.innerHTML=thumbFor(it.blob,it.type)+'<span class="qn">'+it.name+'</span><span>'+fmt(it.size)+'</span><span class="qb"><i></i></span><span class="qp">0%</span>';
   $('queue').appendChild(row);
-  var barEl=row.querySelector('.qb i'), pEl=row.querySelector('.qp'), p=0;
-  var iv=setInterval(function(){ p=Math.min(90,p+(90-p)*0.2+2); barEl.style.width=p+'%'; pEl.textContent=Math.round(p)+'%'; },120);
-  var stall=setTimeout(function(){ clearInterval(iv); barEl.style.width='100%'; pEl.textContent='stalled'; sending=false; pendingAck=null; pump(); },25000);
-  pendingAck=function(){ clearTimeout(stall); clearInterval(iv); barEl.style.width='100%'; pEl.textContent='sailed'; sending=false; pump(); };
-  try{ conn.send({t:'meta',name:it.name,size:it.size,type:it.type}); conn.send(it.blob); }
-  catch(e){ clearTimeout(stall); clearInterval(iv); pEl.textContent='refused'; sending=false; pendingAck=null; pump(); }
+  it.barEl=row.querySelector('.qb i'); it.pEl=row.querySelector('.qp');
+  var stall=setTimeout(function(){ failRow(it.pEl,'stalled'); },60000);
+  pendingAck=function(){ clearTimeout(stall); it.barEl.style.width='100%'; it.pEl.textContent='sailed'; sending=false; pump(); };
+  sendBlob(it);
 }
 function seatNote(name,body,images){
   try{
