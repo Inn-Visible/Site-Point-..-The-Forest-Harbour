@@ -375,14 +375,14 @@ var gift=' <a href="donations.html" style="color:#5c6875;text-decoration:none">t
 
 
 (function(){
-/* ---- the chibi radio \u00b7 the dial's own voice, carried house-wide \u00b7 v2 ---- */
+/* ---- the chibi radio v3 \u00b7 summons only after the dial wakes at baseline ---- */
 var KEY='hive_radio';
 var onBase=/baseline\.html(\?|#|$)/.test(location.href);
 function keyed(){ return sessionStorage.getItem('hive_session')==='1' && !!localStorage.getItem('hive_access'); }
-var NOCHIBI=['index.html','kit.html','donations.html','wicket.html']; /* the four logged-out faces · edit names here if the house calls them otherwise */
+var NOCHIBI=['index.html','kit.html','donations.html','wicket.html'];
 var pg=(location.pathname.split('/').pop()||'');
-if(!keyed() || NOCHIBI.indexOf(pg)>-1){ return; } /* no chibi, no hooks, no hum · the block ends here, silently */
-  function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
+if(!keyed() || NOCHIBI.indexOf(pg)>-1){ return; }
+function st(){ try{ return JSON.parse(sessionStorage.getItem(KEY))||null; }catch(e){ return null; } }
 function set(s){ try{ sessionStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }
 function hostName(src){ try{ var h=(new URL(src)).hostname.replace(/^www\./,'');
   if(/somafm/.test(h)) return 'somafm'; if(/radioparadise/.test(h)) return 'radio paradise';
@@ -416,46 +416,56 @@ var au=null;
 function ensure(){ if(au) return au; au=new Audio(); au.preload='none';
   au.addEventListener('error',function(){ var s=st()||{}; s.on=false; set(s); paint(); msg('the stream went dark'); });
   return au; }
-var wrap=document.createElement('div'); wrap.id='chibiRadio';
-wrap.style.cssText='position:fixed;right:14px;bottom:14px;z-index:80;cursor:pointer;user-select:none;text-align:center';
-wrap.innerHTML='<svg width="40" height="40" viewBox="0 0 40 40" style="display:block;filter:drop-shadow(0 2px 5px rgba(0,0,0,.55))">'
- +'<line x1="29" y1="9" x2="35" y2="3" stroke="#93a1b0" stroke-width="1.6"/>'
- +'<rect x="4" y="9" width="32" height="24" rx="5" fill="#10161f" stroke="#3f7fc1" stroke-width="1.6"/>'
- +'<circle id="chibiLamp" cx="10.5" cy="15" r="2.1" fill="#5c6875"/>'
- +'<circle cx="27" cy="21" r="6" fill="#0a0d12" stroke="#d9a83a" stroke-width="1.4"/>'
- +'<line id="chibiNeedle" x1="27" y1="21" x2="30.5" y2="17.5" stroke="#d9a83a" stroke-width="1.4"/>'
- +'<g stroke="#223041" stroke-width="1.4"><line x1="9" y1="21" x2="18" y2="21"/><line x1="9" y1="24.5" x2="18" y2="24.5"/><line x1="9" y1="28" x2="18" y2="28"/></g></svg>'
- +'<div id="chibiTag" style="font:8.5px ui-monospace,Consolas,monospace;letter-spacing:.1em;color:#5c6875;margin-top:2px;max-width:92px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>';
-document.body.appendChild(wrap);
-var stx=document.createElement('style');
-stx.textContent='#chibiRadio svg *{transform-origin:center;transform-box:fill-box}'
- +'#chibiRadio.on #chibiLamp{fill:#d9a83a;filter:drop-shadow(0 0 4px rgba(217,168,58,.9))}'
- +'#chibiRadio.on #chibiNeedle{animation:chibiSway 2.4s infinite alternate}'
- +'@keyframes chibiSway{from{transform:rotate(-14deg)}to{transform:rotate(18deg)}}';
-document.head.appendChild(stx);
+var wrap=null;
 function playing(){ if(onBase){ var m=activeMedia(); if(m) return !m.paused; }
   if(!onBase&&au) return !au.paused; return !!(st()&&st().on); }
-function msg(t){ var g=wrap.querySelector('#chibiTag'); if(g){ g.textContent=t; setTimeout(paint,2200); } }
-function paint(){ var s=st(), on=playing();
+function msg(t){ var g=wrap&&wrap.querySelector('#chibiTag'); if(g){ g.textContent=t; setTimeout(paint,2200); } }
+function paint(){ if(!wrap) return; var s=st(), on=playing();
   wrap.classList.toggle('on',on);
   var g=wrap.querySelector('#chibiTag'); if(!g) return;
   g.textContent = on? '\u266b '+((s&&s.title)||'the dial')
     : (onBase? 'dial \u00b7 dark' : (s&&s.src? '\u2016 '+((s&&s.title)||'the dial') : 'radio \u00b7 quiet'));
   wrap.title = on? 'tap \u00b7 tune out' : (s&&s.src? 'tap \u00b7 keep listening' : 'the radio lives in baseline'); }
-function pulse(){ wrap.style.transform='scale(.94)'; setTimeout(function(){ wrap.style.transform=''; },180); }
-wrap.addEventListener('click',function(){
-  if(onBase){ var m=activeMedia();
-    if(m){ if(m.paused){ m.play().catch(function(){}); } else { m.pause(); } return; }
-    pulse(); msg('press PWR \u00b7 the dial is yours'); return; }
-  var s=st();
-  if(!s||!s.src){ pulse(); msg('the radio lives in baseline'); return; }
-  var a=ensure();
-  if(!a.paused){ a.pause(); return; }
-  if(a.getAttribute('data-src')!==s.src){ a.src=s.src; a.setAttribute('data-src',s.src); }
-  if(typeof s.vol==='number'){ try{ a.volume=s.vol; }catch(e){} }
-  a.play().catch(function(){ msg('the stream refused \u00b7 tap again'); }); });
-addEventListener('pagehide',function(){ if(!onBase&&au&&!au.paused){ var s=st()||{}; s.on=true; set(s); } });
-function dodge(){
+function pulse(){ if(!wrap) return; wrap.style.transform='scale(.94)'; setTimeout(function(){ wrap.style.transform=''; },180); }
+function mount(){
+  if(wrap) return;
+  wrap=document.createElement('div'); wrap.id='chibiRadio';
+  wrap.style.cssText='position:fixed;right:14px;bottom:14px;z-index:80;cursor:pointer;user-select:none;text-align:center';
+  wrap.innerHTML='<svg width="40" height="40" viewBox="0 0 40 40" style="display:block;filter:drop-shadow(0 2px 5px rgba(0,0,0,.55))">'
+   +'<line x1="29" y1="9" x2="35" y2="3" stroke="#93a1b0" stroke-width="1.6"/>'
+   +'<rect x="4" y="9" width="32" height="24" rx="5" fill="#10161f" stroke="#3f7fc1" stroke-width="1.6"/>'
+   +'<circle id="chibiLamp" cx="10.5" cy="15" r="2.1" fill="#5c6875"/>'
+   +'<circle cx="27" cy="21" r="6" fill="#0a0d12" stroke="#d9a83a" stroke-width="1.4"/>'
+   +'<line id="chibiNeedle" x1="27" y1="21" x2="30.5" y2="17.5" stroke="#d9a83a" stroke-width="1.4"/>'
+   +'<g stroke="#223041" stroke-width="1.4"><line x1="9" y1="21" x2="18" y2="21"/><line x1="9" y1="24.5" x2="18" y2="24.5"/><line x1="9" y1="28" x2="18" y2="28"/></g></svg>'
+   +'<div id="chibiTag" style="font:8.5px ui-monospace,Consolas,monospace;letter-spacing:.1em;color:#5c6875;margin-top:2px;max-width:92px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>';
+  document.body.appendChild(wrap);
+  var stx=document.createElement('style');
+  stx.textContent='#chibiRadio svg *{transform-origin:center;transform-box:fill-box}'
+   +'#chibiRadio.on #chibiLamp{fill:#d9a83a;filter:drop-shadow(0 0 4px rgba(217,168,58,.9))}'
+   +'#chibiRadio.on #chibiNeedle{animation:chibiSway 2.4s infinite alternate}'
+   +'@keyframes chibiSway{from{transform:rotate(-14deg)}to{transform:rotate(18deg)}}';
+  document.head.appendChild(stx);
+  wrap.addEventListener('click',function(){
+    if(onBase){ var m=activeMedia();
+      if(m){ if(m.paused){ m.play().catch(function(){}); } else { m.pause(); } return; }
+      pulse(); msg('press PWR \u00b7 the dial is yours'); return; }
+    var s=st();
+    if(!s||!s.src){ pulse(); msg('the radio lives in baseline'); return; }
+    var a=ensure();
+    if(!a.paused){ a.pause(); return; }
+    if(a.getAttribute('data-src')!==s.src){ a.src=s.src; a.setAttribute('data-src',s.src); }
+    if(typeof s.vol==='number'){ try{ a.volume=s.vol; }catch(e){} }
+    a.play().catch(function(){ msg('the stream refused \u00b7 tap again'); }); });
+  paint();
+}
+var woken=false;
+try{ woken=sessionStorage.getItem('hive_radio_woken')==='1'; }catch(e){}
+function checkWake(){
+  if(!woken){ var s=st(); if(s&&s.on){ woken=true; try{ sessionStorage.setItem('hive_radio_woken','1'); }catch(e){} } }
+  if(woken) mount();
+}
+function dodge(){ if(!wrap) return;
   var r=wrap.getBoundingClientRect(), hit=null;
   var cands=[document.getElementById('coastBtn'),document.getElementById('hud'),document.getElementById('gyroHud')];
   for(var i=0;i<cands.length;i++){ var el=cands[i]; if(!el) continue;
@@ -466,7 +476,8 @@ function dodge(){
   else { wrap.style.bottom='14px'; }
 }
 setInterval(dodge,1500); addEventListener('resize',dodge); setTimeout(dodge,600);
-  setInterval(paint,1500); paint();
+setInterval(paint,1500);
+setInterval(checkWake,1200); setTimeout(checkWake,300);
 })();
 
 (function(){
