@@ -691,14 +691,16 @@ addEventListener('resize',tick);
 })();
 
 (function(){
-/* ---- the time desk \u00b7 egg timer + alarm clock \u00b7 offline workings \u00b7 house-wide bell, porch & left/up pillars desk ---- */
+/* ---- the time desk v2 \u00b7 rests in core \u00b7 axiom/eigen pill bottom-right above the chibi \u00b7 system bells ---- */
 if(window.__timeDesk) return; window.__timeDesk=1;
 var KEY='hive_timedesk';
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
 function save(d){ try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){} }
 function pad(n){ return (n<10?'0':'')+n; }
 var PG=(location.pathname.split('/').pop()||'');
-var DESK=(PG===''||PG==='index.html'||PG==='axiom.html'||PG==='eigen.html');
+var POS={'core.html':{l:'10px',b:'10px'},'axiom.html':{r:'14px',b:'74px'},'eigen.html':{r:'14px',b:'74px'}};
+var DESK=!!POS[PG];
+var PP=POS[PG]||{l:'10px',b:'10px'};
 /* ---- the bells \u00b7 pure WebAudio, no files, no wire ---- */
 var AC=null;
 function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
@@ -717,6 +719,7 @@ function alarmBell(){ eggBell(); strike(659,0.5,0.25);
   alarmLoop=setInterval(function(){ strike(988,0,0.3); strike(1319,0.16,0.26); },1600);
   setTimeout(alarmStop,12000); }
 function buzz(){ try{ if(navigator.vibrate) navigator.vibrate([120,60,120,60,240]); }catch(e){} }
+function notify(t){ try{ if(window.Notification&&Notification.permission==='granted'){ new Notification('inn.visible \u00b7 the desk',{body:t}); } }catch(e){} }
 /* ---- toast + title blink, house-wide ---- */
 var toastEl=null, blink=null;
 function startBlink(){ if(blink) return; var base=document.title, on=false;
@@ -733,26 +736,28 @@ function dayKey(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 function tick(){
   var now=Date.now(), d=load(), changed=false;
   (d.eggs||[]).forEach(function(g){ if(!g.done&&now>=g.end){ g.done=true; changed=true;
-    eggBell(); buzz(); toast('the egg is done \u00b7 '+(g.label||g.min+' min')); } });
+    eggBell(); buzz(); notify('the egg is done \u00b7 '+(g.label||g.min+' min')); toast('the egg is done \u00b7 '+(g.label||g.min+' min')); } });
   (d.alarms||[]).forEach(function(a){ if(!a.on) return;
     var n=new Date(), t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),a.hh,a.mm,0,0).getTime();
     var key=dayKey(n)+' '+a.hh+':'+a.mm;
     if(now>=t&&now<t+90000&&a.last!==key){ a.last=key; changed=true;
       if(!a.daily) a.on=false;
-      alarmBell(); buzz(); toast('the '+pad(a.hh)+':'+pad(a.mm)+' bell rings'); } });
+      alarmBell(); buzz(); notify('the '+pad(a.hh)+':'+pad(a.mm)+' bell rings'); toast('the '+pad(a.hh)+':'+pad(a.mm)+' bell rings'); } });
   if(changed) save(d);
   paint();
 }
 setInterval(tick,1000);
-/* ---- the desk \u00b7 porch + axiom + eigen only ---- */
+/* ---- the desk \u00b7 core + axiom + eigen only ---- */
 var pill=null, panel=null;
 if(DESK){
   pill=document.createElement('button');
-  pill.style.cssText='position:fixed;left:10px;bottom:10px;z-index:70;background:#0e141b;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.18em;padding:6px 10px;cursor:pointer';
+  pill.style.cssText='position:fixed;z-index:70;background:#0e141b;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace,Consolas,monospace;letter-spacing:.18em;padding:6px 10px;cursor:pointer;'
+    +(PP.r? 'right:'+PP.r+';' : 'left:'+(PP.l||'10px')+';')+'bottom:'+(PP.b||'10px')+';';
   pill.textContent='time desk \u2304';
   document.body.appendChild(pill);
   panel=document.createElement('div');
-  panel.style.cssText='position:fixed;left:10px;bottom:40px;z-index:70;display:none;width:min(300px,92vw);background:rgba(10,13,18,.95);border:1px solid #223041;padding:12px;font:10px ui-monospace,Consolas,monospace;color:#93a1b0;letter-spacing:.08em';
+  panel.style.cssText='position:fixed;z-index:70;display:none;width:min(300px,92vw);background:rgba(10,13,18,.95);border:1px solid #223041;padding:12px;font:10px ui-monospace,Consolas,monospace;color:#93a1b0;letter-spacing:.08em;'
+    +(PP.r? 'right:10px;bottom:'+(parseInt(PP.b,10)+32)+'px;' : 'left:10px;bottom:40px;');
   panel.innerHTML=
     '<div id="tdClock" style="text-align:center;font-size:16px;color:#e8e4d8;letter-spacing:.2em"></div>'
    +'<div id="tdMoon" style="text-align:center;font-size:9px;color:#5c6875;margin:2px 0 10px"></div>'
@@ -770,6 +775,9 @@ if(DESK){
    +'<input id="tdAlTime" type="time" value="07:00" style="flex:1;background:#0e141b;border:1px solid #223041;color:#e8e4d8;font:10px ui-monospace;padding:4px">'
    +'<button id="tdAlDaily" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">daily</button>'
    +'<button id="tdAlArm" style="background:none;border:1px solid #58a36a;color:#58a36a;font:9px ui-monospace;padding:4px 8px;cursor:pointer">arm</button></div>'
+   +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">'
+   +'<button id="tdSys" style="background:none;border:1px solid #223041;color:#93a1b0;font:9px ui-monospace;padding:4px 8px;cursor:pointer">system bells</button>'
+   +'<span style="font-size:8.5px;color:#3a4a5c">lets the bell shout over the OS, even backgrounded</span></div>'
    +'<div id="tdAlarms"></div>'
    +'<div id="tdNext" style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875"></div>';
   document.body.appendChild(panel);
@@ -784,18 +792,24 @@ if(DESK){
   var daily=false, dBtn=document.getElementById('tdAlDaily');
   dBtn.onclick=function(){ daily=!daily; dBtn.style.borderColor=daily?'#58a36a':'#223041'; dBtn.style.color=daily?'#58a36a':'#93a1b0'; };
   document.getElementById('tdAlArm').onclick=function(){
-    var v=document.getElementById('tdAlTime').value||'07:00'.slice(0); var p=v.split(':');
+    var v=document.getElementById('tdAlTime').value||'07:00'; var p=v.split(':');
     var d=load(); d.alarms=d.alarms||[];
     if(d.alarms.length>=3){ toast('three bells max \u00b7 the tower is full'); return; }
     d.alarms.push({hh:+p[0]||0,mm:+p[1]||0,on:true,daily:daily,last:''});
     save(d); paint(); };
+  var sysBtn=document.getElementById('tdSys');
+  if(sysBtn) sysBtn.onclick=function(){
+    if(!window.Notification){ toast('this glass has no system bells'); return; }
+    Notification.requestPermission().then(function(p){
+      sysBtn.style.borderColor=p==='granted'?'#58a36a':'#c8452c';
+      sysBtn.style.color=sysBtn.style.borderColor;
+      sysBtn.textContent=p==='granted'?'system bells \u2713':'system bells \u2715'; }); };
   panel.addEventListener('click',function(e){
     var t=e.target; if(!t||!t.getAttribute) return;
     var id=t.getAttribute('data-stop'), aid=t.getAttribute('data-altog'), adel=t.getAttribute('data-aldel');
     var d=load();
     if(id){ d.eggs=(d.eggs||[]).filter(function(g){ return String(g.id)!==id; }); save(d); paint(); }
-    if(aid){ (d.alarms||[]).forEach(function(a){ if(String(a.id||'')===aid) a.on=!a.on; });
-      d.alarms=(d.alarms||[]).map(function(a,i){ if(!a.id) a.id=i+1; return a; });
+    if(aid){ (d.alarms||[]).forEach(function(a){ if(!a.id) a.id=1; });
       (d.alarms||[]).forEach(function(a){ if(String(a.id)===aid) a.on=!a.on; }); save(d); paint(); }
     if(adel){ d.alarms=(d.alarms||[]).filter(function(a){ return String(a.id)!==adel; }); save(d); paint(); } });
 }
