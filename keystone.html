@@ -1220,6 +1220,23 @@ if('serviceWorker' in navigator){
   setTimeout(start,400);
 })();
 </script>
+
+<script>
+/* ---- rock-ledger \u2194 worker bridge \u00b7 no edits to the ledger itself ---- */
+(function(){
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t&&t.id==='rlRefresh'&&navigator.onLine){
+      setTimeout(function(){
+        try{
+          if(navigator.serviceWorker&&navigator.serviceWorker.controller)
+            navigator.serviceWorker.controller.postMessage('hive-seed');
+        }catch(err){}
+      },400);
+    }
+  },true);
+})();
+</script>
   
 </body>
 </html>
