@@ -480,21 +480,28 @@
 
   // helpers
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-     function save(){
-    var payload=JSON.stringify(notes);
-    var ok=true;
-    try{ localStorage.setItem(KEY,payload); }
-    catch(e){
-      ok=false;
-      if(e&&(e.name==='QuotaExceededError'||e.code===22||e.code===1014||/quota/i.test(e.message))){
-        if(!window.__quotaWarned){
-          window.__quotaWarned=true;
-          alert('the garden is too heavy for this glass \u00b7 localStorage quota exceeded \u00b7 the new notes were not saved \u00b7 burn old notes or remove images to make room');
-          setTimeout(function(){ window.__quotaWarned=false; },5000);
-        }
-      }
-    }
-    // shadow-copy to house drawer so stones and root packs carry it
+      // \u2500\u2500\u2500 the rock \u00b7 IndexedDB primary \u00b7 localStorage only as emergency glass \u2500\u2500\u2500
+  var DB=null, KEY_LS=KEY, storeKind='rock';
+  function idb(){ return new Promise(function(res,rej){
+    if(DB) return res(DB);
+    if(!window.indexedDB) return rej(new Error('no-idb'));
+    var rq=indexedDB.open('hive-garden',1);
+    rq.onupgradeneeded=function(){ var db=rq.result;
+      if(!db.objectStoreNames.contains('notes')) db.createObjectStore('notes',{keyPath:'id'}); };
+    rq.onsuccess=function(){ DB=rq.result; res(DB); };
+    rq.onerror=function(){ rej(rq.error||new Error('idb-open')); }; }); }
+  function idbSaveAll(list){ return idb().then(function(db){ return new Promise(function(res,rej){
+    var tx=db.transaction('notes','readwrite'), st=tx.objectStore('notes');
+    st.clear(); for(var i=0;i<list.length;i++) st.put(list[i]);
+    tx.oncomplete=function(){ res(true); }; tx.onerror=function(){ rej(tx.error); }; tx.onabort=function(){ rej(tx.error); }; }); }); }
+  function idbLoadAll(){ return idb().then(function(db){ return new Promise(function(res,rej){
+    var tx=db.transaction('notes','readonly'), rq=tx.objectStore('notes').getAll();
+    rq.onsuccess=function(){ res(rq.result||[]); }; rq.onerror=function(){ rej(rq.error); }; }); }); }
+  function quotaAlert(){ if(window.__quotaWarned) return; window.__quotaWarned=true;
+    alert('the rock and the glass both refused \u00b7 burn old notes or remove images \u00b7 this browser may lack IndexedDB');
+    setTimeout(function(){ window.__quotaWarned=false; },5000); }
+  // shadow \u00b7 words only, trimmed \u00b7 the drawer carries the garden without doubling its weight
+  function shadow(){
     try{
       var L=[]; try{ L=JSON.parse(localStorage.getItem('arc.local')||'[]'); }catch(ex){}
       var egIds={}, newL=[], existingIds={};
@@ -502,30 +509,47 @@
       L.forEach(function(n){
         if(!n||!n.id) return;
         if(String(n.id).indexOf('eg-')===0){
-          if(egIds[n.id]){
-            var src=egIds[n.id];
-            n.title=src.title||'untitled'; n.body=src.body||'';
+          if(egIds[n.id]){ var src=egIds[n.id];
+            n.title=src.title||'untitled';
+            n.body=String(src.body||'').slice(0,1200);
             n.tags=(src.tags||[]).concat(['eigen','tablet']);
             n.date=new Date(src.updated||src.created||Date.now()).toISOString().slice(0,10);
-                       delete n.images; delete n.imageStyles;
-            newL.push(n); existingIds[n.id]=1;
-          }
-          // else: deleted in tablet, drop the shadow from the drawer
-        } else { newL.push(n); existingIds[n.id]=1; }
-      });
+            delete n.images; delete n.imageStyles;
+            newL.push(n); existingIds[n.id]=1; }
+        } else { newL.push(n); existingIds[n.id]=1; } });
       notes.forEach(function(n){
-        if(!n||!n.id) return;
-        var sid='eg-'+n.id;
+        if(!n||!n.id) return; var sid='eg-'+n.id;
         if(!existingIds[sid]){
-          var obj={id:sid,pillar:'eigen',date:new Date(n.updated||n.created||Date.now()).toISOString().slice(0,10),
-            title:n.title||'untitled',body:n.body||'',tags:(n.tags||[]).concat(['eigen','tablet']),local:true};
-          newL.unshift(obj);
-        }
-      });
-      try{ localStorage.setItem('arc.local',JSON.stringify(newL)); }catch(ex){}
+          newL.unshift({id:sid,pillar:'eigen',date:new Date(n.updated||n.created||Date.now()).toISOString().slice(0,10),
+            title:n.title||'untitled',body:String(n.body||'').slice(0,1200),tags:(n.tags||[]).concat(['eigen','tablet']),local:true}); } });
+      localStorage.setItem('arc.local',JSON.stringify(newL));
     }catch(ex){}
-    return ok;
   }
+  var persistT=0;
+  function save(){ if(persistT) clearTimeout(persistT); persistT=setTimeout(persistNow,350); return true; }
+  function persistNow(){ if(persistT){ clearTimeout(persistT); persistT=0; }
+    return idbSaveAll(notes).then(function(){ storeKind='rock'; shadow(); renderList(); return true; })
+    .catch(function(){
+      try{ localStorage.setItem(KEY_LS,JSON.stringify(notes)); storeKind='glass'; shadow(); renderList(); return true; }
+      catch(e){ storeKind='none'; quotaAlert(); renderList(); return false; } }); }
+  function load(){
+    return idbLoadAll().then(function(list){
+      var got=Array.isArray(list)?list.map(norm).filter(Boolean):[];
+      if(got.length===0){
+        try{ var r=localStorage.getItem(KEY_LS);
+          if(r){ var p=JSON.parse(r);
+            if(Array.isArray(p)&&p.length){ notes=p.map(norm).filter(Boolean);
+              return persistNow().then(function(){ try{ localStorage.removeItem(KEY_LS); }catch(e){} return true; }); } } }
+        }catch(e){}
+        notes=got; return true; }
+      notes=got;
+      try{ localStorage.removeItem(KEY_LS); }catch(e){}
+      return true;
+    }).catch(function(){
+      try{ var r=localStorage.getItem(KEY_LS); var p=r?JSON.parse(r):[];
+        notes=Array.isArray(p)?p.map(norm).filter(Boolean):[]; storeKind='glass'; }
+      catch(e){ notes=[]; }
+      return true; }); }
   function norm(n){ if(!n||typeof n!=='object') return null;   if(!n.id) n.id=genId();   n.title=typeof n.title==='string'?n.title:'';   n.body=typeof n.body==='string'?n.body:'';   n.tags=Array.isArray(n.tags)?n.tags.filter(function(t){return typeof t==='string';}):[];   n.created=+n.created||Date.now(); n.updated=+n.updated||n.created;   n.pinned=!!n.pinned;   if(!n.images||typeof n.images!=='object') n.images={};   if(!n.imageStyles||typeof n.imageStyles!=='object') n.imageStyles={};   return n; } function load(){ try{ var r=localStorage.getItem(KEY); var p=r?JSON.parse(r):[];   notes=Array.isArray(p)?p.map(norm).filter(Boolean):[]; }catch(e){ notes=[]; } }
   function timeAgo(ts){
     var d=Date.now()-ts,m=Math.floor(d/60000);
