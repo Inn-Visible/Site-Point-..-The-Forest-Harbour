@@ -66,15 +66,18 @@ self.addEventListener('fetch',function(e){
   }
   /* same-origin · network-first, refill the box, dark shelf underneath */
   if(u.indexOf(location.origin)===0){
-    if(e.request.mode==='navigate'){
-      e.respondWith(
-        fetch(e.request).then(function(r){
-          if(r.ok){ var cl=r.clone(); caches.open(CORE).then(function(c){ c.put(e.request,cl); }); }
+     if(e.request.mode==='navigate'){
+      e.respondWith((function(req){
+        var net=fetch(req).then(function(r){
+          if(r.ok){ var cl=r.clone(); caches.open(CORE).then(function(c){ c.put(req,cl); }); }
           return r;
-        }).catch(function(){
-          return matchAnywhere(e.request).then(function(hit){ return hit || shellRes(); });
-        })
-      );
+        }).catch(function(){ return null; });
+        var slow=new Promise(function(res){ setTimeout(function(){ res('slow'); },2500); });
+        return Promise.race([net,slow]).then(function(out){
+          if(out&&out!=='slow') return out;
+          return matchAnywhere(req).then(function(hit){ return hit || shellRes(); });
+        });
+      })(e.request));
       return;
     }
     e.respondWith(
