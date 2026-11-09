@@ -191,3 +191,9 @@ function gisUncharted(z, x, y){
 function gisSea(){
   return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#0b1016"/></svg>', { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' } });
 }
+
+(function(){
+  /* ---- the offline hand, house-wide \u00b7 every room registers the keeper ---- */
+  if(!('serviceWorker' in navigator)||window.__swReg) return; window.__swReg=1;
+  addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} });
+})();
