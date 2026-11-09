@@ -588,9 +588,8 @@ setTimeout(finish,6000);
 ov.addEventListener('click',finish);
 })();
 
-  
-(function(){
-/* ---- the ferry orbit v5 \u00b7 committed anchor between the two porch lines \u00b7 the ring itself is the door \u00b7 core only ---- */
+ (function(){
+/* ---- the ferry orbit v6 \u00b7 offset-walk anchor \u00b7 scroll- and refresh-proof \u00b7 core only ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
 var ov=null, anchor=null, tries=0;
 function byText(frag){
@@ -602,15 +601,17 @@ function byText(frag){
     if(t.indexOf(frag)>-1) return el; }
   return null;
 }
+function pagePos(el){ var x=0,y=0; while(el){ x+=el.offsetLeft; y+=el.offsetTop; el=el.offsetParent; } return {x:x,y:y}; }
 function measure(){
   var top=byText('Refuge in plain sight'), bot=byText('four rooms, one house');
   if(!top||!bot) return null;
-  var rt=top.getBoundingClientRect(), rb=bot.getBoundingClientRect();
-  var gap=rb.top-rt.bottom;
+  var pt=pagePos(top), pb=pagePos(bot);
+  var topH=top.offsetHeight||0;
+  var gap=pb.y-(pt.y+topH);
   if(gap<120) return null;
-  return { cx:(rt.left+rt.right)/2+window.scrollX,
-           cy:(rt.bottom+rb.top)/2+window.scrollY,
-           size:Math.max(300,Math.min(gap*0.82, Math.min(innerWidth,innerHeight)*1.05)) };
+  return { cx:pt.x+(top.offsetWidth||innerWidth)/2,
+           cy:pt.y+topH+gap*0.47,
+           size:Math.max(280,Math.min(gap*0.74, Math.min(innerWidth,innerHeight)*1.05)) };
 }
 function styleOnce(){ if(document.getElementById('foStyle')) return;
   var st=document.createElement('style'); st.id='foStyle';
@@ -627,7 +628,7 @@ function build(a){
    +'<circle id="foVis" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,.45)" stroke-width="0.7" stroke-dasharray="0.5 3.2" stroke-linecap="round" style="pointer-events:none;transition:stroke .2s"/>'
    +'<circle id="foHit" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,0.01)" stroke-width="7" style="pointer-events:visibleStroke;cursor:pointer"/>'
    +'</svg>'
-   +'<div style="position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap;pointer-events:none">the ferry \u00b7 tap the ring</div>';
+   +'<div style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#5c6875;white-space:nowrap;pointer-events:none">the ferry \u00b7 tap the ring</div>';
   ov.querySelector('#foHit').addEventListener('click',function(){ location.href='ferry.html'; });
   document.body.appendChild(ov);
   apply();
@@ -643,7 +644,8 @@ setTimeout(tick,300);
 var iv=setInterval(function(){ tick(); if(ov||tries>30) clearInterval(iv); },600);
 addEventListener('resize',function(){ if(!ov) return; var a=measure(); if(a){ anchor=a; apply(); } });
 addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure(); if(a){ anchor=a; apply(); } } },400); });
-})();
+})(); 
+
 
 
 
