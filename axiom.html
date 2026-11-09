@@ -2586,7 +2586,7 @@ function drawDial(t){
   g.fillStyle='rgba(232,213,176,.4)'; g.font='10px ui-monospace,Consolas,monospace';
   for(var z=0;z<12;z++){
     var az=(-90+(z*30+15)/360*360)*D2R;
-    g.fillText(ZODG[z], CX+Math.cos(az)*(R-44), CY+Math.sin(az)*(R-44));
+    g.fillText(ZODA[z], CX+Math.cos(az)*(R-44), CY+Math.sin(az)*(R-44));
   }
   /* starbursts at the four turns */
   terms.forEach(function(tm){ var a=angOf(tm.t,y); burst(CX+Math.cos(a)*(R-7),CY+Math.sin(a)*(R-7),6,'rgba(217,168,58,.95)'); });
@@ -2669,12 +2669,12 @@ function paintReadout(){
   var nf=new Date(nextMoon(t,'full')), nn=new Date(nextMoon(t,'new'));
   var lines=[];
   lines.push('<span style="color:#e8e4d8">'+DN[d.getDay()]+' '+pad(d.getDate())+' '+MONN[d.getMonth()]+' '+d.getFullYear()+'</span> \u00b7 day '+doY(t)+' / '+daysInYear(y)+' \u00b7 week '+isoWeek(d));
-  lines.push('sun \u00b7 \u03bb '+sunLon(t).toFixed(1)+'\u00b0 '+ZODG[zof(sunLon(t))]+' '+ZODN[zof(sunLon(t))]+' \u00b7 \u03b4 '+(sunDec(t)>=0?'+':'')+sunDec(t).toFixed(1)+'\u00b0');
+  lines.push('sun \u00b7 \u03bb '+sunLon(t).toFixed(1)+'\u00b0 '+ZODN[zof(sunLon(t))]+' \u00b7 \u03b4 '+(sunDec(t)>=0?'+':'')+sunDec(t).toFixed(1)+'\u00b0');
   lines.push('up '+fmtHL(dl)+' \u00b7 rise '+fmtH(rise)+' \u00b7 noon '+fmtH(noon)+' \u00b7 set '+fmtH(set));
   lines.push('moon \u00b7 day '+Math.floor(ma+1)+' \u00b7 '+PN[pi]+' \u00b7 '+Math.round(moonLit(t)*100)+'% lit');
   lines.push('next full '+pad(nf.getDate())+' '+MONN[nf.getMonth()]+' \u00b7 next new '+pad(nn.getDate())+' '+MONN[nn.getMonth()]);
   var pl='';
-  [0,1,3,4,5].forEach(function(ix){ var l=geo(PLAN[ix],t); pl+=(pl?' \u00b7 ':'')+PLAN[ix][0].slice(0,3)+' '+ZODG[zof(l)]+Math.round(l%30)+'\u00b0'; });
+  [0,1,3,4,5].forEach(function(ix){ var l=geo(PLAN[ix],t); pl+=(pl?' \u00b7 ':'')+PLAN[ix][0].slice(0,3)+' '+ZODA[zof(l)]+' '+Math.round(l%30)+'\u00b0'; });
   lines.push('<span style="color:#5c6875">by geocentric approximation \u00b7</span> '+pl);
   lines.push('<span style="color:#d9a83a">next turn \u00b7 '+nt.name+' \u00b7 '+pad(nd.getDate())+' '+MONN[nd.getMonth()]+' \u00b7 in '+Math.max(0,Math.ceil((nt.t-t)/86400000))+' days</span>');
   lines.push('<span style="color:#3a4a5c">computed on this glass \u00b7 clock + math only \u00b7 the sky needs no wire</span>');
