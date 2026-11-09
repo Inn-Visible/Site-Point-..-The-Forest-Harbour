@@ -605,10 +605,11 @@ ov.addEventListener('click',finish);
 })();
 
 (function(){
-/* ---- the ferry orbit v7 \u00b7 anchored to .cluster herself \u00b7 font-race proof \u00b7 core only ---- */
+/* ---- the ferry orbit v8 \u00b7 no title card \u00b7 mobile-proportioned \u00b7 core only ---- */
 if(window.__ferryOrbit) return; window.__ferryOrbit=1;
 var ov=null, anchor=null, built=false;
 function pagePos(el){ var x=0,y=0; while(el){ x+=el.offsetLeft; y+=el.offsetTop; el=el.offsetParent; } return {x:x,y:y}; }
+function capSize(s){ return Math.min(s, Math.min(innerWidth,innerHeight)*0.96); }
 function byText(frag){
   var els=document.querySelectorAll('h1,h2,h3,p,div,span,i,b,em');
   for(var i=0;i<els.length;i++){ var el=els[i];
@@ -627,17 +628,17 @@ function measure(){
       if(cs.position==='fixed'){ var r=cl.getBoundingClientRect();
         p={x:r.left+window.scrollX, y:r.top+window.scrollY}; }
       else p=pagePos(cl);
-      return { cx:p.x+w/2, cy:p.y+h/2, size:Math.max(w,h)*1.42, src:'cluster' };
+      return { cx:p.x+w/2, cy:p.y+h/2, size:capSize(Math.max(w,h)*1.42), src:'cluster' };
     }
   }
   var top=byText('Refuge in plain sight'), bot=byText('four rooms, one house');
   if(top&&bot){
     var pt=pagePos(top), pb=pagePos(bot), th=top.offsetHeight||0, gap=pb.y-(pt.y+th);
     if(gap>120) return { cx:pt.x+(top.offsetWidth||innerWidth)/2, cy:pt.y+th+gap*0.47,
-      size:Math.max(280,Math.min(gap*0.74, Math.min(innerWidth,innerHeight)*1.05)), src:'lines' };
+      size:capSize(Math.max(280,Math.min(gap*0.74, Math.min(innerWidth,innerHeight)*1.05))), src:'lines' };
   }
   return { cx:window.scrollX+innerWidth/2, cy:window.scrollY+innerHeight*0.45,
-    size:Math.min(innerWidth*0.86,640), src:'view' };
+    size:capSize(Math.min(innerWidth*0.86,640)), src:'view' };
 }
 function styleOnce(){ if(document.getElementById('foStyle')) return;
   var st=document.createElement('style'); st.id='foStyle';
@@ -646,23 +647,23 @@ function styleOnce(){ if(document.getElementById('foStyle')) return;
 function apply(){ if(!ov||!anchor) return;
   ov.style.left=anchor.cx+'px'; ov.style.top=anchor.cy+'px';
   ov.style.width=anchor.size+'px'; ov.style.height=anchor.size+'px'; }
-function settle(){ var a=measure();
-  if(!anchor||Math.abs(a.cx-anchor.cx)>6||Math.abs(a.cy-anchor.cy)>6||Math.abs(a.size-anchor.size)>6){
-    anchor=a; apply(); } }
 function build(){
   styleOnce(); anchor=measure();
   ov=document.createElement('div'); ov.id='ferryOrbit';
+  ov.title='the ferry \u00b7 tap the ring';
   ov.style.cssText='position:absolute;transform:translate(-50%,-50%);z-index:6;pointer-events:none';
   ov.innerHTML='<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">'
    +'<circle id="foVis" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,.45)" stroke-width="0.7" stroke-dasharray="0.5 3.2" stroke-linecap="round" style="pointer-events:none;transition:stroke .2s"/>'
    +'<circle id="foHit" cx="50" cy="50" r="48" fill="none" stroke="rgba(217,168,58,0.01)" stroke-width="7" style="pointer-events:visibleStroke;cursor:pointer"/>'
-   +'</svg>'
-   +'<div style="position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font:9px ui-monospace,Consolas,monospace;letter-spacing:.22em;color:#93a1b0;white-space:nowrap;pointer-events:none;background:rgba(10,13,18,.82);padding:2px 8px;border:1px solid rgba(34,48,65,.9)">the ferry \u00b7 tap the ring</div>';
+   +'</svg>';
   ov.querySelector('#foHit').addEventListener('click',function(){ location.href='ferry.html'; });
   document.body.appendChild(ov);
   built=true;
   apply();
 }
+function settle(){ var a=measure();
+  if(!anchor||Math.abs(a.cx-anchor.cx)>6||Math.abs(a.cy-anchor.cy)>6||Math.abs(a.size-anchor.size)>6){
+    anchor=a; apply(); } }
 function tick(){
   if(!/core\.html(\?|#|$)/.test(location.href)) return;
   if(!document.body) return;
@@ -670,11 +671,11 @@ function tick(){
   settle();
 }
 setTimeout(tick,250);
-var beats=[700,1600,3000,5200];
-beats.forEach(function(ms){ setTimeout(tick,ms); });
+[700,1600,3000,5200].forEach(function(ms){ setTimeout(tick,ms); });
 addEventListener('load',function(){ setTimeout(tick,300); });
 if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){ setTimeout(tick,120); }).catch(function(){}); }
 addEventListener('resize',tick);
+addEventListener('orientationchange',function(){ setTimeout(tick,350); });
 })();
 
 (function(){
