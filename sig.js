@@ -646,6 +646,10 @@ addEventListener('resize',function(){ if(!ov) return; var a=measure(); if(a){ an
 addEventListener('load',function(){ setTimeout(function(){ if(ov){ var a=measure(); if(a){ anchor=a; apply(); } } },400); });
 })(); 
 
-
+(function(){
+  /* ---- the offline hand, house-wide \u00b7 every room registers the keeper ---- */
+  if(!('serviceWorker' in navigator)||window.__swReg) return; window.__swReg=1;
+  addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} });
+})();
 
 
