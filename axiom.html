@@ -2577,7 +2577,7 @@ function drawDial(t){
   var SEAC=['rgba(88,163,106,.5)','rgba(217,168,58,.55)','rgba(200,69,44,.45)','rgba(63,127,193,.45)'];
   for(var q=0;q<terms.length;q++){
     var t0=terms[q].t, t1=(terms[q+1]||{t:terms[0].t+365.25*86400000}).t;
-    var a0=angOf(t0,y), a1=angOf(Math.min(t1,new Date(y+1,0,1).getTime()-1),y);
+    var a0=angOf(t0,y), a1=angOf(t1,new Date(t1).getFullYear());
     if(a1<a0) a1+=TAU;
     g.strokeStyle=SEAC[q%4]; g.lineWidth=3;
     g.beginPath(); g.arc(CX,CY,R-32,a0,a1); g.stroke();
