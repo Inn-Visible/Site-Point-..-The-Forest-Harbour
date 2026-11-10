@@ -623,7 +623,7 @@ function lockdoor(){
 (function(){
 /* ---- the hex tunnel veil \u00b7 the vault's loading screen \u00b7 silver on the dark ---- */
 if(window.__hexVeil) return; window.__hexVeil=1;
-var veil=null, pending=0, shown=false, hideT=0, safeT=0;
+var veil=null, pending=0, shown=false, hideT=0, safeT=0, lastShow=0, lastMsg='';
 function hexPts(cx,cy,r){ var h=r*Math.sqrt(3)/2;
   return [[cx+r,cy],[cx+r/2,cy+h],[cx-r/2,cy+h],[cx-r,cy],[cx-r/2,cy-h],[cx+r/2,cy-h]]
     .map(function(p){ return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' '); }
@@ -650,7 +650,9 @@ function build(){
   document.body.appendChild(veil);
 }
 function show(msg){ if(!veil) build();
-  clearTimeout(hideT); clearTimeout(safeT);
+if(shown&&msg&&msg===lastMsg&&Date.now()-lastShow<1500){ return; }
+lastShow=Date.now(); lastMsg=msg||'';
+clearTimeout(hideT); clearTimeout(safeT);
   veil.style.display='flex'; shown=true;
   if(msg) setMsg(msg);
   safeT=setTimeout(function(){ pending=0; hide(); },15000); }
@@ -2382,15 +2384,18 @@ var FLAG='hive_xeno_unlocked', KEYK='hive_vault_key';
       if(ph.indexOf('house password')>-1 || n[i].type==='password') return n[i]; } return null; }
   document.addEventListener('click',function(e){
     var t=e.target; if(!t) return; var tx=lt(t);
-    if(tx==='unlock'){ try{ localStorage.setItem(FLAG,'1'); }catch(err){}
-      var inp=keyInput(); if(inp&&inp.value){ try{ localStorage.setItem(KEYK,inp.value); }catch(err){} }
-      cool=0; attempt=null; }
+  if(tx==='unlock'&&e.isTrusted){ try{ localStorage.setItem(FLAG,'1'); }catch(err){}
+var inp=keyInput(); if(inp&&inp.value){ try{ localStorage.setItem(KEYK,inp.value); }catch(err){} }
+cool=0; attempt=null; }
     if(tx==='not now'){ cool=Date.now()+15000; attempt=null; }
     if(tx==='wipe'){ cool=0; attempt=null; try{ localStorage.setItem(FLAG,'0'); localStorage.removeItem(KEYK); }catch(err){} }
   },true);
-  function watch(){
-    if(Date.now()<cool) return;
-    var on=false, key=null;
+ function watch(){
+if(Date.now()<cool) return;
+if(window.vaultIsOpen&&window.vaultIsOpen()){ attempt=null; return; }
+var mm=document.getElementById('vaultModal');
+if(!mm||mm.style.display!=='flex'){ attempt=null; return; }
+var on=false, key=null;
     try{ on=localStorage.getItem(FLAG)==='1'; key=localStorage.getItem(KEYK); }catch(e){}
     if(!on||!key) return;
     var inp=keyInput();
