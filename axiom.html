@@ -485,7 +485,7 @@ function lockdoor(){
     if(!window.vaultIsOpen()){ window.vaultPrompt(function(){ ta.value=getPageContent(ta); var v=document.getElementById('vState'); if(v){ v.textContent='vault \u00b7 open'; v.style.color='#58a36a'; } }); return; }
     ta.value=getPageContent(ta);
   }
-  window.hiveBenchReload=reloadLeaf; window.hiveTab=function(name){ curF=name; renderTabs(); renderBody(); };
+  window.hiveBenchReload=reloadLeaf;
   var _pend={};
   function saveEnc(txt){
     window.vaultEncrypt(txt).then(function(ct){
@@ -2858,7 +2858,7 @@ if(!out[t]&&bs[i].offsetParent!==null) out[t]=bs[i]; }
 return out; }
 function seated(){ var f=document.querySelectorAll('iframe');
 for(var i=0;i<f.length;i++){ if(f[i].parentNode&&f[i].parentNode.id==='gemSeated') return f[i]; } return null; }
-function walk(){ try{ if(window.hiveTab){ window.hiveTab('workbench'); return 1; } }catch(e){} var m=tabs(); if(m['workbench']){ m['workbench'].click(); return 1; } return 0; }
+function walk(){ var m=tabs(); if(m['workbench']){ m['workbench'].click(); return 1; } return 0; }
 function report(fr,txt){ try{ var d=fr.contentDocument; var s=d.getElementById('bkPath');
 if(!s){ s=d.createElement('span'); s.id='bkPath';
 s.style.cssText='font:9px ui-monospace,Consolas,monospace;color:#5c6875;margin-left:8px';
@@ -2869,13 +2869,13 @@ var fr=seated(); if(!fr) return; var d=null;
 try{ d=fr.contentDocument; }catch(e){} if(!d) return;
 var strip=d.getElementById('vaultStrip'); if(!strip) return;
 var bk=strip.querySelector('button'); if(!bk||bk.getAttribute('data-bk2')) return;
-var nb=bk.cloneNode(true); nb.setAttribute('data-bk2','1'); nb.setAttribute('data-v4','1');   /* both marks = the clone war ends here */
+var nb=bk.cloneNode(true); nb.setAttribute('data-bk2','1');   /* clone = every old dead hand dies with the original */
 bk.parentNode.insertBefore(nb,bk); bk.remove();
 nb.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
 var p=walk();
 setTimeout(function(){ if(seated()) p+=walk();
 setTimeout(function(){ if(seated()) p+=walk();
-var fr2=seated(); report(fr2||fr, 'back \u00b7 tries '+p+(fr2? ' \u00b7 still seated \u00b7 wibblydewobbly : ' \u00b7 walked')); if(!fr2){ setTimeout(function(){ try{ var s=(fr.contentDocument||document).getElementById('bkPath'); if(s) s.textContent=''; }catch(e){} },2200); }
+report(seated()||fr, 'back \u00b7 tries '+p+(seated()? ' \u00b7 still seated \u00b7 tell Qwen' : ' \u00b7 walked'));
 },450); },450);
 },true);
 },900);
