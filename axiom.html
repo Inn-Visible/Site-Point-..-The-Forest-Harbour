@@ -529,10 +529,12 @@ function lockdoor(){
     b.style.cssText='background:'+(x===curF?hexA(P[cur],0.12):'none')+';border:1px solid '+(x===curF?P[cur]:'#223041')+';border-bottom:none;color:'+(x===curF?P[cur]:'#93a1b0')+';font-family:inherit;font-size:10px;letter-spacing:.12em;padding:6px 12px;cursor:pointer';
     b.onclick=function(){ curF=x; renderTabs(); renderBody(); }; tabs.appendChild(b); }); }
 
-  function renderBody(){
-    var cv0=document.getElementById('mapCv'); var s0=cv0?cv0.closest('section'):null;
-    if(s0 && window._gParent && s0.parentNode===body){ window._gParent.insertBefore(s0, window._gAnchor||null); }
-    body.innerHTML='';
+function renderBody(){
+var cv0=document.getElementById('mapCv'); var s0=cv0?cv0.closest('section'):null;
+if(s0 && window._gParent && s0.parentNode===body){ window._gParent.insertBefore(s0, window._gAnchor||null); }
+var pf=document.getElementById('xfFrame');
+if(pf&&pf.parentNode===body&&curF!=='kit'&&curF!=='grid'){ document.body.appendChild(pf); pf.style.display='none'; }
+body.innerHTML='';
     if(curF==='gis'){
       var cvEl=document.getElementById('mapCv'); var secg=cvEl?cvEl.closest('section'):null;
       if(secg){ if(!window._gParent){ window._gAnchor=secg.nextSibling; window._gParent=secg.parentNode; }
@@ -605,9 +607,22 @@ function lockdoor(){
       document.getElementById('pg_wipe').onclick=wipeBench;
       document.getElementById('pg_refresh').onclick=function(){ reloadLeaf(); };
     }
-    else if(curF==='kit'||curF==='grid'){
-      body.innerHTML='<iframe src="'+(curF==='kit'?'kit.html':'grid3d.html?v='+Date.now())+'" title="'+curF+'" style="width:100%;height:78vh;border:1px solid #223041;background:#0e141b"></iframe>';
-    }
+ else if(curF==='kit'||curF==='grid'){
+body.innerHTML='';
+var fr=document.getElementById('xfFrame');
+if(!fr){ fr=document.createElement('iframe'); fr.id='xfFrame';
+fr.style.cssText='width:100%;height:78vh;border:1px solid #223041;background:#0e141b;display:block'; }
+var src=(curF==='kit'?'kit.html':'grid3d.html');
+if((fr.getAttribute('src')||'')!==src){ fr._armed=1; fr.setAttribute('src',src); }
+fr.onload=function(){ if(!fr._armed) return; fr._armed=0;
+try{ var d=fr.contentDocument;
+if(!d||!d.getElementById('cv')){
+body.innerHTML='<div style="border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9">the grid would not seat in the window \u00b7 <a href="grid3d.html" target="_blank" style="color:#8ab4ff">open her in her own room \u2197</a></div>';
+if(fr.parentNode) fr.parentNode.removeChild(fr); }
+}catch(e){} };
+fr.style.display='';
+body.appendChild(fr);
+}
     else { var d=document.createElement('div'); if(curF==='archive') d.id='xfArcSlot'; d.style.cssText='border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9';
       d.innerHTML='<span style="color:'+P[cur]+'">'+curF+'</span> \u00b7 the slot is poured; the tool arrives later.<br>'
         +({gis:'our own maps \u00b7 layers, parcels, the lay of the land',cad:'our own lines \u00b7 drafts, dimensions, the house drawn true','3d print':'our own objects \u00b7 slice, infill, the house in hand',schematics:'our own circuits \u00b7 nets, nodes, the rail on paper',archive:'eigen keeps the guidebooks \u00b7 the stacks remember'})[curF];
