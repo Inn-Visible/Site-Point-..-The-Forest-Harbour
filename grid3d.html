@@ -117,7 +117,7 @@ try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
   if(S){ mode=S.mode||mode; exprSrc=typeof S.expr==='string'?S.expr:exprSrc; roll=+S.roll||roll; tilt=+S.tilt||tilt;
     zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; pol=!!S.pol; gestPan=!!S.pan;
     if(S.g) G=S.g; if(S.v) view=S.v;
-    if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){} try{ if(localStorage.getItem('hive_grid_panfix')!=='1'){ gestPan=false; localStorage.setItem('hive_grid_panfix','1'); } }catch(e){}
+    if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){} 
 /* ---- one-time migration \u00b7 the stuck pan flag from earlier sessions dies here ---- */
 try{ if(localStorage.getItem('hive_grid_panfix')!=='1'){ gestPan=false; localStorage.setItem('hive_grid_panfix','1'); } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,pan:gestPan,g:G,v:view,rng:R,grd:N})); }catch(e){} }
