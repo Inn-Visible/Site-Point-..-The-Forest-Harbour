@@ -80,6 +80,7 @@
   </div>
 </div>
 <div id="status"><span id="st1"></span><span class="sp"></span><span id="st2"></span></div>
+
 <script>
 (function(){
 var KEY='hive_grid3d', MASTKEY='hive_grid_mastery';
@@ -100,10 +101,10 @@ var PRE={surface:[['wave','sin(x)*cos(y)'],['saddle','(x^2-y^2)/4'],['ripple','s
          curve:[['sin','sin(x)'],['parabola','x^2/4'],['abs','abs(x)-3']],
          polar:[['circle','1'],['rose','sin(4*x)'],['spiral','x/2'],['cardioid','1+cos(x)']],
          solid:[['sphere',''],['torus',''],['box',''],['cone','']]};
-var EQ={sphere:'x=3.5·cos v·cos u · y=3.5·cos v·sin u · z=3.5·sin v · u∈[0,2π] · v∈[−π/2,π/2]',
-  torus:'x=(3.2+1.2·cos v)·cos u · y=(3.2+1.2·cos v)·sin u · z=1.2·sin v · u,v∈[0,2π]',
-  box:'vertices (±2.6, ±2.6, ±2.6) · 12 edges · 8 corners · the honest cube',
-  cone:'base circle r=3 @ z=−2 · apex (0,0,4) · 16 spokes · the party hat'};
+var EQ={sphere:'x=3.5\u00b7cos v\u00b7cos u \u00b7 y=3.5\u00b7cos v\u00b7sin u \u00b7 z=3.5\u00b7sin v \u00b7 u\u2208[0,2\u03c0] \u00b7 v\u2208[\u2212\u03c0/2,\u03c0/2]',
+  torus:'x=(3.2+1.2\u00b7cos v)\u00b7cos u \u00b7 y=(3.2+1.2\u00b7cos v)\u00b7sin u \u00b7 z=1.2\u00b7sin v \u00b7 u,v\u2208[0,2\u03c0]',
+  box:'vertices (\u00b12.6, \u00b12.6, \u00b12.6) \u00b7 12 edges \u00b7 8 corners \u00b7 the honest cube',
+  cone:'base circle r=3 @ z=\u22122 \u00b7 apex (0,0,4) \u00b7 16 spokes \u00b7 the party hat'};
 var FUND=['wave','saddle','ripple','gauss','plane','sin','parabola','abs','circle','rose','spiral','cardioid','sphere','torus','box','cone'];
 var mast={}; try{ mast=JSON.parse(localStorage.getItem(MASTKEY)||'{}')||{}; }catch(e){ mast={}; }
 function mark(n){ if(!mast[n]){ mast[n]=1; try{ localStorage.setItem(MASTKEY,JSON.stringify(mast)); }catch(e){} } }
@@ -117,8 +118,10 @@ try{ var S=JSON.parse(localStorage.getItem(KEY)||'null');
     zoom=+S.zoom||zoom; sticks=!!S.sticks; solidIdx=S.solidIdx|0; pol=!!S.pol; gestPan=!!S.pan;
     if(S.g) G=S.g; if(S.v) view=S.v;
     if(+S.rng) R=Math.max(1,Math.min(50,+S.rng)); if(+S.grd) N=Math.round(Math.max(8,Math.min(64,+S.grd))); } }catch(e){}
+/* ---- one-time migration \u00b7 the stuck pan flag from earlier sessions dies here ---- */
+try{ if(localStorage.getItem('hive_grid_panfix')!=='1'){ gestPan=false; localStorage.setItem('hive_grid_panfix','1'); } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify({mode:mode,expr:exprSrc,roll:roll,tilt:tilt,zoom:zoom,sticks:sticks,solidIdx:solidIdx,pol:pol,pan:gestPan,g:G,v:view,rng:R,grd:N})); }catch(e){} }
-/* ---- the wheel overlay · kitslate-style nesting ---- */
+/* ---- the wheel overlay \u00b7 kitslate-style nesting ---- */
 function openWheel(){ if(wheelFrame.getAttribute('src')==='about:blank') wheelFrame.setAttribute('src','wheel.html');
   wheelOv.classList.add('open'); wheelBtn.className='on'; }
 function closeWheel(){ wheelOv.classList.remove('open'); wheelBtn.className=''; }
@@ -255,7 +258,7 @@ function plot(){
     if(fn){ try{ if(mode==='surface') buildSurface(); else buildCurve(false); }
       catch(e2){ fn=null; GEOM=null; msg='the surface collapsed \u00b7 try a gentler formula'; } }
   } else { fn=null; buildSolid(); }
-  renderPresets(); draw(msg); save();
+  renderPresets(); draw(msg); save(); scheduleBench();
 }
 var imgInput=document.createElement('input'); imgInput.type='file'; imgInput.accept='image/*'; imgInput.style.display='none';
 document.body.appendChild(imgInput);
@@ -276,7 +279,7 @@ imgInput.onchange=function(){ var f=imgInput.files&&imgInput.files[0]; if(!f) re
         if(j+1<N) lines.push([a,grid[i][j+1]]);
         if(i+1<N) lines.push([a,grid[i+1][j]]); }
       GEOM={pts:pts,lines:lines,zmin:-2,zmax:2,c0:c0,hw:R}; geomKind='image'; fn=null;
-      draw(''); save(); };
+      draw(''); save(); scheduleBench(); };
     im.src=e.target.result; };
   rd.readAsDataURL(f); imgInput.value=''; };
 function K(){ return base*zoom; }
@@ -351,7 +354,7 @@ function draw(msg){
       x.fillText(pol? '('+dot.r.toFixed(2)+', '+dot.th.toFixed(2)+'\u03b8)' : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')', gx2+9, gy2-9);
       st1.innerHTML=(pol? 'curve \u00b7 polar \u00b7 r = '+exprSrc+' \u00b7 \u03b8 0..2\u03c0' : 'curve \u00b7 y = '+exprSrc+' \u00b7 infinite in x \u00b7 window \u00b1'+hw.toFixed(1)+' @ '+view.x.toFixed(1))
         +' \u00b7 <span class="g">'+(pol? 'r '+dot.r.toFixed(2)+' @ \u03b8 '+dot.th.toFixed(2) : '('+dot.x.toFixed(2)+', '+dot.y.toFixed(2)+')')+'</span>'; }
-    st2.textContent='drag to pan \u00b7 drag the gold dot \u00b7 wheel or + \u2212 to zoom \u00b7 the curve re-samples forever';
+    st2.textContent='drag to pan \u00b7 drag the gold dot \u00b7 wheel or + \u2212 or pinch to zoom \u00b7 the curve re-samples forever';
   } else {
     var bd=floorBounds();
     var fstep=nice(Math.max(bd.xx-bd.xn, bd.yx-bd.yn)/10);
@@ -385,7 +388,7 @@ function draw(msg){
     if(mastOn){ st1.textContent=mastLine(); }
     else if(geomKind==='image'&&GEOM){
       st1.textContent='surface \u00b7 image heightfield \u00b7 object @ ('+GEOM.c0.x.toFixed(1)+', '+GEOM.c0.y.toFixed(1)+') \u00b7 \u00b1'+R+' \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0';
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 plot it returns to the formula';
+      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 snaps seat the camera \u00b7 plot it returns to the formula';
     }
     else if(mode==='surface'&&fn&&GEOM){
       var gz=fn(G.x,G.y);
@@ -394,10 +397,10 @@ function draw(msg){
         x.font='9px ui-monospace,Consolas,monospace';
         x.fillText('('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')', gp[0]+9, gp[1]-9);
         st1.innerHTML='surface \u00b7 z = '+exprSrc+' \u00b7 infinite field \u00b7 sampling \u00b1'+GEOM.hw.toFixed(1)+' @ ('+view.x.toFixed(1)+', '+view.y.toFixed(1)+') \u00b7 '+N+'\u00d7'+N+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 z '+GEOM.zmin.toFixed(1)+' .. '+GEOM.zmax.toFixed(1)+' \u00b7 <span class="g">('+G.x.toFixed(2)+', '+G.y.toFixed(2)+', '+gz.toFixed(2)+')</span>'; }
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan \u00b7 the equation re-samples around you forever';
+      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan \u00b7 top/front/side/iso seat the camera along the plane \u00b7 the equation re-samples around you forever';
     } else if(mode==='solid'&&GEOM){
       st1.textContent='solid \u00b7 '+PRE.solid[solidIdx][0]+' \u00b7 roll '+Math.round(roll*57.3)+'\u00b0 \u00b7 tilt '+Math.round(tilt*57.3)+'\u00b0 \u00b7 '+EQ[PRE.solid[solidIdx][0]];
-      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 wheel to zoom \u00b7 presets speak their math';
+      st2.textContent='drag to roll \u00b7 shift-drag or drag:pan walks the floor \u00b7 wheel or pinch to zoom \u00b7 presets speak their math';
     }
   }
   if(mastOn&&mode==='curve') st1.textContent=mastLine();
@@ -436,7 +439,7 @@ function setMode(m){ mode=m;
   document.getElementById('imgBtn').style.display=m==='surface'?'':'none';
   if(m!=='solid'){ if(fx.value) exprSrc=fx.value; else fx.value=exprSrc||DEF[m]; }
   plot(); }
-function paintSticks(){ stickOv.className=sticks?'on':''; stickOv.textContent=sticks?'sticks ⌃':'sticks ⌄'; }
+function paintSticks(){ stickOv.className=sticks?'on':''; stickOv.textContent=sticks?'sticks \u2303':'sticks \u2304'; }
 function paintGest(){ gestOv.className=gestPan?'on':''; gestOv.textContent=gestPan?'drag: pan':'drag: roll'; }
 document.getElementById('mCurve').onclick=function(){ setMode('curve'); };
 document.getElementById('mSurface').onclick=function(){ setMode('surface'); };
@@ -450,6 +453,109 @@ document.getElementById('imgBtn').onclick=function(){ imgInput.click(); };
 document.getElementById('mastBtn').onclick=function(){ mastOn=!mastOn; this.className=mastOn?'on':''; draw(); };
 stickOv.onclick=function(){ sticks=!sticks; paintSticks(); draw(); save(); };
 gestOv.onclick=function(){ gestPan=!gestPan; paintGest(); save(); };
+/* ---- snap views \u00b7 seat the camera along the plane, exactly ---- */
+var SNAPS=[['top',0,1.45],['front',0,0.02],['side',Math.PI/2,0.02],['iso',0.785,0.615]];
+var barEl=document.querySelector('.bar');
+SNAPS.forEach(function(s){ var b=document.createElement('button'); b.textContent=s[0];
+  b.title='snap the camera \u00b7 look along the '+s[0];
+  b.onclick=function(){ roll=s[1]; tilt=s[2]; draw(); save(); };
+  barEl.insertBefore(b, document.getElementById('zin')); });
+/* ---- the bench \u00b7 offline calc worker \u00b7 chunked so the glass never stalls ---- */
+var benchOv=document.createElement('button'); benchOv.id='benchOv';
+benchOv.style.cssText='position:absolute;left:86px;bottom:10px;z-index:5';
+benchOv.textContent='bench \u2304';
+var benchPanel=document.createElement('div'); benchPanel.id='benchPanel';
+benchPanel.style.cssText='position:absolute;left:10px;bottom:44px;z-index:7;display:none;max-height:62%;overflow-y:auto;width:min(360px,86%);background:rgba(10,13,18,.94);border:1px solid var(--line);padding:10px 12px;font-size:9.5px;line-height:1.9;color:#93a1b0;letter-spacing:.06em';
+wrap.appendChild(benchOv); wrap.appendChild(benchPanel);
+function benchOpen(){ return benchPanel.style.display==='block'; }
+function scheduleBench(){ if(benchOpen()) setTimeout(benchRun,80); }
+benchOv.onclick=function(){ var open=benchOpen();
+  benchPanel.style.display=open?'none':'block'; benchOv.className=open?'':'on';
+  benchOv.textContent=open?'bench \u2304':'bench \u2303'; if(!open) benchRun(); };
+function fmt(v){ return isFinite(v)? String(+v.toFixed(4)) : 'nan'; }
+function bisect(a2,b2){ var fa=fn(a2,0), fb=fn(b2,0); if(!isFinite(fa)||!isFinite(fb)) return null;
+  for(var i=0;i<40;i++){ var m=(a2+b2)/2, fm=fn(m,0); if(!isFinite(fm)) return null;
+    if((fm<0)===(fa<0)){ a2=m; fa=fm; } else { b2=m; fb=fm; } } return (a2+b2)/2; }
+function surfStats(cb){
+  var hw=GEOM?GEOM.hw:R, x0=view.x-hw, x1=view.x+hw, y0=view.y-hw, y1=view.y+hw;
+  var M=240, dA=(x1-x0)/M*((y1-y0)/M), i=0, sum=0, mn=1e9, mx=-1e9, cnt=0;
+  (function chunk(){
+    var end=Math.min(M,i+24);
+    for(;i<end;i++){ var yy=y0+(y1-y0)*(i+0.5)/M;
+      for(var j=0;j<M;j++){ var xx=x0+(x1-x0)*(j+0.5)/M; var z=fn(xx,yy);
+        if(isFinite(z)){ cnt++; sum+=z; if(z<mn)mn=z; if(z>mx)mx=z; } } }
+    if(i<M){ setTimeout(chunk,0); } else cb({sum:sum*dA, mean:cnt?sum/cnt:0, mn:mn, mx:mx});
+  })();
+}
+function curveStats(a,b,cb){
+  var M=2000, dx=(b-a)/M, i=0, sum=0, arc=0, roots=[], ext=0, py=null, pd=null;
+  (function chunk(){
+    var end=Math.min(M,i+250);
+    for(;i<end;i++){ var xx=a+dx*i, y=fn(xx,0);
+      if(isFinite(y)){
+        if(py!=null){ sum+=(y+py)/2*dx; arc+=Math.sqrt(dx*dx+(y-py)*(y-py));
+          if((y<0)!==(py<0)&&Math.abs(y-py)>1e-12){ var r=bisect(xx-dx,xx); if(r!=null&&roots.length<8) roots.push(r); } }
+        var d=(fn(xx+1e-4,0)-fn(xx-1e-4,0))/2e-4;
+        if(pd!=null&&isFinite(d)&&((d<0)!==(pd<0))) ext++;
+        pd=d; py=y;
+      } else { py=null; pd=null; } }
+    if(i<M){ setTimeout(chunk,0); } else cb({int:sum, arc:arc, roots:roots, ext:ext});
+  })();
+}
+function solidBBox(){ var xn=1e9,xx=-1e9,yn=1e9,yx=-1e9,zn=1e9,zx=-1e9;
+  GEOM.pts.forEach(function(p){ if(p[0]<xn)xn=p[0]; if(p[0]>xx)xx=p[0]; if(p[1]<yn)yn=p[1]; if(p[1]>yx)yx=p[1]; if(p[2]<zn)zn=p[2]; if(p[2]>zx)zx=p[2]; });
+  return [xn,xx,yn,yx,zn,zx]; }
+function benchRun(){
+  benchPanel.innerHTML='';
+  var copy=[];
+  function put(t,col){ var d=document.createElement('div'); if(col) d.style.color=col; d.textContent=t; benchPanel.appendChild(d); copy.push(t); return d; }
+  put('the bench \u00b7 offline calc worker \u00b7 chunked, wire-free','#d9a83a');
+  var row=document.createElement('div'); row.style.cssText='display:flex;gap:6px;margin-top:8px;flex-wrap:wrap';
+  function addTableBtn(f){ var t=document.createElement('button'); t.textContent='table \u2263'; t.onclick=f; row.appendChild(t); }
+  function showTable(title,rows){ var old=benchPanel.querySelector('#bTab'); if(old) old.remove();
+    var d=document.createElement('div'); d.id='bTab'; d.style.cssText='margin-top:8px;border-top:1px dashed #223041;padding-top:6px;white-space:pre;font-size:9px;color:#93a1b0';
+    d.textContent=title+'\n'+rows.join('\n'); benchPanel.appendChild(d); }
+  if(mode==='surface'&&fn&&geomKind==='formula'){
+    var h=1e-4, z0=fn(G.x,G.y);
+    var zx=(fn(G.x+h,G.y)-fn(G.x-h,G.y))/(2*h), zy=(fn(G.x,G.y+h)-fn(G.x,G.y-h))/(2*h);
+    put('z('+G.x.toFixed(2)+', '+G.y.toFixed(2)+') = '+fmt(z0));
+    put('\u2202z/\u2202x = '+fmt(zx)+' \u00b7 \u2202z/\u2202y = '+fmt(zy));
+    var gl=Math.hypot(zx,zy);
+    put('|\u2207z| = '+fmt(gl)+' \u00b7 slope '+Math.round(Math.atan(gl)*57.3)+'\u00b0');
+    var nl=Math.sqrt(zx*zx+zy*zy+1);
+    put('unit normal ('+fmt(-zx/nl)+', '+fmt(-zy/nl)+', '+fmt(1/nl)+')');
+    var hw=GEOM?GEOM.hw:R;
+    var pend=put('computing \u222c z\u00b7dA over \u00b1'+hw.toFixed(1)+' \u2026','#5c6875');
+    surfStats(function(s){ pend.textContent='\u222c z\u00b7dA = '+fmt(s.sum)+' \u00b7 mean z '+fmt(s.mean)+' \u00b7 min '+fmt(s.mn)+' \u00b7 max '+fmt(s.mx); });
+    addTableBtn(function(){ var T=[]; for(var i=0;i<=10;i++){ var xx=view.x-hw+2*hw*i/10, zz=fn(xx,G.y);
+      T.push(xx.toFixed(2)+'\t'+fmt(zz)); } showTable('x \u00b7 z(x, '+G.y.toFixed(1)+')', T); });
+  } else if(mode==='curve'&&fn){
+    var h2=1e-4, y0=fn(G.x,0);
+    var d1=(fn(G.x+h2,0)-fn(G.x-h2,0))/(2*h2), d2=(fn(G.x+h2,0)-2*y0+fn(G.x-h2,0))/(h2*h2);
+    put('y('+G.x.toFixed(2)+') = '+fmt(y0)+' \u00b7 y\u2032 = '+fmt(d1)+' \u00b7 y\u2033 = '+fmt(d2));
+    if(pol){ var ar=0, M2=800; for(var i2=0;i2<M2;i2++){ var t2=i2/M2*Math.PI*2, rr=fn(t2,0); if(isFinite(rr)) ar+=0.5*rr*rr*(Math.PI*2/M2); }
+      put('polar area \u00bd\u222br\u00b2d\u03b8 over 0..2\u03c0 = '+fmt(ar)); }
+    var hw2=curveHalf(), a=view.x-hw2, b=view.x+hw2;
+    var pend2=put('scanning ['+a.toFixed(2)+', '+b.toFixed(2)+'] \u2026','#5c6875');
+    curveStats(a,b,function(s){
+      pend2.textContent='\u222b y dx = '+fmt(s.int)+' \u00b7 arc '+fmt(s.arc)+' \u00b7 roots '+(s.roots.length? s.roots.map(function(r){return r.toFixed(3);}).join(', ') : 'none')+' \u00b7 turning pts '+s.ext; });
+    addTableBtn(function(){ var T=[]; for(var i=0;i<=10;i++){ var xx=a+(b-a)*i/10;
+      T.push(xx.toFixed(2)+'\t'+fmt(fn(xx,0))+'\t'+fmt((fn(xx+1e-4,0)-fn(xx-1e-4,0))/2e-4)); } showTable('x \u00b7 y \u00b7 y\u2032', T); });
+  } else if(mode==='solid'&&GEOM){
+    put(PRE.solid[solidIdx][0]+' \u00b7 '+GEOM.pts.length+' vertices \u00b7 '+GEOM.lines.length+' edges');
+    put(EQ[PRE.solid[solidIdx][0]]);
+    var bb=solidBBox();
+    put('bbox x '+bb[0].toFixed(1)+'..'+bb[1].toFixed(1)+' \u00b7 y '+bb[2].toFixed(1)+'..'+bb[3].toFixed(1)+' \u00b7 z '+bb[4].toFixed(1)+'..'+bb[5].toFixed(1));
+  } else if(geomKind==='image'&&GEOM){
+    put('image heightfield \u00b7 '+GEOM.pts.length+' nodes \u00b7 z \u22122..2 \u00b7 object @ ('+GEOM.c0.x.toFixed(1)+', '+GEOM.c0.y.toFixed(1)+')');
+    put('the bench reads formulas \u00b7 plot it to return to math');
+  } else { put('awaiting a plottable formula'); }
+  benchPanel.appendChild(row);
+  var cp=document.createElement('button'); cp.textContent='copy \u2398';
+  cp.onclick=function(){ try{ navigator.clipboard.writeText(copy.join('\n')); cp.textContent='copied \u2713'; setTimeout(function(){ cp.textContent='copy \u2398'; },1400); }catch(e){} };
+  row.appendChild(cp);
+  var rb=document.createElement('button'); rb.textContent='refresh \u27f3'; rb.onclick=benchRun; row.appendChild(rb);
+}
 codPanel.innerHTML=
   '<h4>THE CALCULUS GLYPHS</h4>'
   +'<b>\u222b</b> integral \u00b7 <b>\u222c</b> surface integral \u00b7 <b>\u222d</b> volume integral \u00b7 <b>\u222e</b> contour integral \u00b7 <b>\u2202</b> partial derivative \u00b7 <b>\u2207</b> gradient \u00b7 <b>lim</b> limit'
@@ -471,10 +577,16 @@ document.getElementById('vhome').onclick=function(){ roll=0.314; tilt=0.157; zoo
 document.getElementById('rst').onclick=function(){ if(mode!=='solid'){ exprSrc=DEF[mode]; fx.value=exprSrc; }
   R=6.5; N=26; rngEl.value=R; grdEl.value=N; G={x:1.5,y:1}; view={x:0,y:0}; roll=0.314; tilt=0.157; zoom=1; geomKind='formula'; plot(); };
 cv.addEventListener('wheel',function(e){ e.preventDefault(); zoom=Math.max(0.15,Math.min(8,zoom*(e.deltaY<0?1.12:1/1.12))); draw(); save(); scheduleRebuild(); },{passive:false});
-var drag=null;
+/* ---- pointers \u00b7 orbit by hand, pan by intent, pinch by two fingers ---- */
+var ptrs={}, drag=null;
+function ptrCount(){ var n=0; for(var k in ptrs) n++; return n; }
+function pinchD(){ var ks=[]; for(var k in ptrs) ks.push(k); if(ks.length<2) return 0;
+  var a=ptrs[ks[0]], b=ptrs[ks[1]]; return Math.hypot(a[0]-b[0],a[1]-b[1]); }
 cv.addEventListener('pointerdown',function(e){
   cv.setPointerCapture(e.pointerId);
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+  ptrs[e.pointerId]=[px,py];
+  if(ptrCount()===2){ drag={k:'pinch', d0:pinchD(), z0:zoom}; cv.classList.add('grabbing'); e.preventDefault(); return; }
   var gp=null;
   if(mode==='curve'&&window.__cfit){ var dot=curveDot();
     if(dot) gp=[SX(dot.x,window.__cfit), SY(dot.y,window.__cfit)]; }
@@ -486,8 +598,10 @@ cv.addEventListener('pointerdown',function(e){
   else { drag={k:'rot',sx:px,sy:py,r0:roll,t0:tilt}; cv.classList.add('grabbing'); }
   e.preventDefault(); });
 cv.addEventListener('pointermove',function(e){
-  if(!drag) return;
   var r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+  if(ptrs[e.pointerId]) ptrs[e.pointerId]=[px,py];
+  if(drag&&drag.k==='pinch'){ var d=pinchD(); if(d>0){ zoom=Math.max(0.15,Math.min(8,drag.z0*d/drag.d0)); draw(); scheduleRebuild(); } return; }
+  if(!drag) return;
   if(drag.k==='panC'&&window.__cfit){
     var cf=window.__cfit;
     view.x=Math.max(-1000,Math.min(1000,drag.vx0-(px-drag.sx)/cf.sx));
@@ -514,7 +628,11 @@ cv.addEventListener('pointermove',function(e){
     G.x=Math.max(-1e4,Math.min(1e4,w[0]));
     G.y=Math.max(-1e4,Math.min(1e4,w[1]));
     draw(); return; } });
-addEventListener('pointerup',function(){ if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } });
+function endPtr(e){ if(e&&e.pointerId!=null) delete ptrs[e.pointerId];
+  if(drag&&drag.k==='pinch'&&ptrCount()>0) return;
+  if(drag){ drag=null; cv.classList.remove('grabbing'); save(); } }
+addEventListener('pointerup',endPtr);
+addEventListener('pointercancel',endPtr);
 try{
   if(mode!=='solid'){
     try{ compile(exprSrc); }catch(e){ exprSrc=DEF[mode];
@@ -540,5 +658,6 @@ try{
 }
 })();
 </script>
+  
 </body>
 </html>
