@@ -616,11 +616,16 @@ fr.style.cssText='width:100%;height:78vh;border:1px solid #223041;background:#0e
 var src=(curF==='kit'?'kit.html':'grid3d.html');
 if((fr.getAttribute('src')||'')!==src){ fr._armed=1; fr.setAttribute('src',src); }
 fr.onload=function(){ if(!fr._armed) return; fr._armed=0;
+var okSeat=false;
 try{ var d=fr.contentDocument;
-if(!d||!d.getElementById('cv')){
-body.innerHTML='<div style="border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9">the grid would not seat in the window \u00b7 <a href="grid3d.html" target="_blank" style="color:#8ab4ff">open her in her own room \u2197</a></div>';
-if(fr.parentNode) fr.parentNode.removeChild(fr); }
-}catch(e){} };
+if(d&&d.body&&!/404|not found/i.test(d.title||'')){
+okSeat=(src==='grid3d.html')? !!d.getElementById('cv') : true; }
+}catch(e){ okSeat=true; }
+if(!okSeat){
+body.innerHTML='<div style="border:1px dashed #223041;padding:22px;text-align:center;color:#5c6875;font-size:11px;line-height:1.9">'
++(src==='kit'?'the kit':'the grid')+' would not seat in the window \u00b7 <a href="'+src+'" target="_blank" style="color:#8ab4ff">open '
++(src==='kit'?'it':'her')+' in '+(src==='kit'?'its':'her')+' own room \u2197</a></div>';
+if(fr.parentNode) fr.parentNode.removeChild(fr); } };
 fr.style.display='';
 body.appendChild(fr);
 }
