@@ -2358,9 +2358,9 @@ window.hexVeil={show:show,hide:hide};
       var bk=doc.createElement('button'); bk.textContent='\u2039 back';
       bk.style.cssText=STRIPZ+'background:none;border:1px solid #3f7fc1;color:#8ab4ff;font:10px ui-monospace,Consolas,monospace;letter-spacing:.12em;padding:4px 10px;cursor:pointer';
       bk.addEventListener('pointerdown',function(e){ e.stopPropagation(); },true);
-   bk.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
+ bk.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault();
 tapLeaf('workbench');
-setTimeout(function(){ if(seatFr()){ tapLeaf('workbench'); } },350); },true);
+setTimeout(function(){ if(seatFr()){ try{ window.location.reload(); }catch(er){} } },350); },true);
       strip.appendChild(bk);
       FOLDERS.forEach(function(name){
         var b=doc.createElement('button'); b.textContent=name;
