@@ -2458,14 +2458,13 @@ window.hexVeil={show:show,hide:hide};
 
 <script>
 (function(){
-/* ---- the solar calendar \u00b7 axiom's upward eye \u00b7 offline orrery & armillary \u00b7 no wire, only math ---- */
+/* ---- the solar calendar \u00b7 axiom's upward eye \u00b7 offline orrery & armillary \u00b7 mobile-fluid ---- */
 if(window.__solarCal) return; window.__solarCal=1;
 var D2R=Math.PI/180, R2D=180/Math.PI, TAU=Math.PI*2;
 var SYN=29.530588853, MEPOCH=Date.UTC(2000,0,6,18,14,0);
 var J2000=Date.UTC(2000,0,1,12,0,0);
 var CREAM='#e8d5b0', GOLDC='#d9a83a', SILV='#d8dde3', DIM='#93a1b0';
 var ZODN=['aries','taurus','gemini','cancer','leo','virgo','libra','scorpio','sagittarius','capricorn','aquarius','pisces'];
-var ZODG=['\u2648\uFE0E','\u2649\uFE0E','\u264a\uFE0E','\u264b\uFE0E','\u264c\uFE0E','\u264d\uFE0E','\u264e\uFE0E','\u264f\uFE0E','\u2650\uFE0E','\u2651\uFE0E','\u2652\uFE0E','\u2653\uFE0E'];
 var ZODA=['ari','tau','gem','can','leo','vir','lib','sco','sag','cap','aqu','pis'];
 var MONN=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 var PLAN=[['mercury',252.25,4.09233445,0.387],['venus',181.98,1.60213034,0.723],['earth',100.46,0.98560912,1.0],['mars',355.45,0.52402068,1.524],['jupiter',34.40,0.08308529,5.203],['saturn',49.94,0.03344414,9.537]];
@@ -2505,7 +2504,7 @@ function termsOfYear(y){
   out.sort(function(a,b){ return a.t-b.t; });
   termCache[y]=out; return out;
 }
-  var zCache={};
+var zCache={};
 function zCrossings(y){
   if(zCache[y]) return zCache[y];
   var out=[], t0=new Date(y,0,1).getTime(), step=2*86400000;
@@ -2513,7 +2512,7 @@ function zCrossings(y){
     var tg=z*30, prev=t0, pf=wrap(sunLon(prev)-tg), hit=t0;
     for(var t=t0+step;t<t0+367*86400000;t+=step){ var cf=wrap(sunLon(t)-tg);
       if(pf<0&&cf>=0&&(cf-pf)<180){ var a=prev,b=t;
-              for(var i=0;i<30;i++){ var m=(a+b)/2; if(wrap(sunLon(m)-tg)<0) a=m; else b=m; }
+        for(var i=0;i<30;i++){ var m=(a+b)/2; if(wrap(sunLon(m)-tg)<0) a=m; else b=m; }
         hit=(a+b)/2; break; }
       prev=t; pf=cf; }
     out.push(hit);
@@ -2527,27 +2526,31 @@ function nextMoon(t,target){ var a=moonAge(t), step=3600000, cur=t;
     if(target==='new'&&na<a&&na<1) return cur;
     if(target==='full'&&Math.abs(na-SYN/2)<0.6&&Math.abs(a-SYN/2)>=0.6) return cur;
     a=na; } return cur; }
-
 var view=localStorage.getItem('hive_solar_view')||'dial';
 var spinOn=localStorage.getItem('hive_solar_spin')!=='0';
 var sel=Date.now(), spin=0;
 var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 
-var sec=document.createElement('section');
+var stl=document.createElement('style');
+stl.textContent='@media(max-width:700px){#solarCal{padding:12px 8px}#solarCal .scBtn{padding:4px 7px;font-size:9px}#scRead{max-width:100%!important;min-width:0!important}#scLeg{font-size:8.5px;line-height:1.9}}';
+document.head.appendChild(stl);
+
+var sec=document.createElement('section'); sec.id='solarCal';
 sec.style.cssText='max-width:980px;margin:30px auto 0;border:1px solid #223041;background:#0e141b;padding:16px;font-family:ui-monospace,Consolas,monospace;color:#93a1b0';
 sec.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1px solid #223041;padding-bottom:10px;margin-bottom:12px">'
- +'<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:14px">the solar calendar \u00b7 the year, drawn from first principles</span>'
- +'<span style="display:flex;gap:6px;flex-wrap:wrap">'
- +'<button id="scDial" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the dial</button>'
- +'<button id="scSphere" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the sphere</button>'
- +'<button id="scSpin" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">spin</button>'  +'<button id="scLegB" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">legend</button>'
- +'<button id="scToday" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">today</button></span></div>'
- +'<div style="display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap">'
- +'<canvas id="scCv" style="width:min(480px,92vw);height:min(480px,92vw);display:block;cursor:crosshair"></canvas>'
- +'<div id="scRead" style="min-width:230px;max-width:340px;font-size:10px;line-height:2.05;letter-spacing:.08em;color:#93a1b0"></div></div>'
-  +'<div id="scLeg" style="display:none;max-width:640px;margin:12px auto 0;border:1px solid #223041;background:rgba(4,8,6,.5);padding:10px 14px;font-size:9px;line-height:2.0;letter-spacing:.08em;color:#93a1b0;text-align:left"></div>'
- +'<div style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em">TAP THE BEZEL \u00b7 READ ANY DAY OF THE YEAR \u00b7 CLOCK + MATH ONLY \u00b7 THE SKY NEEDS NO WIRE</div>'
- +'<div style="margin-top:6px;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#5c6875">fig. a2 \u2014 the solar calendar \u00b7 keystone keeps the week, axiom keeps the year</div>';
++'<span style="font-family:Georgia,serif;font-style:italic;color:#93a1b0;font-size:14px">the solar calendar \u00b7 the year, drawn from first principles</span>'
++'<span style="display:flex;gap:5px;flex-wrap:wrap">'
++'<button id="scDial" class="scBtn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the dial</button>'
++'<button id="scSphere" class="scBtn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">the sphere</button>'
++'<button id="scSpin" class="scBtn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">spin</button>'
++'<button id="scLegB" class="scBtn" style="background:none;border:1px solid #223041;color:#93a1b0;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">legend</button>'
++'<button id="scToday" class="scBtn" style="background:none;border:1px solid #d9a83a;color:#d9a83a;font:10px ui-monospace;padding:5px 10px;cursor:pointer;letter-spacing:.12em">today</button></span></div>'
++'<div style="display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap">'
++'<div style="flex:1 1 260px;max-width:480px;min-width:0"><canvas id="scCv" style="width:100%;aspect-ratio:1/1;display:block;cursor:crosshair"></canvas></div>'
++'<div id="scRead" style="flex:1 1 220px;max-width:340px;min-width:0;font-size:10px;line-height:2.05;letter-spacing:.08em;color:#93a1b0"></div></div>'
++'<div id="scLeg" style="display:none;max-width:640px;margin:12px auto 0;border:1px solid #223041;background:rgba(4,8,6,.5);padding:10px 14px;font-size:9px;line-height:2.0;letter-spacing:.08em;color:#93a1b0;text-align:left"></div>'
++'<div style="margin-top:10px;text-align:center;font-size:9px;color:#5c6875;letter-spacing:.2em">TAP THE BEZEL \u00b7 READ ANY DAY OF THE YEAR \u00b7 CLOCK + MATH ONLY \u00b7 THE SKY NEEDS NO WIRE</div>'
++'<div style="margin-top:6px;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#5c6875">fig. a2 \u2014 the solar calendar \u00b7 keystone keeps the week, axiom keeps the year</div>';
 var atm=null, all=document.querySelectorAll('section,div');
 for(var ai=0;ai<all.length;ai++){ if(((all[ai].textContent||'').indexOf('the sky, in bands')>-1)&&((all[ai].textContent||'').length<900)){ atm=all[ai]; break; } }
 var foot=document.querySelector('footer');
@@ -2556,64 +2559,63 @@ else if(foot&&foot.parentNode) foot.parentNode.insertBefore(sec,foot);
 else document.body.appendChild(sec);
 
 var cv=document.getElementById('scCv'), g=cv.getContext('2d'), read=document.getElementById('scRead');
-var W=0,H=0,CX=0,CY=0,R=0;
+cv.style.touchAction='manipulation';
+var W=0,H=0,CX=0,CY=0,R=0,U=1;
 function fit(){ var r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
-  cv.width=r.width*dpr; cv.height=r.height*dpr; g.setTransform(dpr,0,0,dpr,0,0);
-  W=r.width; H=r.height; CX=W/2; CY=H/2; R=Math.min(W,H)/2-6; }
+  if(r.height<10){ cv.style.height=r.width+'px'; r=cv.getBoundingClientRect(); }
+  cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); g.setTransform(dpr,0,0,dpr,0,0);
+  W=r.width; H=r.height; CX=W/2; CY=H/2; R=Math.min(W,H)/2-6; U=Math.max(0.62,R/235); }
 addEventListener('resize',fit);
+addEventListener('orientationchange',function(){ setTimeout(fit,250); });
+addEventListener('load',function(){ setTimeout(fit,120); });
+if(window.ResizeObserver){ try{ new ResizeObserver(function(){ fit(); }).observe(cv); }catch(e){} }
 function angOf(t,y){ var days=daysInYear(y), d=doY(t)-1; return (-90+(d+0.5)/days*360)*D2R; }
-function burst(x,y,r,col){ g.strokeStyle=col; g.lineWidth=1;
+function burst(x,y,r,col){ g.strokeStyle=col; g.lineWidth=Math.max(0.8,U);
   for(var i=0;i<8;i++){ var a=i*TAU/8; g.beginPath(); g.moveTo(x+Math.cos(a)*r*0.35,y+Math.sin(a)*r*0.35); g.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r); g.stroke(); }
   g.fillStyle=col; g.beginPath(); g.arc(x,y,r*0.28,0,7); g.fill(); }
 function drawDial(t){
   var now=new Date(t), y=now.getFullYear(), days=daysInYear(y);
   g.clearRect(0,0,W,H);
-  g.fillStyle='#050708'; g.beginPath(); g.arc(CX,CY,R+4,0,7); g.fill();
-  /* bezel ticks */
+  g.fillStyle='#050708'; g.beginPath(); g.arc(CX,CY,R+4*U,0,7); g.fill();
   for(var d=0;d<days;d++){
     var a=(-90+(d+0.5)/days*360)*D2R, dt=new Date(y,0,1+d);
     var isMon=dt.getDay()===1, isM0=dt.getDate()===1;
-    var len=isM0?12:(isMon?7:3.5);
+    var len=(isM0?12:(isMon?7:3.5))*U;
     g.strokeStyle=isM0?'rgba(217,168,58,.9)':(isMon?'rgba(232,213,176,.55)':'rgba(232,213,176,.28)');
-    g.lineWidth=isM0?1.4:0.8;
+    g.lineWidth=isM0?Math.max(1,1.4*U):Math.max(0.6,0.8*U);
     g.beginPath(); g.moveTo(CX+Math.cos(a)*(R-len),CY+Math.sin(a)*(R-len)); g.lineTo(CX+Math.cos(a)*R,CY+Math.sin(a)*R); g.stroke();
   }
-  g.strokeStyle='rgba(232,213,176,.5)'; g.lineWidth=1;
+  g.strokeStyle='rgba(232,213,176,.5)'; g.lineWidth=Math.max(0.8,U);
   g.beginPath(); g.arc(CX,CY,R,0,7); g.stroke();
-  g.beginPath(); g.arc(CX,CY,R-14,0,7); g.stroke();
-  /* month names */
-  g.fillStyle='rgba(232,213,176,.75)'; g.font='italic 9px Georgia,serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.beginPath(); g.arc(CX,CY,R-14*U,0,7); g.stroke();
+  g.fillStyle='rgba(232,213,176,.75)'; g.font='italic '+Math.max(7.5,Math.round(9*U))+'px Georgia,serif'; g.textAlign='center'; g.textBaseline='middle';
   for(var m=0;m<12;m++){
     var d0=doY(new Date(y,m,1).getTime())-1, d1=doY(new Date(y,m+1,1).getTime())-1; if(m===11) d1=days;
     var am=(-90+((d0+d1)/2)/days*360)*D2R;
-    g.fillText(MONN[m], CX+Math.cos(am)*(R-23), CY+Math.sin(am)*(R-23));
+    g.fillText(MONN[m], CX+Math.cos(am)*(R-23*U), CY+Math.sin(am)*(R-23*U));
   }
-  /* season arcs */
   var terms=termsOfYear(y).filter(function(x){ return new Date(x.t).getFullYear()===y; });
   var SEAC=['rgba(88,163,106,.5)','rgba(217,168,58,.55)','rgba(200,69,44,.45)','rgba(63,127,193,.45)'];
   for(var q=0;q<terms.length;q++){
     var t0=terms[q].t, t1=(terms[q+1]||{t:terms[0].t+365.25*86400000}).t;
     var a0=angOf(t0,y), a1=angOf(t1,new Date(t1).getFullYear());
     if(a1<a0) a1+=TAU;
-    g.strokeStyle=SEAC[q%4]; g.lineWidth=3;
-    g.beginPath(); g.arc(CX,CY,R-32,a0,a1); g.stroke();
+    g.strokeStyle=SEAC[q%4]; g.lineWidth=Math.max(2,3*U);
+    g.beginPath(); g.arc(CX,CY,R-32*U,a0,a1); g.stroke();
   }
-   /* zodiac ring \u00b7 where the sun truly stands, computed by longitude crossing */
-  g.fillStyle='rgba(232,213,176,.4)'; g.font='9px ui-monospace,Consolas,monospace';
+  g.fillStyle='rgba(232,213,176,.4)'; g.font=Math.max(7,Math.round(9*U))+'px ui-monospace,Consolas,monospace';
   var cr=zCrossings(y);
   for(var z=0;z<12;z++){
-    var a0=angOf(cr[z],y), a1=angOf(cr[(z+1)%12],y);
-    if(a1<a0) a1+=TAU;
-    var az=(a0+a1)/2;
-    g.fillText(ZODA[z], CX+Math.cos(az)*(R-44), CY+Math.sin(az)*(R-44));
+    var za0=angOf(cr[z],y), za1=angOf(cr[(z+1)%12],y);
+    if(za1<za0) za1+=TAU;
+    var az=(za0+za1)/2;
+    g.fillText(ZODA[z], CX+Math.cos(az)*(R-44*U), CY+Math.sin(az)*(R-44*U));
   }
-  /* starbursts at the four turns */
-  terms.forEach(function(tm){ var a=angOf(tm.t,y); burst(CX+Math.cos(a)*(R-7),CY+Math.sin(a)*(R-7),6,'rgba(217,168,58,.95)'); });
-  /* orrery rings + planet orbs (heliocentric · the sun's own view) */
+  terms.forEach(function(tm){ var a=angOf(tm.t,y); burst(CX+Math.cos(a)*(R-7*U),CY+Math.sin(a)*(R-7*U),6*Math.max(0.8,U),'rgba(217,168,58,.95)'); });
   var fr=[0.20,0.28,0.36,0.45,0.55,0.65];
   for(var p=0;p<PLAN.length;p++){
     var rr=R*fr[p];
-    g.strokeStyle='rgba(232,213,176,.16)'; g.lineWidth=0.7;
+    g.strokeStyle='rgba(232,213,176,.16)'; g.lineWidth=Math.max(0.6,0.7*U);
     g.beginPath(); g.arc(CX,CY,rr,0,7); g.stroke();
     var lh=heli(PLAN[p],t);
     var pa=(-90+lh)*D2R;
@@ -2621,40 +2623,39 @@ function drawDial(t){
     g.beginPath(); g.arc(CX,CY,rr,pa-0.7,pa); g.stroke(); g.setLineDash([]);
     var px=CX+Math.cos(pa)*rr, py=CY+Math.sin(pa)*rr;
     g.fillStyle= p===2? 'rgba(63,127,193,.9)' : '#0a0d12';
-    g.strokeStyle= p===2? '#7fb2d9' : CREAM; g.lineWidth=1.2;
-    g.beginPath(); g.arc(px,py,p===2?4:3.4,0,7); g.fill(); g.stroke();
-    if(p===6||p===5){ g.strokeStyle='rgba(232,213,176,.5)'; g.beginPath(); g.ellipse(px,py,6.5,2.2,-0.4,0,7); g.stroke(); }
+    g.strokeStyle= p===2? '#7fb2d9' : CREAM; g.lineWidth=Math.max(0.9,1.2*U);
+    g.beginPath(); g.arc(px,py,(p===2?4:3.4)*Math.max(0.8,U),0,7); g.fill(); g.stroke();
+    if(p===5){ g.strokeStyle='rgba(232,213,176,.5)'; g.beginPath(); g.ellipse(px,py,6.5*Math.max(0.8,U),2.2*Math.max(0.8,U),-0.4,0,7); g.stroke(); }
   }
-  /* moon ring + phase disc */
   g.strokeStyle='rgba(232,213,176,.3)'; g.setLineDash([1,3]);
   g.beginPath(); g.arc(CX,CY,R*0.13,0,7); g.stroke(); g.setLineDash([]);
   var ma=moonAge(t), mAng=(-90+ma/SYN*360)*D2R;
-  var mx=CX+Math.cos(mAng)*R*0.13, my=CY+Math.sin(mAng)*R*0.13;
-  g.save(); g.beginPath(); g.arc(mx,my,5,0,7); g.clip();
-  g.fillStyle='#0a0d12'; g.fillRect(mx-6,my-6,12,12);
+  var mx=CX+Math.cos(mAng)*R*0.13, my=CY+Math.sin(mAng)*R*0.13, mr=5*Math.max(0.8,U);
+  g.save(); g.beginPath(); g.arc(mx,my,mr,0,7); g.clip();
+  g.fillStyle='#0a0d12'; g.fillRect(mx-mr-1,my-mr-1,2*mr+2,2*mr+2);
   var k=moonLit(t), wax=ma<SYN/2;
-  g.fillStyle=CREAM; g.fillRect(wax? mx+5-10*k : mx-5, my-6, 10*k, 12);
+  g.fillStyle=CREAM; g.fillRect(wax? mx+mr-2*mr*k : mx-mr, my-mr-1, 2*mr*k, 2*mr+2);
   g.restore();
-  g.strokeStyle='rgba(232,213,176,.7)'; g.lineWidth=0.8; g.beginPath(); g.arc(mx,my,5,0,7); g.stroke();
-  /* the sun at the heart */
-  g.fillStyle=GOLDC; g.beginPath(); g.arc(CX,CY,7,0,7); g.fill();
-  g.strokeStyle='rgba(217,168,58,.8)'; g.lineWidth=1;
-  for(var i2=0;i2<12;i2++){ var a2=i2*TAU/12; g.beginPath(); g.moveTo(CX+Math.cos(a2)*9,CY+Math.sin(a2)*9); g.lineTo(CX+Math.cos(a2)*13,CY+Math.sin(a2)*13); g.stroke(); }
-  g.fillStyle='rgba(232,213,176,.85)'; g.font='9px ui-monospace,Consolas,monospace';
-  g.fillText('day '+doY(t), CX, CY+22);
-  /* today ray + selected ray */
+  g.strokeStyle='rgba(232,213,176,.7)'; g.lineWidth=Math.max(0.7,0.8*U); g.beginPath(); g.arc(mx,my,mr,0,7); g.stroke();
+  var sr=7*Math.max(0.8,U);
+  g.fillStyle=GOLDC; g.beginPath(); g.arc(CX,CY,sr,0,7); g.fill();
+  g.strokeStyle='rgba(217,168,58,.8)'; g.lineWidth=Math.max(0.8,U);
+  for(var i2=0;i2<12;i2++){ var a2=i2*TAU/12; g.beginPath(); g.moveTo(CX+Math.cos(a2)*sr*1.3,CY+Math.sin(a2)*sr*1.3); g.lineTo(CX+Math.cos(a2)*sr*1.9,CY+Math.sin(a2)*sr*1.9); g.stroke(); }
+  g.fillStyle='rgba(232,213,176,.85)'; g.font=Math.max(7,Math.round(9*U))+'px ui-monospace,Consolas,monospace';
+  g.fillText('day '+doY(t), CX, CY+sr+12*U);
   var aT=angOf(Date.now(),y);
-  g.strokeStyle='rgba(217,168,58,.9)'; g.lineWidth=1.4;
-  g.beginPath(); g.moveTo(CX+Math.cos(aT)*14,CY+Math.sin(aT)*14); g.lineTo(CX+Math.cos(aT)*R,CY+Math.sin(aT)*R); g.stroke();
+  g.strokeStyle='rgba(217,168,58,.9)'; g.lineWidth=Math.max(1,1.4*U);
+  g.beginPath(); g.moveTo(CX+Math.cos(aT)*sr*2,CY+Math.sin(aT)*sr*2); g.lineTo(CX+Math.cos(aT)*R,CY+Math.sin(aT)*R); g.stroke();
   if(Math.abs(t-Date.now())>3600000){
     var aS=angOf(t,y);
-    g.strokeStyle='rgba(232,213,176,.6)'; g.setLineDash([3,3]); g.lineWidth=1;
-    g.beginPath(); g.moveTo(CX+Math.cos(aS)*14,CY+Math.sin(aS)*14); g.lineTo(CX+Math.cos(aS)*R,CY+Math.sin(aS)*R); g.stroke(); g.setLineDash([]);
+    g.strokeStyle='rgba(232,213,176,.6)'; g.setLineDash([3,3]); g.lineWidth=Math.max(0.8,U);
+    g.beginPath(); g.moveTo(CX+Math.cos(aS)*sr*2,CY+Math.sin(aS)*sr*2); g.lineTo(CX+Math.cos(aS)*R,CY+Math.sin(aS)*R); g.stroke(); g.setLineDash([]);
   }
 }
 function drawSphere(t){
   g.clearRect(0,0,W,H);
-  g.strokeStyle='rgba(216,221,227,.5)'; g.lineWidth=0.8;
+  var lw=Math.max(0.7,0.8*U);
+  g.strokeStyle='rgba(216,221,227,.5)'; g.lineWidth=lw;
   g.beginPath(); g.arc(CX,CY,R,0,7); g.stroke();
   for(var i=0;i<6;i++){
     var rx=R*Math.abs(Math.cos(i*30*D2R+spin));
@@ -2667,7 +2668,7 @@ function drawSphere(t){
   g.strokeStyle='rgba(217,168,58,.55)';
   g.beginPath(); g.ellipse(0,0,R*0.96,R*0.32,0,0,TAU); g.stroke();
   var sl=sunLon(t)*D2R;
-  g.fillStyle=GOLDC; g.beginPath(); g.arc(Math.cos(sl)*R*0.96,Math.sin(sl)*R*0.32,4,0,7); g.fill();
+  g.fillStyle=GOLDC; g.beginPath(); g.arc(Math.cos(sl)*R*0.96,Math.sin(sl)*R*0.32,4*Math.max(0.8,U),0,7); g.fill();
   g.restore();
   for(var s2=0;s2<10;s2++){
     var rr2=R*(0.86-s2*0.075);
@@ -2675,7 +2676,7 @@ function drawSphere(t){
     g.beginPath(); g.ellipse(CX,CY,rr2,rr2*0.30,0,0,TAU); g.stroke();
   }
   var ml=(sunLon(t)+moonAge(t)/SYN*360)*D2R;
-  g.fillStyle=CREAM; g.beginPath(); g.arc(CX+Math.cos(ml)*R*0.55,CY+Math.sin(ml)*R*0.17,3,0,7); g.fill();
+  g.fillStyle=CREAM; g.beginPath(); g.arc(CX+Math.cos(ml)*R*0.55,CY+Math.sin(ml)*R*0.17,3*Math.max(0.8,U),0,7); g.fill();
   g.strokeStyle='rgba(216,221,227,.35)';
   g.beginPath(); g.moveTo(CX,CY-R); g.lineTo(CX,CY+R); g.stroke();
 }
@@ -2718,7 +2719,7 @@ document.getElementById('scDial').onclick=function(){ view='dial'; localStorage.
 document.getElementById('scSphere').onclick=function(){ view='sphere'; localStorage.setItem('hive_solar_view',view); paintBtns(); };
 document.getElementById('scSpin').onclick=function(){ spinOn=!spinOn; localStorage.setItem('hive_solar_spin',spinOn?'1':'0'); paintBtns(); };
 document.getElementById('scToday').onclick=function(){ sel=Date.now(); paintReadout(); };
-  document.getElementById('scLeg').innerHTML=
+document.getElementById('scLeg').innerHTML=
  '<b style="color:#eae6da">the dial \u00b7 read plainly</b><br>'
 +'<span style="color:#d9a83a">\u2500 gold ray</span> today \u00b7 <span style="color:#e8d5b0">- - dashed ray</span> the day you tapped<br>'
 +'bezel \u00b7 365 ticks \u00b7 long gold = a month\u2019s first day \u00b7 mid-length = mondays<br>'
@@ -2755,6 +2756,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 fit(); paintBtns(); paintReadout(); requestAnimationFrame(loop);
+setTimeout(fit,300); setTimeout(fit,1200);
 })();
 </script>
   
