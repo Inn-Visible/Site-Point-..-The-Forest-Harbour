@@ -659,22 +659,7 @@ try{
 })();
 </script>
 
-<script>
-(function(){
-/* ---- grid build probe \u00b7 stamps what is actually live, in the help line ---- */
-setTimeout(function(){
-  var bs=document.querySelectorAll('.bar button'), txt=[];
-  for(var i=0;i<bs.length;i++) txt.push((bs[i].textContent||'').trim());
-  var snaps=['top','front','side','iso'].every(function(t){ return txt.indexOf(t)>-1; });
-  var bench=!!document.getElementById('benchOv');
-  var h=document.querySelector('.help');
-  if(h){ var s=document.createElement('span');
-    s.style.color=(snaps&&bench)?'#58a36a':'#e5735a';
-    s.textContent=' \u00b7 build '+((snaps&&bench)?'hv4 \u00b7 snaps + bench live':'hv3 \u00b7 the v4 block never landed');
-    h.appendChild(s); }
-},900);
-})();
-</script>
+
   
 </body>
 </html>
