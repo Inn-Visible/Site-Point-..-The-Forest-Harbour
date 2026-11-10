@@ -2361,7 +2361,8 @@ setTimeout(function(){ if(seatFr()){ tapLeaf('workbench'); } },350); },true);
 <script>
 /* ---- the vault stays unlocked v3 \u00b7 never touches a door without a key ---- */
 (function(){
-  var FLAG='hive_xeno_unlocked', KEYK='hive_vault_key';
+var localStorage=sessionStorage; /* the key lives only as long as this tab \u00b7 the night watch scrubs localStorage, not here */
+var FLAG='hive_xeno_unlocked', KEYK='hive_vault_key';
   var cool=0, attempt=null;
   function lt(el){ return (el.textContent||'').trim(); }
   function tapEl(el){
