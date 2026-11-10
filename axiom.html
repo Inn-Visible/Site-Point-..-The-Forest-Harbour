@@ -2875,7 +2875,7 @@ nb.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault()
 var p=walk();
 setTimeout(function(){ if(seated()) p+=walk();
 setTimeout(function(){ if(seated()) p+=walk();
-var fr2=seated(); report(fr2||fr, 'back \u00b7 tries '+p+(fr2? ' \u00b7 still seated \u00b7 tell Qwen' : ' \u00b7 walked')); if(!fr2){ setTimeout(function(){ try{ var s=(fr.contentDocument||document).getElementById('bkPath'); if(s) s.textContent=''; }catch(e){} },2200); }
+var fr2=seated(); report(fr2||fr, 'back \u00b7 tries '+p+(fr2? ' \u00b7 still seated \u00b7 wibblydewobbly : ' \u00b7 walked')); if(!fr2){ setTimeout(function(){ try{ var s=(fr.contentDocument||document).getElementById('bkPath'); if(s) s.textContent=''; }catch(e){} },2200); }
 },450); },450);
 },true);
 },900);
