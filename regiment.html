@@ -42,6 +42,19 @@ canvas{width:100%;height:74px;display:block}
 .pips span.f{background:var(--green);border-color:var(--green)}
 .verdict{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--gold);text-align:center;margin-top:10px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rb{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);color:var(--dim);background:none;font:11px var(--mono);cursor:pointer;flex:none}
+.rb.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 8px rgba(217,168,58,.25)}
+.slide{display:none}
+.slide.on{display:block;animation:slin .28s ease}
+.slide.on.back{animation:slback .28s ease}
+@keyframes slin{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes slback{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.bk{border:1px solid var(--line);background:var(--bg);padding:8px 10px;margin-top:8px;font-size:11px;color:var(--dim);line-height:1.6;touch-action:pan-y}
+.bk.pin{border-color:var(--gold);border-left:3px solid var(--gold)}
+.bk.planted{opacity:.55}
+.bk .bd{font-size:9px;color:#5c6875;letter-spacing:.1em}
+.bk.flash-g{border-color:var(--gold)}
+.bk.flash-r{border-color:var(--red)}
 </style>
 </head>
 <body>
@@ -55,12 +68,13 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 </script>
 <header>
 <div style="font-size:14px;letter-spacing:.3em;color:var(--frost)">THE REGIMENT</div>
-<a href="eigen.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">Eigen Dynamics ↩</a>
+<a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a>
 </header>
 <div class="wrap">
-<div class="card">
-<div class="hd">the regiment · four watches, eight habits, one held day</div>
-<div class="sub">NOCTURN-O · THE NIGHT IS A SHIFT, NOT A SIN · OFFLINE · NO WITNESS BUT THE GLASS</div>
+<div class="card" id="banCard">
+<div class="hd">the regiment · three rooms, one held life</div>
+<div class="sub">NOCTURN-O · SWIPE BETWEEN THE ROOMS · THE NIGHT IS A SHIFT, NOT A SIN · OFFLINE · NO WITNESS BUT THE GLASS</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">hold morning + evening + night · tick what you actually did · drop thoughts in the bucket · the grove does the rest</span></div>
 <div class="row" style="margin-top:10px">
 <button id="navP">‹ day</button>
 <span id="navL" style="font-size:10px;letter-spacing:.15em;color:var(--gold)"></span>
@@ -69,42 +83,64 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <span style="flex:1"></span>
 <span id="streakL" style="font-size:10px;color:var(--green);letter-spacing:.12em"></span>
 </div>
+<div class="row" style="margin-top:10px;justify-content:center">
+<button class="rb" id="rb0" title="tracker · weekly">i</button>
+<button class="rb" id="rb1" title="thought box · the bucket">?</button>
+<button class="rb" id="rb2" title="action checkmarks">z</button>
+<span style="width:12px"></span>
+<button id="slP">‹ room</button>
+<span id="slL" style="font-size:9px;letter-spacing:.2em;color:#5c6875"></span>
+<button id="slN">room ›</button>
 </div>
-<div class="card">
-<canvas id="rib"></canvas>
-<div class="sub" style="margin-top:6px">ONE TRACK · 00→24 · DASHED RECESS = SOVEREIGN SLEEP · SOLID BLOCKS = THE FOUR WATCHES · BARE TRACK BETWEEN = BREATHING ROOM · GOLD PIN = NOW</div>
 </div>
-<div class="grid4" id="watchGrid"></div>
-<div class="card">
-<div class="hd" style="font-size:12px">the eight habits · tick what the day actually got</div>
-<div id="habRow"></div>
-</div>
-<div class="card">
-<div class="hd" style="font-size:12px">the week's tally · held watches & honest hours</div>
+<div id="slideView">
+<div class="slide" id="sl0">
+<div class="card"><canvas id="rib"></canvas>
+<div class="sub" style="margin-top:6px">ONE TRACK · 00→24 · DASHED RECESS = SOVEREIGN SLEEP · SOLID BLOCKS = THE FOUR WATCHES · BARE TRACK BETWEEN = BREATHING ROOM · GOLD PIN = NOW</div></div>
+<div class="card"><div class="hd" style="font-size:12px">the grove · one tree per held day</div>
+<svg id="forest" style="width:100%;height:96px;display:block;margin-top:6px"></svg>
+<div class="sub">PINES = HELD DAYS · SAPLINGS = PARTIAL · BARE GROUND = REST UNBROKEN · THE FOREST WATCHES YOU KEEP FAITH</div></div>
+<div class="card"><div class="hd" style="font-size:12px">the eight habits · tick what the day actually got</div><div id="habRow"></div></div>
+<div class="card"><div class="hd" style="font-size:12px">the week's tally · held watches & honest hours</div>
 <div class="tally" id="tally"></div>
 <div class="row" style="margin-top:10px;justify-content:center"><span id="weekH" style="font-size:10px;color:var(--dim);letter-spacing:.12em"></span></div>
-<div class="verdict" id="verdict"></div>
+<div class="verdict" id="verdict"></div></div>
+<div class="card"><div class="hd" style="font-size:12px">the ladder · income stream #1 lives only until acquired</div>
+<div class="row" style="margin-top:8px"><button id="streamB"></button>
+<span style="font-size:9px;color:#5c6875;letter-spacing:.12em">security guides · spiral notes · self-study — it bills until the door opens</span></div>
+<div id="ladder" style="margin-top:10px"></div></div>
+</div>
+<div class="slide" id="sl1">
+<div class="card"><div class="hd" style="font-size:12px">the thought box · the bucket · idea pool</div>
+<div class="sub">SWIPE RIGHT = PROTECT · SWIPE LEFT = TOSS · → ACTION PLANTS IT IN A WATCH</div>
+<div class="row" style="margin-top:10px"><input id="bkIn" placeholder="drop a thought in the bucket .." style="flex:1"><button id="bkAdd" style="border-color:var(--gold);color:var(--gold)">drop it</button></div>
+<div id="bkShelf" style="margin-top:10px"></div>
+<div id="bkPool"></div>
+<div class="sub" id="bkCount" style="margin-top:8px"></div></div>
+</div>
+<div class="slide" id="sl2">
+<div class="grid4" id="watchGrid"></div>
+<div class="card"><div class="hd" style="font-size:12px">the night's own words · anything to aid the sleep</div>
+<textarea id="note" placeholder="confess, plan, unwind — the glass keeps it behind the lock .." style="margin-top:8px"></textarea></div>
+</div>
 </div>
 <div class="card">
-<div class="hd" style="font-size:12px">the night's own words · anything to aid the sleep</div>
-<textarea id="note" placeholder="confess, plan, unwind — the glass keeps it behind the lock .." style="margin-top:8px"></textarea>
+<div class="row">
+<button id="pwBtn">the plain words ⌄</button>
+<button id="lwEdit">edit the watches ⌄</button>
+<button id="lwClock"></button>
 </div>
-<div class="card">
-<div class="hd" style="font-size:12px">the ladder · income stream #1 lives only until acquired</div>
-<div class="row" style="margin-top:8px">
-<button id="streamB"></button>
-<span style="font-size:9px;color:#5c6875;letter-spacing:.12em">security guides · spiral notes · self-study — it bills until the door opens</span>
-</div>
-<div id="ladder" style="margin-top:10px"></div>
+<div id="pwPanel" style="display:none;margin-top:10px;border:1px solid var(--line);background:rgba(4,8,6,.5);padding:10px 14px;font-size:10px;line-height:2.0;letter-spacing:.06em;color:var(--dim);text-align:left"></div>
+<div id="lwEd" style="display:none;margin-top:10px;border:1px solid var(--line);background:rgba(4,8,6,.5);padding:10px 12px;font-size:10px;color:var(--dim)"></div>
 </div>
 </div>
 <script>
 (function(){
 var KEY='hive_regiment';
-var WATCH=[['m','01 \u00b7 morning','10\u201314','self care + daily wo','#58a36a'],
-['e','02 \u00b7 evening','15\u201319','security guides \u00b7 income stream #1','#d9a83a'],
-['n','03 \u00b7 night','20\u201300','skill acquisition \u00b7 the brain drill','#7fb2d9'],
-['l','04 \u00b7 late','01\u201303','conditional \u00b7 if the body allows','#c8452c']];
+var WATCH=[['m','01 · morning','self care + daily wo','#58a36a'],
+['e','02 · evening','security guides · income stream #1','#d9a83a'],
+['n','03 · night','skill acquisition · the brain drill','#7fb2d9'],
+['l','04 · late','conditional · if the body allows','#c8452c']];
 var DEF={m:['daily wo + core st','walk · water · eat cooked','book + learning turn · sunday supple','phone call / video jack','songs + exercise pair','wash / laundry turn','asl · lingoes w/ dictionary','transcription · pen, paper, cursive · lined or clouds paper','spiritual turn · sesh or clouds meditation'],
 e:['security course · one module','transcription → spiral notes','legal system w/ guides · self-study section','mark the hour · it bills someday'],
 n:['sys lit · one section (see 1. plan — brain)','the drill · calc / chem','the drill · geo / hs','the craft · comp: linux → python → sql','flashday / anki turn','reading · ten pages minimum'],
@@ -115,17 +151,33 @@ var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; 
 if(!S) S={days:{},items:null,stream:false,ladder:[false,false,false,false]};
 if(!S.items) S.items=JSON.parse(JSON.stringify(DEF));
 if(!S.days) S.days={};
-if(!S.ladder||S.ladder.length!==4) S.ladder=[false,false,false,false]; if(S.iv!==3){   S.items=JSON.parse(JSON.stringify(DEF));   try{ Object.keys(S.days||{}).forEach(function(k){ var d=S.days[k];     if(d&&d.h&&d.h.faith!=null&&d.h.spirit==null){ d.h.spirit=d.h.faith; delete d.h.faith; } }); }catch(e){}   S.iv=3; save(); }
+if(!S.ladder||S.ladder.length!==4) S.ladder=[false,false,false,false];
+if(S.iv!==4){
+  S.items=JSON.parse(JSON.stringify(DEF));
+  try{ Object.keys(S.days||{}).forEach(function(k){ var d=S.days[k];
+    if(d&&d.h&&d.h.faith!=null&&d.h.spirit==null){ d.h.spirit=d.h.faith; delete d.h.faith; } }); }catch(e){}
+  if(!S.bucket) S.bucket=[];
+  S.iv=4; 
+}
+if(!S.bucket) S.bucket=[];
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+save();
+var BANDS=(S.bands&&S.bands.m)?S.bands:{m:[10,14],e:[15,19],n:[20,24],l:[1,3]};
+var H24R=localStorage.getItem('hive_reg_h24')!=='0';
+function h12s(x){ var ap=x<12?'am':'pm'; var h=x%12; if(h===0)h=12; return h+ap; }
+function bandLabel(k){ var b=BANDS[k], e=b[1]===24?24:b[1]%24;
+if(H24R) return b[0]+'–'+(e===24?'24':e)+'h';
+return h12s(b[0]%24)+'–'+(e===24?'12am':h12s(e)); }
+function pad(n){ return (n<10?'0':'')+n; }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function addD(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(12,0,0,0); return x; }
 function mkW(){ return {held:false,hrs:'',it:{}}; }
+var sel=new Date(); sel.setHours(12,0,0,0);
 function D(){ var k=iso(sel);
 if(!S.days[k]) S.days[k]={w:{m:mkW(),e:mkW(),n:mkW(),l:mkW()},h:{},note:''};
 var d=S.days[k]; ['m','e','n','l'].forEach(function(w){ if(!d.w[w]) d.w[w]=mkW(); });
 if(!d.h) d.h={}; return d; }
-var sel=new Date(); sel.setHours(12,0,0,0);
 var DN=['sun','mon','tue','wed','thu','fri','sat'], MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 function heldAll(k){ var d=S.days[k]; return !!(d&&d.w.m.held&&d.w.e.held&&d.w.n.held); }
 function streak(){ var n=0,d=new Date(); d.setHours(12,0,0,0);
@@ -133,12 +185,37 @@ if(!heldAll(iso(d))) d=addD(d,-1);
 while(heldAll(iso(d))&&n<400){ n++; d=addD(d,-1); } return n; }
 function habStreak(name){ var n=0,d=new Date(); d.setHours(12,0,0,0);
 while(n<400){ var dd=S.days[iso(d)]; if(dd&&dd.h&&dd.h[name]){ n++; d=addD(d,-1); } else break; } return n; }
-function renderNav(){
-var d=sel;
-document.getElementById('navL').textContent=DN[d.getDay()]+' '+pad(d.getDate())+' '+MO[d.getMonth()]+' '+d.getFullYear();
-document.getElementById('streakL').textContent='streak · '+streak()+' held day'+(streak()===1?'':'s')+' running';
+function hrsOf(k){ var d=S.days[k]; if(!d) return 0; var t=0; ['m','e','n','l'].forEach(function(w){ t+=parseFloat(d.w[w].hrs)||0; }); return t; }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+/* ---- slides ---- */
+var slide=parseInt(localStorage.getItem('hive_reg_slide')||'0',10); if(!(slide>=0&&slide<3)) slide=0;
+var SLN=['tracker · weekly','thought box · the bucket','action checkmarks'];
+function goSlide(i,back){
+slide=Math.max(0,Math.min(2,i));
+localStorage.setItem('hive_reg_slide',String(slide));
+for(var k=0;k<3;k++){ var el=document.getElementById('sl'+k);
+el.classList.remove('on','back');
+if(k===slide){ void el.offsetWidth; el.classList.add('on'); if(back) el.classList.add('back'); } }
+for(k=0;k<3;k++){ document.getElementById('rb'+k).className='rb'+(k===slide?' on':''); }
+document.getElementById('slL').textContent=SLN[slide];
 }
-function pad(n){ return (n<10?'0':'')+n; }
+document.getElementById('rb0').onclick=function(){ goSlide(0,true); };
+document.getElementById('rb1').onclick=function(){ goSlide(1); };
+document.getElementById('rb2').onclick=function(){ goSlide(2); };
+document.getElementById('slP').onclick=function(){ goSlide(slide-1,true); };
+document.getElementById('slN').onclick=function(){ goSlide(slide+1); };
+var vx=document.getElementById('slideView'), sx0=0, sy0=0, swp=false;
+vx.addEventListener('pointerdown',function(e){ var t=e.target;
+if(t.closest&&t.closest('input,textarea,button,select,a,label')) return;
+sx0=e.clientX; sy0=e.clientY; swp=true; });
+vx.addEventListener('pointerup',function(e){ if(!swp) return; swp=false;
+var dx=e.clientX-sx0, dy=e.clientY-sy0;
+if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4) goSlide(slide+(dx<0?1:-1),dx>0); });
+addEventListener('keydown',function(e){ var t=document.activeElement;
+if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA')) return;
+if(e.key==='ArrowRight') goSlide(slide+1);
+if(e.key==='ArrowLeft') goSlide(slide-1,true); });
+/* ---- ribbon ---- */
 function renderRibbon(){
 var c=document.getElementById('rib'), r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
 var W=Math.max(10,r.width), H=74;
@@ -153,45 +230,76 @@ rr(x0,TY,TW,TH,5); g.fillStyle='#0b1017'; g.fill();
 g.save(); rr(x0,TY,TW,TH,5); g.clip();
 for(var h=1;h<24;h++){ g.strokeStyle=(h%6===0)?'rgba(92,104,117,.45)':'rgba(34,48,65,.7)'; g.lineWidth=1;
 g.beginPath(); g.moveTo(X(h),TY); g.lineTo(X(h),TY+TH); g.stroke(); }
-g.fillStyle='rgba(3,4,7,.95)'; g.fillRect(X(3),TY,X(10)-X(3),TH);
+var sl0=BANDS.l[1]%24, sl1=BANDS.m[0];
+g.fillStyle='rgba(3,4,7,.95)'; g.fillRect(X(sl0),TY,X(sl1)-X(sl0),TH);
 g.strokeStyle='rgba(127,178,217,.55)'; g.setLineDash([3,3]); g.lineWidth=1;
-g.strokeRect(X(3)+0.5,TY+0.5,X(10)-X(3)-1,TH-1); g.setLineDash([]);
+g.strokeRect(X(sl0)+0.5,TY+0.5,X(sl1)-X(sl0)-1,TH-1); g.setLineDash([]);
 g.textAlign='center'; g.textBaseline='middle';
-if(X(10)-X(3)>92){ g.fillStyle='rgba(127,178,217,.85)'; g.font='8px ui-monospace,Consolas,monospace';
-g.fillText('\u263e sovereign sleep', X(6.5), TY+TH/2+0.5); }
-var WS=[[10,14,'#58a36a','01 \u00b7 morning'],[15,19,'#d9a83a','02 \u00b7 evening'],[20,24,'#7fb2d9','03 \u00b7 night'],[1,3,'#c8452c','04']];
-WS.forEach(function(w){ var a=X(w[0]), b=X(w[1]), wd=b-a;
-g.fillStyle=w[2]; g.globalAlpha=0.9; g.fillRect(a+0.5,TY+1,wd-1,TH-2); g.globalAlpha=1;
+if(X(sl1)-X(sl0)>92){ g.fillStyle='rgba(127,178,217,.85)'; g.font='8px ui-monospace,Consolas,monospace';
+g.fillText('\u263e sovereign sleep', X((sl0+sl1)/2), TY+TH/2+0.5); }
+var WS=[[BANDS.m,'rgba(88,163,106,.9)','01 \u00b7 morning'],[BANDS.e,'rgba(217,168,58,.9)','02 \u00b7 evening'],[BANDS.n,'rgba(127,178,217,.9)','03 \u00b7 night'],[BANDS.l,'rgba(200,69,44,.9)','04']];
+WS.forEach(function(w){ var a=X(w[0][0]), b=X(w[0][1]===24?24:(w[0][1]%24||24)), wd=b-a;
+g.fillStyle=w[1]; g.globalAlpha=0.9; g.fillRect(a+0.5,TY+1,wd-1,TH-2); g.globalAlpha=1;
 g.fillStyle='#0a0d12'; g.font='8px ui-monospace,Consolas,monospace';
-if(wd>96){ g.fillText(w[3].toUpperCase(), (a+b)/2, TY+TH/2+0.5); }
-else if(wd>30){ g.fillText(w[3].slice(0,2), (a+b)/2, TY+TH/2+0.5); } });
+if(wd>96){ g.fillText(w[2].toUpperCase(), (a+b)/2, TY+TH/2+0.5); }
+else if(wd>30){ g.fillText(w[2].slice(0,2), (a+b)/2, TY+TH/2+0.5); } });
 g.restore();
 rr(x0,TY,TW,TH,5); g.strokeStyle='#223041'; g.lineWidth=1; g.stroke();
 g.textBaseline='alphabetic'; g.font='8px ui-monospace,Consolas,monospace'; g.fillStyle='#5c6875';
 [0,3,6,9,12,15,18,21,24].forEach(function(hh){ var x=X(hh);
 g.strokeStyle='rgba(92,104,117,.5)'; g.beginPath(); g.moveTo(x,TY+TH); g.lineTo(x,TY+TH+4); g.stroke();
 g.textAlign=(hh===0)?'left':(hh===24?'right':'center');
-g.fillText((hh<10?'0':'')+hh, x, TY+TH+14); });
+g.fillText(H24R?((hh<10?'0':'')+hh):(hh===0?'12a':hh===12?'12p':(hh<12?hh+'a':(hh-12)+'p')), x, TY+TH+14); });
 g.textAlign='center';
-[['01',12,'#58a36a'],['02',17,'#d9a83a'],['03',22,'#7fb2d9'],['04',2,'#c8452c']].forEach(function(cp){
+[['01',(BANDS.m[0]+BANDS.m[1])/2,'#58a36a'],['02',(BANDS.e[0]+BANDS.e[1])/2,'#d9a83a'],['03',(BANDS.n[0]+(BANDS.n[1]===24?24:(BANDS.n[1]%24||24)))/2,'#7fb2d9'],['04',(BANDS.l[0]+BANDS.l[1])/2,'#c8452c']].forEach(function(cp){
 g.fillStyle=cp[2]; g.globalAlpha=.75; g.fillText(cp[0], X(cp[1]), TY-6); g.globalAlpha=1; });
-g.fillStyle='rgba(127,178,217,.7)'; g.fillText('\u263e', X(6.5), TY-6);
+g.fillStyle='rgba(127,178,217,.7)'; g.fillText('\u263e', X((sl0+sl1)/2), TY-6);
 var now=new Date(), nh=now.getHours()+now.getMinutes()/60, nx=X(nh);
 g.strokeStyle='#d9a83a'; g.lineWidth=1.5;
 g.beginPath(); g.moveTo(nx,TY-12); g.lineTo(nx,TY+TH+6); g.stroke();
 g.fillStyle='#d9a83a';
 g.beginPath(); g.moveTo(nx,TY-16); g.lineTo(nx+3.5,TY-12); g.lineTo(nx,TY-8); g.lineTo(nx-3.5,TY-12); g.closePath(); g.fill();
 g.font='9px ui-monospace,Consolas,monospace'; g.textAlign='center';
-g.fillText(pad(now.getHours())+':'+pad(now.getMinutes()), Math.max(x0+16,Math.min(x1-16,nx)), TY-20);
+var hh2=now.getHours(), ap2=hh2<12?'am':'pm', h12n=hh2%12; if(h12n===0)h12n=12;
+g.fillText(H24R?(pad(hh2)+':'+pad(now.getMinutes())):(h12n+':'+pad(now.getMinutes())+ap2), Math.max(x0+16,Math.min(x1-16,nx)), TY-20);
 }
+/* ---- the grove ---- */
+function renderForest(){
+var sv=document.getElementById('forest'), m0=monday(sel), out='';
+var W=sv.getBoundingClientRect().width||600, slot=W/7;
+for(var i=0;i<7;i++){
+var k=iso(addD(m0,i)), d=S.days[k], cx=slot*i+slot/2;
+var held=heldAll(k), hrs=hrsOf(k);
+var part=d?(['m','e','n'].filter(function(w){ return d.w[w].held; }).length):0;
+var sc=0.75+Math.min(0.55,hrs/14);
+if(held){
+out+='<g><rect x="'+(cx-2)+'" y="66" width="4" height="14" fill="#5c4630"/>'
++'<polygon points="'+cx+',${} '.replace('${}','')+'</g>';
+out=out.slice(0,out.lastIndexOf('<g>'));
+var hgt=44*sc;
+out+='<g><rect x="'+(cx-2)+'" y="66" width="4" height="14" fill="#5c4630"/>'
++'<polygon points="'+cx+','+(70-hgt)+' '+(cx-13*sc)+','+(70-hgt*0.45)+' '+(cx+13*sc)+','+(70-hgt*0.45)+'" fill="rgba(88,163,106,.85)"/>'
++'<polygon points="'+cx+','+(70-hgt*0.75)+' '+(cx-10*sc)+','+(70-hgt*0.2)+' '+(cx+10*sc)+','+(70-hgt*0.2)+'" fill="rgba(88,163,106,.95)"/></g>';
+} else if(part>0){
+out+='<g><line x1="'+cx+'" y1="80" x2="'+cx+'" y2="66" stroke="#7fb2d9" stroke-width="2"/>'
++'<line x1="'+cx+'" y1="70" x2="'+(cx-6)+'" y2="64" stroke="#7fb2d9" stroke-width="1.6"/>'
++'<line x1="'+cx+'" y1="74" x2="'+(cx+6)+'" y2="68" stroke="#7fb2d9" stroke-width="1.6"/></g>';
+} else {
+out+='<path d="M '+(cx-10)+' 80 Q '+cx+' 72 '+(cx+10)+' 80" stroke="#223041" fill="none" stroke-width="1.4"/>';
+}
+out+='<text x="'+cx+'" y="92" text-anchor="middle" font-size="8" fill="'+(k===iso(new Date())?'#d9a83a':'#5c6875')+'" font-family="ui-monospace,Consolas,monospace">'+DN[addD(m0,i).getDay()]+'</text>';
+}
+sv.innerHTML=out;
+}
+/* ---- watches ---- */
 function renderWatches(){
 var g=document.getElementById('watchGrid'); g.innerHTML=''; var day=D();
 WATCH.forEach(function(w){
 var id=w[0], items=S.items[id]||[];
 var card=document.createElement('div'); card.className='wcard';
-card.innerHTML='<div class="wt" style="color:'+w[4]+'">'+w[1]+' <span class="wb">· '+w[2]+'h</span></div>'
-+'<div class="ws">'+w[3]+'</div>'
-+'<div class="row"><button class="hold'+(day.w[id].held?' on':'')+'" style="'+(day.w[id].held?'':'')+'">'+(day.w[id].held?'held ✓':'hold')+'</button>'
+card.innerHTML='<div class="wt" style="color:'+w[3]+'">'+w[1]+' <span class="wb">· '+bandLabel(id)+'</span></div>'
++'<div class="ws">'+w[2]+'</div>'
++'<div class="row"><button class="hold'+(day.w[id].held?' on':'')+'">'+(day.w[id].held?'held ✓':'hold')+'</button>'
 +'<input class="hrs" placeholder="hrs" style="width:52px;flex:none" value="'+(day.w[id].hrs||'')+'"></div>'
 +'<div class="items"></div>'
 +'<div class="row"><input class="add" placeholder="+ item"><button class="addb">+</button></div>';
@@ -202,14 +310,14 @@ row.innerHTML='<input type="checkbox" '+(day.w[id].it[i]?'checked':'')+'><span>'
 row.querySelector('input').onchange=function(){ day.w[id].it[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
 row.querySelector('.rm').onclick=function(){ items.splice(i,1); save(); renderWatches(); };
 box.appendChild(row); });
-card.querySelector('.hold').onclick=function(){ day.w[id].held=!day.w[id].held; save(); renderWatches(); renderTally(); renderNav(); };
-card.querySelector('.hrs').onchange=function(){ day.w[id].hrs=this.value; save(); renderTally(); };
+card.querySelector('.hold').onclick=function(){ day.w[id].held=!day.w[id].held; save(); renderWatches(); renderTally(); renderForest(); renderNav(); };
+card.querySelector('.hrs').onchange=function(){ day.w[id].hrs=this.value; save(); renderTally(); renderForest(); };
 function add(){ var v=card.querySelector('.add').value.trim(); if(!v) return; items.push(v); card.querySelector('.add').value=''; save(); renderWatches(); }
 card.querySelector('.addb').onclick=add;
 card.querySelector('.add').onkeydown=function(e){ if(e.key==='Enter') add(); };
 g.appendChild(card); });
 }
-function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+/* ---- habits ---- */
 function renderHabs(){
 var row=document.getElementById('habRow'); row.innerHTML=''; var day=D();
 HABS.forEach(function(h){
@@ -219,7 +327,7 @@ b.innerHTML=h+' <span class="st">·'+habStreak(h)+'</span>';
 b.onclick=function(){ day.h[h]=!day.h[h]; save(); renderHabs(); };
 row.appendChild(b); });
 }
-function hrsOf(k){ var d=S.days[k]; if(!d) return 0; var t=0; ['m','e','n','l'].forEach(function(w){ t+=parseFloat(d.w[w].hrs)||0; }); return t; }
+/* ---- tally ---- */
 function renderTally(){
 var t=document.getElementById('tally'); t.innerHTML='';
 var m0=monday(sel), week=0, held=0;
@@ -233,17 +341,68 @@ cell.innerHTML='<div style="color:'+(k===iso(new Date())?'#d9a83a':'#5c6875')+'"
 +'<div>'+(h?h.toFixed(1)+'h':'—')+'</div>';
 t.appendChild(cell); }
 document.getElementById('weekH').textContent='week · '+week.toFixed(1)+' honest hours · '+held+' of 7 held days';
-var v=document.getElementById('verdict');
-v.textContent= held>=6? 'the regiment holds · six or seven days of quiet iron'
+document.getElementById('verdict').textContent= held>=6? 'the regiment holds · six or seven days of quiet iron'
 : held>=4? 'the regiment bends, not breaks · four or five days · the watches remember you'
 : held>=1? 'the regiment slips · one held watch at a time brings it back'
 : 'a bare week · the first held watch is the whole cure · start tonight';
 }
+/* ---- bucket ---- */
+function renderBucket(){
+var shelf=document.getElementById('bkShelf'), pool=document.getElementById('bkPool');
+shelf.innerHTML=''; pool.innerHTML='';
+var pinned=S.bucket.filter(function(b){ return b.pin&&!b.planted; });
+var live=S.bucket.filter(function(b){ return !b.pin&&!b.planted; });
+if(pinned.length){ var hl=document.createElement('div'); hl.className='sub'; hl.textContent='PROTECTED · SWIPE RIGHT AGAIN TO RELEASE'; shelf.appendChild(hl); }
+pinned.slice().reverse().forEach(function(b){ shelf.appendChild(row(b)); });
+live.slice().reverse().forEach(function(b){ pool.appendChild(row(b)); });
+var planted=S.bucket.filter(function(b){ return b.planted; });
+if(planted.length){ var pl=document.createElement('div'); pl.className='sub'; pl.style.marginTop='10px'; pl.textContent='PLANTED · THOUGHTS THAT BECAME ACTIONS'; pool.appendChild(pl); }
+planted.slice().reverse().slice(0,8).forEach(function(b){ pool.appendChild(row(b)); });
+document.getElementById('bkCount').textContent=S.bucket.length+' in the bucket · '+pinned.length+' protected · '+planted.length+' planted';
+function row(b){
+var d=document.createElement('div'); d.className='bk'+(b.pin?' pin':'')+(b.planted?' planted':'');
+d.innerHTML='<div class="bd">'+esc(b.d||'')+(b.pin?' · protected':'')+(b.planted?' · planted '+esc(b.planted):'')+'</div>'
++'<div>'+esc(b.txt)+'</div>'
++'<div class="row" style="margin-top:6px;gap:6px">'
++(b.planted?'':('<button class="bp">'+(b.pin?'unpin':'protect')+'</button><button class="ba">→ action</button><button class="bt">toss</button>'))
++'</div>';
+if(!b.planted){
+d.querySelector('.bp').onclick=function(){ b.pin=!b.pin; save(); renderBucket(); };
+d.querySelector('.bt').onclick=function(){ S.bucket=S.bucket.filter(function(x){ return x.id!==b.id; }); save(); renderBucket(); };
+d.querySelector('.ba').onclick=function(){
+var old=d.querySelector('.pk'); if(old){ old.remove(); return; }
+var pk=document.createElement('div'); pk.className='row'; pk.style.marginTop='6px';
+pk.innerHTML='<span style="font-size:9px;color:#5c6875">plant in:</span>';
+WATCH.forEach(function(w){ var bb=document.createElement('button'); bb.textContent=w[1].slice(3);
+bb.style.borderColor=w[3]; bb.style.color=w[3];
+bb.onclick=function(){ (S.items[w[0]]=S.items[w[0]]||[]).push(b.txt); b.planted=w[1].slice(0,2); save(); renderBucket(); renderWatches(); };
+pk.appendChild(bb); });
+d.appendChild(pk); };
+var sx=0,sy=0,act=false;
+d.addEventListener('pointerdown',function(e){ if(e.target.closest('button')) return; sx=e.clientX; sy=e.clientY; act=true; });
+d.addEventListener('pointerup',function(e){ if(!act) return; act=false;
+var dx=e.clientX-sx, dy=e.clientY-sy;
+if(Math.abs(dx)>44&&Math.abs(dx)>Math.abs(dy)*1.3){ e.stopPropagation();
+d.classList.add(dx>0?'flash-g':'flash-r');
+setTimeout(function(){ if(dx>0){ b.pin=!b.pin; } else { S.bucket=S.bucket.filter(function(x){ return x.id!==b.id; }); }
+save(); renderBucket(); },140); } });
+}
+return d; }
+}
+function addThought(){
+var inp=document.getElementById('bkIn'), v=inp.value.trim(); if(!v) return;
+S.bucket.push({id:'t'+Date.now(), d:iso(new Date()), txt:v, pin:false});
+inp.value=''; save(); renderBucket();
+}
+document.getElementById('bkAdd').onclick=addThought;
+document.getElementById('bkIn').onkeydown=function(e){ if(e.key==='Enter') addThought(); };
+/* ---- note ---- */
 var noteT=0;
 function renderNote(){
 var n=document.getElementById('note'); n.value=D().note||'';
 n.oninput=function(){ clearTimeout(noteT); var v=n.value; noteT=setTimeout(function(){ D().note=v; save(); },350); };
 }
+/* ---- stream & ladder ---- */
 function renderStream(){
 var b=document.getElementById('streamB');
 b.className=S.stream?'on':'';
@@ -256,51 +415,62 @@ row.innerHTML='<input type="checkbox" '+(S.ladder[i]?'checked':'')+'><span>'+esc
 row.querySelector('input').onchange=function(){ S.ladder[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
 L.appendChild(row); });
 }
-document.getElementById('navP').onclick=function(){ sel=addD(sel,-1); renderAll(); };
-document.getElementById('navN').onclick=function(){ sel=addD(sel,1); renderAll(); };
-document.getElementById('navT').onclick=function(){ sel=new Date(); sel.setHours(12,0,0,0); renderAll(); };
-addEventListener('resize',renderRibbon);
-function renderAll(){ renderNav(); renderRibbon(); renderWatches(); renderHabs(); renderTally(); renderNote(); renderStream(); }
-renderAll();
-})();
-</script>
-
-<script>
-(function(){
-/* ==== the plain words \u00b7 a tl;dr hand on the regiment's shoulder ==== */
-function mount(){
-  var ban=document.querySelector('.wrap .card'); if(!ban||document.getElementById('pwBtn')) return !!ban;
-  var row=ban.querySelector('.row'); if(!row) return false;
-  var tl=document.createElement('div');
-  tl.style.cssText='margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875';
-  tl.innerHTML='tl;dr \u00b7 <span style="color:#d9a83a">hold morning + evening + night \u00b7 tick what you actually did \u00b7 write the night\u2019s words \u00b7 the streak does the rest</span>';
-  ban.insertBefore(tl,row);
-  var btn=document.createElement('button'); btn.id='pwBtn';
-  btn.textContent='the plain words \u2304';
-  row.appendChild(btn);
-  var p=document.createElement('div'); p.id='pwPanel';
-  p.style.cssText='display:none;margin-top:12px;border:1px solid #223041;background:rgba(4,8,6,.5);padding:10px 14px;font-size:10px;line-height:2.0;letter-spacing:.06em;color:#93a1b0;text-align:left';
-  p.innerHTML=
-   '<b style="color:#eae6da;font-family:Georgia,serif;font-style:italic;font-weight:normal">the plain words \u00b7 how the regiment holds you</b><br>'
-   +'the day is four watches \u00b7 <span style="color:#58a36a">morning</span> body & care \u00b7 <span style="color:#d9a83a">evening</span> security guides (income stream #1) \u00b7 <span style="color:#7fb2d9">night</span> skill drills \u00b7 <span style="color:#c8452c">late</span> only if you\u2019re still up<br>'
-   +'tick the items you truly did \u00b7 press <b>hold</b> when a watch is done \u00b7 hours are optional, honesty is not<br>'
-   +'a held day = morning + evening + night \u00b7 that is the streak \u00b7 the late watch never counts against you \u00b7 the night is a shift, not a sin<br>'
-   +'the ribbon is your body\u2019s contract \u00b7 black = sovereign sleep 03\u201310 \u00b7 the four coloured bands = the watches \u00b7 coloured bands = the watches \u00b7 gold needle = now \u00b7 nothing to tick there, it only remembers the rhythm you wrote on the floor<br>'
-   +'the eight habits are the life around the work \u00b7 body \u00b7 connect \u00b7 learning \u00b7 empty/wash \u00b7 faith \u00b7 finance \u00b7 nature \u00b7 rest \u00b7 each keeps its own little streak beside its name<br>'
-   +'the week\u2019s tally shows held days as green pips + honest hours \u00b7 the serif line names the week without shame<br>'
-   +'the night\u2019s words box = one confession per day, kept behind the lock<br>'
-   +'the ladder \u00b7 income stream #1 stays alive \u2610 until you tick acquired \u2612 \u00b7 then it retires and the next rung stands<br>'
-   +'the checklist is one shared list \u00b7 each day remembers its own ticks \u00b7 + item and \u2715 edit the list for every day<br>'
-   +'everything lives in this browser only (hive_regiment) \u00b7 no wire, no cloud, no witness but the glass';
-  ban.appendChild(p);
-  btn.onclick=function(){ var o=p.style.display!=='none'; p.style.display=o?'none':'block';
-    btn.textContent=o?'the plain words \u2304':'the plain words \u2303';
-    btn.style.borderColor=o?'#223041':'#d9a83a'; btn.style.color=o?'#93a1b0':'#d9a83a'; };
-  return true;
+/* ---- nav ---- */
+function renderNav(){
+var d=sel;
+document.getElementById('navL').textContent=DN[d.getDay()]+' '+pad(d.getDate())+' '+MO[d.getMonth()]+' '+d.getFullYear();
+document.getElementById('streakL').textContent='streak · '+streak()+' held day'+(streak()===1?'':'s')+' running';
 }
-if(!mount()){ var t=setInterval(function(){ if(mount()) clearInterval(t); },600); setTimeout(function(){ clearInterval(t); },8000); }
+document.getElementById('navP').onclick=function(){ sel=addD(sel,-1); renderDay(); };
+document.getElementById('navN').onclick=function(){ sel=addD(sel,1); renderDay(); };
+document.getElementById('navT').onclick=function(){ sel=new Date(); sel.setHours(12,0,0,0); renderDay(); };
+function renderDay(){ renderNav(); renderRibbon(); renderForest(); renderWatches(); renderHabs(); renderTally(); renderNote(); }
+/* ---- legend · plain words · watch editor · clock ---- */
+document.getElementById('pwPanel').innerHTML=
+ '<b style="color:#eae6da;font-family:Georgia,serif;font-style:italic;font-weight:normal">the plain words · how the regiment holds you</b><br>'
+ +'three rooms, swipe between them · <span style="color:#d9a83a">i</span> the tracker (ribbon, grove, habits, tally, ladder) · <span style="color:#d9a83a">?</span> the thought box (the bucket · swipe right = protect · swipe left = toss · → action plants it in a watch) · <span style="color:#d9a83a">z</span> the action checkmarks (the four watches + the night\'s words)<br>'
+ +'a held day = morning + evening + night held · that is the streak · the late watch never counts against you · the night is a shift, not a sin<br>'
+ +'the grove · pines = held days (taller with honest hours) · saplings = partial days · bare ground = rest unbroken<br>'
+ +'the ribbon is your body\'s contract · black recess = sovereign sleep · coloured blocks = the watches · gold pin = now<br>'
+ +'the eight habits are the life around the work · each keeps its own little streak<br>'
+ +'everything lives in this browser only (hive_regiment) · no wire, no cloud, no witness but the glass';
+document.getElementById('pwBtn').onclick=function(){
+var p=document.getElementById('pwPanel'), o=p.style.display!=='none';
+p.style.display=o?'none':'block';
+this.textContent=o?'the plain words ⌄':'the plain words ⌃';
+this.className=o?'':'on'; };
+function paintClock(){ document.getElementById('lwClock').textContent=(H24R?'24h':'12h')+' ⇄ swap the hour tongue'; }
+paintClock();
+document.getElementById('lwClock').onclick=function(){ H24R=!H24R; localStorage.setItem('hive_reg_h24',H24R?'1':'0'); paintClock(); renderRibbon(); renderWatches(); paintEd(); };
+function paintEd(){
+var ed=document.getElementById('lwEd'); ed.innerHTML='';
+[['m','01 morning','#58a36a'],['e','02 evening','#d9a83a'],['n','03 night','#7fb2d9'],['l','04 late','#c8452c']].forEach(function(n){
+var r=document.createElement('div'); r.style.cssText='display:flex;gap:6px;align-items:center;margin:4px 0';
+r.innerHTML='<span style="width:88px;color:'+n[2]+'">'+n[1]+'</span>'
++'<input data-b="'+n[0]+'" data-e="0" type="number" min="0" max="24" value="'+BANDS[n[0]][0]+'" style="width:52px">'
++'<span>→</span>'
++'<input data-b="'+n[0]+'" data-e="1" type="number" min="0" max="24" value="'+BANDS[n[0]][1]+'" style="width:52px">';
+ed.appendChild(r); });
+var sv=document.createElement('button'); sv.textContent='save the watches ✓'; sv.style.borderColor='#d9a83a'; sv.style.color='#d9a83a';
+sv.onclick=function(){
+ed.querySelectorAll('input').forEach(function(i){
+var k=i.getAttribute('data-b'), e=+i.getAttribute('data-e');
+BANDS[k]=BANDS[k]||[0,0]; BANDS[k][e]=Math.max(0,Math.min(24,parseInt(i.value,10)||0)); });
+S.bands=JSON.parse(JSON.stringify(BANDS)); save(); renderRibbon(); renderWatches(); };
+ed.appendChild(sv);
+var rs=document.createElement('button'); rs.textContent='house default'; rs.style.marginLeft='6px';
+rs.onclick=function(){ BANDS={m:[10,14],e:[15,19],n:[20,24],l:[1,3]}; S.bands=JSON.parse(JSON.stringify(BANDS)); save(); renderRibbon(); renderWatches(); paintEd(); };
+ed.appendChild(rs);
+}
+document.getElementById('lwEdit').onclick=function(){
+var ed=document.getElementById('lwEd'), o=ed.style.display!=='none';
+ed.style.display=o?'none':'block'; paintEd();
+this.textContent=o?'edit the watches ⌄':'edit the watches ⌃';
+this.className=o?'':'on'; };
+addEventListener('resize',function(){ renderRibbon(); renderForest(); });
+goSlide(slide);
+renderStream(); renderBucket(); renderDay();
 })();
 </script>
-  
 </body>
 </html>
