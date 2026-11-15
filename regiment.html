@@ -474,7 +474,7 @@ S.rungs.push({t:v,done:false}); save(); renderStream(); };
 add.querySelector('#rgNew').onkeydown=function(e){ if(e.key==='Enter') add.querySelector('#rgAdd').onclick(); };
 var doneN=S.rungs.filter(function(r){ return r.done; }).length;
 var cnt=document.createElement('div'); cnt.className='mini'; cnt.style.marginTop='8px';
-cnt.textContent=doneN+' of '+S.rungs.length+' checkpoints passed · the frame guides, the keeper walks';
+cnt.textContent=doneN+' of '+S.rungs.length+' checkpoints passed ';
 L.appendChild(cnt);
 }
 /* ---- nav ---- */
