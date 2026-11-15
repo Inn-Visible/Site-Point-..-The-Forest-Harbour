@@ -160,6 +160,7 @@ if(S.iv!==4){
   S.iv=4; 
 }
 if(!S.bucket) S.bucket=[];
+if(!S.rungs){ S.rungs=LADDER.map(function(t,i){ return {t:t, done:!!(S.ladder&&S.ladder[i])}; }); }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 save();
 var BANDS=(S.bands&&S.bands.m)?S.bands:{m:[10,14],e:[15,19],n:[20,24],l:[1,3]};
@@ -410,11 +411,24 @@ b.className=S.stream?'on':'';
 b.textContent=S.stream?'income stream #1 · retired ☒ acquired':'income stream #1 · alive ☐';
 b.onclick=function(){ S.stream=!S.stream; save(); renderStream(); };
 var L=document.getElementById('ladder'); L.innerHTML='';
-LADDER.forEach(function(t,i){
-var row=document.createElement('div'); row.className='chk'+(S.ladder[i]?' done':'');
-row.innerHTML='<input type="checkbox" '+(S.ladder[i]?'checked':'')+'><span>'+esc(t)+'</span>';
-row.querySelector('input').onchange=function(){ S.ladder[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
+S.rungs.forEach(function(r,i){
+var row=document.createElement('div'); row.className='chk'+(r.done?' done':'');
+row.innerHTML='<input type="checkbox" '+(r.done?'checked':'')+'><span class="rg" title="tap to rename" style="flex:1;cursor:pointer">'+esc(r.t)+'</span>'
++'<button class="rm" style="border:none;color:#5c6875;font-size:10px;padding:0 4px" title="release this rung">✕</button>';
+row.querySelector('input').onchange=function(){ r.done=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
+row.querySelector('.rg').onclick=function(){ var v=prompt('rename this goalpost', r.t); if(v){ r.t=v; save(); renderStream(); } };
+row.querySelector('.rm').onclick=function(){ S.rungs.splice(i,1); save(); renderStream(); };
 L.appendChild(row); });
+var add=document.createElement('div'); add.className='row'; add.style.marginTop='8px';
+add.innerHTML='<input id="rgNew" placeholder="new goalpost / checkpoint .." style="flex:1;min-width:140px"><button id="rgAdd" style="border-color:var(--gold);color:var(--gold)">+ rung</button>';
+L.appendChild(add);
+add.querySelector('#rgAdd').onclick=function(){ var v=add.querySelector('#rgNew').value.trim(); if(!v) return;
+S.rungs.push({t:v,done:false}); save(); renderStream(); };
+add.querySelector('#rgNew').onkeydown=function(e){ if(e.key==='Enter') add.querySelector('#rgAdd').onclick(); };
+var doneN=S.rungs.filter(function(r){ return r.done; }).length;
+var cnt=document.createElement('div'); cnt.className='mini'; cnt.style.marginTop='8px';
+cnt.textContent=doneN+' of '+S.rungs.length+' checkpoints passed · the frame guides, the keeper walks';
+L.appendChild(cnt);
 }
 /* ---- nav ---- */
 function renderNav(){
@@ -435,6 +449,7 @@ document.getElementById('pwPanel').innerHTML=
  +'the ribbon is your body\'s contract · black recess = sovereign sleep · coloured blocks = the watches · gold pin = now<br>'
  +'the eight habits are the life around the work · each keeps its own little streak<br>'
  +'everything lives in this browser only (hive_regiment) · no wire, no cloud, no witness but the glass';
+  +'<span style="color:#d9a83a">the checkmarker</span> · goalposts & checkpoints · tap a rung\u2019s title to rename · ✕ releases it · + rung plants a new goalpost · income stream #1 retires itself the day you tick acquired<br>';
 document.getElementById('pwBtn').onclick=function(){
 var p=document.getElementById('pwPanel'), o=p.style.display!=='none';
 p.style.display=o?'none':'block';
