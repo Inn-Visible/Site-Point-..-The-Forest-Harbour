@@ -72,7 +72,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 </div>
 <div class="card">
 <canvas id="rib"></canvas>
-<div class="sub" style="margin-top:6px">SOVEREIGN SLEEP 02–05 · NAPS 10–12 & 15–17 · WATCH BANDS BELOW · GOLD NEEDLE = NOW</div>
+<div class="sub" style="margin-top:6px">SOVEREIGN SLEEP 03–10 · WATCHES 10–14 · 15–19 · 20–00 · 01–03 · THE HOUR GAPS ARE BREATHING ROOM · GOLD NEEDLE = NOW</div>
 </div>
 <div class="grid4" id="watchGrid"></div>
 <div class="card">
@@ -101,10 +101,10 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <script>
 (function(){
 var KEY='hive_regiment';
-var WATCH=[['m','01 · MORNING','07–15','self care + daily wo','#58a36a'],
-['e','02 · EVENING','17–19','security guides · income stream #1','#d9a83a'],
-['n','03 · NIGHT','20–01','skill acquisition · the brain drill','#7fb2d9'],
-['l','04 · LATE','01–03','conditional · if the body allows','#c8452c']];
+var WATCH=[['m','01 \u00b7 morning','10\u201314','self care + daily wo','#58a36a'],
+['e','02 \u00b7 evening','15\u201319','security guides \u00b7 income stream #1','#d9a83a'],
+['n','03 \u00b7 night','20\u201300','skill acquisition \u00b7 the brain drill','#7fb2d9'],
+['l','04 \u00b7 late','01\u201303','conditional \u00b7 if the body allows','#c8452c']];
 var DEF={m:['daily wo + core set','walk + one journal line','breakfast cooked, not grabbed','phone call / video jack','asl drill · lingoes + dictionary','transcription · pen, paper, cursive','one page · church or clouds meditation','wash / laundry turn','minimalism slot · sat: home sweep'],
 e:['security+ module · one segment','spiral notes · transcribe what stuck','self-study guide · one section','mark the hour · it bills someday'],
 n:['the drill · calc / chem / physics / geo','the craft · linux / python / sql','flashcards / anki turn','reading · ten pages minimum'],
@@ -147,13 +147,12 @@ var W=r.width,H=52; function X(h){ return h/24*W; }
 g.clearRect(0,0,W,H);
 g.fillStyle='#0b1017'; g.fillRect(0,H-16,W,16);
 function band(h0,h1,col,y,hh){ g.fillStyle=col; g.fillRect(X(h0),y,X(h1)-X(h0),hh); }
-band(10,12,'rgba(127,178,217,.13)',6,H-24); band(15,17,'rgba(127,178,217,.13)',6,H-24);
-band(7,15,'rgba(88,163,106,.55)',H-13,4);
-band(17,19,'rgba(217,168,58,.6)',H-13,4);
-band(20,24,'rgba(127,178,217,.5)',H-13,4); band(0,1,'rgba(127,178,217,.5)',H-13,4);
+band(10,14,'rgba(88,163,106,.55)',H-13,4);
+band(15,19,'rgba(217,168,58,.6)',H-13,4);
+band(20,24,'rgba(127,178,217,.5)',H-13,4);
 band(1,3,'rgba(200,69,44,.5)',H-13,4);
-band(2,5,'rgba(5,7,8,.92)',6,H-24);
-g.strokeStyle='rgba(127,178,217,.45)'; g.strokeRect(X(2),6,X(5)-X(2),H-24);
+band(3,10,'rgba(5,7,8,.92)',6,H-24);
+g.strokeStyle='rgba(127,178,217,.45)'; g.strokeRect(X(3),6,X(10)-X(3),H-24);
 g.fillStyle='#5c6875'; g.font='8px ui-monospace,Consolas,monospace';
 [0,6,12,18,24].forEach(function(h){ g.fillText(String(h), X(h)+2, 10); });
 var now=new Date(), nh=now.getHours()+now.getMinutes()/60;
@@ -261,7 +260,7 @@ function mount(){
    +'the day is four watches \u00b7 <span style="color:#58a36a">morning</span> body & care \u00b7 <span style="color:#d9a83a">evening</span> security guides (income stream #1) \u00b7 <span style="color:#7fb2d9">night</span> skill drills \u00b7 <span style="color:#c8452c">late</span> only if you\u2019re still up<br>'
    +'tick the items you truly did \u00b7 press <b>hold</b> when a watch is done \u00b7 hours are optional, honesty is not<br>'
    +'a held day = morning + evening + night \u00b7 that is the streak \u00b7 the late watch never counts against you \u00b7 the night is a shift, not a sin<br>'
-   +'the ribbon is your body\u2019s contract \u00b7 black = sovereign sleep 02\u201305 \u00b7 frost = the two naps \u00b7 coloured bands = the watches \u00b7 gold needle = now \u00b7 nothing to tick there, it only remembers the rhythm you wrote on the floor<br>'
+   +'the ribbon is your body\u2019s contract \u00b7 black = sovereign sleep 03\u201310 \u00b7 the four coloured bands = the watches \u00b7 coloured bands = the watches \u00b7 gold needle = now \u00b7 nothing to tick there, it only remembers the rhythm you wrote on the floor<br>'
    +'the eight habits are the life around the work \u00b7 body \u00b7 connect \u00b7 learning \u00b7 empty/wash \u00b7 faith \u00b7 finance \u00b7 nature \u00b7 rest \u00b7 each keeps its own little streak beside its name<br>'
    +'the week\u2019s tally shows held days as green pips + honest hours \u00b7 the serif line names the week without shame<br>'
    +'the night\u2019s words box = one confession per day, kept behind the lock<br>'
