@@ -453,18 +453,45 @@ n.oninput=function(){ clearTimeout(noteT); var v=n.value; noteT=setTimeout(funct
 }
 /* ---- stream & ladder ---- */
 function renderStream(){
+var KN=S.keel||'The Keel';
 var b=document.getElementById('streamB');
 b.className=S.stream?'on':'';
-b.textContent=S.stream?'The Keel · retired ☒ acquired':'The Keel · alive ☐';
+b.textContent=S.stream?KN+' \u00b7 retired \u2612 acquired':KN+' \u00b7 alive \u2610';
+b.title='tap to flip acquired / alive';
 b.onclick=function(){ S.stream=!S.stream; save(); renderStream(); };
+function paintCount(){ var el=document.getElementById('rgCount'); if(!el) return;
+var dn=S.rungs.filter(function(r){ return r.done; }).length;
+el.textContent=dn+' of '+S.rungs.length+' checkpoints passed \u00b7 the frame guides, the keeper walks'; }
+function toastCut(){ var old=document.getElementById('rgUndo'); if(old) old.remove(); if(!window._rgCut) return;
+var d=document.createElement('div'); d.id='rgUndo';
+d.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;border:1px solid #d9a83a;background:#0e141b;padding:8px 12px;font:10px ui-monospace,Consolas,monospace;color:#d9a83a;letter-spacing:.1em;display:flex;gap:10px;align-items:center';
+d.innerHTML='<span>cut \u00b7 '+esc(String(window._rgCut.r.t).slice(0,28))+'</span>'
++'<button id="rgUndoB" style="background:none;border:1px solid #58a36a;color:#58a36a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">undo \u21ba</button>'
++'<button id="rgUndoX" style="background:none;border:1px solid #223041;color:#5c6875;font:10px ui-monospace;padding:4px 8px;cursor:pointer">\u2715</button>';
+document.body.appendChild(d);
+clearTimeout(window._rgCutT); window._rgCutT=setTimeout(function(){ var e=document.getElementById('rgUndo'); if(e) e.remove(); window._rgCut=null; },8000);
+d.querySelector('#rgUndoB').onclick=function(){ var c=window._rgCut; window._rgCut=null; clearTimeout(window._rgCutT);
+var e=document.getElementById('rgUndo'); if(e) e.remove();
+S.rungs.splice(c.i,0,c.r); save(); renderStream(); };
+d.querySelector('#rgUndoX').onclick=function(){ window._rgCut=null; clearTimeout(window._rgCutT); var e=document.getElementById('rgUndo'); if(e) e.remove(); }; }
 var L=document.getElementById('ladder'); L.innerHTML='';
+var tools=document.createElement('div'); tools.className='row'; tools.style.marginTop='2px';
+tools.innerHTML='<button id="rgRen" style="border-color:var(--frost);color:var(--frost)">rename goalpost</button>'
++'<button id="rgBlank" style="border-color:var(--red);color:var(--red)">blank rungs</button>'
++'<button id="rgHouse" style="border-color:var(--green);color:var(--green)">house rungs</button>';
+L.appendChild(tools);
+tools.querySelector('#rgRen').onclick=function(){ var v=prompt('name the goalpost \u00b7 the keel, the flywheel, the ballast ..', KN); if(v){ S.keel=v.trim()||KN; save(); renderStream(); } };
+tools.querySelector('#rgBlank').onclick=function(){ if(!confirm('blank every rung? the goalpost button and the slot stay safe \u00b7 only the rungs go bare.')) return;
+S.rungs=[]; save(); renderStream(); };
+tools.querySelector('#rgHouse').onclick=function(){ if(!confirm('refill the rungs with the house frame? current rungs are replaced.')) return;
+S.rungs=LADDER.map(function(t,i){ return {t:t, done:!!(S.ladder&&S.ladder[i])}; }); save(); renderStream(); };
 S.rungs.forEach(function(r,i){
 var row=document.createElement('div'); row.className='chk'+(r.done?' done':'');
 row.innerHTML='<input type="checkbox" '+(r.done?'checked':'')+'><span class="rg" title="tap to rename" style="flex:1;cursor:pointer">'+esc(r.t)+'</span>'
-+'<button class="rm" style="border:none;color:#5c6875;font-size:10px;padding:0 4px" title="release this rung">✕</button>';
-row.querySelector('input').onchange=function(){ r.done=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
-row.querySelector('.rg').onclick=function(){ var v=prompt('rename this goalpost', r.t); if(v){ r.t=v; save(); renderStream(); } };
-row.querySelector('.rm').onclick=function(){ S.rungs.splice(i,1); save(); renderStream(); };
++'<button class="rm" style="border:none;color:#5c6875;font-size:10px;padding:0 4px" title="release this rung">\u2715</button>';
+row.querySelector('input').onchange=function(){ r.done=this.checked; save(); row.className='chk'+(this.checked?' done':''); paintCount(); };
+row.querySelector('.rg').onclick=function(){ var v=prompt('rename this checkpoint', r.t); if(v){ r.t=v; save(); renderStream(); } };
+row.querySelector('.rm').onclick=function(){ window._rgCut={i:i, r:r}; S.rungs.splice(i,1); save(); renderStream(); toastCut(); };
 L.appendChild(row); });
 var add=document.createElement('div'); add.className='row'; add.style.marginTop='8px';
 add.innerHTML='<input id="rgNew" placeholder="new goalpost / checkpoint .." style="flex:1;min-width:140px"><button id="rgAdd" style="border-color:var(--gold);color:var(--gold)">+ rung</button>';
@@ -472,10 +499,8 @@ L.appendChild(add);
 add.querySelector('#rgAdd').onclick=function(){ var v=add.querySelector('#rgNew').value.trim(); if(!v) return;
 S.rungs.push({t:v,done:false}); save(); renderStream(); };
 add.querySelector('#rgNew').onkeydown=function(e){ if(e.key==='Enter') add.querySelector('#rgAdd').onclick(); };
-var doneN=S.rungs.filter(function(r){ return r.done; }).length;
-var cnt=document.createElement('div'); cnt.className='mini'; cnt.style.marginTop='8px';
-cnt.textContent=doneN+' of '+S.rungs.length+' checkpoints passed ';
-L.appendChild(cnt);
+var cnt=document.createElement('div'); cnt.className='mini'; cnt.id='rgCount'; cnt.style.marginTop='8px';
+L.appendChild(cnt); paintCount();
 }
 /* ---- nav ---- */
 function renderNav(){
