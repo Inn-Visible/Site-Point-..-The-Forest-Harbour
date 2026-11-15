@@ -41,7 +41,13 @@ input,select{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--
 .pips span{display:inline-block;width:7px;height:7px;margin:1px;border:1px solid #3a4a5c}
 .pips span.g{background:var(--green);border-color:var(--green)}
 .pips span.y{background:var(--gold);border-color:var(--gold)}
+.pips span.b{background:var(--frost);border-color:var(--frost)}
 .verdict{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--gold);text-align:center;margin-top:10px}
+#paceC{width:90px;height:90px;border-radius:50%;border:2px solid #223041;margin:12px auto;transition:transform 3.8s ease-in-out,border-color .8s,box-shadow .8s;transform:scale(1)}
+#paceC.pIn{transform:scale(1.28);border-color:var(--green);box-shadow:0 0 18px rgba(88,163,106,.35)}
+#paceC.pHold{border-color:var(--gold);box-shadow:0 0 12px rgba(217,168,58,.3)}
+#paceC.pOut{transform:scale(1);border-color:var(--frost);box-shadow:0 0 14px rgba(127,178,217,.3)}
+#paceC.pHold2{border-color:var(--red);box-shadow:0 0 10px rgba(200,69,44,.25)}
 </style>
 </head>
 <body>
@@ -55,13 +61,13 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 </script>
 <header>
 <div style="font-size:14px;letter-spacing:.3em;color:var(--green)">THE CRUNCH</div>
-<span><a href="regiment.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">regiment ↩</a><a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a></span>
+<span><a href="regiment.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">regiment ↩</a><a href="gate.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">gate ↩</a><a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a></span>
 </header>
 <div class="wrap">
 <div class="card">
-<div class="hd">the crunch · the body's ledger · iron, road, and plate</div>
-<div class="sub">BUILT OFFLINE · SETS REMEMBER WHAT YOU LIFTED · THE PLATE KEEPS THE REGIMENT'S CLOCK · NO WITNESS BUT THE GLASS</div>
-<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">build the routine · tick the sets you held · log the session · plate what you ate, by watch · drink the water · the mirror keeps the week honest</span></div>
+<div class="hd">the crunch · the body's ledger · iron, road, plate, and still</div>
+<div class="sub">BUILT OFFLINE · SETS REMEMBER WHAT YOU LIFTED · THE PACER BREATHES WITH YOU · NO WITNESS BUT THE GLASS</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">build the routine · tick the sets you held · log it · plate what you ate, by watch · breathe with the pacer · the mirror keeps the week honest</span></div>
 <div class="row" style="margin-top:10px">
 <button id="navP">‹ day</button>
 <span id="navL" style="font-size:10px;letter-spacing:.15em;color:var(--gold)"></span>
@@ -72,6 +78,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <button class="rb" id="rb0" title="the iron · routines & sessions">w</button>
 <button class="rb" id="rb1" title="the plate · diet & water">p</button>
 <button class="rb" id="rb2" title="the mirror · the week's glance">m</button>
+<button class="rb" id="rb3" title="the still · yoga & meditation">s</button>
 <span style="width:12px"></span>
 <button id="slP">‹ room</button>
 <span id="slL" style="font-size:9px;letter-spacing:.2em;color:#5c6875"></span>
@@ -95,12 +102,18 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="card">
 <div class="hd" style="font-size:12px">the plain words · how the crunch holds you</div>
 <div style="margin-top:8px;font-size:10px;line-height:2.0;letter-spacing:.06em;color:var(--dim)">
-<span style="color:#d9a83a">w · the iron</span> — build routines (name, exercises, sets × reps, load) · pick one and tick the sets you actually held · punch the load you actually moved · <b>log the session</b> writes volume + minutes to history · the stone marks remember your heaviest truth per exercise<br>
-<span style="color:#d9a83a">p · the plate</span> — entries tagged by watch (morning/evening/night/late, the regiment's own clock) · kcal + macros measured against your targets in four bars · water counts glasses · the week shows which days ate honest<br>
-<span style="color:#d9a83a">m · the mirror</span> — green pip = a session logged · gold pip = a plate written · water beneath · streaks count consecutive days · the serif line names the week without shame<br>
+<span style="color:#d9a83a">w · the iron</span> — build routines (name, exercises, sets × reps, load) · tick the sets you actually held · punch the load you actually moved · <b>log the session</b> writes volume + minutes to history · the stone marks remember your heaviest truth per exercise<br>
+<span style="color:#d9a83a">p · the plate</span> — entries tagged by watch (morning/evening/night/late, the regiment's own clock) · kcal + macros against your targets in four bars · water counts glasses<br>
+<span style="color:#d9a83a">m · the mirror</span> — green pip = iron logged · gold pip = plate written · frost pip = the still held · water beneath · streaks count consecutive days · the serif line names the week without shame<br>
+<span style="color:#d9a83a">s · the still</span> — yoga & meditation routines, same grammar as the iron (rounds instead of sets) · log the minutes · the pacer runs box breathing 4·4·4·4, swell on the inhale, settle on the exhale · she is the alternative, never the penalty<br>
 everything lives in this browser only (hive_crunch) · no wire, no cloud, no witness but the glass
 </div>
 </div>
+</div>
+<div class="slide" id="sl3">
+<div class="card" id="stCard"></div>
+<div class="card" id="ssCard"></div>
+<div class="card" id="paceCard"></div>
 </div>
 </div>
 </div>
@@ -108,7 +121,7 @@ everything lives in this browser only (hive_crunch) · no wire, no cloud, no wit
 (function(){
 var KEY='hive_crunch';
 var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
-if(!S) S={routines:[],logs:[],plate:{days:{},water:{},targets:{kcal:2200,p:140,c:220,f:70}},iv:1};
+if(!S) S={routines:[],logs:[],plate:{days:{},water:{},targets:{kcal:2200,p:140,c:220,f:70}},iv:2};
 if(!S.routines) S.routines=[];
 if(!S.logs) S.logs=[];
 if(!S.plate) S.plate={days:{},water:{},targets:{kcal:2200,p:140,c:220,f:70}};
@@ -117,31 +130,35 @@ if(!S.plate.days) S.plate.days={};
 if(!S.plate.water) S.plate.water={};
 if(!S.routines.length){ S.routines.push({name:'daily wo + core st',ex:[
 {n:'push-ups',s:3,r:'12',w:''},{n:'core hold',s:3,r:'45s',w:''},{n:'walk',s:1,r:'20m',w:''}]}); }
+if(!S.stillRoutines) S.stillRoutines=[
+{name:'the unwinding',ex:[{n:'box breathing 4\u00b74\u00b74\u00b74',s:4,r:'1m'},{n:'body scan',s:1,r:'10m'},{n:'legs up the wall',s:1,r:'5m'},{n:'gratitude \u00b7 three lines',s:1,r:'3m'}]},
+{name:'sun salute flow',ex:[{n:'cat\u2013cow',s:10,r:'breath'},{n:'downward dog',s:5,r:'breaths'},{n:'warrior ii \u00b7 each side',s:2,r:'30s'},{n:'child\u2019s pose',s:1,r:'2m'}]}];
+if(!S.stillLogs) S.stillLogs=[];
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 save();
 function pad(n){ return (n<10?'0':'')+n; }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function addD(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
-function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(12,0,0,0); return x; }
+function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7); ); x.setHours(12,0,0,0); return x; }
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
 function num(v){ var n=parseFloat(v); return isFinite(n)?n:0; }
 var DN=['sun','mon','tue','wed','thu','fri','sat'], MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-var WT=['morning','evening','night','late'], WC={morning:'#58a36a',evening:'#d9a83a',night:'#7fb2d9',late:'#c8452c'};
 var sel=new Date(); sel.setHours(12,0,0,0);
-var curR=0, SESS={key:''};
+var curR=0, curSR=0, SESS={key:''}, SESS2={key:''};
 /* ---- slides ---- */
-var slide=0, SLN=['the iron','the plate','the mirror'];
+var slide=0, SLN=['the iron','the plate','the mirror','the still'];
 function goSlide(i,back){
-slide=Math.max(0,Math.min(2,i));
-for(var k=0;k<3;k++){ var e=el('sl'+k); e.classList.remove('on','back');
+slide=Math.max(0,Math.min(3,i));
+for(var k=0;k<4;k++){ var e=el('sl'+k); e.classList.remove('on','back');
 if(k===slide){ void e.offsetWidth; e.classList.add('on'); if(back) e.classList.add('back'); } }
-for(k=0;k<3;k++){ el('rb'+k).className='rb'+(k===slide?' on':''); }
+for(k=0;k<4;k++){ el('rb'+k).className='rb'+(k===slide?' on':''); }
 el('slL').textContent=SLN[slide];
 }
 el('rb0').onclick=function(){ goSlide(0,true); };
 el('rb1').onclick=function(){ goSlide(1); };
 el('rb2').onclick=function(){ goSlide(2); };
+el('rb3').onclick=function(){ goSlide(3); };
 el('slP').onclick=function(){ goSlide(slide-1,true); };
 el('slN').onclick=function(){ goSlide(slide+1); };
 var vx=el('slideView'), sx0=0, sy0=0, swp=false;
@@ -176,7 +193,7 @@ nm.innerHTML='<input id="rtName" value="'+esc(r.name)+'" style="flex:1;min-width
 +'<button id="rtDel" style="border-color:var(--red);color:var(--red)">burn routine</button>';
 c.appendChild(nm);
 nm.querySelector('#rtName').onchange=function(){ r.name=this.value.trim()||r.name; save(); renderRoutines(); renderSession(); };
-nm.querySelector('#rtDel').onclick=function(){ if(!confirm('burn the routine “'+r.name+'”? logs keep their history.')) return;
+nm.querySelector('#rtDel').onclick=function(){ if(!confirm('burn the routine \u201c'+r.name+'\u201d? logs keep their history.')) return;
 S.routines.splice(curR,1); curR=0; SESS={key:''}; save(); renderRoutines(); renderSession(); };
 var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
 r.ex.forEach(function(x,xi){
@@ -185,7 +202,7 @@ row.innerHTML='<input data-f="n" value="'+esc(x.n)+'" placeholder="exercise" sty
 +'<input data-f="s" value="'+esc(x.s)+'" placeholder="sets" style="width:44px">'
 +'<input data-f="r" value="'+esc(x.r)+'" placeholder="reps" style="width:48px">'
 +'<input data-f="w" value="'+esc(x.w||'')+'" placeholder="load" style="width:52px">'
-+'<button class="rm" style="border:none;color:#5c6875">✕</button>';
++'<button class="rm" style="border:none;color:#5c6875">\u2715</button>';
 row.querySelectorAll('input').forEach(function(inp){ inp.onchange=function(){ x[inp.getAttribute('data-f')]=inp.value; save(); renderSession(); }; });
 row.querySelector('.rm').onclick=function(){ r.ex.splice(xi,1); save(); renderRoutines(); renderSession(); };
 box.appendChild(row); });
@@ -201,8 +218,8 @@ ensureSess();
 var c=el('sesCard'); c.innerHTML='';
 var r=S.routines[curR];
 c.innerHTML='<div class="hd" style="font-size:12px">the session · '+(r?esc(r.name):'no routine')+' · tick what the body held</div>'
-+'<div class="mini" style="margin-top:4px">volume = held sets × reps × load · minutes are honest or blank</div>';
-if(!r||!r.ex.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">the builder is empty · add exercises above</div>'; return; }
++'<div class="mini" style="margin-top:4px">volume = held sets \u00d7 reps \u00d7 load \u00b7 minutes are honest or blank</div>';
+if(!r||!r.ex.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">the builder is empty \u00b7 add exercises above</div>'; return; }
 var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
 r.ex.forEach(function(x,xi){
 var sets=Math.max(1,parseInt(x.s)||3);
@@ -213,12 +230,12 @@ var h='<div class="row"><span style="font-size:11px;color:var(--ink);flex:1">'+e
 for(var k=0;k<sets;k++){ h+='<label class="chk" style="gap:4px"><input type="checkbox" data-set="'+xi+'_'+k+'"'+(SESS.done[xi+'_'+k]?' checked':'')+'><span style="font-size:9px;color:#5c6875">'+(k+1)+'</span></label>'; }
 h+='</div>';
 row.innerHTML=h;
-row.querySelectorAll('[data-set]').forEach(function(cb){ cb.onchange=function(){ SESS[cb.checked?'done':'done'][cb.getAttribute('data-set')]=cb.checked?1:0; if(!cb.checked) delete SESS.done[cb.getAttribute('data-set')]; }; });
+row.querySelectorAll('[data-set]').forEach(function(cb){ cb.onchange=function(){ if(cb.checked) SESS.done[cb.getAttribute('data-set')]=1; else delete SESS.done[cb.getAttribute('data-set')]; }; });
 row.querySelector('[data-load]').onchange=function(){ SESS.load[xi]=this.value; };
 box.appendChild(row); });
 var foot=document.createElement('div'); foot.className='row'; foot.style.marginTop='10px';
 foot.innerHTML='<span class="mini">minutes</span><input id="seMins" style="width:56px" value="'+esc(SESS.mins)+'" placeholder="0">'
-+'<button id="seLog" style="border-color:var(--gold);color:var(--gold)">log the session ✓</button>'
++'<button id="seLog" style="border-color:var(--gold);color:var(--gold)">log the session \u2713</button>'
 +'<span id="seMsg" class="mini" style="color:var(--green)"></span>';
 c.appendChild(foot);
 foot.querySelector('#seMins').onchange=function(){ SESS.mins=this.value; };
@@ -230,11 +247,10 @@ var ld=num(SESS.load[xi]!=null?SESS.load[xi]:x.w);
 var rp=parseInt(String(x.r).replace(/[^\d]/g,''))||0;
 vol+=dc*rp*ld; setsHeld+=dc;
 if(dc>0) exs.push({n:x.n||'unnamed',sets:dc,load:ld}); });
-if(!setsHeld){ foot.querySelector('#seMsg').style.color='var(--red);'; foot.querySelector('#seMsg').textContent='no sets held · nothing to log'; return; }
+if(!setsHeld){ var m=foot.querySelector('#seMsg'); m.style.color='var(--red)'; m.textContent='no sets held \u00b7 nothing to log'; return; }
 S.logs.unshift({d:iso(sel), rn:r.name, vol:Math.round(vol), mins:num(SESS.mins), ex:exs});
 save(); SESS={key:''};
-foot.querySelector('#seMsg').style.color='var(--green)';
-foot.querySelector('#seMsg').textContent='logged ✓ · volume '+Math.round(vol);
+var m2=foot.querySelector('#seMsg'); m2.style.color='var(--green)'; m2.textContent='logged \u2713 \u00b7 volume '+Math.round(vol);
 renderSession(); renderLogs(); renderPRs(); renderMirror(); };
 }
 /* ---- iron · PRs & logs ---- */
@@ -242,22 +258,115 @@ function renderPRs(){
 var m={};
 S.logs.forEach(function(L){ (L.ex||[]).forEach(function(x){ if(x.load>0&&(!m[x.n]||x.load>m[x.n])) m[x.n]=x.load; }); });
 var list=Object.keys(m).map(function(k){ return [k,m[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
-var c=el('prCard'); c.innerHTML='<div class="hd" style="font-size:12px">the stone marks · heaviest truth per exercise</div>';
-if(!list.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">no loads logged yet · the stone stays blank</div>'; return; }
+var c=el('prCard'); c.innerHTML='<div class="hd" style="font-size:12px">the stone marks \u00b7 heaviest truth per exercise</div>';
+if(!list.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">no loads logged yet \u00b7 the stone stays blank</div>'; return; }
 list.forEach(function(p){ var d=document.createElement('div'); d.className='chk';
 d.innerHTML='<span style="flex:1">'+esc(p[0])+'</span><span style="color:var(--gold)">'+p[1]+'</span>'; c.appendChild(d); });
 }
 function renderLogs(){
-var c=el('logCard'); c.innerHTML='<div class="hd" style="font-size:12px">recent sessions · the iron remembers</div>';
-if(!S.logs.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">nothing logged · the first session is the whole cure</div>'; return; }
+var c=el('logCard'); c.innerHTML='<div class="hd" style="font-size:12px">recent sessions \u00b7 the iron remembers</div>';
+if(!S.logs.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">nothing logged \u00b7 the first session is the whole cure</div>'; return; }
 S.logs.slice(0,8).forEach(function(L){ var d=document.createElement('div'); d.className='chk';
-d.innerHTML='<span style="color:#5c6875">'+L.d+'</span><span style="flex:1">'+esc(L.rn)+'</span><span>vol '+L.vol+'</span><span class="mini">'+(L.mins?L.mins+'m':'—')+'</span>';
+d.innerHTML='<span style="color:#5c6875">'+L.d+'</span><span style="flex:1">'+esc(L.rn)+'</span><span>vol '+L.vol+'</span><span class="mini">'+(L.mins?L.mins+'m':'\u2014')+'</span>';
 c.appendChild(d); });
+}
+/* ---- the still · builder + session + pacer ---- */
+function renderStillBuilder(){
+var c=el('stCard'); c.innerHTML='';
+c.innerHTML='<div class="hd" style="font-size:12px">the still \u00b7 yoga & meditation \u00b7 the gentle alternative</div>'
++'<div class="mini" style="margin-top:4px">same grammar as the iron \u00b7 rounds instead of sets \u00b7 minutes instead of load \u00b7 never a penalty, always a door</div>';
+var chips=document.createElement('div'); chips.className='row'; chips.style.marginTop='8px';
+S.stillRoutines.forEach(function(r,i){ var b=document.createElement('button'); b.className='pill'+(i===curSR?' on':''); b.textContent=r.name;
+b.onclick=function(){ curSR=i; SESS2={key:''}; renderStillBuilder(); renderStillSession(); }; chips.appendChild(b); });
+c.appendChild(chips);
+var nr=document.createElement('div'); nr.className='row'; nr.style.marginTop='8px';
+nr.innerHTML='<input id="stNew" placeholder="new practice name" style="flex:1;min-width:120px"><button id="stAdd" style="border-color:var(--frost);color:var(--frost)">+ practice</button>';
+c.appendChild(nr);
+nr.querySelector('#stAdd').onclick=function(){ var v=nr.querySelector('#stNew').value.trim(); if(!v) return;
+S.stillRoutines.push({name:v,ex:[]}); curSR=S.stillRoutines.length-1; SESS2={key:''}; save(); renderStillBuilder(); renderStillSession(); };
+var r=S.stillRoutines[curSR]; if(!r) return;
+var nm=document.createElement('div'); nm.className='row'; nm.style.marginTop='10px';
+nm.innerHTML='<input id="stName" value="'+esc(r.name)+'" style="flex:1;min-width:140px;font-family:var(--serif);font-style:italic">'
++'<button id="stDel" style="border-color:var(--red);color:var(--red)">release practice</button>';
+c.appendChild(nm);
+nm.querySelector('#stName').onchange=function(){ r.name=this.value.trim()||r.name; save(); renderStillBuilder(); renderStillSession(); };
+nm.querySelector('#stDel').onclick=function(){ if(!confirm('release \u201c'+r.name+'\u201d? her logged stills remain.')) return;
+S.stillRoutines.splice(curSR,1); curSR=0; SESS2={key:''}; save(); renderStillBuilder(); renderStillSession(); };
+var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
+r.ex.forEach(function(x,xi){
+var row=document.createElement('div'); row.className='row'; row.style.marginTop='6px';
+row.innerHTML='<input data-f="n" value="'+esc(x.n)+'" placeholder="pose / practice" style="flex:1;min-width:120px">'
++'<input data-f="s" value="'+esc(x.s)+'" placeholder="rounds" style="width:50px">'
++'<input data-f="r" value="'+esc(x.r)+'" placeholder="hold" style="width:56px">'
++'<button class="rm" style="border:none;color:#5c6875">\u2715</button>';
+row.querySelectorAll('input').forEach(function(inp){ inp.onchange=function(){ x[inp.getAttribute('data-f')]=inp.value; save(); renderStillSession(); }; });
+row.querySelector('.rm').onclick=function(){ r.ex.splice(xi,1); save(); renderStillBuilder(); renderStillSession(); };
+box.appendChild(row); });
+var ae=document.createElement('button'); ae.textContent='+ pose / practice'; ae.style.marginTop='8px';
+ae.onclick=function(){ r.ex.push({n:'',s:1,r:'5m'}); save(); renderStillBuilder(); renderStillSession(); };
+c.appendChild(ae);
+}
+function sess2Key(){ return curSR+'|'+iso(sel); }
+function renderStillSession(){
+if(SESS2.key!==sess2Key()) SESS2={key:sess2Key(),done:{},mins:''};
+var c=el('ssCard'); c.innerHTML='';
+var r=S.stillRoutines[curSR];
+c.innerHTML='<div class="hd" style="font-size:12px">the sitting \u00b7 '+(r?esc(r.name):'no practice')+' \u00b7 tick the rounds you truly held</div>';
+if(!r||!r.ex.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">the still is empty \u00b7 add a pose or a practice above</div>'; return; }
+var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
+r.ex.forEach(function(x,xi){
+var sets=Math.max(1,parseInt(x.s)||1);
+var row=document.createElement('div'); row.style.cssText='border:1px solid var(--line);background:var(--bg);padding:8px;margin-top:6px';
+var h='<div class="row"><span style="font-size:11px;color:var(--ink);flex:1">'+esc(x.n||'unnamed')+'</span><span class="mini">'+esc(x.r||'')+'</span></div>'
++'<div class="row" style="margin-top:6px">';
+for(var k=0;k<sets;k++){ h+='<label class="chk" style="gap:4px"><input type="checkbox" data-set="'+xi+'_'+k+'"'+(SESS2.done[xi+'_'+k]?' checked':'')+'><span style="font-size:9px;color:#5c6875">'+(k+1)+'</span></label>'; }
+h+='</div>';
+row.innerHTML=h;
+row.querySelectorAll('[data-set]').forEach(function(cb){ cb.onchange=function(){ if(cb.checked) SESS2.done[cb.getAttribute('data-set')]=1; else delete SESS2.done[cb.getAttribute('data-set')]; }; });
+box.appendChild(row); });
+var foot=document.createElement('div'); foot.className='row'; foot.style.marginTop='10px';
+foot.innerHTML='<span class="mini">minutes</span><input id="ssMins" style="width:56px" value="'+esc(SESS2.mins)+'" placeholder="0">'
++'<button id="ssLog" style="border-color:var(--frost);color:var(--frost)">log the still \u2713</button>'
++'<span id="ssMsg" class="mini" style="color:var(--frost)"></span>';
+c.appendChild(foot);
+foot.querySelector('#ssMins').onchange=function(){ SESS2.mins=this.value; };
+foot.querySelector('#ssLog').onclick=function(){
+var rounds=0; r.ex.forEach(function(x,xi){ var sets=Math.max(1,parseInt(x.s)||1);
+for(var k=0;k<sets;k++){ if(SESS2.done[xi+'_'+k]) rounds++; } });
+if(!rounds){ var m=foot.querySelector('#ssMsg'); m.style.color='var(--red)'; m.textContent='no rounds held \u00b7 the still waits'; return; }
+S.stillLogs.unshift({d:iso(sel), rn:r.name, mins:num(SESS2.mins), rounds:rounds});
+save(); SESS2={key:''};
+var m2=foot.querySelector('#ssMsg'); m2.style.color='var(--frost)'; m2.textContent='the still is logged \u2713 \u00b7 '+rounds+' rounds';
+renderStillSession(); renderMirror(); };
+var rec=document.createElement('div'); rec.style.marginTop='10px'; c.appendChild(rec);
+S.stillLogs.slice(0,5).forEach(function(L){ var d=document.createElement('div'); d.className='chk';
+d.innerHTML='<span style="color:#5c6875">'+L.d+'</span><span style="flex:1">'+esc(L.rn)+'</span><span class="mini">'+L.rounds+' rounds \u00b7 '+(L.mins?L.mins+'m':'\u2014')+'</span>';
+rec.appendChild(d); });
+}
+/* ---- the pacer ---- */
+var paceOn=false, pacePhase=-1, paceTimer=0;
+var PACE=[['inhale \u00b7 4','pIn'],['hold \u00b7 4','pHold'],['exhale \u00b7 4','pOut'],['hold \u00b7 4','pHold2']];
+function paceTick(){ pacePhase=(pacePhase+1)%4;
+var c=el('paceC'), l=el('paceL');
+c.className=PACE[pacePhase][1]; l.textContent=PACE[pacePhase][0]; }
+function renderPacer(){
+var c=el('paceCard');
+c.innerHTML='<div class="hd" style="font-size:12px">the pacer \u00b7 box breathing 4\u00b74\u00b74\u00b74</div>'
++'<div id="paceC"></div>'
++'<div id="paceL" style="text-align:center;font-size:10px;letter-spacing:.2em;color:var(--frost);min-height:14px">ready when you are</div>'
++'<div class="row" style="justify-content:center;margin-top:10px"><button id="paceB">begin the pacer</button></div>'
++'<div class="mini" style="text-align:center;margin-top:8px">swell on the inhale \u00b7 settle on the exhale \u00b7 the circle keeps the count so the mind doesn\u2019t have to</div>';
+el('paceB').onclick=function(){
+paceOn=!paceOn;
+if(paceOn){ this.textContent='let it rest'; this.className='on'; pacePhase=-1; paceTick(); paceTimer=setInterval(paceTick,4000); }
+else { this.textContent='begin the pacer'; this.className=''; clearInterval(paceTimer);
+el('paceC').className=''; el('paceL').textContent='ready when you are'; pacePhase=-1; } };
+if(paceOn){ el('paceB').textContent='let it rest'; el('paceB').className='on'; }
 }
 /* ---- plate ---- */
 function renderTargets(){
 var t=S.plate.targets, c=el('tgCard');
-c.innerHTML='<div class="hd" style="font-size:12px">the targets · what the day should weigh</div>'
+c.innerHTML='<div class="hd" style="font-size:12px">the targets \u00b7 what the day should weigh</div>'
 +'<div class="row" style="margin-top:8px">'
 +'<span class="mini">kcal</span><input id="tgK" style="width:60px" value="'+t.kcal+'">'
 +'<span class="mini">protein</span><input id="tgP" style="width:52px" value="'+t.p+'">'
@@ -270,7 +379,7 @@ function renderPlate(){
 var k=iso(sel), day=dayPlate(), t=S.plate.targets, c=el('plCard');
 var tot={kcal:0,p:0,c:0,f:0};
 day.e.forEach(function(e){ tot.kcal+=num(e.k); tot.p+=num(e.p); tot.c+=num(e.c); tot.f+=num(e.f); });
-c.innerHTML='<div class="hd" style="font-size:12px">the plate · '+DN[sel.getDay()]+' · tagged by watch</div>';
+c.innerHTML='<div class="hd" style="font-size:12px">the plate \u00b7 '+DN[sel.getDay()]+' \u00b7 tagged by watch</div>';
 [['kcal',tot.kcal,t.kcal,'var(--gold)'],['protein',tot.p,t.p,'var(--green)'],['carbs',tot.c,t.c,'var(--blue)'],['fat',tot.f,t.f,'var(--red)']].forEach(function(b){
 var w=Math.min(100,t[b[2]]?Math.round(b[1]/t[b[2]]*100):0);
 var d=document.createElement('div'); d.className='row'; d.style.marginTop='6px';
@@ -280,9 +389,9 @@ c.appendChild(d); });
 var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
 day.e.forEach(function(e,i){ var row=document.createElement('div'); row.className='chk';
 row.innerHTML='<span style="width:8px;height:8px;margin-top:4px;flex:none;background:'+(WC[e.w]||'#5c6875')+'"></span>'
-+'<span style="flex:1">'+esc(e.n)+' <span class="mini">· '+esc(e.w||'')+'</span></span>'
-+'<span class="mini">'+(e.k?e.k+' kcal':'')+(e.p?' · p'+e.p:'')+(e.c?' · c'+e.c:'')+(e.f?' · f'+e.f:'')+'</span>'
-+'<button class="rm" style="border:none;color:#5c6875">✕</button>';
++'<span style="flex:1">'+esc(e.n)+' <span class="mini">\u00b7 '+esc(e.w||'')+'</span></span>'
++'<span class="mini">'+(e.k?e.k+' kcal':'')+(e.p?' \u00b7 p'+e.p:'')+(e.c?' \u00b7 c'+e.c:'')+(e.f?' \u00b7 f'+e.f:'')+'</span>'
++'<button class="rm" style="border:none;color:#5c6875">\u2715</button>';
 row.querySelector('.rm').onclick=function(){ day.e.splice(i,1); save(); renderPlate(); renderPlateWeek(); renderMirror(); };
 box.appendChild(row); });
 var add=document.createElement('div'); add.className='row'; add.style.marginTop='8px';
@@ -298,56 +407,55 @@ day.e.push({n:v,k:num(add.querySelector('#plK').value),p:num(add.querySelector('
 save(); renderPlate(); renderPlateWeek(); renderMirror(); };
 var w=S.plate.water[k]||0;
 var wr=document.createElement('div'); wr.className='row'; wr.style.marginTop='10px';
-wr.innerHTML='<span class="mini">water</span><button id="wMn">−</button><span style="color:var(--frost);font-size:12px">'+w+' glass'+(w===1?'':'es')+'</span><button id="wPl">+</button>';
+wr.innerHTML='<span class="mini">water</span><button id="wMn">\u2212</button><span style="color:var(--frost);font-size:12px">'+w+' glass'+(w===1?'':'es')+'</span><button id="wPl">+</button>';
 c.appendChild(wr);
 wr.querySelector('#wPl').onclick=function(){ S.plate.water[k]=(S.plate.water[k]||0)+1; save(); renderPlate(); renderPlateWeek(); renderMirror(); };
 wr.querySelector('#wMn').onclick=function(){ S.plate.water[k]=Math.max(0,(S.plate.water[k]||0)-1); save(); renderPlate(); renderPlateWeek(); renderMirror(); };
 }
+var WT=['morning','evening','night','late'], WC={morning:'#58a36a',evening:'#d9a83a',night:'#7fb2d9',late:'#c8452c'};
 function renderPlateWeek(){
-var c=el('pwCard'); c.innerHTML='<div class="hd" style="font-size:12px">the plate\'s week</div>';
+var c=el('pwCard'); c.innerHTML='<div class="hd" style="font-size:12px">the plate\u2019s week</div>';
 var g=document.createElement('div'); g.className='tally'; c.appendChild(g);
-var m0=monday(new Date()); m0=monday(sel);
+var m0=monday(sel);
 for(var i=0;i<7;i++){ var d=addD(m0,i), k=iso(d), dd=S.plate.days[k];
 var has=dd&&dd.e.length; var w=S.plate.water[k]||0;
 var cell=document.createElement('div'); cell.className='d';
 cell.innerHTML='<div style="color:'+(k===iso(new Date())?'#d9a83a':'#5c6875')+'">'+DN[d.getDay()]+' '+d.getDate()+'</div>'
 +'<div class="pips" style="margin:4px 0"><span class="'+(has?'y':'')+'"></span></div>'
-+'<div>'+(w?w+'w':'—')+'</div>';
++'<div>'+(w?w+'w':'\u2014')+'</div>';
 g.appendChild(cell); }
 }
 /* ---- mirror ---- */
 function hasLog(k){ return S.logs.some(function(L){ return L.d===k; }); }
-function sessionStreak(){ var n=0,d=new Date(); d.setHours(12,0,0,0);
-if(!hasLog(iso(d))) d=addD(d,-1);
-while(hasLog(iso(d))&&n<400){ n++; d=addD(d,-1); } return n; }
-function plateStreak(){ function hp(k){ var dd=S.plate.days[k]; return !!(dd&&dd.e.length); }
-var n=0,d=new Date(); d.setHours(12,0,0,0);
-if(!hp(iso(d))) d=addD(d,-1);
-while(hp(iso(d))&&n<400){ n++; d=addD(d,-1); } return n; }
+function hasStill(k){ return S.stillLogs.some(function(L){ return L.d===k; }); }
+function streakOf(fn){ var n=0,d=new Date(); d.setHours(12,0,0,0);
+if(!fn(iso(d))) d=addD(d,-1);
+while(fn(iso(d))&&n<400){ n++; d=addD(d,-1); } return n; }
 function renderMirror(){
-var c=el('mrCard'); c.innerHTML='<div class="hd" style="font-size:12px">the mirror · the week at one glance</div>';
+var c=el('mrCard'); c.innerHTML='<div class="hd" style="font-size:12px">the mirror \u00b7 the week at one glance</div>';
 var g=document.createElement('div'); g.className='tally'; c.appendChild(g);
 var m0=monday(sel), both=0;
 for(var i=0;i<7;i++){ var d=addD(m0,i), k=iso(d);
-var sl=hasLog(k), pl=!!(S.plate.days[k]&&S.plate.days[k].e.length), w=S.plate.water[k]||0;
+var sl=hasLog(k), pl=!!(S.plate.days[k]&&S.plate.days[k].e.length), st=hasStill(k), w=S.plate.water[k]||0;
 if(sl&&pl) both++;
 var cell=document.createElement('div'); cell.className='d';
 cell.innerHTML='<div style="color:'+(k===iso(new Date())?'#d9a83a':'#5c6875')+'">'+DN[d.getDay()]+' '+d.getDate()+'</div>'
-+'<div class="pips" style="margin:4px 0"><span class="'+(sl?'g':'')+'"></span><span class="'+(pl?'y':'')+'"></span></div>'
-+'<div>'+(w?w+'w':'—')+'</div>';
++'<div class="pips" style="margin:4px 0"><span class="'+(sl?'g':'')+'"></span><span class="'+(pl?'y':'')+'"></span><span class="'+(st?'b':'')+'"></span></div>'
++'<div>'+(w?w+'w':'\u2014')+'</div>';
 g.appendChild(cell); }
-var ss=sessionStreak(), ps=plateStreak();
 var r=document.createElement('div'); r.className='row'; r.style.cssText+=';margin-top:10px;justify-content:center';
-r.innerHTML='<span class="mini" style="color:var(--green)">iron streak · '+ss+'</span><span class="mini" style="color:var(--gold)">plate streak · '+ps+'</span>';
+r.innerHTML='<span class="mini" style="color:var(--green)">iron streak \u00b7 '+streakOf(hasLog)+'</span>'
++'<span class="mini" style="color:var(--gold)">plate streak \u00b7 '+streakOf(function(k){ return !!(S.plate.days[k]&&S.plate.days[k].e.length); })+'</span>'
++'<span class="mini" style="color:var(--frost)">still streak \u00b7 '+streakOf(hasStill)+'</span>';
 c.appendChild(r);
 var v=document.createElement('div'); v.className='verdict';
-v.textContent= both>=6? 'the body and the plate agree · six or seven days of one story'
-: both>=4? 'iron and plate walk together most days · the mirror approves'
-: both>=1? 'some days both hands showed · the rest are still asking'
-: 'a bare week · one logged set and one honest meal restart the story';
+v.textContent= both>=6? 'the body and the plate agree \u00b7 six or seven days of one story'
+: both>=4? 'iron and plate walk together most days \u00b7 the mirror approves'
+: both>=1? 'some days both hands showed \u00b7 the rest are still asking'
+: 'a bare week \u00b7 one logged set and one honest meal restart the story';
 c.appendChild(v);
 }
-function renderDay(){ renderNav(); renderRoutines(); renderSession(); renderPRs(); renderLogs(); renderTargets(); renderPlate(); renderPlateWeek(); renderMirror(); }
+function renderDay(){ renderNav(); renderRoutines(); renderSession(); renderPRs(); renderLogs(); renderTargets(); renderPlate(); renderPlateWeek(); renderMirror(); renderStillBuilder(); renderStillSession(); renderPacer(); }
 goSlide(0); renderDay();
 })();
 </script>
