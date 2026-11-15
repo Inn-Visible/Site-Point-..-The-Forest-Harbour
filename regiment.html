@@ -105,17 +105,17 @@ var WATCH=[['m','01 \u00b7 morning','10\u201314','self care + daily wo','#58a36a
 ['e','02 \u00b7 evening','15\u201319','security guides \u00b7 income stream #1','#d9a83a'],
 ['n','03 \u00b7 night','20\u201300','skill acquisition \u00b7 the brain drill','#7fb2d9'],
 ['l','04 \u00b7 late','01\u201303','conditional \u00b7 if the body allows','#c8452c']];
-var DEF={m:['daily wo + core set','walk + one journal line','breakfast cooked, not grabbed','phone call / video jack','asl drill · lingoes + dictionary','transcription · pen, paper, cursive','one page · church or clouds meditation','wash / laundry turn','minimalism slot · sat: home sweep'],
-e:['security+ module · one segment','spiral notes · transcribe what stuck','self-study guide · one section','mark the hour · it bills someday'],
-n:['the drill · calc / chem / physics / geo','the craft · linux / python / sql','flashcards / anki turn','reading · ten pages minimum'],
-l:['clean the space · paper + notes filed','minimalist overhaul · one drawer, one folder, one screen','journaling unwind · goals self-note','lights down · aid the sleep']};
-var HABS=['body','connect','learning','empty/wash','faith','finance','nature','rest'];
+var DEF={m:['daily wo + core st','walk · water · eat cooked','book + learning turn · sunday supple','phone call / video jack','songs + exercise pair','wash / laundry turn','asl · lingoes w/ dictionary','transcription · pen, paper, cursive · lined or clouds paper','spiritual turn · sesh or clouds meditation'],
+e:['security course · one module','transcription → spiral notes','legal system w/ guides · self-study section','mark the hour · it bills someday'],
+n:['sys lit · one section (see 1. plan — brain)','the drill · calc / chem','the drill · geo / hs','the craft · comp: linux → python → sql','flashday / anki turn','reading · ten pages minimum'],
+l:['clean space · paper + notes (if morning owes)','extended evening/night work · not already invited','minimalist overhaul w/ condt · phone · os-archive · paper-notes','journaling · unwinding, goals, self-talk · end the day']};
+var HABS=['body','connect','learning','empty/wash','spirit','finance','nature','rest'];
 var LADDER=['security+ · the first door','comptia linux+ / pentest · the second','system literacy + skill injection','business · the ft plan'];
 var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
 if(!S) S={days:{},items:null,stream:false,ladder:[false,false,false,false]};
 if(!S.items) S.items=JSON.parse(JSON.stringify(DEF));
 if(!S.days) S.days={};
-if(!S.ladder||S.ladder.length!==4) S.ladder=[false,false,false,false];
+if(!S.ladder||S.ladder.length!==4) S.ladder=[false,false,false,false]; if(S.iv!==3){   S.items=JSON.parse(JSON.stringify(DEF));   try{ Object.keys(S.days||{}).forEach(function(k){ var d=S.days[k];     if(d&&d.h&&d.h.faith!=null&&d.h.spirit==null){ d.h.spirit=d.h.faith; delete d.h.faith; } }); }catch(e){}   S.iv=3; save(); }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function addD(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
