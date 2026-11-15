@@ -309,7 +309,7 @@ items.forEach(function(t,i){
 var row=document.createElement('div'); row.className='chk'+(day.w[id].it[i]?' done':'');
 row.innerHTML='<input type="checkbox" '+(day.w[id].it[i]?'checked':'')+'><span>'+esc(t)+'</span><button class="rm" title="remove item">✕</button>';
 row.querySelector('input').onchange=function(){ day.w[id].it[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
-row.querySelector('.rm').onclick=function(){ items.splice(i,1); save(); renderWatches(); };
+row.querySelector('.rm').onclick=function(){ items.splice(i,1); Object.keys(S.days).forEach(function(k){ var w=S.days[k].w&&S.days[k].w[id]; if(!w||!w.it) return; var old=w.it, nw={}; Object.keys(old).forEach(function(ix){ var n=+ix; if(n<i) nw[n]=old[ix]; else if(n>i) nw[n-1]=old[ix]; }); w.it=nw; }); save(); renderWatches(); };
 box.appendChild(row); });
 card.querySelector('.hold').onclick=function(){ day.w[id].held=!day.w[id].held; save(); renderWatches(); renderTally(); renderForest(); renderNav(); };
 card.querySelector('.hrs').onchange=function(){ day.w[id].hrs=this.value; save(); renderTally(); renderForest(); };
