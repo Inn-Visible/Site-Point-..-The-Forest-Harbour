@@ -119,6 +119,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="sub" id="bkCount" style="margin-top:8px"></div></div>
 </div>
 <div class="slide" id="sl2">
+<div class="card" id="shelfCard"></div>
 <div class="grid4" id="watchGrid"></div>
 <div class="card"><div class="hd" style="font-size:12px">the night's own words · anything to aid the sleep</div>
 <textarea id="note" placeholder="confess, plan, unwind — the glass keeps it behind the lock .." style="margin-top:8px"></textarea></div>
@@ -319,6 +320,52 @@ card.querySelector('.addb').onclick=add;
 card.querySelector('.add').onkeydown=function(e){ if(e.key==='Enter') add(); };
 g.appendChild(card); });
 }
+  /* ---- the shelf · presets & one slot ---- */
+function shFlash(btn,msg){ var old=btn.textContent; btn.textContent=msg; setTimeout(function(){ btn.textContent=old; },1400); }
+function slotInfo(){ if(!S.slot) return 'slot \u00b7 empty \u00b7 save once and it waits for the emergency';
+var n=0, it=S.slot.snap&&S.slot.snap.items;
+if(it){ ['m','e','n','l'].forEach(function(k){ n+=(it[k]||[]).length; }); }
+return 'slot \u00b7 saved '+S.slot.t+' \u00b7 '+n+' items across four lists \u00b7 the slot survives its own restore'; }
+function renderShelf(){
+var c=document.getElementById('shelfCard'); if(!c) return;
+c.innerHTML='<div class="hd" style="font-size:12px">the shelf \u00b7 presets & one slot</div>'
++'<div class="row" style="margin-top:8px">'
++'<button id="shBlank" style="border-color:var(--red);color:var(--red)">blank slate</button>'
++'<button id="shHouse" style="border-color:var(--green);color:var(--green)">house fill</button>'
++'<span style="width:10px"></span>'
++'<button id="shSave" style="border-color:var(--gold);color:var(--gold)">save \u2192 slot</button>'
++'<button id="shRest">slot \u2192 restore</button>'
++'<button id="shOut" style="border-color:var(--frost);color:var(--frost)">slot \u2398 out</button>'
++'<button id="shIn">slot \u2398 in</button></div>'
++'<div id="shSlot" class="mini" style="margin-top:8px"></div>'
++'<div id="shPaste" style="display:none;margin-top:8px"><textarea id="shTxt" placeholder="paste slot text here .." style="width:100%;height:64px"></textarea>'
++'<div class="row" style="margin-top:6px"><button id="shLoad" style="border-color:var(--frost);color:var(--frost)">load into slot</button>'
++'<button id="shCancel">close</button><span id="shMsg" class="mini"></span></div></div>';
+c.querySelector('#shSlot').textContent=slotInfo();
+c.querySelector('#shBlank').onclick=function(){ if(!confirm('blank the four lists? holds, hours, history and the slot stay safe \u00b7 only the checklists go empty.')) return;
+S.items={m:[],e:[],n:[],l:[]}; save(); renderWatches(); shFlash(this,'slate blanked'); };
+c.querySelector('#shHouse').onclick=function(){ if(!confirm('refill the four lists with the house preset? current lists are replaced \u00b7 the slot keeps any backup.')) return;
+S.items=JSON.parse(JSON.stringify(DEF)); save(); renderWatches(); shFlash(this,'house filled'); };
+c.querySelector('#shSave').onclick=function(){ var snap=JSON.parse(JSON.stringify(S)); delete snap.slot;
+S.slot={t:iso(new Date())+' '+pad(new Date().getHours())+':'+pad(new Date().getMinutes()), snap:snap};
+save(); renderShelf(); shFlash(this,'saved \u2713'); };
+c.querySelector('#shRest').onclick=function(){ if(!S.slot||!S.slot.snap){ shFlash(this,'slot empty'); return; }
+if(!confirm('restore the whole regiment from the slot saved '+S.slot.t+'? current state is replaced \u00b7 the slot itself survives.')) return;
+var slot=S.slot, snap=JSON.parse(JSON.stringify(S.slot.snap)); snap.slot=slot; S=snap; save();
+renderShelf(); renderStream(); renderBucket(); renderShelf(); renderDay(); shFlash(this,'restored \u2713'); };
+c.querySelector('#shOut').onclick=function(){ if(!S.slot){ shFlash(this,'slot empty'); return; } var b=this;
+var txt=JSON.stringify(S.slot);
+if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ shFlash(b,'copied \u2713'); },function(){ shFlash(b,'copy refused'); }); }
+else shFlash(b,'no clipboard'); };
+c.querySelector('#shIn').onclick=function(){ var p=c.querySelector('#shPaste'); p.style.display=p.style.display==='none'?'block':'none'; };
+c.querySelector('#shCancel').onclick=function(){ c.querySelector('#shPaste').style.display='none'; };
+c.querySelector('#shLoad').onclick=function(){ var raw=(c.querySelector('#shTxt').value||'').trim(), m=c.querySelector('#shMsg');
+if(!raw){ m.textContent='paste slot text first'; m.style.color='var(--red)'; return; }
+var o=null; try{ o=JSON.parse(raw); }catch(e){ m.textContent='not valid json'; m.style.color='var(--red)'; return; }
+if(!o||!o.snap||!o.snap.items){ m.textContent='not a regiment slot'; m.style.color='var(--red)'; return; }
+S.slot=o; save(); renderShelf(); m.textContent=''; m.style.color='var(--green)'; m.textContent='slot loaded \u00b7 restore when ready'; };
+}
+/* ---- habits ---- */
 /* ---- habits ---- */
 function renderHabs(){
 var row=document.getElementById('habRow'); row.innerHTML=''; var day=D();
@@ -485,7 +532,7 @@ this.textContent=o?'edit the watches ⌄':'edit the watches ⌃';
 this.className=o?'':'on'; };
 var CROWN=Math.max(1,Math.min(10000,S.crown||14)); var ci0=document.getElementById('crownIn'); if(ci0){ ci0.value=CROWN; ci0.onchange=function(){ CROWN=Math.max(1,Math.min(10000,parseInt(this.value,10)||14)); S.crown=CROWN; save(); renderForest(); }; } addEventListener('resize',function(){ renderRibbon(); renderForest(); });
 goSlide(slide);
-renderStream(); renderBucket(); renderDay();
+renderStream(); renderBucket(); renderShelf(); renderDay();
 })();
 </script>
 </body>
