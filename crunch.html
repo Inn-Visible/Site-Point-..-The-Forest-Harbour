@@ -381,10 +381,10 @@ var tot={kcal:0,p:0,c:0,f:0};
 day.e.forEach(function(e){ tot.kcal+=num(e.k); tot.p+=num(e.p); tot.c+=num(e.c); tot.f+=num(e.f); });
 c.innerHTML='<div class="hd" style="font-size:12px">the plate \u00b7 '+DN[sel.getDay()]+' \u00b7 tagged by watch</div>';
 [['kcal',tot.kcal,t.kcal,'var(--gold)'],['protein',tot.p,t.p,'var(--green)'],['carbs',tot.c,t.c,'var(--blue)'],['fat',tot.f,t.f,'var(--red)']].forEach(function(b){
-var w=Math.min(100,t[b[2]]?Math.round(b[1]/t[b[2]]*100):0);
+var w=Math.min(100,b[2]?Math.round(b[1]/b[2]*100):0);
 var d=document.createElement('div'); d.className='row'; d.style.marginTop='6px';
 d.innerHTML='<span class="mini" style="width:52px">'+b[0]+'</span><span class="bw"><span class="bf" style="width:'+w+'%;background:'+b[3]+'"></span></span>'
-+'<span class="mini" style="width:86px;text-align:right">'+Math.round(b[1])+' / '+t[b[2]]+'</span>';
++'<span class="mini" style="width:86px;text-align:right">'+Math.round(b[1])+' / '+b[2]+'</span>';
 c.appendChild(d); });
 var box=document.createElement('div'); box.style.marginTop='8px'; c.appendChild(box);
 day.e.forEach(function(e,i){ var row=document.createElement('div'); row.className='chk';
