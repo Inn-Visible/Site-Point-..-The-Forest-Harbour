@@ -35,7 +35,7 @@ textarea{resize:vertical;min-height:64px;line-height:1.7}
 .pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.12em;padding:5px 10px;cursor:pointer;margin:4px 6px 0 0;background:none}
 .pill.on{border-color:var(--green);color:var(--green)}
 .pill .st{color:#5c6875}
-canvas{width:100%;height:52px;display:block}
+canvas{width:100%;height:74px;display:block}
 .tally{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-top:10px}
 .tally .d{border:1px solid var(--line);padding:6px 2px;font-size:9px;color:#5c6875}
 .pips span{display:inline-block;width:7px;height:7px;margin:1px;border:1px solid #3a4a5c}
@@ -72,7 +72,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 </div>
 <div class="card">
 <canvas id="rib"></canvas>
-<div class="sub" style="margin-top:6px">SOVEREIGN SLEEP 03–10 · WATCHES 10–14 · 15–19 · 20–00 · 01–03 · THE HOUR GAPS ARE BREATHING ROOM · GOLD NEEDLE = NOW</div>
+<div class="sub" style="margin-top:6px">ONE TRACK · 00→24 · DASHED RECESS = SOVEREIGN SLEEP · SOLID BLOCKS = THE FOUR WATCHES · BARE TRACK BETWEEN = BREATHING ROOM · GOLD PIN = NOW</div>
 </div>
 <div class="grid4" id="watchGrid"></div>
 <div class="card">
@@ -141,23 +141,48 @@ document.getElementById('streakL').textContent='streak · '+streak()+' held day'
 function pad(n){ return (n<10?'0':'')+n; }
 function renderRibbon(){
 var c=document.getElementById('rib'), r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
-c.width=Math.max(10,r.width*dpr); c.height=52*dpr;
+var W=Math.max(10,r.width), H=74;
+c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); c.style.height=H+'px';
 var g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
-var W=r.width,H=52; function X(h){ return h/24*W; }
 g.clearRect(0,0,W,H);
-g.fillStyle='#0b1017'; g.fillRect(0,H-16,W,16);
-function band(h0,h1,col,y,hh){ g.fillStyle=col; g.fillRect(X(h0),y,X(h1)-X(h0),hh); }
-band(10,14,'rgba(88,163,106,.55)',H-13,4);
-band(15,19,'rgba(217,168,58,.6)',H-13,4);
-band(20,24,'rgba(127,178,217,.5)',H-13,4);
-band(1,3,'rgba(200,69,44,.5)',H-13,4);
-band(3,10,'rgba(5,7,8,.92)',6,H-24);
-g.strokeStyle='rgba(127,178,217,.45)'; g.strokeRect(X(3),6,X(10)-X(3),H-24);
-g.fillStyle='#5c6875'; g.font='8px ui-monospace,Consolas,monospace';
-[0,6,12,18,24].forEach(function(h){ g.fillText(String(h), X(h)+2, 10); });
-var now=new Date(), nh=now.getHours()+now.getMinutes()/60;
-g.strokeStyle='#d9a83a'; g.lineWidth=1.4; g.beginPath(); g.moveTo(X(nh),2); g.lineTo(X(nh),H-2); g.stroke();
-g.fillStyle='#d9a83a'; g.beginPath(); g.arc(X(nh),4,2.4,0,7); g.fill();
+var x0=8, x1=W-8, TW=x1-x0;
+function X(h){ return x0+(h/24)*TW; }
+function rr(x,y,w,h,rad){ if(g.roundRect){ g.beginPath(); g.roundRect(x,y,w,h,rad); } else { g.beginPath(); g.moveTo(x+rad,y); g.arcTo(x+w,y,x+w,y+h,rad); g.arcTo(x+w,y+h,x,y+h,rad); g.arcTo(x,y+h,x,y,rad); g.arcTo(x,y,x+w,y,rad); g.closePath(); } }
+var TY=30, TH=20;
+rr(x0,TY,TW,TH,5); g.fillStyle='#0b1017'; g.fill();
+g.save(); rr(x0,TY,TW,TH,5); g.clip();
+for(var h=1;h<24;h++){ g.strokeStyle=(h%6===0)?'rgba(92,104,117,.45)':'rgba(34,48,65,.7)'; g.lineWidth=1;
+g.beginPath(); g.moveTo(X(h),TY); g.lineTo(X(h),TY+TH); g.stroke(); }
+g.fillStyle='rgba(3,4,7,.95)'; g.fillRect(X(3),TY,X(10)-X(3),TH);
+g.strokeStyle='rgba(127,178,217,.55)'; g.setLineDash([3,3]); g.lineWidth=1;
+g.strokeRect(X(3)+0.5,TY+0.5,X(10)-X(3)-1,TH-1); g.setLineDash([]);
+g.textAlign='center'; g.textBaseline='middle';
+if(X(10)-X(3)>92){ g.fillStyle='rgba(127,178,217,.85)'; g.font='8px ui-monospace,Consolas,monospace';
+g.fillText('\u263e sovereign sleep', X(6.5), TY+TH/2+0.5); }
+var WS=[[10,14,'#58a36a','01 \u00b7 morning'],[15,19,'#d9a83a','02 \u00b7 evening'],[20,24,'#7fb2d9','03 \u00b7 night'],[1,3,'#c8452c','04']];
+WS.forEach(function(w){ var a=X(w[0]), b=X(w[1]), wd=b-a;
+g.fillStyle=w[2]; g.globalAlpha=0.9; g.fillRect(a+0.5,TY+1,wd-1,TH-2); g.globalAlpha=1;
+g.fillStyle='#0a0d12'; g.font='8px ui-monospace,Consolas,monospace';
+if(wd>96){ g.fillText(w[3].toUpperCase(), (a+b)/2, TY+TH/2+0.5); }
+else if(wd>30){ g.fillText(w[3].slice(0,2), (a+b)/2, TY+TH/2+0.5); } });
+g.restore();
+rr(x0,TY,TW,TH,5); g.strokeStyle='#223041'; g.lineWidth=1; g.stroke();
+g.textBaseline='alphabetic'; g.font='8px ui-monospace,Consolas,monospace'; g.fillStyle='#5c6875';
+[0,3,6,9,12,15,18,21,24].forEach(function(hh){ var x=X(hh);
+g.strokeStyle='rgba(92,104,117,.5)'; g.beginPath(); g.moveTo(x,TY+TH); g.lineTo(x,TY+TH+4); g.stroke();
+g.textAlign=(hh===0)?'left':(hh===24?'right':'center');
+g.fillText((hh<10?'0':'')+hh, x, TY+TH+14); });
+g.textAlign='center';
+[['01',12,'#58a36a'],['02',17,'#d9a83a'],['03',22,'#7fb2d9'],['04',2,'#c8452c']].forEach(function(cp){
+g.fillStyle=cp[2]; g.globalAlpha=.75; g.fillText(cp[0], X(cp[1]), TY-6); g.globalAlpha=1; });
+g.fillStyle='rgba(127,178,217,.7)'; g.fillText('\u263e', X(6.5), TY-6);
+var now=new Date(), nh=now.getHours()+now.getMinutes()/60, nx=X(nh);
+g.strokeStyle='#d9a83a'; g.lineWidth=1.5;
+g.beginPath(); g.moveTo(nx,TY-12); g.lineTo(nx,TY+TH+6); g.stroke();
+g.fillStyle='#d9a83a';
+g.beginPath(); g.moveTo(nx,TY-16); g.lineTo(nx+3.5,TY-12); g.lineTo(nx,TY-8); g.lineTo(nx-3.5,TY-12); g.closePath(); g.fill();
+g.font='9px ui-monospace,Consolas,monospace'; g.textAlign='center';
+g.fillText(pad(now.getHours())+':'+pad(now.getMinutes()), Math.max(x0+16,Math.min(x1-16,nx)), TY-20);
 }
 function renderWatches(){
 var g=document.getElementById('watchGrid'); g.innerHTML=''; var day=D();
