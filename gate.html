@@ -66,8 +66,11 @@ var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; 
 if(!S) S={items:[],iv:1};
 if(!S.items) S.items=[];
 if(!S.items.length){ S.items=[
-{id:'g1',kind:'book',t:'the system literacy stack',ref:'stack 1 \u00b7 the 8-book core',st:'working',pg:35,note:'tiers first',now:true},
-{id:'g2',kind:'site',t:'own the maps',ref:'tile caches \u00b7 offline first',st:'working',pg:50,note:'pour the cove, then labels',now:true}]; }
+{id:'g1',kind:'book',t:'example book \u00b7 \u2715 me when you have your own',ref:'author / series / which stack',st:'queue',pg:0,note:'tap the title to rename \u00b7 tap status to cycle',now:false},
+{id:'g2',kind:'site',t:'example site \u00b7 \u2715 me when you have your own',ref:'url / what it teaches',st:'queue',pg:0,note:'\u2605 pins tonight\u2019s focus \u00b7 \u2192 bucket sends it to the regiment',now:false}]; }
+S.items.forEach(function(it){
+if(it.id==='g1'&&it.t==='the system literacy stack'){ it.t='example book \u00b7 \u2715 me when you have your own'; it.ref='author / series / which stack'; it.st='queue'; it.pg=0; it.note='tap the title to rename \u00b7 tap status to cycle'; it.now=false; }
+if(it.id==='g2'&&it.t==='own the maps'){ it.t='example site \u00b7 \u2715 me when you have your own'; it.ref='url / what it teaches'; it.st='queue'; it.pg=0; it.note='\u2605 pins tonight\u2019s focus \u00b7 \u2192 bucket sends it to the regiment'; it.now=false; } });
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function pad(n){ return (n<10?'0':'')+n; }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -82,7 +85,7 @@ localStorage.setItem('hive_regiment',JSON.stringify(R)); return true; }catch(e){
 function row(it){
 var d=document.createElement('div'); d.className='grow'+(it.now?' now':'');
 d.innerHTML='<div class="row"><button class="nw" title="current focus" style="border:none;font-size:12px;color:'+(it.now?'var(--gold)':'#3a4a5c')+'">'+(it.now?'\u2605':'\u2606')+'</button>'
-+'<span style="flex:1;font-size:12px;color:var(--ink)">'+esc(it.t)+' <span class="mini">\u00b7 '+esc(it.ref||'')+'</span></span>'
++'<span class="tt" title="tap to rename" style="flex:1;font-size:12px;color:var(--ink);cursor:pointer">'+esc(it.t)+' <span class="mini">\u00b7 '+esc(it.ref||'')+'</span></span>'
 +'<button class="cy" style="border-color:'+SC[it.st]+';color:'+SC[it.st]+'">'+it.st+'</button>'
 +'<button class="bk" style="border-color:var(--frost);color:var(--frost)">\u2192 bucket</button>'
 +'<button class="rm" style="border:none;color:#5c6875">\u2715</button></div>'
@@ -97,7 +100,7 @@ if(it.st==='done') it.dDone=iso(new Date()); save(); render(); };
 d.querySelector('.bk').onclick=function(){ var b=this;
 b.textContent=bucket('research \u00b7 '+it.t+(it.ref?' \u00b7 '+it.ref:''))?'planted \u2713':'regiment asleep';
 setTimeout(function(){ b.textContent='\u2192 bucket'; },1400); };
-d.querySelector('.rm').onclick=function(){ if(!confirm('remove \u201c'+it.t+'\u201d from the gate?')) return;
+d.querySelector('.tt').onclick=function(){ var v=prompt('rename this entry', it.t); if(v){ it.t=v; save(); render(); } };
 S.items=S.items.filter(function(x){ return x.id!==it.id; }); save(); render(); };
 d.querySelector('.pg').onchange=function(){ it.pg=Math.max(0,Math.min(100,parseInt(this.value,10)||0)); save(); render(); };
 d.querySelector('.nt').onchange=function(){ it.note=this.value; save(); };
