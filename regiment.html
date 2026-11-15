@@ -281,9 +281,10 @@ out+='<g><rect x="'+(cx-2)+'" y="66" width="4" height="14" fill="#5c4630"/>'
 +'<polygon points="'+cx+','+(70-hgt)+' '+(cx-13*sc)+','+(70-hgt*0.45)+' '+(cx+13*sc)+','+(70-hgt*0.45)+'" fill="rgba(88,163,106,.85)"/>'
 +'<polygon points="'+cx+','+(70-hgt*0.75)+' '+(cx-10*sc)+','+(70-hgt*0.2)+' '+(cx+10*sc)+','+(70-hgt*0.2)+'" fill="rgba(88,163,106,.95)"/></g>';
 } else if(part>0){
-out+='<g><line x1="'+cx+'" y1="80" x2="'+cx+'" y2="66" stroke="#7fb2d9" stroke-width="2"/>'
-+'<line x1="'+cx+'" y1="70" x2="'+(cx-6)+'" y2="64" stroke="#7fb2d9" stroke-width="1.6"/>'
-+'<line x1="'+cx+'" y1="74" x2="'+(cx+6)+'" y2="68" stroke="#7fb2d9" stroke-width="1.6"/></g>';
+var sh=8+part*4+Math.min(6,hrs*0.5);
+out+='<g><line x1="'+cx+'" y1="80" x2="'+cx+'" y2="'+(80-sh)+'" stroke="#7fb2d9" stroke-width="2"/>'
++'<line x1="'+cx+'" y1="'+(80-sh*0.6)+'" x2="'+(cx-6)+'" y2="'+(80-sh*0.6-6)+'" stroke="#7fb2d9" stroke-width="1.6"/>'
++'<line x1="'+cx+'" y1="'+(80-sh*0.35)+'" x2="'+(cx+6)+'" y2="'+(80-sh*0.35-6)+'" stroke="#7fb2d9" stroke-width="1.6"/></g>';
 } else {
 out+='<path d="M '+(cx-10)+' 80 Q '+cx+' 72 '+(cx+10)+' 80" stroke="#223041" fill="none" stroke-width="1.4"/>';
 }
