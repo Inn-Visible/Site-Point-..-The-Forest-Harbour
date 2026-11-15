@@ -139,7 +139,7 @@ save();
 function pad(n){ return (n<10?'0':'')+n; }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function addD(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
-function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7); ); x.setHours(12,0,0,0); return x; }
+function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(12,0,0,0); return x; }
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
 function num(v){ var n=parseFloat(v); return isFinite(n)?n:0; }
