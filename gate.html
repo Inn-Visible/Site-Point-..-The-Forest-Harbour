@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if('serviceWorker' in navigator) addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="manifest.webmanifest">
+<title>the research gate | Inn.Visible</title>
+<style>
+:root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--frost:#7fb2d9;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding-bottom:46px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.wrap{max-width:900px;margin:0 auto;padding:16px 14px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:14px}
+.hd{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink)}
+.sub{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-top:3px}
+button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer}
+button.on{border-color:var(--gold);color:var(--gold)}
+input{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:6px 8px;outline:none}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mini{font-size:9px;color:#5c6875;letter-spacing:.1em}
+.grow{border:1px solid var(--line);background:var(--bg);padding:8px 10px;margin-top:8px}
+.grow.now{border-color:var(--gold);border-left:3px solid var(--gold)}
+.bw{height:5px;background:#223041;position:relative;flex:1;min-width:70px}
+.bf{position:absolute;left:0;top:0;bottom:0;background:var(--green)}
+.verdict{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--gold);text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<script>
+(function(){
+var KEY='hive_access', SES='hive_session', SPAN=1800000;
+var a=localStorage.getItem(KEY);
+var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); }
+})();
+</script>
+<header>
+<div style="font-size:14px;letter-spacing:.3em;color:var(--gold)">THE RESEARCH GATE</div>
+<span><a href="regiment.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">regiment ↩</a><a href="crunch.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">crunch ↩</a><a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a></span>
+</header>
+<div class="wrap">
+<div class="card">
+<div class="hd">the research gate · what the house is reading & building</div>
+<div class="sub">BOOKS IN HAND \u00b7 SITES ON THE BENCH \u00b7 ONE \u2605 PER SHELF MARKS THE CURRENT FOCUS \u00b7 OFFLINE \u00b7 NO WITNESS BUT THE GLASS</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">queue it · work it · finish it or shelf it · the \u2605 says what tonight's night watch reads · \u2192 bucket plants it in the regiment's thought box</span></div>
+<div class="row" style="margin-top:10px">
+<button id="addB" style="border-color:var(--gold);color:var(--gold)">+ book</button>
+<button id="addS" style="border-color:var(--blue);color:var(--blue)">+ site</button>
+<span class="mini" id="gateL" style="margin-left:auto"></span>
+</div>
+</div>
+<div class="card" id="bkCard"></div>
+<div class="card" id="stCard"></div>
+<div class="card">
+<div class="verdict" id="gateV"></div>
+<div class="mini" style="text-align:center;margin-top:8px">queue \u2192 working \u2192 done \u00b7 or shelved, without shame \u00b7 the gate keeps the list, the regiment keeps the nights</div>
+</div>
+</div>
+<script>
+(function(){
+var KEY='hive_gate';
+var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
+if(!S) S={items:[],iv:1};
+if(!S.items) S.items=[];
+if(!S.items.length){ S.items=[
+{id:'g1',kind:'book',t:'the system literacy stack',ref:'stack 1 \u00b7 the 8-book core',st:'working',pg:35,note:'tiers first',now:true},
+{id:'g2',kind:'site',t:'own the maps',ref:'tile caches \u00b7 offline first',st:'working',pg:50,note:'pour the cove, then labels',now:true}]; }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function pad(n){ return (n<10?'0':'')+n; }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+var ST=['queue','working','done','shelved'], SC={queue:'#5c6875',working:'#d9a83a',done:'#58a36a',shelved:'#c8452c'};
+function bucket(txt){
+try{ var R=JSON.parse(localStorage.getItem('hive_regiment')||'null')||{};
+if(!R.bucket) R.bucket=[];
+R.bucket.push({id:'t'+Date.now(), d:iso(new Date()), txt:txt, pin:false});
+localStorage.setItem('hive_regiment',JSON.stringify(R)); return true; }catch(e){ return false; } }
+function row(it){
+var d=document.createElement('div'); d.className='grow'+(it.now?' now':'');
+d.innerHTML='<div class="row"><button class="nw" title="current focus" style="border:none;font-size:12px;color:'+(it.now?'var(--gold)':'#3a4a5c')+'">'+(it.now?'\u2605':'\u2606')+'</button>'
++'<span style="flex:1;font-size:12px;color:var(--ink)">'+esc(it.t)+' <span class="mini">\u00b7 '+esc(it.ref||'')+'</span></span>'
++'<button class="cy" style="border-color:'+SC[it.st]+';color:'+SC[it.st]+'">'+it.st+'</button>'
++'<button class="bk" style="border-color:var(--frost);color:var(--frost)">\u2192 bucket</button>'
++'<button class="rm" style="border:none;color:#5c6875">\u2715</button></div>'
++'<div class="row" style="margin-top:6px"><span class="bw"><span class="bf" style="width:'+(it.pg||0)+'%;background:'+SC[it.st]+'"></span></span>'
++'<input class="pg" type="number" min="0" max="100" value="'+(it.pg||0)+'" style="width:52px"><span class="mini">%</span></div>'
++'<div class="row" style="margin-top:6px"><input class="nt" value="'+esc(it.note||'')+'" placeholder="note .." style="flex:1"></div>';
+d.querySelector('.nw').onclick=function(){
+if(it.now){ it.now=false; } else { S.items.forEach(function(x){ if(x.kind===it.kind) x.now=false; }); it.now=true; }
+save(); render(); };
+d.querySelector('.cy').onclick=function(){ it.st=ST[(ST.indexOf(it.st)+1)%ST.length];
+if(it.st==='done') it.dDone=iso(new Date()); save(); render(); };
+d.querySelector('.bk').onclick=function(){ var b=this;
+b.textContent=bucket('research \u00b7 '+it.t+(it.ref?' \u00b7 '+it.ref:''))?'planted \u2713':'regiment asleep';
+setTimeout(function(){ b.textContent='\u2192 bucket'; },1400); };
+d.querySelector('.rm').onclick=function(){ if(!confirm('remove \u201c'+it.t+'\u201d from the gate?')) return;
+S.items=S.items.filter(function(x){ return x.id!==it.id; }); save(); render(); };
+d.querySelector('.pg').onchange=function(){ it.pg=Math.max(0,Math.min(100,parseInt(this.value,10)||0)); save(); render(); };
+d.querySelector('.nt').onchange=function(){ it.note=this.value; save(); };
+return d; }
+function shelf(kind,title,col){
+var c=el(kind==='book'?'bkCard':'stCard'); c.innerHTML='';
+c.innerHTML='<div class="hd" style="font-size:12px;color:'+col+'">'+title+'</div>';
+var list=S.items.filter(function(i){ return i.kind===kind; });
+if(!list.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">nothing on this shelf yet \u00b7 the gate is open</div>'; return; }
+list.forEach(function(it){ c.appendChild(row(it)); });
+}
+function render(){
+shelf('book','books in hand \u00b7 the reading queue','var(--gold)');
+shelf('site','sites on the bench \u00b7 the building queue','var(--blue)');
+var q=S.items.filter(function(i){return i.st==='queue';}).length;
+var w=S.items.filter(function(i){return i.st==='working';}).length;
+var dn=S.items.filter(function(i){return i.st==='done';}).length;
+var mo=iso(new Date()).slice(0,7);
+var dm=S.items.filter(function(i){ return i.st==='done'&&i.dDone&&i.dDone.slice(0,7)===mo; }).length;
+el('gateL').textContent=q+' queued \u00b7 '+w+' working \u00b7 '+dn+' done \u00b7 '+dm+' this month';
+el('gateV').textContent= w>0&&q>0? 'the gate holds \u00b7 '+w+' in hand, '+q+' at the door \u00b7 tonight knows what to read'
+: w>0? 'hands full, door quiet \u00b7 finish what is held before the queue grows'
+: q>0? 'the queue waits unanswered \u00b7 pick one and call it working'
+: dn>0? 'the shelf is done and shelved \u00b7 the gate rests between harvests'
+: 'an empty gate \u00b7 the first queued book is the whole cure';
+}
+el('addB').onclick=function(){ add('book'); };
+el('addS').onclick=function(){ add('site'); };
+function add(kind){
+var t=prompt(kind==='book'?'book title':'site / project name'); if(!t) return;
+var ref=prompt(kind==='book'?'author / series (optional)':'url / note (optional)')||'';
+S.items.unshift({id:'g'+Date.now(),kind:kind,t:t,ref:ref,st:'queue',pg:0,note:'',now:false});
+save(); render(); }
+render();
+})();
+</script>
+</body>
+</html>
