@@ -240,5 +240,43 @@ function renderAll(){ renderNav(); renderRibbon(); renderWatches(); renderHabs()
 renderAll();
 })();
 </script>
+
+<script>
+(function(){
+/* ==== the plain words \u00b7 a tl;dr hand on the regiment's shoulder ==== */
+function mount(){
+  var ban=document.querySelector('.wrap .card'); if(!ban||document.getElementById('pwBtn')) return !!ban;
+  var row=ban.querySelector('.row'); if(!row) return false;
+  var tl=document.createElement('div');
+  tl.style.cssText='margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875';
+  tl.innerHTML='tl;dr \u00b7 <span style="color:#d9a83a">hold morning + evening + night \u00b7 tick what you actually did \u00b7 write the night\u2019s words \u00b7 the streak does the rest</span>';
+  ban.insertBefore(tl,row);
+  var btn=document.createElement('button'); btn.id='pwBtn';
+  btn.textContent='the plain words \u2304';
+  row.appendChild(btn);
+  var p=document.createElement('div'); p.id='pwPanel';
+  p.style.cssText='display:none;margin-top:12px;border:1px solid #223041;background:rgba(4,8,6,.5);padding:10px 14px;font-size:10px;line-height:2.0;letter-spacing:.06em;color:#93a1b0;text-align:left';
+  p.innerHTML=
+   '<b style="color:#eae6da;font-family:Georgia,serif;font-style:italic;font-weight:normal">the plain words \u00b7 how the regiment holds you</b><br>'
+   +'the day is four watches \u00b7 <span style="color:#58a36a">morning</span> body & care \u00b7 <span style="color:#d9a83a">evening</span> security guides (income stream #1) \u00b7 <span style="color:#7fb2d9">night</span> skill drills \u00b7 <span style="color:#c8452c">late</span> only if you\u2019re still up<br>'
+   +'tick the items you truly did \u00b7 press <b>hold</b> when a watch is done \u00b7 hours are optional, honesty is not<br>'
+   +'a held day = morning + evening + night \u00b7 that is the streak \u00b7 the late watch never counts against you \u00b7 the night is a shift, not a sin<br>'
+   +'the ribbon is your body\u2019s contract \u00b7 black = sovereign sleep 02\u201305 \u00b7 frost = the two naps \u00b7 coloured bands = the watches \u00b7 gold needle = now \u00b7 nothing to tick there, it only remembers the rhythm you wrote on the floor<br>'
+   +'the eight habits are the life around the work \u00b7 body \u00b7 connect \u00b7 learning \u00b7 empty/wash \u00b7 faith \u00b7 finance \u00b7 nature \u00b7 rest \u00b7 each keeps its own little streak beside its name<br>'
+   +'the week\u2019s tally shows held days as green pips + honest hours \u00b7 the serif line names the week without shame<br>'
+   +'the night\u2019s words box = one confession per day, kept behind the lock<br>'
+   +'the ladder \u00b7 income stream #1 stays alive \u2610 until you tick acquired \u2612 \u00b7 then it retires and the next rung stands<br>'
+   +'the checklist is one shared list \u00b7 each day remembers its own ticks \u00b7 + item and \u2715 edit the list for every day<br>'
+   +'everything lives in this browser only (hive_regiment) \u00b7 no wire, no cloud, no witness but the glass';
+  ban.appendChild(p);
+  btn.onclick=function(){ var o=p.style.display!=='none'; p.style.display=o?'none':'block';
+    btn.textContent=o?'the plain words \u2304':'the plain words \u2303';
+    btn.style.borderColor=o?'#223041':'#d9a83a'; btn.style.color=o?'#93a1b0':'#d9a83a'; };
+  return true;
+}
+if(!mount()){ var t=setInterval(function(){ if(mount()) clearInterval(t); },600); setTimeout(function(){ clearInterval(t); },8000); }
+})();
+</script>
+  
 </body>
 </html>
