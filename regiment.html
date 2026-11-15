@@ -97,7 +97,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="slide" id="sl0">
 <div class="card"><canvas id="rib"></canvas>
 <div class="sub" style="margin-top:6px">ONE TRACK · 00→24 · DASHED RECESS = SOVEREIGN SLEEP · SOLID BLOCKS = THE FOUR WATCHES · BARE TRACK BETWEEN = BREATHING ROOM · GOLD PIN = NOW</div></div>
-<div class="card"><div class="hd" style="font-size:12px">the grove · one tree per held day</div>
+<div class="card"><div class="hd" style="font-size:12px">the grove · one tree per held day</div> <div class="row" style="margin-top:6px"><span class="sub" style="margin:0">FULL CROWN AT</span><input id="crownIn" type="number" min="1" max="10000" style="width:76px"><span class="sub" style="margin:0">HOURS (MAX 10,000) · PINES & SAPLINGS SCALE WITH HER</span></div>
 <svg id="forest" style="width:100%;height:96px;display:block;margin-top:6px"></svg>
 <div class="sub">PINES = HELD DAYS · SAPLINGS = PARTIAL · BARE GROUND = REST UNBROKEN · THE FOREST WATCHES YOU KEEP FAITH</div></div>
 <div class="card"><div class="hd" style="font-size:12px">the eight habits · tick what the day actually got</div><div id="habRow"></div></div>
@@ -271,7 +271,7 @@ for(var i=0;i<7;i++){
 var k=iso(addD(m0,i)), d=S.days[k], cx=slot*i+slot/2;
 var held=heldAll(k), hrs=hrsOf(k);
 var part=d?(['m','e','n'].filter(function(w){ return d.w[w].held; }).length):0;
-var sc=0.75+Math.min(0.55,hrs/14);
+var sc=0.75+0.55*Math.min(1,hrs/CROWN);
 if(held){
 out+='<g><rect x="'+(cx-2)+'" y="66" width="4" height="14" fill="#5c4630"/>'
 +'<polygon points="'+cx+',${} '.replace('${}','')+'</g>';
@@ -281,7 +281,7 @@ out+='<g><rect x="'+(cx-2)+'" y="66" width="4" height="14" fill="#5c4630"/>'
 +'<polygon points="'+cx+','+(70-hgt)+' '+(cx-13*sc)+','+(70-hgt*0.45)+' '+(cx+13*sc)+','+(70-hgt*0.45)+'" fill="rgba(88,163,106,.85)"/>'
 +'<polygon points="'+cx+','+(70-hgt*0.75)+' '+(cx-10*sc)+','+(70-hgt*0.2)+' '+(cx+10*sc)+','+(70-hgt*0.2)+'" fill="rgba(88,163,106,.95)"/></g>';
 } else if(part>0){
-var sh=8+part*4+Math.min(6,hrs*0.5);
+var sh=8+part*4+10*Math.min(1,hrs/CROWN);
 out+='<g><line x1="'+cx+'" y1="80" x2="'+cx+'" y2="'+(80-sh)+'" stroke="#7fb2d9" stroke-width="2"/>'
 +'<line x1="'+cx+'" y1="'+(80-sh*0.6)+'" x2="'+(cx-6)+'" y2="'+(80-sh*0.6-6)+'" stroke="#7fb2d9" stroke-width="1.6"/>'
 +'<line x1="'+cx+'" y1="'+(80-sh*0.35)+'" x2="'+(cx+6)+'" y2="'+(80-sh*0.35-6)+'" stroke="#7fb2d9" stroke-width="1.6"/></g>';
@@ -468,7 +468,7 @@ var ed=document.getElementById('lwEd'), o=ed.style.display!=='none';
 ed.style.display=o?'none':'block'; paintEd();
 this.textContent=o?'edit the watches ⌄':'edit the watches ⌃';
 this.className=o?'':'on'; };
-addEventListener('resize',function(){ renderRibbon(); renderForest(); });
+var CROWN=Math.max(1,Math.min(10000,S.crown||14)); var ci0=document.getElementById('crownIn'); if(ci0){ ci0.value=CROWN; ci0.onchange=function(){ CROWN=Math.max(1,Math.min(10000,parseInt(this.value,10)||14)); S.crown=CROWN; save(); renderForest(); }; } addEventListener('resize',function(){ renderRibbon(); renderForest(); });
 goSlide(slide);
 renderStream(); renderBucket(); renderDay();
 })();
