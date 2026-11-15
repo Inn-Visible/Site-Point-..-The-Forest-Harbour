@@ -139,7 +139,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 (function(){
 var KEY='hive_regiment';
 var WATCH=[['m','01 · morning','self care + daily wo','#58a36a'],
-['e','02 · evening','security guides · income stream #1','#d9a83a'],
+['e','02 · evening','security guides · The Keel','#d9a83a'],
 ['n','03 · night','skill acquisition · the brain drill','#7fb2d9'],
 ['l','04 · late','conditional · if the body allows','#c8452c']];
 var DEF={m:['daily wo + core st','walk · water · eat cooked','book + learning turn · sunday supple','phone call / video jack','songs + exercise pair','wash / laundry turn','asl · lingoes w/ dictionary','transcription · pen, paper, cursive · lined or clouds paper','spiritual turn · sesh or clouds meditation'],
@@ -455,7 +455,7 @@ n.oninput=function(){ clearTimeout(noteT); var v=n.value; noteT=setTimeout(funct
 function renderStream(){
 var b=document.getElementById('streamB');
 b.className=S.stream?'on':'';
-b.textContent=S.stream?'income stream #1 · retired ☒ acquired':'income stream #1 · alive ☐';
+b.textContent=S.stream?'The Keel · retired ☒ acquired':'The Keel · alive ☐';
 b.onclick=function(){ S.stream=!S.stream; save(); renderStream(); };
 var L=document.getElementById('ladder'); L.innerHTML='';
 S.rungs.forEach(function(r,i){
@@ -495,7 +495,7 @@ document.getElementById('pwPanel').innerHTML=
  +'the grove · pines = held days (taller with honest hours) · saplings = partial days · bare ground = rest unbroken<br>'
  +'the ribbon is your body\'s contract · black recess = sovereign sleep · coloured blocks = the watches · gold pin = now<br>'
  +'the eight habits are the life around the work · each keeps its own little streak<br>'
- +'<span style="color:#d9a83a">the checkmarker</span> \u00b7 goalposts & checkpoints \u00b7 tap a rung\u2019s title to rename \u00b7 \u2715 releases it \u00b7 + rung plants a new goalpost \u00b7 income stream #1 retires itself the day you tick acquired<br>'
+ +'<span style="color:#d9a83a">the checkmarker</span> \u00b7 goalposts & checkpoints \u00b7 tap a rung\u2019s title to rename \u00b7 \u2715 releases it \u00b7 + rung plants a new goalpost \u00b7 The Keel retires itself the day you tick acquired<br>'
  +'everything lives in this browser only (hive_regiment) \u00b7 no wire, no cloud, no witness but the glass';
   document.getElementById('pwBtn').onclick=function(){
 var p=document.getElementById('pwPanel'), o=p.style.display!=='none';
