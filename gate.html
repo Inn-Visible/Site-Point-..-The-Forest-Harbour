@@ -45,7 +45,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="card">
 <div class="hd">the research gate · what the house is reading & building</div>
 <div class="sub">BOOKS IN HAND · SITES ON THE BENCH · ONE ★ PER SHELF MARKS THE CURRENT FOCUS · OFFLINE · NO WITNESS BUT THE GLASS</div>
-<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">queue it · work it · finish it or shelf it · the ★ says what tonight's night watch reads · → bucket plants it in the regiment's thought box</span></div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">queue it · work it · finish it or shelf it · books count pages into the % · the ★ says what tonight's night watch reads · → bucket plants it in the regiment's thought box</span></div>
 <div class="row" style="margin-top:10px">
 <select id="addK"><option value="book">book</option><option value="site">site</option></select>
 <input id="addT" placeholder="title / name" style="flex:1;min-width:110px">
@@ -65,20 +65,21 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 (function(){
 var KEY='hive_gate';
 var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
-if(!S) S={items:[],iv:2};
+if(!S) S={items:[],iv:3};
 if(!S.items) S.items=[];
-if(!S.items.length){ S.items=[
-{id:'g1',kind:'book',t:'example book · ✕ me when you have your own',ref:'author / series / which stack',st:'queue',pg:0,note:'tap the title to rename · tap status to cycle',now:false},
-{id:'g2',kind:'site',t:'example site · ✕ me when you have your own',ref:'url / what it teaches',st:'queue',pg:0,note:'★ pins tonight’s focus · → bucket sends it to the regiment',now:false}]; }
-S.items.forEach(function(it){
-if(it.id==='g1'&&it.t==='the system literacy stack'){ it.t='example book · ✕ me when you have your own'; it.ref='author / series / which stack'; it.st='queue'; it.pg=0; it.note='tap the title to rename · tap status to cycle'; it.now=false; }
-if(it.id==='g2'&&it.t==='own the maps'){ it.t='example site · ✕ me when you have your own'; it.ref='url / what it teaches'; it.st='queue'; it.pg=0; it.note='★ pins tonight’s focus · → bucket sends it to the regiment'; it.now=false; } });
+if(!S.iv) S.iv=1;
+if(S.iv<3){ S.items=S.items.filter(function(it){ return !/^example (book|site)/.test(it.t||''); }); S.iv=3; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
-function pad(n){ return (n<10?'0':'')+n; }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
 var ST=['queue','working','done','shelved'], SC={queue:'#5c6875',working:'#d9a83a',done:'#58a36a',shelved:'#c8452c'};
+function pagesSync(it){
+if(it.kind!=='book'||!it.ptot) return;
+it.pg=Math.max(0,Math.min(100,Math.round((it.pcur||0)/it.ptot*100)));
+if((it.pcur||0)>=it.ptot){ it.st='done'; it.dDone=iso(new Date()); }
+else if((it.pcur||0)>0&&it.st==='queue'){ it.st='working'; }
+}
 function bucket(txt){
 try{ var R=JSON.parse(localStorage.getItem('hive_regiment')||'null')||{};
 if(!R.bucket) R.bucket=[];
@@ -92,25 +93,36 @@ d.innerHTML='<div class="row"><button class="nw" title="current focus" style="bo
 +'<button class="bk" style="border-color:var(--frost);color:var(--frost)">\u2192 bucket</button>'
 +'<button class="rm" style="border:none;color:#5c6875">\u2715</button></div>'
 +'<div class="row" style="margin-top:6px"><span class="bw"><span class="bf" style="width:'+(it.pg||0)+'%;background:'+SC[it.st]+'"></span></span>'
++(it.kind==='book'
+? '<input class="pc" type="number" min="0" value="'+(it.pcur||0)+'" style="width:58px" title="page you are on"><span class="mini">/</span><input class="pt" type="number" min="0" value="'+(it.ptot||0)+'" style="width:58px" title="pages in the book">'
+: '')
 +'<input class="pg" type="number" min="0" max="100" value="'+(it.pg||0)+'" style="width:52px"><span class="mini">%</span></div>'
 +'<div class="row" style="margin-top:6px"><input class="nt" value="'+esc(it.note||'')+'" placeholder="note .." style="flex:1"></div>';
 d.querySelector('.nw').onclick=function(){
 if(it.now){ it.now=false; } else { S.items.forEach(function(x){ if(x.kind===it.kind) x.now=false; }); it.now=true; }
 save(); render(); };
 d.querySelector('.cy').onclick=function(){ it.st=ST[(ST.indexOf(it.st)+1)%ST.length];
-if(it.st==='done') it.dDone=iso(new Date()); save(); render(); };
+if(it.st==='done'){ it.dDone=iso(new Date()); if(it.kind==='book'&&it.ptot){ it.pcur=it.ptot; it.pg=100; } }
+save(); render(); };
 d.querySelector('.bk').onclick=function(){ var b=this;
 b.textContent=bucket('research \u00b7 '+it.t+(it.ref?' \u00b7 '+it.ref:''))?'planted \u2713':'regiment asleep';
 setTimeout(function(){ b.textContent='\u2192 bucket'; },1400); };
 d.querySelector('.tt').onclick=function(){ var v=prompt('rename this entry', it.t); if(v){ it.t=v; save(); render(); } };
 d.querySelector('.rm').onclick=function(){ if(!confirm('remove \u201c'+it.t+'\u201d from the gate?')) return;
 S.items=S.items.filter(function(x){ return x.id!==it.id; }); save(); render(); };
+if(it.kind==='book'){
+d.querySelector('.pc').onchange=function(){ it.pcur=Math.max(0,parseInt(this.value,10)||0); pagesSync(it); save(); render(); };
+d.querySelector('.pt').onchange=function(){ it.ptot=Math.max(0,parseInt(this.value,10)||0); pagesSync(it); save(); render(); };
+}
 d.querySelector('.pg').onchange=function(){ it.pg=Math.max(0,Math.min(100,parseInt(this.value,10)||0)); save(); render(); };
 d.querySelector('.nt').onchange=function(){ it.note=this.value; save(); };
 return d; }
 function shelf(kind,title,col){
 var c=el(kind==='book'?'bkCard':'stCard'); c.innerHTML='';
-c.innerHTML='<div class="hd" style="font-size:12px;color:'+col+'">'+title+'</div>';
+c.innerHTML='<div class="hd" style="font-size:12px;color:'+col+'">'+title+'</div>'
++'<div class="mini" style="margin-top:4px">'+(kind==='book'
+? 'tap \u2605 to pin tonight \u00b7 tap status to cycle \u00b7 page-on / pages-in drives the % \u00b7 last page marks it done'
+: 'tap \u2605 to pin tonight \u00b7 tap status to cycle \u00b7 set the % by hand')+'</div>';
 var list=S.items.filter(function(i){ return i.kind===kind; });
 if(!list.length){ c.innerHTML+='<div class="mini" style="margin-top:8px">nothing on this shelf yet \u00b7 the gate is open</div>'; return; }
 list.forEach(function(it){ c.appendChild(row(it)); });
@@ -133,7 +145,7 @@ el('gateV').textContent= w>0&&q>0? 'the gate holds \u00b7 '+w+' in hand, '+q+' a
 function addGo(){
 var k=el('addK').value, t=el('addT').value.trim(); if(!t){ el('addT').focus(); return; }
 var r=el('addR').value.trim();
-S.items.unshift({id:'g'+Date.now(),kind:k,t:t,ref:r,st:'queue',pg:0,note:'',now:false});
+S.items.unshift({id:'g'+Date.now(),kind:k,t:t,ref:r,st:'queue',pg:0,pcur:0,ptot:0,note:'',now:false});
 el('addT').value=''; el('addR').value='';
 save(); render(); }
 el('addGo').onclick=addGo;
