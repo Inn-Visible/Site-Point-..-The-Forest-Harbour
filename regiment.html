@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if('serviceWorker' in navigator) addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="manifest.webmanifest">
+<title>the regiment | Inn.Visible</title>
+<style>
+:root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--frost:#7fb2d9;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding-bottom:46px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.wrap{max-width:1020px;margin:0 auto;padding:16px 14px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:14px}
+.hd{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink)}
+.sub{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-top:3px}
+button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer}
+button.on{border-color:var(--gold);color:var(--gold)}
+input,textarea{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:6px 8px;outline:none;width:100%}
+textarea{resize:vertical;min-height:64px;line-height:1.7}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--dim);line-height:1.6;padding:2px 0}
+.chk input{accent-color:var(--green);width:auto;margin-top:3px;flex:none}
+.chk.done span{color:#3a4a44;text-decoration:line-through}
+.chk .rm{border:none;padding:0 4px;color:#5c6875;font-size:10px;flex:none}
+.chk .rm:hover{color:var(--red)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+@media(max-width:860px){.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.grid4{grid-template-columns:1fr}}
+.wcard{border:1px solid var(--line);background:var(--bg);padding:10px;display:flex;flex-direction:column;gap:8px}
+.wcard .wt{font-size:10px;letter-spacing:.18em}
+.wcard .wb{font-size:9px;color:#5c6875;letter-spacing:.12em}
+.wcard .ws{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--dim)}
+.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.12em;padding:5px 10px;cursor:pointer;margin:4px 6px 0 0;background:none}
+.pill.on{border-color:var(--green);color:var(--green)}
+.pill .st{color:#5c6875}
+canvas{width:100%;height:52px;display:block}
+.tally{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-top:10px}
+.tally .d{border:1px solid var(--line);padding:6px 2px;font-size:9px;color:#5c6875}
+.pips span{display:inline-block;width:7px;height:7px;margin:1px;border:1px solid #3a4a5c}
+.pips span.f{background:var(--green);border-color:var(--green)}
+.verdict{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--gold);text-align:center;margin-top:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<script>
+(function(){
+var KEY='hive_access', SES='hive_session', SPAN=1800000;
+var a=localStorage.getItem(KEY);
+var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); }
+})();
+</script>
+<header>
+<div style="font-size:14px;letter-spacing:.3em;color:var(--frost)">THE REGIMENT</div>
+<a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a>
+</header>
+<div class="wrap">
+<div class="card">
+<div class="hd">the regiment · four watches, eight habits, one held day</div>
+<div class="sub">NOCTURN-O · THE NIGHT IS A SHIFT, NOT A SIN · OFFLINE · NO WITNESS BUT THE GLASS</div>
+<div class="row" style="margin-top:10px">
+<button id="navP">‹ day</button>
+<span id="navL" style="font-size:10px;letter-spacing:.15em;color:var(--gold)"></span>
+<button id="navN">day ›</button>
+<button id="navT">today</button>
+<span style="flex:1"></span>
+<span id="streakL" style="font-size:10px;color:var(--green);letter-spacing:.12em"></span>
+</div>
+</div>
+<div class="card">
+<canvas id="rib"></canvas>
+<div class="sub" style="margin-top:6px">SOVEREIGN SLEEP 02–05 · NAPS 10–12 & 15–17 · WATCH BANDS BELOW · GOLD NEEDLE = NOW</div>
+</div>
+<div class="grid4" id="watchGrid"></div>
+<div class="card">
+<div class="hd" style="font-size:12px">the eight habits · tick what the day actually got</div>
+<div id="habRow"></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the week's tally · held watches & honest hours</div>
+<div class="tally" id="tally"></div>
+<div class="row" style="margin-top:10px;justify-content:center"><span id="weekH" style="font-size:10px;color:var(--dim);letter-spacing:.12em"></span></div>
+<div class="verdict" id="verdict"></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the night's own words · anything to aid the sleep</div>
+<textarea id="note" placeholder="confess, plan, unwind — the glass keeps it behind the lock .." style="margin-top:8px"></textarea>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the ladder · income stream #1 lives only until acquired</div>
+<div class="row" style="margin-top:8px">
+<button id="streamB"></button>
+<span style="font-size:9px;color:#5c6875;letter-spacing:.12em">security guides · spiral notes · self-study — it bills until the door opens</span>
+</div>
+<div id="ladder" style="margin-top:10px"></div>
+</div>
+</div>
+<script>
+(function(){
+var KEY='hive_regiment';
+var WATCH=[['m','01 · MORNING','07–15','self care + daily wo','#58a36a'],
+['e','02 · EVENING','17–19','security guides · income stream #1','#d9a83a'],
+['n','03 · NIGHT','20–01','skill acquisition · the brain drill','#7fb2d9'],
+['l','04 · LATE','01–03','conditional · if the body allows','#c8452c']];
+var DEF={m:['daily wo + core set','walk + one journal line','breakfast cooked, not grabbed','phone call / video jack','asl drill · lingoes + dictionary','transcription · pen, paper, cursive','one page · church or clouds meditation','wash / laundry turn','minimalism slot · sat: home sweep'],
+e:['security+ module · one segment','spiral notes · transcribe what stuck','self-study guide · one section','mark the hour · it bills someday'],
+n:['the drill · calc / chem / physics / geo','the craft · linux / python / sql','flashcards / anki turn','reading · ten pages minimum'],
+l:['clean the space · paper + notes filed','minimalist overhaul · one drawer, one folder, one screen','journaling unwind · goals self-note','lights down · aid the sleep']};
+var HABS=['body','connect','learning','empty/wash','faith','finance','nature','rest'];
+var LADDER=['security+ · the first door','comptia linux+ / pentest · the second','system literacy + skill injection','business · the ft plan'];
+var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
+if(!S) S={days:{},items:null,stream:false,ladder:[false,false,false,false]};
+if(!S.items) S.items=JSON.parse(JSON.stringify(DEF));
+if(!S.days) S.days={};
+if(!S.ladder||S.ladder.length!==4) S.ladder=[false,false,false,false];
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function addD(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function monday(d){ var x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(12,0,0,0); return x; }
+function mkW(){ return {held:false,hrs:'',it:{}}; }
+function D(){ var k=iso(sel);
+if(!S.days[k]) S.days[k]={w:{m:mkW(),e:mkW(),n:mkW(),l:mkW()},h:{},note:''};
+var d=S.days[k]; ['m','e','n','l'].forEach(function(w){ if(!d.w[w]) d.w[w]=mkW(); });
+if(!d.h) d.h={}; return d; }
+var sel=new Date(); sel.setHours(12,0,0,0);
+var DN=['sun','mon','tue','wed','thu','fri','sat'], MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function heldAll(k){ var d=S.days[k]; return !!(d&&d.w.m.held&&d.w.e.held&&d.w.n.held); }
+function streak(){ var n=0,d=new Date(); d.setHours(12,0,0,0);
+if(!heldAll(iso(d))) d=addD(d,-1);
+while(heldAll(iso(d))&&n<400){ n++; d=addD(d,-1); } return n; }
+function habStreak(name){ var n=0,d=new Date(); d.setHours(12,0,0,0);
+while(n<400){ var dd=S.days[iso(d)]; if(dd&&dd.h&&dd.h[name]){ n++; d=addD(d,-1); } else break; } return n; }
+function renderNav(){
+var d=sel;
+document.getElementById('navL').textContent=DN[d.getDay()]+' '+pad(d.getDate())+' '+MO[d.getMonth()]+' '+d.getFullYear();
+document.getElementById('streakL').textContent='streak · '+streak()+' held day'+(streak()===1?'':'s')+' running';
+}
+function pad(n){ return (n<10?'0':'')+n; }
+function renderRibbon(){
+var c=document.getElementById('rib'), r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+c.width=Math.max(10,r.width*dpr); c.height=52*dpr;
+var g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
+var W=r.width,H=52; function X(h){ return h/24*W; }
+g.clearRect(0,0,W,H);
+g.fillStyle='#0b1017'; g.fillRect(0,H-16,W,16);
+function band(h0,h1,col,y,hh){ g.fillStyle=col; g.fillRect(X(h0),y,X(h1)-X(h0),hh); }
+band(10,12,'rgba(127,178,217,.13)',6,H-24); band(15,17,'rgba(127,178,217,.13)',6,H-24);
+band(7,15,'rgba(88,163,106,.55)',H-13,4);
+band(17,19,'rgba(217,168,58,.6)',H-13,4);
+band(20,24,'rgba(127,178,217,.5)',H-13,4); band(0,1,'rgba(127,178,217,.5)',H-13,4);
+band(1,3,'rgba(200,69,44,.5)',H-13,4);
+band(2,5,'rgba(5,7,8,.92)',6,H-24);
+g.strokeStyle='rgba(127,178,217,.45)'; g.strokeRect(X(2),6,X(5)-X(2),H-24);
+g.fillStyle='#5c6875'; g.font='8px ui-monospace,Consolas,monospace';
+[0,6,12,18,24].forEach(function(h){ g.fillText(String(h), X(h)+2, 10); });
+var now=new Date(), nh=now.getHours()+now.getMinutes()/60;
+g.strokeStyle='#d9a83a'; g.lineWidth=1.4; g.beginPath(); g.moveTo(X(nh),2); g.lineTo(X(nh),H-2); g.stroke();
+g.fillStyle='#d9a83a'; g.beginPath(); g.arc(X(nh),4,2.4,0,7); g.fill();
+}
+function renderWatches(){
+var g=document.getElementById('watchGrid'); g.innerHTML=''; var day=D();
+WATCH.forEach(function(w){
+var id=w[0], items=S.items[id]||[];
+var card=document.createElement('div'); card.className='wcard';
+card.innerHTML='<div class="wt" style="color:'+w[4]+'">'+w[1]+' <span class="wb">· '+w[2]+'h</span></div>'
++'<div class="ws">'+w[3]+'</div>'
++'<div class="row"><button class="hold'+(day.w[id].held?' on':'')+'" style="'+(day.w[id].held?'':'')+'">'+(day.w[id].held?'held ✓':'hold')+'</button>'
++'<input class="hrs" placeholder="hrs" style="width:52px;flex:none" value="'+(day.w[id].hrs||'')+'"></div>'
++'<div class="items"></div>'
++'<div class="row"><input class="add" placeholder="+ item"><button class="addb">+</button></div>';
+var box=card.querySelector('.items');
+items.forEach(function(t,i){
+var row=document.createElement('div'); row.className='chk'+(day.w[id].it[i]?' done':'');
+row.innerHTML='<input type="checkbox" '+(day.w[id].it[i]?'checked':'')+'><span>'+esc(t)+'</span><button class="rm" title="remove item">✕</button>';
+row.querySelector('input').onchange=function(){ day.w[id].it[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
+row.querySelector('.rm').onclick=function(){ items.splice(i,1); save(); renderWatches(); };
+box.appendChild(row); });
+card.querySelector('.hold').onclick=function(){ day.w[id].held=!day.w[id].held; save(); renderWatches(); renderTally(); renderNav(); };
+card.querySelector('.hrs').onchange=function(){ day.w[id].hrs=this.value; save(); renderTally(); };
+function add(){ var v=card.querySelector('.add').value.trim(); if(!v) return; items.push(v); card.querySelector('.add').value=''; save(); renderWatches(); }
+card.querySelector('.addb').onclick=add;
+card.querySelector('.add').onkeydown=function(e){ if(e.key==='Enter') add(); };
+g.appendChild(card); });
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+function renderHabs(){
+var row=document.getElementById('habRow'); row.innerHTML=''; var day=D();
+HABS.forEach(function(h){
+var on=!!day.h[h];
+var b=document.createElement('button'); b.className='pill'+(on?' on':'');
+b.innerHTML=h+' <span class="st">·'+habStreak(h)+'</span>';
+b.onclick=function(){ day.h[h]=!day.h[h]; save(); renderHabs(); };
+row.appendChild(b); });
+}
+function hrsOf(k){ var d=S.days[k]; if(!d) return 0; var t=0; ['m','e','n','l'].forEach(function(w){ t+=parseFloat(d.w[w].hrs)||0; }); return t; }
+function renderTally(){
+var t=document.getElementById('tally'); t.innerHTML='';
+var m0=monday(sel), week=0, held=0;
+for(var i=0;i<7;i++){
+var d=addD(m0,i), k=iso(d), dd=S.days[k];
+var pips=['m','e','n','l'].map(function(w){ return '<span class="'+(dd&&dd.w[w].held?'f':'')+'"></span>'; }).join('');
+var h=hrsOf(k); week+=h; if(heldAll(k)) held++;
+var cell=document.createElement('div'); cell.className='d';
+cell.innerHTML='<div style="color:'+(k===iso(new Date())?'#d9a83a':'#5c6875')+'">'+DN[d.getDay()]+' '+d.getDate()+'</div>'
++'<div class="pips" style="margin:4px 0">'+pips+'</div>'
++'<div>'+(h?h.toFixed(1)+'h':'—')+'</div>';
+t.appendChild(cell); }
+document.getElementById('weekH').textContent='week · '+week.toFixed(1)+' honest hours · '+held+' of 7 held days';
+var v=document.getElementById('verdict');
+v.textContent= held>=6? 'the regiment holds · six or seven days of quiet iron'
+: held>=4? 'the regiment bends, not breaks · four or five days · the watches remember you'
+: held>=1? 'the regiment slips · one held watch at a time brings it back'
+: 'a bare week · the first held watch is the whole cure · start tonight';
+}
+var noteT=0;
+function renderNote(){
+var n=document.getElementById('note'); n.value=D().note||'';
+n.oninput=function(){ clearTimeout(noteT); var v=n.value; noteT=setTimeout(function(){ D().note=v; save(); },350); };
+}
+function renderStream(){
+var b=document.getElementById('streamB');
+b.className=S.stream?'on':'';
+b.textContent=S.stream?'income stream #1 · retired ☒ acquired':'income stream #1 · alive ☐';
+b.onclick=function(){ S.stream=!S.stream; save(); renderStream(); };
+var L=document.getElementById('ladder'); L.innerHTML='';
+LADDER.forEach(function(t,i){
+var row=document.createElement('div'); row.className='chk'+(S.ladder[i]?' done':'');
+row.innerHTML='<input type="checkbox" '+(S.ladder[i]?'checked':'')+'><span>'+esc(t)+'</span>';
+row.querySelector('input').onchange=function(){ S.ladder[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
+L.appendChild(row); });
+}
+document.getElementById('navP').onclick=function(){ sel=addD(sel,-1); renderAll(); };
+document.getElementById('navN').onclick=function(){ sel=addD(sel,1); renderAll(); };
+document.getElementById('navT').onclick=function(){ sel=new Date(); sel.setHours(12,0,0,0); renderAll(); };
+addEventListener('resize',renderRibbon);
+function renderAll(){ renderNav(); renderRibbon(); renderWatches(); renderHabs(); renderTally(); renderNote(); renderStream(); }
+renderAll();
+})();
+</script>
+</body>
+</html>
