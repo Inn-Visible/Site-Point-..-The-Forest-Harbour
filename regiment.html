@@ -293,7 +293,7 @@ out+='<text x="'+cx+'" y="92" text-anchor="middle" font-size="8" fill="'+(k===is
 sv.innerHTML=out;
 }
 /* ---- watches ---- */
-function renderWatches(){
+var lastCut=null, undoT=0; function paintUndo(){ var old=document.getElementById('rgUndo'); if(old) old.remove(); if(!lastCut) return; var d=document.createElement('div'); d.id='rgUndo'; d.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;border:1px solid #d9a83a;background:#0e141b;padding:8px 12px;font:10px ui-monospace,Consolas,monospace;color:#d9a83a;letter-spacing:.1em;display:flex;gap:10px;align-items:center'; d.innerHTML='<span>cut \u00b7 '+esc(String(lastCut.t).slice(0,28))+'</span>' +'<button id="rgUndoB" style="background:none;border:1px solid #58a36a;color:#58a36a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">undo \u21ba</button>' +'<button id="rgUndoX" style="background:none;border:1px solid #223041;color:#5c6875;font:10px ui-monospace;padding:4px 8px;cursor:pointer">\u2715</button>'; document.body.appendChild(d); clearTimeout(undoT); undoT=setTimeout(function(){ var e=document.getElementById('rgUndo'); if(e) e.remove(); lastCut=null; },8000); d.querySelector('#rgUndoB').onclick=function(){ var c=lastCut; lastCut=null; clearTimeout(undoT); var e=document.getElementById('rgUndo'); if(e) e.remove(); var it=S.items[c.w]; it.splice(c.i,0,c.t); Object.keys(S.days).forEach(function(k){ var w=S.days[k].w&&S.days[k].w[c.w]; if(!w||!w.it) return; var o2=w.it, n2={}; Object.keys(o2).forEach(function(ix){ var n=+ix; if(n>=c.i) n2[n+1]=o2[ix]; else n2[n]=o2[ix]; }); w.it=n2; }); save(); renderWatches(); }; d.querySelector('#rgUndoX').onclick=function(){ lastCut=null; clearTimeout(undoT); var e=document.getElementById('rgUndo'); if(e) e.remove(); }; } function renderWatches(){
 var g=document.getElementById('watchGrid'); g.innerHTML=''; var day=D();
 WATCH.forEach(function(w){
 var id=w[0], items=S.items[id]||[];
@@ -309,7 +309,7 @@ items.forEach(function(t,i){
 var row=document.createElement('div'); row.className='chk'+(day.w[id].it[i]?' done':'');
 row.innerHTML='<input type="checkbox" '+(day.w[id].it[i]?'checked':'')+'><span>'+esc(t)+'</span><button class="rm" title="remove item">✕</button>';
 row.querySelector('input').onchange=function(){ day.w[id].it[i]=this.checked; save(); row.className='chk'+(this.checked?' done':''); };
-row.querySelector('.rm').onclick=function(){ items.splice(i,1); Object.keys(S.days).forEach(function(k){ var w=S.days[k].w&&S.days[k].w[id]; if(!w||!w.it) return; var old=w.it, nw={}; Object.keys(old).forEach(function(ix){ var n=+ix; if(n<i) nw[n]=old[ix]; else if(n>i) nw[n-1]=old[ix]; }); w.it=nw; }); save(); renderWatches(); };
+row.querySelector('.rm').onclick=function(){ items.splice(i,1); Object.keys(S.days).forEach(function(k){ var w=S.days[k].w&&S.days[k].w[id]; if(!w||!w.it) return; var old=w.it, nw={}; Object.keys(old).forEach(function(ix){ var n=+ix; if(n<i) nw[n]=old[ix]; else if(n>i) nw[n-1]=old[ix]; }); w.it=nw; }); save(); renderWatches(); paintUndo(); };
 box.appendChild(row); });
 card.querySelector('.hold').onclick=function(){ day.w[id].held=!day.w[id].held; save(); renderWatches(); renderTally(); renderForest(); renderNav(); };
 card.querySelector('.hrs').onchange=function(){ day.w[id].hrs=this.value; save(); renderTally(); renderForest(); };
