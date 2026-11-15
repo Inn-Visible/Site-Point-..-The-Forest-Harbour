@@ -461,7 +461,7 @@ b.title='tap to flip acquired / alive';
 b.onclick=function(){ S.stream=!S.stream; save(); renderStream(); };
 function paintCount(){ var el=document.getElementById('rgCount'); if(!el) return;
 var dn=S.rungs.filter(function(r){ return r.done; }).length;
-el.textContent=dn+' of '+S.rungs.length+' checkpoints passed \u00b7 the frame guides, the keeper walks'; }
+el.textContent=dn+' of '+S.rungs.length+' checkpoints passed '; }
 function toastCut(){ var old=document.getElementById('rgUndo'); if(old) old.remove(); if(!window._rgCut) return;
 var d=document.createElement('div'); d.id='rgUndo';
 d.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;border:1px solid #d9a83a;background:#0e141b;padding:8px 12px;font:10px ui-monospace,Consolas,monospace;color:#d9a83a;letter-spacing:.1em;display:flex;gap:10px;align-items:center';
