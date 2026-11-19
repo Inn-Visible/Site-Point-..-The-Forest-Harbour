@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if('serviceWorker' in navigator) addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="manifest.webmanifest">
+<title>the cover desk | Inn.Visible</title>
+<style>
+:root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--frost:#7fb2d9;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding-bottom:46px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.wrap{max-width:980px;margin:0 auto;padding:16px 14px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:14px}
+.hd{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink)}
+.sub{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-top:3px}
+button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer}
+button.on{border-color:var(--gold);color:var(--gold)}
+input,textarea,select{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:6px 8px;outline:none;width:100%}
+textarea{resize:vertical;line-height:1.6}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mini{font-size:9px;color:#5c6875;letter-spacing:.1em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.chip{display:inline-flex;border:1px solid var(--line);color:var(--dim);font:9px var(--mono);letter-spacing:.08em;padding:3px 8px;margin:3px 4px 0 0}
+.chip.ok{border-color:var(--green);color:var(--green)}
+.ltr{background:#f5f2ea;color:#1a1a1a;padding:34px 30px;font-family:var(--serif);font-size:12.5px;line-height:1.75;white-space:pre-wrap}
+.ltr b{font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+.ltr ul{margin:6px 0 6px 20px}
+#cvPrintRoot{display:none}
+@media print{
+body>*{display:none!important}
+#cvPrintRoot{display:block!important}
+#cvPrintRoot .ltr{background:#fff;padding:0;font-size:11pt}
+}
+</style>
+</head>
+<body>
+<script>
+(function(){
+var KEY='hive_access', SES='hive_session', SPAN=1800000;
+var a=localStorage.getItem(KEY);
+var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); }
+})();
+</script>
+<header>
+<div style="font-size:14px;letter-spacing:.3em;color:var(--gold)">THE COVER DESK</div>
+<span><a href="keystone.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">keystone ↩</a><a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a></span>
+</header>
+<div class="wrap">
+<div class="card">
+<div class="hd">the cover desk · letters that open doors, quietly</div>
+<div class="sub">BUILT OFFLINE · BEHIND THE LOCK · NOTHING LEAVES THIS GLASS · NO WITNESS BUT THE VAULT</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">fill your standing details once · paste the posting · list your proof · pick a voice · the desk writes, you sign</span></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the standing details · written once, reused forever</div>
+<div class="grid" style="margin-top:8px">
+<input id="pName" placeholder="full name"><input id="pLoc" placeholder="city, province">
+<input id="pEmail" placeholder="email"><input id="pPhone" placeholder="phone">
+</div>
+<input id="pLinks" placeholder="linkedin / portfolio / github (one line)" style="margin-top:8px">
+<textarea id="pSum" placeholder="professional summary · one or two sentences that carry you" style="margin-top:8px;min-height:44px"></textarea>
+<input id="pSkills" placeholder="skills, comma separated · linux, python, sql, security+ .." style="margin-top:8px">
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the ask · this letter's target</div>
+<div class="grid" style="margin-top:8px">
+<input id="cRole" placeholder="role title · network administrator"><input id="cCo" placeholder="company">
+<input id="cHm" placeholder="hiring manager (optional)"><input id="cHook" placeholder="optional hook · why them, why now">
+</div>
+<textarea id="cJd" placeholder="paste the whole posting here · the desk reads it for keywords" style="margin-top:8px;min-height:90px"></textarea>
+<div class="row" style="margin-top:8px"><button id="kwGo" style="border-color:var(--frost);color:var(--frost)">read the posting ✓</button>
+<span class="mini" id="kwN"></span></div>
+<div id="kwRow" style="margin-top:6px"></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the proof · achievements, not adjectives</div>
+<div class="mini" style="margin-top:4px">did what · by how · measured how — one line each · the desk weaves the strongest first</div>
+<div id="blList" style="margin-top:8px"></div>
+<div class="row" style="margin-top:8px"><input id="blNew" placeholder="new proof line .." style="flex:1"><button id="blAdd" style="border-color:var(--gold);color:var(--gold)">+ proof</button></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the voice · tone & length</div>
+<div class="row" style="margin-top:8px">
+<select id="vTone" style="width:auto;min-width:170px">
+<option value="classic">classic formal</option>
+<option value="direct">warm & direct</option>
+<option value="pivot">career pivot</option>
+<option value="email">short email body</option>
+</select>
+<select id="vLen" style="width:auto;min-width:170px">
+<option value="tight">tight · ~250 words</option>
+<option value="standard" selected>standard · ~350 words</option>
+<option value="full">full · ~450 words</option>
+</select>
+</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the letter · live paper</div>
+<div class="row" style="margin-top:8px">
+<button id="btCopy" style="border-color:var(--gold);color:var(--gold)">copy</button>
+<button id="btTxt">.txt ↓</button>
+<button id="btHtml">.html ↓</button>
+<button id="btPrint" style="border-color:var(--frost);color:var(--frost)">print ⎙</button>
+<span style="width:10px"></span>
+<button id="btSave" style="border-color:var(--green);color:var(--green)">save draft</button>
+<select id="drSel" style="width:auto;max-width:260px"></select>
+<button id="drLoad">load</button>
+<button id="drDel" style="border-color:var(--red);color:var(--red)">✕</button>
+<span class="mini" id="wc" style="margin-left:auto"></span>
+</div>
+<div id="lv" style="margin-top:10px;border:1px solid var(--line)"></div>
+</div>
+</div>
+<div id="cvPrintRoot"></div>
+<script>
+(function(){
+var KEY='hive_cover';
+var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
+if(!S) S={profile:{name:'',loc:'',email:'',phone:'',links:'',summary:'',skills:''},
+cur:{role:'',company:'',hm:'',hook:'',jd:'',tone:'classic',len:'standard',bullets:[]}, drafts:[]};
+if(!S.profile) S.profile={name:'',loc:'',email:'',phone:'',links:'',summary:'',skills:''};
+if(!S.cur) S.cur={role:'',company:'',hm:'',hook:'',jd:'',tone:'classic',len:'standard',bullets:[]};
+if(!S.cur.bullets) S.cur.bullets=[];
+if(!S.drafts) S.drafts=[];
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+var MONN=['january','february','march','april','may','june','july','august','september','october','november','december'];
+/* ---- paint & wire inputs ---- */
+var PF=[['pName','name'],['pLoc','loc'],['pEmail','email'],['pPhone','phone'],['pLinks','links'],['pSum','summary'],['pSkills','skills']];
+var CF=[['cRole','role'],['cCo','company'],['cHm','hm'],['cHook','hook'],['cJd','jd']];
+function paintInputs(){
+PF.forEach(function(p){ el(p[0]).value=S.profile[p[1]]||''; });
+CF.forEach(function(p){ el(p[0]).value=S.cur[p[1]]||''; });
+el('vTone').value=S.cur.tone||'classic'; el('vLen').value=S.cur.len||'standard';
+paintBullets(); paintDrafts(); }
+PF.forEach(function(p){ el(p[0]).oninput=function(){ S.profile[p[1]]=this.value; save(); sched(); }; });
+CF.forEach(function(p){ el(p[0]).oninput=function(){ S.cur[p[1]]=this.value; save(); sched(); }; });
+el('vTone').onchange=function(){ S.cur.tone=this.value; save(); sched(); };
+el('vLen').onchange=function(){ S.cur.len=this.value; save(); sched(); };
+/* ---- bullets ---- */
+function paintBullets(){
+var box=el('blList'); box.innerHTML='';
+S.cur.bullets.forEach(function(b,i){
+var r=document.createElement('div'); r.className='row'; r.style.marginTop='6px';
+r.innerHTML='<input value="'+esc(b)+'" style="flex:1"><button class="rm" style="border:none;color:#5c6875">✕</button>';
+r.querySelector('input').oninput=function(){ S.cur.bullets[i]=this.value; save(); sched(); };
+r.querySelector('.rm').onclick=function(){ S.cur.bullets.splice(i,1); save(); paintBullets(); sched(); };
+box.appendChild(r); });
+}
+function addBullet(){ var v=el('blNew').value.trim(); if(!v) return;
+S.cur.bullets.push(v); el('blNew').value=''; save(); paintBullets(); sched(); }
+el('blAdd').onclick=addBullet;
+el('blNew').onkeydown=function(e){ if(e.key==='Enter') addBullet(); };
+/* ---- keywords ---- */
+var STOP={the:1,and:1,for:1,with:1,that:1,this:1,from:1,will:1,you:1,your:1,our:1,their:1,they:1,are:1,be:1,to:1,of:1,in:1,on:1,at:1,by:1,an:1,or:1,as:1,is:1,we:1,us:1,who:1,whom:1,whose:1,which:1,while:1,when:1,where:1,how:1,what:1,why:1,all:1,any:1,each:1,per:1,via:1,into:1,over:1,under:1,about:1,across:1,after:1,before:1,between:1,during:1,without:1,within:1,along:1,among:1,through:1,including:1,include:1,includes:1,included:1,etc:1,able:1,ability:1,strong:1,excellent:1,good:1,great:1,well:1,work:1,working:1,works:1,worked:1,team:1,teams:1,role:1,job:1,position:1,candidate:1,candidates:1,company:1,companies:1,experience:1,experienced:1,years:1,year:1,plus:1,preferred:1,required:1,requirements:1,requirement:1,skills:1,skill:1,knowledge:1,understanding:1,familiarity:1,other:1,duties:1,responsibilities:1,responsibility:1,related:1,relevant:1,minimum:1,preferred:1,must:1,should:1,may:1,can:1,could:1,would:1,have:1,has:1,had:1,having:1,not:1,no:1,yes:1,than:1,then:1,there:1,here:1,these:1,those:1,such:1,most:1,more:1,least:1,very:1,really:1,just:1,only:1,also:1,both:1,either:1,neither:1,own:1,same:1,so:1,such:1,too:1,now:1,new:1,one:1,two:1,three:1,first:1,second:1,third:1,day:1,days:1,daily:1,week:1,weeks:1,time:1,times:1,full:1,part:1,permanent:1,onsite:1,onsite:1,remote:1,hybrid:1};
+function keywords(){
+var jd=(S.cur.jd||'').toLowerCase();
+if(!jd.trim()) return [];
+var toks=jd.match(/[a-z][a-z\-\.+#\/]{3,}/g)||[];
+var m={};
+toks.forEach(function(t){ t=t.replace(/[\.+\/]+$/,''); if(STOP[t]) return; m[t]=(m[t]||0)+1; });
+var list=Object.keys(m).map(function(k){ return {w:k,n:m[k]}; })
+.sort(function(a,b){ return b.n-a.n || a.w.localeCompare(b.w); });
+return list.slice(0,14);
+}
+function coveredSet(){
+var hay=((S.profile.summary||'')+' '+(S.profile.skills||'')+' '+S.cur.bullets.join(' ')+' '+(S.cur.hook||'')).toLowerCase();
+return keywords().map(function(k){ k.ok=hay.indexOf(k.w)>-1; return k; });
+}
+function paintKw(){
+var ks=coveredSet(), row=el('kwRow'); row.innerHTML='';
+if(!ks.length){ el('kwN').textContent=''; return; }
+var ok=ks.filter(function(k){return k.ok;}).length;
+el('kwN').textContent=ks.length+' keywords read · '+ok+' already in your proof · '+(ks.length-ok)+' gaps to fill';
+ks.forEach(function(k){
+var c=document.createElement('span'); c.className='chip'+(k.ok?' ok':'');
+c.textContent=(k.ok?'✓ ':'')+k.w+(k.n>1?' ×'+k.n:'');
+c.title=k.ok?'your proof already speaks this':'not in your proof yet · add a bullet that says it';
+row.appendChild(c); });
+}
+el('kwGo').onclick=function(){ paintKw(); sched(); };
+/* ---- the letter ---- */
+function buildLetter(){
+var P=S.profile, C=S.cur;
+var name=(P.name||'').trim()||'Your Name';
+var contact=[P.loc,P.email,P.phone,P.links].map(function(x){return (x||'').trim();}).filter(function(x){return x;}).join(' · ');
+var d=new Date();
+var dateLine=d.getDate()+' '+MONN[d.getMonth()]+' '+d.getFullYear();
+var role=(C.role||'').trim()||'the open role';
+var co=(C.company||'').trim();
+var hm=(C.hm||'').trim();
+var tone=C.tone||'classic', len=C.len||'standard';
+var maxB=len==='tight'?2:(len==='full'?4:3);
+var bullets=C.bullets.map(function(b){return b.trim();}).filter(function(b){return b;}).slice(0,maxB);
+var ks=coveredSet().filter(function(k){return k.ok;}).slice(0,5).map(function(k){return k.w;});
+var hook=(C.hook||'').trim()||((P.summary||'').trim().split('. ')[0]+(((P.summary||'').trim().indexOf('.')>-1)?'.':''));
+var sal, open, lead, close, sign;
+if(tone==='email'){
+sal='Hi '+(hm? hm.split(' ')[0] : (co||'team'))+',';
+open='I\u2019m writing to apply for the '+role+' role'+(co?' at '+co:'')+'. '+hook;
+lead=bullets.length?('In short: '+bullets.join(' ')):'';
+close='Happy to share more detail, references, or a walkthrough of any of the above. Thanks for reading.';
+sign='Best regards,';
+} else if(tone==='direct'){
+sal='Dear '+(hm||((co||'')+' Hiring Team'))+',';
+open=role+(co?' at '+co:'')+' \u2014 that\u2019s the row I want on my r\u00e9sum\u00e9 next. '+hook;
+lead=bullets.length?('What that looks like in practice: '+bullets.join(' ')):'';
+close='If you want someone who ships from week one, I\u2019m your call. I\u2019d welcome thirty minutes to walk through any of the above.';
+sign='Best regards,';
+} else if(tone==='pivot'){
+sal='Dear '+(hm||((co||'')+' Hiring Team'))+',';
+open='My path to '+role+(co?' at '+co:'')+' is not a straight line \u2014 and that is exactly why it fits. '+hook;
+lead=bullets.length?('The pieces I would bring on day one:'):'';
+close='I would value the chance to show you how those pieces assemble into exactly what this role needs.';
+sign='With respect,';
+} else {
+sal='Dear '+(hm||((co||'')+' Hiring Team'))+',';
+open='I am writing to express my interest in the '+role+' position'+(co?' at '+co:'')+'. '+hook;
+lead=bullets.length?('A few things I would bring to the team:'):'';
+close='I would welcome the opportunity to discuss how my background aligns with '+(co?'your':'the team\u2019s')+' needs. Thank you for your time and consideration.';
+sign='Sincerely,';
+}
+var kwLine=ks.length?('My day-to-day already speaks your language: '+ks.join(', ')+'.'):'';
+var txtLines=[];
+txtLines.push(name); if(contact) txtLines.push(contact);
+txtLines.push(''); txtLines.push(dateLine); txtLines.push('');
+if(hm) txtLines.push(hm); if(co) txtLines.push(co); txtLines.push('');
+txtLines.push(sal); txtLines.push('');
+txtLines.push(open); txtLines.push('');
+if(lead){ txtLines.push(lead);
+if(tone==='classic'||tone==='pivot'){ bullets.forEach(function(b){ txtLines.push('  \u2022 '+b); }); }
+txtLines.push(''); }
+if(kwLine){ txtLines.push(kwLine); txtLines.push(''); }
+txtLines.push(close); txtLines.push('');
+txtLines.push(sign); txtLines.push(name);
+var html='<b>'+esc(name)+'</b>'+(contact?'<br>'+esc(contact):'')
++'<br><br>'+esc(dateLine)+'<br><br>'
++(hm?esc(hm)+'<br>':'')+(co?esc(co)+'<br>':'')+'<br>'
++esc(sal)+'<br><br>'+esc(open)+'<br><br>'
++(lead?esc(lead)+((tone==='classic'||tone==='pivot')?('<ul>'+bullets.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')+'<br>':'')
++(kwLine?esc(kwLine)+'<br><br>':'')
++esc(close)+'<br><br>'+esc(sign)+'<br>'+esc(name);
+var words=txtLines.join(' ').split(/\s+/).filter(function(w){return w;}).length;
+return {txt:txtLines.join('\n'), html:html, words:words};
+}
+var TGT={tight:250,standard:350,full:450};
+function render(){
+paintKw();
+var L=buildLetter();
+el('lv').innerHTML='<div class="ltr">'+L.html+'</div>';
+var tgt=TGT[S.cur.len||'standard'];
+var wc=el('wc'); wc.textContent='\u2248 '+L.words+' words \u00b7 target ~'+tgt;
+wc.style.color=Math.abs(L.words-tgt)<=70?'var(--green)':'var(--gold)';
+}
+var rT=0; function sched(){ clearTimeout(rT); rT=setTimeout(render,250); }
+/* ---- outputs ---- */
+function dl(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
+el('btCopy').onclick=function(){ var b=this, t=buildLetter().txt;
+if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ b.textContent='copied ✓'; setTimeout(function(){ b.textContent='copy'; },1400); },function(){ b.textContent='refused'; }); }
+else b.textContent='no clipboard'; };
+el('btTxt').onclick=function(){ dl('cover-'+(S.cur.company||'role').toLowerCase().replace(/\s+/g,'-')+'.txt', new Blob([buildLetter().txt],{type:'text/plain'})); };
+el('btHtml').onclick=function(){
+var doc='<!doctype html><html><head><meta charset="utf-8"><title>cover letter</title><style>body{font-family:Georgia,serif;font-size:11pt;line-height:1.7;color:#111;max-width:7in;margin:1in auto;padding:0 0.5in}b{font-family:Consolas,monospace;font-size:10.5pt}ul{margin:6px 0 6px 22px}</style></head><body>'+buildLetter().html+'</body></html>';
+dl('cover-'+(S.cur.company||'role').toLowerCase().replace(/\s+/g,'-')+'.html', new Blob([doc],{type:'text/html'})); };
+el('btPrint').onclick=function(){ el('cvPrintRoot').innerHTML='<div class="ltr" style="background:#fff;padding:0">'+buildLetter().html+'</div>'; window.print(); };
+/* ---- drafts ---- */
+function paintDrafts(){
+var s=el('drSel'); s.innerHTML='<option value="">drafts ..</option>';
+S.drafts.forEach(function(d,i){ var o=document.createElement('option'); o.value=i; o.textContent=d.label; s.appendChild(o); });
+}
+el('btSave').onclick=function(){
+S.drafts.unshift({id:'d'+Date.now(), label:(S.cur.role||'untitled')+' \u00b7 '+(S.cur.company||'\u2014')+' \u00b7 '+new Date().toISOString().slice(0,10),
+cur:JSON.parse(JSON.stringify(S.cur))});
+while(S.drafts.length>12) S.drafts.pop();
+save(); paintDrafts(); var b=this; b.textContent='saved ✓'; setTimeout(function(){ b.textContent='save draft'; },1400); };
+el('drLoad').onclick=function(){ var i=+el('drSel').value; if(!(i>=0&&i<S.drafts.length)) return;
+S.cur=JSON.parse(JSON.stringify(S.drafts[i].cur)); if(!S.cur.bullets) S.cur.bullets=[];
+save(); paintInputs(); render(); };
+el('drDel').onclick=function(){ var i=+el('drSel').value; if(!(i>=0&&i<S.drafts.length)) return;
+S.drafts.splice(i,1); save(); paintDrafts(); };
+paintInputs(); render();
+})();
+</script>
+</body>
+</html>
