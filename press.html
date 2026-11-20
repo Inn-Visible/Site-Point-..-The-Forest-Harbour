@@ -134,8 +134,9 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 (function(){
 var KEY='hive_press';
 var P; try{ P=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ P=null; }
-if(!P) P={side:'cover', fin:{m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true}, stamp:{kind:'none',txt:'',pos:'br',rot:-6,op:90,ink:'#111'}, ov:[], log:[]};
-if(!P.fin) P.fin={m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true};
+if(!P) P={side:'cover', fin:{m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true,gap:20,hd:'full'}, stamp:{kind:'none',txt:'',pos:'br',rot:-6,op:90,ink:'#111'}, ov:[], log:[]};
+if(!P.fin) P.fin={m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true,gap:20,hd:'full'};
+if(P.fin.gap==null) P.fin.gap=20; if(!P.fin.hd) P.fin.hd='full';
 if(!P.stamp) P.stamp={kind:'none',txt:'',pos:'br',rot:-6,op:90,ink:'#111'};
 if(!P.ov) P.ov=[]; if(!P.log) P.log=[];
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(P)); }catch(e){} }
