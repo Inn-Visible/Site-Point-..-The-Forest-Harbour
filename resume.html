@@ -324,7 +324,8 @@ function renderPaper(){
 var cls='paper '+(S.tpl||'classic')+(S.tight?' tight':'');
 el('lv').innerHTML='<div class="'+cls+'">'+paperHtml()+'</div>';
 var p=el('lv').firstElementChild;
-var pages=p?Math.max(1,Math.ceil(p.scrollHeight/864)):1;
+var hgt=p?Math.max(0,p.scrollHeight-76):0;
+var pages=Math.max(1,Math.ceil(hgt/940));
 var line=el('pgLine');
 line.textContent='\u2248 '+pages+' page'+(pages===1?'':'s')+(pages>1?' \u00b7 tap tight or trim to hold one':' \u00b7 one page holds');
 line.style.color=pages>1?'var(--gold)':'var(--green)';
@@ -339,7 +340,7 @@ el('rsPrintRoot').innerHTML='<div class="'+paperCls()+'" style="padding:0">'+pap
 window.print(); };
 el('btHtml').onclick=function(){
 var css=document.getElementById('paperCss').textContent;
-var doc='<!doctype html><html><head><meta charset="utf-8"><title>resume</title><style>'+css+'body{margin:0}.paper{max-width:8.5in;margin:0 auto;min-height:11in}@media print{.paper{padding:0}}@page{margin:0.6in}</style></head><body><div class="'+paperCls()+'">'+paperHtml()+'</div></body></html>';
+var doc='<!doctype html><html><head><meta charset="utf-8"><title>resume</title><style>'+css+'body{margin:0;background:#fff}.paper{max-width:8.5in;margin:0 auto}@media print{html,body{background:#fff}.paper{padding:0;background:#fff}h3{page-break-after:avoid}.entry{page-break-inside:avoid}}@page{margin:0.6in}</style></head><body><div class="'+paperCls()+'">'+paperHtml()+'</div></body></html>';
 dl(fname()+'.html', new Blob([doc],{type:'text/html'})); };
 function buildMd(){
 var H=S.head, L=[];
