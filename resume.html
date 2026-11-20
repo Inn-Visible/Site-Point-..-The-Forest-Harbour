@@ -36,8 +36,12 @@ button{padding:7px 12px}
 .mv{padding:6px 12px;font-size:12px}
 }
 @media print{
+html,body{background:#fff!important;height:auto!important;overflow:visible!important}
 body>*{display:none!important}
 #rsPrintRoot{display:block!important}
+#rsPrintRoot .paper{background:#fff!important;padding:0!important}
+#rsPrintRoot h3{page-break-after:avoid;break-after:avoid-page}
+#rsPrintRoot .entry{page-break-inside:avoid;break-inside:avoid}
 }
 @page{margin:0.6in}
 </style>
