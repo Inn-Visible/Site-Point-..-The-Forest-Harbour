@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if('serviceWorker' in navigator) addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="manifest.webmanifest">
+<title>the resume desk | Inn.Visible</title>
+<style>
+:root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--frost:#7fb2d9;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding-bottom:46px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.wrap{max-width:980px;margin:0 auto;padding:16px 14px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:14px}
+.hd{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink)}
+.sub{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-top:3px}
+button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer}
+button.on{border-color:var(--gold);color:var(--gold)}
+input,textarea,select{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:6px 8px;outline:none;width:100%}
+textarea{resize:vertical;line-height:1.6}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mini{font-size:9px;color:#5c6875;letter-spacing:.1em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.entryBox{border:1px solid var(--line);background:var(--bg);padding:10px;margin-top:10px}
+.chip{display:inline-flex;border:1px solid var(--line);color:var(--dim);font:9px var(--mono);letter-spacing:.08em;padding:3px 8px;margin:3px 4px 0 0;cursor:pointer}
+.chip.ok{border-color:var(--green);color:var(--green);cursor:default}
+#lv{max-width:760px;margin:10px auto 0;border:1px solid var(--line)}
+#rsPrintRoot{display:none}
+@media(max-width:700px){
+.grid{grid-template-columns:1fr}
+input,textarea,select{font-size:16px}
+.row{gap:6px}
+button{padding:7px 12px}
+.mv{padding:6px 12px;font-size:12px}
+}
+@media print{
+body>*{display:none!important}
+#rsPrintRoot{display:block!important}
+}
+@page{margin:0.6in}
+</style>
+<style id="paperCss">
+.paper{background:#fff;color:#111;padding:38px 42px;font-family:Georgia,"Times New Roman",serif;font-size:12.5px;line-height:1.5}
+.paper .rn{font-size:20px;letter-spacing:.05em;font-weight:bold}
+.paper .rt{font-style:italic;color:#444;margin-top:2px}
+.paper .rc{font-size:10.5px;color:#333;margin-top:6px;font-family:Consolas,monospace}
+.paper h3{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;margin:14px 0 6px;border-bottom:1px solid #888;padding-bottom:3px;font-family:Consolas,monospace;font-weight:normal}
+.paper ul{margin:4px 0 4px 18px}
+.paper li{margin:2px 0}
+.paper .entry{margin:8px 0;page-break-inside:avoid;break-inside:avoid}
+.paper .eh{display:flex;justify-content:space-between;gap:10px}
+.paper .er{font-weight:bold}
+.paper .ed{font-family:Consolas,monospace;font-size:10.5px;color:#444;white-space:nowrap}
+.paper .ec{font-style:italic;color:#333;font-size:11.5px}
+.paper .sk{font-size:11.5px}
+.paper.sleek{font-family:Consolas,monospace;font-size:11.5px;line-height:1.45}
+.paper.sleek .rn{letter-spacing:.22em;font-size:17px}
+.paper.sleek .rt{font-style:normal;letter-spacing:.1em}
+.paper.sleek h3{border-bottom-color:#333}
+.paper.bare{font-family:"Times New Roman",serif;font-size:12px}
+.paper.bare h3{border-bottom:none;letter-spacing:.1em;margin:10px 0 4px}
+.paper.bare .rn{font-size:18px}
+.paper.tight{font-size:11.5px;line-height:1.35}
+.paper.tight .entry{margin:5px 0}
+.paper.tight h3{margin:9px 0 4px}
+.paper.tight .rc{margin-top:4px}
+</style>
+</head>
+<body>
+<script>
+(function(){
+var KEY='hive_access', SES='hive_session', SPAN=1800000;
+var a=localStorage.getItem(KEY);
+var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); }
+})();
+</script>
+<header>
+<div style="font-size:14px;letter-spacing:.3em;color:var(--frost)">THE RESUME DESK</div>
+<span><a href="cover.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">cover desk ↩</a><a href="keystone.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">keystone ↩</a><a href="core.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">core ↩</a></span>
+</header>
+<div class="wrap">
+<div class="card">
+<div class="hd">the resume desk · one page that opens doors</div>
+<div class="sub">BUILT OFFLINE · BEHIND THE LOCK · PDF VIA THE PRINT DIALOG · NO WITNESS BUT THE VAULT</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">fill the head once · stack the proof · pick a voice · print ⎙ = save as pdf · the desk counts the pages for you</span></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the head · name, title, contact</div>
+<div class="grid" style="margin-top:8px">
+<input id="rName" placeholder="full name"><input id="rTitle" placeholder="professional title · network administrator">
+<input id="rLoc" placeholder="city, province"><input id="rEmail" placeholder="email">
+<input id="rPhone" placeholder="phone"><input id="rLinks" placeholder="linkedin / github / portfolio">
+</div>
+<div class="row" style="margin-top:8px">
+<button id="pullCover" style="border-color:var(--gold);color:var(--gold)">pull from the cover desk</button>
+<button id="resetDesk" style="border-color:var(--red);color:var(--red)">reset desk</button>
+<span class="mini">pull fills only what is empty · reset burns the whole desk (cover desk untouched)</span>
+</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the summary & the skills</div>
+<textarea id="rSum" placeholder="professional summary · two or three lines that carry the whole page" style="margin-top:8px;min-height:52px"></textarea>
+<textarea id="rSkills" placeholder="skills · comma separated · linux, python, sql, security+, tcp/ip, bash .." style="margin-top:8px;min-height:40px"></textarea>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the experience · reverse chronological, proof in bullets</div>
+<div class="mini" style="margin-top:4px">one bullet per line · did what · by how · measured how · ↑ ↓ reorder · ✕ cuts (undo waits eight seconds)</div>
+<div id="expBox"></div>
+<div class="row" style="margin-top:10px">
+<button id="expAdd" style="border-color:var(--gold);color:var(--gold)">+ role</button>
+<button id="pullProof" style="border-color:var(--frost);color:var(--frost)">pull proof from cover desk</button>
+</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the rest · education · certifications · projects · extras</div>
+<div class="mini" style="margin-top:4px">one row each · ✕ cuts (undo waits) · extras free-form</div>
+<div id="eduBox"></div>
+<div class="row" style="margin-top:8px">
+<button id="eduAdd">+ education</button><button id="certAdd">+ certification</button><button id="projAdd">+ project</button>
+</div>
+<textarea id="rExtra" placeholder="extras · languages · volunteer · interests (optional)" style="margin-top:10px;min-height:40px"></textarea>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the voice · template, density, tailor</div>
+<div class="row" style="margin-top:8px">
+<select id="vTpl" style="width:auto;min-width:150px">
+<option value="classic">classic serif</option>
+<option value="sleek">sleek mono</option>
+<option value="bare">ats-bare</option>
+</select>
+<button id="vTight">tight · one-page aid</button>
+<span id="pgLine" class="mini" style="margin-left:auto"></span>
+</div>
+<textarea id="tJd" placeholder="paste a posting · the desk reads it for keywords your resume should carry" style="margin-top:10px;min-height:64px"></textarea>
+<div class="row" style="margin-top:8px"><button id="tGo" style="border-color:var(--frost);color:var(--frost)">read the posting ✓</button><span class="mini" id="tN"></span></div>
+<div id="twRow" style="margin-top:6px"></div>
+<div class="mini" style="margin-top:6px">dim chip = missing · tap it to add it to your skills · green = already carried</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the paper · live proof</div>
+<div class="row" style="margin-top:8px">
+<button id="btPrint" style="border-color:var(--gold);color:var(--gold)">print ⎙ = save as pdf</button>
+<button id="btHtml">.html ↓</button>
+<button id="btMd">.md ↓</button>
+<button id="btCopy">copy text</button>
+<span style="width:10px"></span>
+<button id="btJson" style="border-color:var(--frost);color:var(--frost)">resume ⎘ out</button>
+<button id="btJsonIn">resume ⎘ in</button>
+<input id="jsonFile" type="file" style="display:none">
+</div>
+<div id="lv"></div>
+</div>
+</div>
+<div id="rsPrintRoot"></div>
+<script>
+(function(){
+var KEY='hive_resume';
+var S; try{ S=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ S=null; }
+if(!S) S={head:{name:'',title:'',loc:'',email:'',phone:'',links:''},summary:'',skills:'',
+exp:[],edu:[],certs:[],proj:[],extra:'',tpl:'classic',tight:false,iv:2};
+if(!S.head) S.head={name:'',title:'',loc:'',email:'',phone:'',links:''};
+if(!S.exp) S.exp=[]; if(!S.edu) S.edu=[]; if(!S.certs) S.certs=[]; if(!S.proj) S.proj=[];
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+function flash(b,msg){ var old=b.textContent; b.textContent=msg; setTimeout(function(){ b.textContent=old; },1500); }
+/* ---- undo toast · the desk forgives ---- */
+var undoT=0;
+function cutToast(label,restore){
+var old=document.getElementById('rsUndo'); if(old) old.remove();
+var d=document.createElement('div'); d.id='rsUndo';
+d.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;border:1px solid #d9a83a;background:#0e141b;padding:8px 12px;font:10px ui-monospace,Consolas,monospace;color:#d9a83a;letter-spacing:.1em;display:flex;gap:10px;align-items:center';
+d.innerHTML='<span>cut \u00b7 '+esc(label).slice(0,28)+'</span>'
++'<button id="rsUndoB" style="background:none;border:1px solid #58a36a;color:#58a36a;font:10px ui-monospace;padding:4px 10px;cursor:pointer">undo \u21ba</button>'
++'<button id="rsUndoX" style="background:none;border:1px solid #223041;color:#5c6875;font:10px ui-monospace;padding:4px 8px;cursor:pointer">\u2715</button>';
+document.body.appendChild(d);
+clearTimeout(undoT); undoT=setTimeout(function(){ var e=document.getElementById('rsUndo'); if(e) e.remove(); },8000);
+d.querySelector('#rsUndoB').onclick=function(){ var e=document.getElementById('rsUndo'); if(e) e.remove(); clearTimeout(undoT); restore(); };
+d.querySelector('#rsUndoX').onclick=function(){ var e=document.getElementById('rsUndo'); if(e) e.remove(); clearTimeout(undoT); };
+}
+/* ---- head + summary + skills ---- */
+var HF=[['rName','name'],['rTitle','title'],['rLoc','loc'],['rEmail','email'],['rPhone','phone'],['rLinks','links']];
+function paintHead(){
+HF.forEach(function(p){ el(p[0]).value=S.head[p[1]]||''; });
+el('rSum').value=S.summary||''; el('rSkills').value=S.skills||'';
+el('rExtra').value=S.extra||''; el('vTpl').value=S.tpl||'classic';
+el('vTight').className=S.tight?'on':'';
+}
+HF.forEach(function(p){ el(p[0]).oninput=function(){ S.head[p[1]]=this.value; save(); renderPaper(); }; });
+el('rSum').oninput=function(){ S.summary=this.value; save(); renderPaper(); };
+el('rSkills').oninput=function(){ S.skills=this.value; save(); renderPaper(); paintTailor(); };
+el('rExtra').oninput=function(){ S.extra=this.value; save(); renderPaper(); };
+el('vTpl').onchange=function(){ S.tpl=this.value; save(); renderPaper(); };
+el('vTight').onclick=function(){ S.tight=!S.tight; save(); this.className=S.tight?'on':''; renderPaper(); };
+el('pullCover').onclick=function(){
+var C=null; try{ C=JSON.parse(localStorage.getItem('hive_cover')||'null'); }catch(e){}
+if(!C||!C.profile){ flash(this,'cover desk asleep'); return; }
+var P=C.profile;
+if(!S.head.name&&P.name) S.head.name=P.name;
+if(!S.head.loc&&P.loc) S.head.loc=P.loc;
+if(!S.head.email&&P.email) S.head.email=P.email;
+if(!S.head.phone&&P.phone) S.head.phone=P.phone;
+if(!S.head.links&&P.links) S.head.links=P.links;
+if(!S.summary&&P.summary) S.summary=P.summary;
+if(!S.skills&&P.skills) S.skills=P.skills;
+save(); paintHead(); renderPaper(); paintTailor(); flash(this,'pulled \u2713'); };
+el('resetDesk').onclick=function(){
+if(!confirm('reset the whole desk? head, summary, skills, every role and row \u00b7 the cover desk is untouched \u00b7 this cannot be undone.')) return;
+S={head:{name:'',title:'',loc:'',email:'',phone:'',links:''},summary:'',skills:'',exp:[],edu:[],certs:[],proj:[],extra:'',tpl:S.tpl||'classic',tight:false,iv:2};
+save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor(); };
+/* ---- experience ---- */
+function paintExp(){
+var box=el('expBox'); box.innerHTML='';
+S.exp.forEach(function(x,i){
+var d=document.createElement('div'); d.className='entryBox';
+d.innerHTML='<div class="grid"><input class="xr" value="'+esc(x.role)+'" placeholder="role / title">'
++'<input class="xc" value="'+esc(x.co)+'" placeholder="company / org"></div>'
++'<div class="row" style="margin-top:6px"><input class="xd" value="'+esc(x.dates)+'" placeholder="dates \u00b7 2023 \u2013 present" style="flex:1">'
++'<button class="mv xu" style="border:none;color:#5c6875" title="move up">\u2191</button>'
++'<button class="mv xn" style="border:none;color:#5c6875" title="move down">\u2193</button>'
++'<button class="mv xx" style="border:none;color:#c8452c" title="remove">\u2715</button></div>'
++'<textarea class="xb" placeholder="bullets \u00b7 one per line \u00b7 did what \u00b7 by how \u00b7 measured how" style="margin-top:6px;min-height:64px">'+esc((x.bl||[]).join('\n'))+'</textarea>';
+d.querySelector('.xr').oninput=function(){ x.role=this.value; save(); renderPaper(); };
+d.querySelector('.xc').oninput=function(){ x.co=this.value; save(); renderPaper(); };
+d.querySelector('.xd').oninput=function(){ x.dates=this.value; save(); renderPaper(); };
+d.querySelector('.xb').oninput=function(){ x.bl=this.value.split('\n').filter(function(l){return l.trim();}); save(); renderPaper(); paintTailor(); };
+d.querySelector('.xx').onclick=function(){ var obj=x; S.exp.splice(i,1); save(); paintExp(); renderPaper();
+cutToast(obj.role||obj.co||'role', function(){ S.exp.splice(i,0,obj); save(); paintExp(); renderPaper(); }); };
+d.querySelector('.xu').onclick=function(){ if(i<1) return; S.exp.splice(i-1,0,S.exp.splice(i,1)[0]); save(); paintExp(); renderPaper(); };
+d.querySelector('.xn').onclick=function(){ if(i>=S.exp.length-1) return; S.exp.splice(i+1,0,S.exp.splice(i,1)[0]); save(); paintExp(); renderPaper(); };
+box.appendChild(d); });
+}
+el('expAdd').onclick=function(){ S.exp.push({role:'',co:'',dates:'',bl:[]}); save(); paintExp(); renderPaper(); };
+el('pullProof').onclick=function(){
+var C=null; try{ C=JSON.parse(localStorage.getItem('hive_cover')||'null'); }catch(e){}
+var bl=(C&&C.cur&&C.cur.bullets)?C.cur.bullets.filter(function(b){ return (b||'').trim(); }):[];
+if(!bl.length){ flash(this,'cover desk empty'); return; }
+S.exp.push({role:'proof pool \u00b7 sort me', co:'', dates:'', bl:bl.slice()});
+save(); paintExp(); renderPaper(); flash(this,'pulled \u2713 '+bl.length); };
+/* ---- edu / certs / proj ---- */
+function paintLists(){
+var b=el('eduBox'); b.innerHTML='';
+function rowFor(arr,ph1,ph2,ph3){
+arr.forEach(function(x,i){
+var d=document.createElement('div'); d.className='row'; d.style.marginTop='6px';
+d.innerHTML='<input class="a" value="'+esc(x.t)+'" placeholder="'+ph1+'" style="flex:2;min-width:120px">'
++'<input class="b" value="'+esc(x.d)+'" placeholder="'+ph2+'" style="flex:1;min-width:90px">'
++(ph3?'<input class="c" value="'+esc(x.c||'')+'" placeholder="'+ph3+'" style="flex:1;min-width:90px">':'')
++'<button class="mv x" style="border:none;color:#c8452c">\u2715</button>';
+d.querySelector('.a').oninput=function(){ x.t=this.value; save(); renderPaper(); };
+d.querySelector('.b').oninput=function(){ x.d=this.value; save(); renderPaper(); };
+if(ph3) d.querySelector('.c').oninput=function(){ x.c=this.value; save(); renderPaper(); };
+d.querySelector('.x').onclick=function(){ var obj=x; arr.splice(i,1); save(); paintLists(); renderPaper();
+cutToast(obj.t||'row', function(){ arr.splice(i,0,obj); save(); paintLists(); renderPaper(); }); };
+b.appendChild(d); }); }
+rowFor(S.edu,'school / program','dates','credential');
+rowFor(S.certs,'certification','date','');
+rowFor(S.proj,'project name','dates','one-line desc');
+}
+el('eduAdd').onclick=function(){ S.edu.push({t:'',d:'',c:''}); save(); paintLists(); renderPaper(); };
+el('certAdd').onclick=function(){ S.certs.push({t:'',d:''}); save(); paintLists(); renderPaper(); };
+el('projAdd').onclick=function(){ S.proj.push({t:'',d:'',c:''}); save(); paintLists(); renderPaper(); };
+/* ---- tailor ---- */
+var STOP={the:1,and:1,for:1,with:1,that:1,this:1,from:1,will:1,you:1,your:1,our:1,their:1,are:1,be:1,to:1,of:1,in:1,on:1,at:1,by:1,an:1,or:1,as:1,is:1,we:1,us:1,who:1,which:1,while:1,when:1,where:1,how:1,what:1,why:1,all:1,any:1,each:1,per:1,via:1,into:1,over:1,under:1,about:1,across:1,after:1,before:1,between:1,during:1,without:1,within:1,including:1,include:1,includes:1,able:1,ability:1,strong:1,excellent:1,good:1,great:1,well:1,work:1,working:1,works:1,team:1,teams:1,role:1,job:1,position:1,candidate:1,candidates:1,company:1,companies:1,experience:1,experienced:1,years:1,year:1,plus:1,preferred:1,required:1,requirements:1,skills:1,skill:1,knowledge:1,understanding:1,familiarity:1,other:1,duties:1,responsibilities:1,responsibility:1,related:1,relevant:1,minimum:1,must:1,should:1,may:1,can:1,could:1,would:1,have:1,has:1,had:1,having:1,not:1,no:1,than:1,then:1,there:1,here:1,these:1,those:1,such:1,most:1,more:1,least:1,very:1,really:1,just:1,only:1,also:1,both:1,either:1,neither:1,own:1,same:1,so:1,too:1,now:1,new:1,one:1,two:1,three:1,first:1,second:1,third:1,day:1,days:1,daily:1,week:1,weeks:1,time:1,times:1,full:1,part:1,remote:1,hybrid:1,onsite:1};
+function kws(){
+var jd=(el('tJd').value||'').toLowerCase(); if(!jd.trim()) return [];
+var toks=jd.match(/[a-z][a-z\-\.+#\/]{3,}/g)||[], m={};
+toks.forEach(function(t){ t=t.replace(/[\.+\/]+$/,''); if(STOP[t]) return; m[t]=(m[t]||0)+1; });
+return Object.keys(m).map(function(k){ return {w:k,n:m[k]}; }).sort(function(a,b){ return b.n-a.n||a.w.localeCompare(b.w); }).slice(0,16);
+}
+function hay(){
+var bl=[]; S.exp.forEach(function(x){ bl=bl.concat(x.bl||[]); });
+return (S.summary+' '+S.skills+' '+bl.join(' ')+' '+S.extra).toLowerCase();
+}
+function paintTailor(){
+var ks=kws(), row=el('twRow'); row.innerHTML='';
+if(!ks.length){ el('tN').textContent=''; return; }
+var h=hay(), ok=0;
+ks.forEach(function(k){ k.ok=h.indexOf(k.w)>-1; if(k.ok) ok++; });
+el('tN').textContent=ks.length+' keywords \u00b7 '+ok+' carried \u00b7 '+(ks.length-ok)+' missing';
+ks.forEach(function(k){
+var c=document.createElement('span'); c.className='chip'+(k.ok?' ok':'');
+c.textContent=(k.ok?'\u2713 ':'')+k.w+(k.n>1?' \u00d7'+k.n:'');
+c.title=k.ok?'already in your resume':'tap to add to skills';
+if(!k.ok) c.onclick=function(){
+var cur=(S.skills||'').split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+if(cur.indexOf(k.w)<0){ cur.push(k.w); S.skills=cur.join(', '); save(); el('rSkills').value=S.skills; renderPaper(); paintTailor(); } };
+row.appendChild(c); });
+}
+el('tGo').onclick=paintTailor;
+el('tJd').oninput=function(){ clearTimeout(this._t); this._t=setTimeout(paintTailor,400); };
+/* ---- the paper ---- */
+function paperHtml(){
+var H=S.head;
+var contact=[H.loc,H.email,H.phone,H.links].map(function(x){return (x||'').trim();}).filter(function(x){return x;}).join(' \u00b7 ');
+var h='<div class="rn">'+esc(H.name||'Your Name')+'</div>'
++(H.title?'<div class="rt">'+esc(H.title)+'</div>':'')
++(contact?'<div class="rc">'+esc(contact)+'</div>':'');
+if((S.summary||'').trim()) h+='<h3>summary</h3><div>'+esc(S.summary)+'</div>';
+if((S.skills||'').trim()) h+='<h3>skills</h3><div class="sk">'+esc(S.skills)+'</div>';
+var exps=S.exp.filter(function(x){ return (x.role||x.co||'').trim(); });
+if(exps.length){ h+='<h3>experience</h3>';
+exps.forEach(function(x){
+h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.role)+'</span><span class="ed">'+esc(x.dates)+'</span></div>'
++(x.co?'<div class="ec">'+esc(x.co)+'</div>':'')
++((x.bl&&x.bl.length)?('<ul>'+x.bl.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')
++'</div>'; }); }
+if(S.edu.length){ h+='<h3>education</h3>';
+S.edu.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.t)+'</span><span class="ed">'+esc(x.d)+'</span></div>'+(x.c?'<div class="ec">'+esc(x.c)+'</div>':'')+'</div>'; }); }
+if(S.certs.length){ h+='<h3>certifications</h3><ul>'+S.certs.map(function(x){ return '<li>'+esc(x.t)+(x.d?' \u00b7 <span class="ed">'+esc(x.d)+'</span>':'')+'</li>'; }).join('')+'</ul>'; }
+if(S.proj.length){ h+='<h3>projects</h3>';
+S.proj.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.t)+'</span><span class="ed">'+esc(x.d)+'</span></div>'+(x.c?'<div class="ec">'+esc(x.c)+'</div>':'')+'</div>'; }); }
+if((S.extra||'').trim()) h+='<h3>extras</h3><div>'+esc(S.extra)+'</div>';
+return h;
+}
+function renderPaper(){
+var cls='paper '+(S.tpl||'classic')+(S.tight?' tight':'');
+el('lv').innerHTML='<div class="'+cls+'">'+paperHtml()+'</div>';
+var p=el('lv').firstElementChild;
+var pages=p?Math.max(1,Math.ceil(p.scrollHeight/864)):1;
+var line=el('pgLine');
+line.textContent='\u2248 '+pages+' page'+(pages===1?'':'s')+(pages>1?' \u00b7 tap tight or trim to hold one':' \u00b7 one page holds');
+line.style.color=pages>1?'var(--gold)':'var(--green)';
+}
+/* ---- outputs ---- */
+function dl(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
+function fname(){ return (S.head.name||'resume').toLowerCase().replace(/\s+/g,'-')+'-resume'; }
+function paperCls(){ return 'paper '+(S.tpl||'classic')+(S.tight?' tight':''); }
+el('btPrint').onclick=function(){
+el('rsPrintRoot').innerHTML='<div class="'+paperCls()+'" style="padding:0">'+paperHtml()+'</div>';
+window.print(); };
+el('btHtml').onclick=function(){
+var css=document.getElementById('paperCss').textContent;
+var doc='<!doctype html><html><head><meta charset="utf-8"><title>resume</title><style>'+css+'body{margin:0}.paper{max-width:8.5in;margin:0 auto;min-height:11in}@media print{.paper{padding:0}}@page{margin:0.6in}</style></head><body><div class="'+paperCls()+'">'+paperHtml()+'</div></body></html>';
+dl(fname()+'.html', new Blob([doc],{type:'text/html'})); };
+function buildMd(){
+var H=S.head, L=[];
+L.push('# '+(H.name||'Your Name'));
+if(H.title) L.push('**'+H.title+'**');
+var contact=[H.loc,H.email,H.phone,H.links].filter(function(x){return (x||'').trim();}).join(' \u00b7 ');
+if(contact) L.push(contact);
+if(S.summary) L.push('','## Summary',S.summary);
+if(S.skills) L.push('','## Skills',S.skills);
+if(S.exp.length){ L.push('','## Experience');
+S.exp.forEach(function(x){ L.push('','### '+(x.role||'role')+(x.co?' \u2014 '+x.co:'')+(x.dates?' ('+x.dates+')':''));
+(x.bl||[]).forEach(function(b){ L.push('- '+b); }); }); }
+if(S.edu.length){ L.push('','## Education'); S.edu.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')+(x.c?' \u2014 '+x.c:'')); }); }
+if(S.certs.length){ L.push('','## Certifications'); S.certs.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')); }); }
+if(S.proj.length){ L.push('','## Projects'); S.proj.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')+(x.c?': '+x.c:'')); }); }
+if(S.extra) L.push('','## Extras',S.extra);
+return L.join('\n');
+}
+el('btMd').onclick=function(){ dl(fname()+'.md', new Blob([buildMd()],{type:'text/markdown'})); };
+el('btCopy').onclick=function(){ var b=this, t=buildMd().replace(/[#*]/g,'');
+if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ flash(b,'copied \u2713'); },function(){ flash(b,'refused'); }); }
+else flash(b,'no clipboard'); };
+el('btJson').onclick=function(){ dl(fname()+'.resume', new Blob([JSON.stringify(S,null,1)],{type:'application/json'})); };
+el('btJsonIn').onclick=function(){ el('jsonFile').click(); };
+el('jsonFile').onchange=function(){
+var f=this.files&&this.files[0]; if(!f) return;
+var r=new FileReader();
+r.onload=function(){ var o=null; try{ o=JSON.parse(r.result); }catch(e){ return; }
+if(!o||!o.head) return; S=o;
+if(!S.exp) S.exp=[]; if(!S.edu) S.edu=[]; if(!S.certs) S.certs=[]; if(!S.proj) S.proj=[];
+save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor(); };
+r.readAsText(f); this.value=''; };
+paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor();
+})();
+</script>
+</body>
+</html>
