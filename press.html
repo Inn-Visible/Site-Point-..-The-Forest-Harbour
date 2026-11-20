@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if('serviceWorker' in navigator) addEventListener('load',function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="manifest.webmanifest">
+<title>the press | Inn.Visible</title>
+<style>
+:root{--bg:#0a0d12;--panel:#0e141b;--line:#223041;--ink:#e8e4d8;--dim:#93a1b0;--red:#c8452c;--blue:#3f7fc1;--gold:#d9a83a;--green:#58a36a;--frost:#7fb2d9;--mono:ui-monospace,"Cascadia Mono",Consolas,monospace;--serif:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);padding-bottom:46px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.wrap{max-width:980px;margin:0 auto;padding:16px 14px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:14px}
+.hd{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink)}
+.sub{font-size:9px;letter-spacing:.2em;color:#5c6875;margin-top:3px}
+button{background:none;border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer}
+button.on{border-color:var(--gold);color:var(--gold)}
+input,textarea,select{background:rgba(3,4,7,.6);border:1px solid var(--line);color:var(--ink);font:11px var(--mono);padding:6px 8px;outline:none;width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mini{font-size:9px;color:#5c6875;letter-spacing:.1em}
+.sheet{position:relative;background:#fff;max-width:760px;margin:10px auto 0;border:1px solid var(--line)}
+#psPrintRoot{display:none}
+@media(max-width:700px){input,select,textarea{font-size:16px}button{padding:7px 12px}}
+@media print{
+html,body{background:#fff!important;height:auto!important;overflow:visible!important}
+body>*{display:none!important}
+#psPrintRoot{display:block!important}
+#psPrintRoot .paper{background:#fff!important}
+#psPrintRoot h3{page-break-after:avoid;break-after:avoid-page}
+#psPrintRoot .entry{page-break-inside:avoid;break-inside:avoid}
+}
+@page{margin:0}
+</style>
+<style id="paperCss">
+.paper{background:#fff;color:#111;padding:38px 42px;font-family:Georgia,"Times New Roman",serif;font-size:12.5px;line-height:1.5;position:relative}
+.paper .rn{font-size:20px;letter-spacing:.05em;font-weight:bold}
+.paper .rt{font-style:italic;color:#444;margin-top:2px}
+.paper .rc{font-size:10.5px;color:#333;margin-top:6px;font-family:Consolas,monospace}
+.paper h3{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;margin:14px 0 6px;border-bottom:1px solid #888;padding-bottom:3px;font-family:Consolas,monospace;font-weight:normal}
+.paper ul{margin:4px 0 4px 18px}
+.paper li{margin:2px 0}
+.paper .entry{margin:8px 0}
+.paper .eh{display:flex;justify-content:space-between;gap:10px}
+.paper .er{font-weight:bold}
+.paper .ed{font-family:Consolas,monospace;font-size:10.5px;color:#444;white-space:nowrap}
+.paper .ec{font-style:italic;color:#333;font-size:11.5px}
+.paper .sk{font-size:11.5px}
+.paper.sleek{font-family:Consolas,monospace;font-size:11.5px;line-height:1.45}
+.paper.sleek .rn{letter-spacing:.22em;font-size:17px}
+.paper.sleek .rt{font-style:normal;letter-spacing:.1em}
+.paper.bare{font-family:"Times New Roman",serif;font-size:12px}
+.paper.bare h3{border-bottom:none;letter-spacing:.1em;margin:10px 0 4px}
+.paper.ltr{font-size:12.5px;line-height:1.75}
+.paper.ltr b{font-family:Consolas,monospace;font-size:12px;letter-spacing:.06em}
+</style>
+<style id="finCss"></style>
+</head>
+<body>
+<script>
+(function(){
+var KEY='hive_access', SES='hive_session', SPAN=1800000;
+var a=localStorage.getItem(KEY);
+var ok=sessionStorage.getItem(SES)==='1'&&a&&+a>Date.now();
+if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,String(Date.now()+SPAN)); }
+})();
+</script>
+<header>
+<div style="font-size:14px;letter-spacing:.3em;color:var(--red)">THE PRESS</div>
+<span><a href="cover.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">cover desk ↩</a><a href="resume.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none;margin-right:12px">resume desk ↩</a><a href="keystone.html" style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-decoration:none">keystone ↩</a></span>
+</header>
+<div class="wrap">
+<div class="card">
+<div class="hd">the press · post-draft finishing & the stamper</div>
+<div class="sub">BOTH SIDES OF THE DESK · THE PRESS COPY IS ITS OWN · STAMPS CARRY INTO THE PDF · NO WITNESS BUT THE VAULT</div>
+<div style="margin-top:8px;font-size:9px;letter-spacing:.14em;color:#5c6875">tl;dr · <span style="color:#d9a83a">pick a side · fine-tune the sheet · override a line without touching the draft · lay a stamp · print ⎙ · stamp it sent</span></div>
+<div class="row" style="margin-top:10px">
+<button id="sdCover" style="border-color:var(--gold);color:var(--gold)">the letter</button>
+<button id="sdResume" style="border-color:var(--frost);color:var(--frost)">the paper</button>
+<span class="mini" id="srcL"></span>
+</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the finishing · margins, type, leading, glyphs</div>
+<div class="row" style="margin-top:8px">
+<span class="mini">margin in</span><input id="fM" type="number" step="0.1" min="0.3" max="1.2" style="width:64px">
+<span class="mini">type pt</span><input id="fPt" type="number" step="0.5" min="9" max="14" style="width:64px">
+<span class="mini">leading</span><input id="fLh" type="number" step="0.05" min="1.2" max="2" style="width:64px">
+<span class="mini">bullets</span><select id="fGly" style="width:auto"><option value="disc">• disc</option><option value="dash">– dash</option><option value="sq">▪ square</option><option value="cir">◦ circle</option></select>
+<button id="fWid">widow guard · on</button>
+<span class="mini" id="pgLine" style="margin-left:auto"></span>
+</div>
+<div class="hd" style="font-size:11px;margin-top:12px">the overrides · find → replace on the press copy only</div>
+<div class="mini" style="margin-top:4px">the draft stays pure · these edits live and die on the press</div>
+<div id="ovBox" style="margin-top:6px"></div>
+<div class="row" style="margin-top:6px"><input id="ovF" placeholder="find .." style="flex:1"><input id="ovR" placeholder="replace with .." style="flex:1"><button id="ovAdd" style="border-color:var(--gold);color:var(--gold)">+ override</button></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the pseudo-stamper · ink on glass, carried into paper</div>
+<div class="row" style="margin-top:8px">
+<select id="stKind" style="width:auto;min-width:130px"><option value="none">no stamp</option><option value="sig">signature</option><option value="date">dated line</option><option value="seal">house seal</option><option value="draft">DRAFT ghost</option><option value="custom">custom words</option></select>
+<input id="stTxt" placeholder="custom stamp text .." style="flex:1;min-width:120px">
+<select id="stPos" style="width:auto"><option value="br">bottom right</option><option value="bl">bottom left</option><option value="tr">top right</option><option value="tl">top left</option><option value="c">center</option></select>
+<select id="stInk" style="width:auto"><option value="#111">ink black</option><option value="#8a2b1d">rust</option><option value="#8a6d1f">old gold</option><option value="#2b4a63">frost deep</option></select>
+</div>
+<div class="row" style="margin-top:8px">
+<span class="mini">tilt</span><input id="stRot" type="range" min="-18" max="18" value="-6" style="flex:1">
+<span class="mini">ink weight</span><input id="stOp" type="range" min="20" max="100" value="90" style="flex:1">
+</div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the sheet · live proof</div>
+<div class="row" style="margin-top:8px">
+<button id="psPrint" style="border-color:var(--gold);color:var(--gold)">print ⎙ = save as pdf</button>
+<button id="psHtml">.html ↓</button>
+<button id="psCopy">copy text</button>
+<span style="width:10px"></span>
+<button id="psSent" style="border-color:var(--green);color:var(--green)">stamp sent ✓</button>
+</div>
+<div id="pv"></div>
+</div>
+<div class="card">
+<div class="hd" style="font-size:12px">the stamp ledger · who got what, when</div>
+<div class="mini" id="lgN" style="margin-top:4px"></div>
+<div id="lgBox" style="margin-top:6px"></div>
+</div>
+</div>
+<div id="psPrintRoot"></div>
+<script>
+(function(){
+var KEY='hive_press';
+var P; try{ P=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ P=null; }
+if(!P) P={side:'cover', fin:{m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true}, stamp:{kind:'none',txt:'',pos:'br',rot:-6,op:90,ink:'#111'}, ov:[], log:[]};
+if(!P.fin) P.fin={m:0.6,pt:11.5,lh:1.5,gly:'disc',widow:true};
+if(!P.stamp) P.stamp={kind:'none',txt:'',pos:'br',rot:-6,op:90,ink:'#111'};
+if(!P.ov) P.ov=[]; if(!P.log) P.log=[];
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(P)); }catch(e){} }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+var MONN=['january','february','march','april','may','june','july','august','september','october','november','december'];
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/* ---- sources ---- */
+function coverState(){ try{ return JSON.parse(localStorage.getItem('hive_cover')||'null'); }catch(e){ return null; } }
+function resumeState(){ try{ return JSON.parse(localStorage.getItem('hive_resume')||'null'); }catch(e){ return null; } }
+function buildCover(){
+var C=coverState(); if(!C) return null;
+var Pf=C.profile||{}, Cu=C.cur||{};
+var name=(Pf.name||'').trim()||'Your Name';
+var contact=[Pf.loc,Pf.email,Pf.phone,Pf.links].map(function(x){return (x||'').trim();}).filter(function(x){return x;}).join(' \u00b7 ');
+var d=new Date(), dateLine=d.getDate()+' '+MONN[d.getMonth()]+' '+d.getFullYear();
+var role=(Cu.role||'').trim()||'the open role', co=(Cu.company||'').trim(), hm=(Cu.hm||'').trim();
+var tone=Cu.tone||'classic', len=Cu.len||'standard';
+var maxB=len==='tight'?2:(len==='full'?4:3);
+var bullets=(Cu.bullets||[]).map(function(b){return (b||'').trim();}).filter(function(b){return b;}).slice(0,maxB);
+var hook=(Cu.hook||'').trim()||(((Pf.summary||'').trim().split('. ')[0])+(((Pf.summary||'').trim().indexOf('.')>-1)?'.':''));
+var sal,open,lead,close,sign;
+if(tone==='email'){ sal='Hi '+(hm?hm.split(' ')[0]:(co||'team'))+','; open='I\u2019m writing to apply for the '+role+' role'+(co?' at '+co:'')+'. '+hook; lead=bullets.length?('In short: '+bullets.join(' ')):''; close='Happy to share more detail, references, or a walkthrough of any of the above. Thanks for reading.'; sign='Best regards,'; }
+else if(tone==='direct'){ sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open=role+(co?' at '+co:'')+' \u2014 that\u2019s the row I want on my r\u00e9sum\u00e9 next. '+hook; lead=bullets.length?('What that looks like in practice: '+bullets.join(' ')):''; close='If you want someone who ships from week one, I\u2019m your call. I\u2019d welcome thirty minutes to walk through any of the above.'; sign='Best regards,'; }
+else if(tone==='pivot'){ sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open='My path to '+role+(co?' at '+co:'')+' is not a straight line \u2014 and that is exactly why it fits. '+hook; lead=bullets.length?'The pieces I would bring on day one:':''; close='I would value the chance to show you how those pieces assemble into exactly what this role needs.'; sign='With respect,'; }
+else { sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open='I am writing to express my interest in the '+role+' position'+(co?' at '+co:'')+'. '+hook; lead=bullets.length?'A few things I would bring to the team:':''; close='I would welcome the opportunity to discuss how my background aligns with '+(co?'your':'the team\u2019s')+' needs. Thank you for your time and consideration.'; sign='Sincerely,'; }
+var html='<b>'+esc(name)+'</b>'+(contact?'<br>'+esc(contact):'')+'<br><br>'+esc(dateLine)+'<br><br>'+(hm?esc(hm)+'<br>':'')+(co?esc(co)+'<br>':'')+'<br>'+esc(sal)+'<br><br>'+esc(open)+'<br><br>'+(lead?esc(lead)+((tone==='classic'||tone==='pivot')?('<ul>'+bullets.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')+'<br>':'')+esc(close)+'<br><br>'+esc(sign)+'<br>'+esc(name);
+var txt=[name,contact||'',dateLine,'',hm,co,'',sal,'',open,'',lead,'',close,'',sign,name].filter(function(l){return l!==''||l===0;}).join('\n').replace(/\n{3,}/g,'\n\n');
+return {html:html, txt:txt, cls:'ltr', meta:{who:name, target:co+' \u00b7 '+role}};
+}
+function buildResume(){
+var R=resumeState(); if(!R) return null;
+var H=R.head||{};
+var contact=[H.loc,H.email,H.phone,H.links].map(function(x){return (x||'').trim();}).filter(function(x){return x;}).join(' \u00b7 ');
+var h='<div class="rn">'+esc(H.name||'Your Name')+'</div>'+((H.title)?'<div class="rt">'+esc(H.title)+'</div>':'')+((contact)?'<div class="rc">'+esc(contact)+'</div>':'');
+if((R.summary||'').trim()) h+='<h3>summary</h3><div>'+esc(R.summary)+'</div>';
+if((R.skills||'').trim()) h+='<h3>skills</h3><div class="sk">'+esc(R.skills)+'</div>';
+var ex=(R.exp||[]).filter(function(x){ return (x.role||x.co||'').trim(); });
+if(ex.length){ h+='<h3>experience</h3>'; ex.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.role)+'</span><span class="ed">'+esc(x.dates)+'</span></div>'+((x.co)?'<div class="ec">'+esc(x.co)+'</div>':'')+(((x.bl||[]).length)?('<ul>'+x.bl.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')+'</div>'; }); }
+if((R.edu||[]).length){ h+='<h3>education</h3>'; R.edu.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.t)+'</span><span class="ed">'+esc(x.d)+'</span></div>'+((x.c)?'<div class="ec">'+esc(x.c)+'</div>':'')+'</div>'; }); }
+if((R.certs||[]).length){ h+='<h3>certifications</h3><ul>'+R.certs.map(function(x){ return '<li>'+esc(x.t)+((x.d)?' \u00b7 <span class="ed">'+esc(x.d)+'</span>':'')+'</li>'; }).join('')+'</ul>'; }
+if((R.proj||[]).length){ h+='<h3>projects</h3>'; R.proj.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.t)+'</span><span class="ed">'+esc(x.d)+'</span></div>'+((x.c)?'<div class="ec">'+esc(x.c)+'</div>':'')+'</div>'; }); }
+if((R.extra||'').trim()) h+='<h3>extras</h3><div>'+esc(R.extra)+'</div>';
+var cls='paper '+(R.tpl||'classic')+(R.tight?' tight':'');
+var md='# '+(H.name||'')+'\n'+(H.title||'')+'\n'+contact+'\n\n'+(R.summary||'')+'\n\n'+(R.skills||'');
+return {html:h, txt:md, cls:cls.replace('paper ',''), meta:{who:H.name||'', target:(H.title||'resume')}};
+}
+function source(){ var s=P.side==='cover'?buildCover():buildResume(); return s; }
+/* ---- overrides ---- */
+function applyOvHtml(s){ P.ov.forEach(function(o){ if(!o.f) return; s=s.split(esc(o.f)).join(esc(o.r||'')); }); return s; }
+function applyOvTxt(s){ P.ov.forEach(function(o){ if(!o.f) return; s=s.split(o.f).join(o.r||''); }); return s; }
+/* ---- finishing css ---- */
+function finCss(){
+var f=P.fin, g={'disc':'','dash':'\u2013','sq':'\u25aa','cir':'\u25c6'}[f.gly];
+var s='.paper{padding:'+f.m+'in!important;font-size:'+f.pt+'pt!important;line-height:'+f.lh+'!important}';
+if(f.gly!=='disc') s+='.paper ul{list-style:none;margin-left:6px}.paper li{position:relative;padding-left:14px}.paper li:before{content:"'+g+' ";position:absolute;left:0}';
+s+=f.widow?'.paper .entry,.paper h3{page-break-inside:avoid;break-inside:avoid}.paper h3{page-break-after:avoid}':'.paper .entry{page-break-inside:auto;break-inside:auto}';
+return s;
+}
+/* ---- stamp ---- */
+function stampHtml(){
+var s=P.stamp; if(s.kind==='none') return '';
+var pos={tl:'top:5%;left:5%',tr:'top:5%;right:5%',bl:'bottom:7%;left:5%',br:'bottom:7%;right:5%',c:'top:50%;left:50%;translate:-50% -50%'}[s.pos]||'bottom:7%;right:5%';
+var base='position:absolute;pointer-events:none;'+pos+';transform:rotate('+s.rot+'deg);opacity:'+(s.op/100)+';color:'+s.ink+';';
+var src=source(), who=(src&&src.meta.who)||'the keeper';
+var d=new Date();
+if(s.kind==='sig') return '<div style="'+base+'font-family:\'Segoe Script\',\'Brush Script MT\',cursive;font-size:26px">'+esc(who)+'</div>';
+if(s.kind==='date') return '<div style="'+base+'font:10px Consolas,monospace;letter-spacing:.25em">DATED '+d.getDate()+' '+MONN[d.getMonth()].slice(0,3).toUpperCase()+' '+d.getFullYear()+'</div>';
+if(s.kind==='draft') return '<div style="'+base+'font:700 52px Georgia,serif;letter-spacing:.35em;color:rgba(20,20,20,.16)">DRAFT</div>';
+if(s.kind==='custom') return '<div style="'+base+'font:11px Consolas,monospace;letter-spacing:.2em;border:2px solid '+s.ink+';padding:6px 12px">'+esc(s.txt||'stamped')+'</div>';
+return '<svg width="132" height="132" viewBox="0 0 132 132" style="'+base+'">'
++'<circle cx="66" cy="66" r="61" fill="none" stroke="'+s.ink+'" stroke-width="2.4"/>'
++'<circle cx="66" cy="66" r="45" fill="none" stroke="'+s.ink+'" stroke-width="1"/>'
++'<path id="psTp" d="M66,66 m-53,0 a53,53 0 1,1 106,0 a53,53 0 1,1 -106,0" fill="none"/>'
++'<text font-size="9.5" letter-spacing="2.4" fill="'+s.ink+'" font-family="Consolas,monospace"><textPath href="#psTp">KNOW THYSELF \u00b7 DO NO HARM \u00b7 HOLD THE TRUTH \u00b7</textPath></text>'
++'<text x="66" y="63" text-anchor="middle" font-size="10" fill="'+s.ink+'" font-family="Consolas,monospace">INN.VISIBLE</text>'
++'<text x="66" y="76" text-anchor="middle" font-size="8" fill="'+s.ink+'" font-family="Consolas,monospace">SEASON 01</text></svg>';
+}
+/* ---- render ---- */
+function paintFin(){ el('finCss').textContent=finCss(); }
+function render(){
+var src=source();
+el('sdCover').className=P.side==='cover'?'on':'';
+el('sdResume').className=P.side==='resume'?'on':'';
+el('srcL').textContent=src?('loaded \u00b7 '+(P.side==='cover'?'the letter':'the paper')+' \u00b7 '+src.meta.target):'no draft on that desk yet';
+if(!src){ el('pv').innerHTML='<div class="sheet"><div class="paper ltr">the '+P.side+' desk is bare \u00b7 draft something there first, then return to the press.</div></div>'; el('pgLine').textContent=''; return; }
+var inner=applyOvHtml(src.html);
+el('pv').innerHTML='<div class="sheet"><div class="paper '+src.cls+'" style="width:100%;max-width:none">'+inner+'</div>'+stampHtml()+'</div>';
+paintFin();
+var pap=el('pv').querySelector('.paper');
+var printable=(11-2*P.fin.m)*96;
+var pages=Math.max(1,Math.ceil(pap.scrollHeight/printable));
+var line=el('pgLine');
+line.textContent='\u2248 '+pages+' page'+(pages===1?'':'s')+(P.stamp.kind!=='none'?' \u00b7 stamp laid':'');
+line.style.color=pages>1?'var(--gold)':'var(--green)';
+renderOv(); renderLedger();
+}
+function renderOv(){
+var b=el('ovBox'); b.innerHTML='';
+P.ov.forEach(function(o,i){
+var r=document.createElement('div'); r.className='row'; r.style.marginTop='4px';
+r.innerHTML='<span style="flex:1;font-size:10px;color:var(--dim)">'+esc(o.f)+' \u2192 '+esc(o.r||'\u2205')+'</span><button class="x" style="border:none;color:#c8452c">\u2715</button>';
+r.querySelector('.x').onclick=function(){ P.ov.splice(i,1); save(); render(); };
+b.appendChild(r); });
+}
+el('ovAdd').onclick=function(){ var f=el('ovF').value, r=el('ovR').value; if(!f) return;
+P.ov.push({f:f,r:r}); el('ovF').value=''; el('ovR').value=''; save(); render(); };
+/* ---- ledger ---- */
+var STS=['sent','replied','interview','offer','ghost'];
+function renderLedger(){
+var b=el('lgBox'); b.innerHTML='';
+var n={}; P.log.forEach(function(l){ n[l.st]=(n[l.st]||0)+1; });
+el('lgN').textContent=P.log.length+' stamped \u00b7 '+(n.replied||0)+' replied \u00b7 '+(n.interview||0)+' interviews \u00b7 '+(n.offer||0)+' offers \u00b7 '+(n.ghost||0)+' ghosts';
+P.log.forEach(function(l,i){
+var r=document.createElement('div'); r.className='row'; r.style.marginTop='4px';
+r.innerHTML='<span class="mini" style="color:#5c6875">'+l.d+'</span><span style="flex:1;font-size:10px;color:var(--dim)">'+esc(l.target)+' \u00b7 '+l.kind+'</span>'
++'<button class="cy" style="border-color:'+(l.st==='offer'?'var(--green)':l.st==='ghost'?'var(--red)':'var(--gold)')+';color:'+(l.st==='offer'?'var(--green)':l.st==='ghost'?'var(--red)':'var(--gold)')+'">'+l.st+'</button>'
++'<button class="x" style="border:none;color:#5c6875">\u2715</button>';
+r.querySelector('.cy').onclick=function(){ l.st=STS[(STS.indexOf(l.st)+1)%STS.length]; save(); renderLedger(); };
+r.querySelector('.x').onclick=function(){ P.log.splice(i,1); save(); renderLedger(); };
+b.appendChild(r); });
+}
+/* ---- controls ---- */
+el('sdCover').onclick=function(){ P.side='cover'; save(); render(); };
+el('sdResume').onclick=function(){ P.side='resume'; save(); render(); };
+[['fM','m',parseFloat],['fPt','pt',parseFloat],['fLh','lh',parseFloat]].forEach(function(p){
+el(p[0]).value=P.fin[p[1]];
+el(p[0]).oninput=function(){ P.fin[p[1]]=p[2](this.value)||P.fin[p[1]]; save(); render(); }; });
+el('fGly').value=P.fin.gly;
+el('fGly').onchange=function(){ P.fin.gly=this.value; save(); render(); };
+el('fWid').onclick=function(){ P.fin.widow=!P.fin.widow; this.textContent='widow guard \u00b7 '+(P.fin.widow?'on':'off'); this.className=P.fin.widow?'on':''; save(); render(); };
+el('fWid').textContent='widow guard \u00b7 '+(P.fin.widow?'on':'off'); el('fWid').className=P.fin.widow?'on':'';
+el('stKind').value=P.stamp.kind; el('stTxt').value=P.stamp.txt||''; el('stPos').value=P.stamp.pos; el('stInk').value=P.stamp.ink;
+el('stRot').value=P.stamp.rot; el('stOp').value=P.stamp.op;
+el('stKind').onchange=function(){ P.stamp.kind=this.value; save(); render(); };
+el('stTxt').oninput=function(){ P.stamp.txt=this.value; save(); render(); };
+el('stPos').onchange=function(){ P.stamp.pos=this.value; save(); render(); };
+el('stInk').onchange=function(){ P.stamp.ink=this.value; save(); render(); };
+el('stRot').oninput=function(){ P.stamp.rot=+this.value; save(); render(); };
+el('stOp').oninput=function(){ P.stamp.op=+this.value; save(); render(); };
+/* ---- outputs ---- */
+function sheetOuter(){ var src=source(); if(!src) return '';
+return '<div class="sheet" style="border:none"><div class="paper '+src.cls+'" style="width:100%;max-width:none">'+applyOvHtml(src.html)+'</div>'+stampHtml()+'</div>'; }
+el('psPrint').onclick=function(){ el('psPrintRoot').innerHTML=sheetOuter(); window.print(); };
+function dl(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
+el('psHtml').onclick=function(){ var css=document.getElementById('paperCss').textContent+finCss();
+var doc='<!doctype html><html><head><meta charset="utf-8"><title>press sheet</title><style>'+css+'body{margin:0;background:#fff}.sheet{position:relative;max-width:8.5in;margin:0 auto;min-height:11in}.sheet .paper{border:none}@media print{.sheet{min-height:0}}@page{margin:0}</style></head><body>'+sheetOuter()+'</body></html>';
+dl('press-sheet.html', new Blob([doc],{type:'text/html'})); };
+el('psCopy').onclick=function(){ var src=source(); if(!src) return; var b=this;
+var t=applyOvTxt(src.txt);
+if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ b.textContent='copied \u2713'; setTimeout(function(){ b.textContent='copy text'; },1400); },function(){ b.textContent='refused'; }); } else b.textContent='no clipboard'; };
+el('psSent').onclick=function(){ var src=source(); if(!src) return;
+P.log.unshift({d:iso(new Date()), target:src.meta.target, kind:P.side, st:'sent'});
+save(); renderLedger(); var b=this; b.textContent='stamped \u2713'; setTimeout(function(){ b.textContent='stamp sent \u2713'; },1400); };
+render();
+})();
+</script>
+</body>
+</html>
