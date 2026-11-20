@@ -151,9 +151,8 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <button id="btMd">.md ↓</button>
 <button id="btCopy">copy text</button>
 <span style="width:10px"></span>
-<button id="btJson" style="border-color:var(--frost);color:var(--frost)">resume ⎘ out</button>
-<button id="btJsonIn">resume ⎘ in</button>
-<input id="jsonFile" type="file" style="display:none">
+<button id="btJson" style="border-color:var(--frost);color:var(--frost)">resume ↓ out</button>
+<label id="btJsonIn" style="border:1px solid var(--line);color:var(--dim);font:10px var(--mono);letter-spacing:.1em;padding:5px 10px;cursor:pointer;margin:0"><span id="jsonLab">resume ↑ in</span><input id="jsonFile" type="file" accept=".resume,.json,application/json" style="display:none"></label>
 </div>
 <div id="lv"></div>
 </div>
