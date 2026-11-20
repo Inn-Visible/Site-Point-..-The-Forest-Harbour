@@ -187,8 +187,18 @@ if((R.certs||[]).length){ h+='<h3>certifications</h3><ul>'+R.certs.map(function(
 if((R.proj||[]).length){ h+='<h3>projects</h3>'; R.proj.forEach(function(x){ h+='<div class="entry"><div class="eh"><span class="er">'+esc(x.t)+'</span><span class="ed">'+esc(x.d)+'</span></div>'+((x.c)?'<div class="ec">'+esc(x.c)+'</div>':'')+'</div>'; }); }
 if((R.extra||'').trim()) h+='<h3>extras</h3><div>'+esc(R.extra)+'</div>';
 var cls='paper '+(R.tpl||'classic')+(R.tight?' tight':'');
-var md='# '+(H.name||'')+'\n'+(H.title||'')+'\n'+contact+'\n\n'+(R.summary||'')+'\n\n'+(R.skills||'');
-return {html:h, txt:md, cls:cls.replace('paper ',''), meta:{who:H.name||'', target:(H.title||'resume')}};
+var L=[]; L.push('# '+(H.name||''));
+if(H.title&&hd!=='name') L.push('**'+H.title+'**');
+if(contact&&hd==='full') L.push(contact);
+if((R.summary||'').trim()) L.push('','## Summary',R.summary);
+if((R.skills||'').trim()) L.push('','## Skills',R.skills);
+var ex=(R.exp||[]).filter(function(x){ return (x.role||x.co||'').trim(); });
+if(ex.length){ L.push('','## Experience'); ex.forEach(function(x){ L.push('','### '+(x.role||'role')+(x.co?' \u2014 '+x.co:'')+(x.dates?' ('+x.dates+')':'')); (x.bl||[]).forEach(function(b){ L.push('- '+b); }); }); }
+if((R.edu||[]).length){ L.push('','## Education'); R.edu.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')+(x.c?' \u2014 '+x.c:'')); }); }
+if((R.certs||[]).length){ L.push('','## Certifications'); R.certs.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')); }); }
+if((R.proj||[]).length){ L.push('','## Projects'); R.proj.forEach(function(x){ L.push('- '+x.t+(x.d?' ('+x.d+')':'')+(x.c?': '+x.c:'')); }); }
+if((R.extra||'').trim()) L.push('','## Extras',R.extra);
+return {html:h, txt:L.join('\n'), cls:cls.replace('paper ',''), meta:{who:H.name||'', target:(H.title||'resume')}};
 }
 function source(){ var s=P.side==='cover'?buildCover():buildResume(); return s; }
 /* ---- overrides ---- */
