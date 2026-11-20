@@ -107,7 +107,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="hd" style="font-size:12px">the pseudo-stamper · ink on glass, carried into paper</div>
 <div class="row" style="margin-top:8px">
 <select id="stKind" style="width:auto;min-width:130px"><option value="none">no stamp</option><option value="sig">signature</option><option value="date">dated line</option><option value="seal">house seal</option><option value="draft">DRAFT ghost</option><option value="custom">custom words</option></select>
-<input id="stTxt" placeholder="custom stamp text .." style="flex:1;min-width:120px">
+<input id="stTxt" placeholder="sign-as / custom stamp text .." style="flex:1;min-width:120px">
 <select id="stPos" style="width:auto"><option value="br">bottom right</option><option value="bl">bottom left</option><option value="tr">top right</option><option value="tl">top left</option><option value="c">center</option></select>
 <select id="stInk" style="width:auto"><option value="#111">ink black</option><option value="#8a2b1d">rust</option><option value="#8a6d1f">old gold</option><option value="#2b4a63">frost deep</option></select>
 </div>
@@ -115,6 +115,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <span class="mini">tilt</span><input id="stRot" type="range" min="-18" max="18" value="-6" style="flex:1">
 <span class="mini">ink weight</span><input id="stOp" type="range" min="20" max="100" value="90" style="flex:1">
 </div>
+  <div class="mini" style="margin-top:6px">signature reads: sign-as text if typed \u00b7 else the sheet's name after overrides \u00b7 else \u201cthe keeper\u201d</div>
 </div>
 <div class="card">
 <div class="hd" style="font-size:12px">the sheet · live proof</div>
@@ -219,10 +220,12 @@ function stampHtml(){
 var s=P.stamp; if(s.kind==='none') return '';
 var pos={tl:'top:5%;left:5%',tr:'top:5%;right:5%',bl:'bottom:7%;left:5%',br:'bottom:7%;right:5%',c:'top:50%;left:50%;translate:-50% -50%'}[s.pos]||'bottom:7%;right:5%';
 var base='position:absolute;pointer-events:none;'+pos+';transform:rotate('+s.rot+'deg);opacity:'+(s.op/100)+';color:'+s.ink+';';
-var src=source(), who=(src&&src.meta.who)||'the keeper';
+var src=source();
+var who=(s.txt&&s.txt.trim())?s.txt.trim():((src&&src.meta.who)?applyOvTxt(src.meta.who):'');
+if(!who||!/[a-z0-9]/i.test(who)) who='the keeper';
 var d=new Date();
 if(s.kind==='sig') return '<div style="'+base+'font-family:\'Segoe Script\',\'Brush Script MT\',cursive;font-size:26px">'+esc(who)+'</div>';
-if(s.kind==='date') return '<div style="'+base+'font:10px Consolas,monospace;letter-spacing:.25em">DATED '+d.getDate()+' '+MONN[d.getMonth()].slice(0,3).toUpperCase()+' '+d.getFullYear()+'</div>';
+  if(s.kind==='date') return '<div style="'+base+'font:10px Consolas,monospace;letter-spacing:.25em">DATED '+d.getDate()+' '+MONN[d.getMonth()].slice(0,3).toUpperCase()+' '+d.getFullYear()+'</div>';
 if(s.kind==='draft') return '<div style="'+base+'font:700 52px Georgia,serif;letter-spacing:.35em;color:rgba(20,20,20,.16)">DRAFT</div>';
 if(s.kind==='custom') return '<div style="'+base+'font:11px Consolas,monospace;letter-spacing:.2em;border:2px solid '+s.ink+';padding:6px 12px">'+esc(s.txt||'stamped')+'</div>';
 return '<svg width="132" height="132" viewBox="0 0 132 132" style="'+base+'">'
