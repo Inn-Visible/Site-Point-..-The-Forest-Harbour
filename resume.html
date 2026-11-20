@@ -338,7 +338,8 @@ function fname(){ return (S.head.name||'resume').toLowerCase().replace(/\s+/g,'-
 function paperCls(){ return 'paper '+(S.tpl||'classic')+(S.tight?' tight':''); }
 el('btPrint').onclick=function(){
 el('rsPrintRoot').innerHTML='<div class="'+paperCls()+'" style="padding:0">'+paperHtml()+'</div>';
-window.print(); };
+var oldT=document.title; document.title=(S.head.name||'resume')+' \u00b7 resume';
+window.print(); setTimeout(function(){ document.title=oldT; },1500); };
 el('btHtml').onclick=function(){
 var css=document.getElementById('paperCss').textContent;
 var doc='<!doctype html><html><head><meta charset="utf-8"><title>resume</title><style>'+css+'body{margin:0;background:#fff}.paper{max-width:8.5in;margin:0 auto}@media print{html,body{background:#fff}.paper{padding:0;background:#fff}h3{page-break-after:avoid}.entry{page-break-inside:avoid}}@page{margin:0.6in}</style></head><body><div class="'+paperCls()+'">'+paperHtml()+'</div></body></html>';
