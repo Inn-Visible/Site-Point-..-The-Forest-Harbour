@@ -92,6 +92,10 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <span class="mini">leading</span><input id="fLh" type="number" step="0.05" min="1.2" max="2" style="width:64px">
 <span class="mini">bullets</span><select id="fGly" style="width:auto"><option value="disc">• disc</option><option value="dash">– dash</option><option value="sq">▪ square</option><option value="cir">◦ circle</option></select>
 <button id="fWid">widow guard · on</button>
+</div>
+<div class="row" style="margin-top:8px">
+<span class="mini">category breathing</span><input id="fGap" type="range" min="8" max="34" step="2" style="flex:1;min-width:120px">
+<span class="mini">header</span><select id="fHd" style="width:auto"><option value="full">full head</option><option value="nocontact">name + title only</option><option value="name">name only</option></select>
 <span class="mini" id="pgLine" style="margin-left:auto"></span>
 </div>
 <div class="hd" style="font-size:11px;margin-top:12px">the overrides · find → replace on the press copy only</div>
@@ -121,6 +125,7 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <span style="width:10px"></span>
 <button id="psSent" style="border-color:var(--green);color:var(--green)">stamp sent ✓</button>
 </div>
+  <div class="mini" style="margin-top:6px">for a bare pdf: print dialog → more settings → uncheck “headers and footers” · the title now reads your name, so even left on it looks intentional</div>
 <div id="pv"></div>
 </div>
 <div class="card">
@@ -163,7 +168,7 @@ if(tone==='email'){ sal='Hi '+(hm?hm.split(' ')[0]:(co||'team'))+','; open='I\u2
 else if(tone==='direct'){ sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open=role+(co?' at '+co:'')+' \u2014 that\u2019s the row I want on my r\u00e9sum\u00e9 next. '+hook; lead=bullets.length?('What that looks like in practice: '+bullets.join(' ')):''; close='If you want someone who ships from week one, I\u2019m your call. I\u2019d welcome thirty minutes to walk through any of the above.'; sign='Best regards,'; }
 else if(tone==='pivot'){ sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open='My path to '+role+(co?' at '+co:'')+' is not a straight line \u2014 and that is exactly why it fits. '+hook; lead=bullets.length?'The pieces I would bring on day one:':''; close='I would value the chance to show you how those pieces assemble into exactly what this role needs.'; sign='With respect,'; }
 else { sal='Dear '+(hm||((co||'')+' Hiring Team'))+','; open='I am writing to express my interest in the '+role+' position'+(co?' at '+co:'')+'. '+hook; lead=bullets.length?'A few things I would bring to the team:':''; close='I would welcome the opportunity to discuss how my background aligns with '+(co?'your':'the team\u2019s')+' needs. Thank you for your time and consideration.'; sign='Sincerely,'; }
-var html='<b>'+esc(name)+'</b>'+(contact?'<br>'+esc(contact):'')+'<br><br>'+esc(dateLine)+'<br><br>'+(hm?esc(hm)+'<br>':'')+(co?esc(co)+'<br>':'')+'<br>'+esc(sal)+'<br><br>'+esc(open)+'<br><br>'+(lead?esc(lead)+((tone==='classic'||tone==='pivot')?('<ul>'+bullets.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')+'<br>':'')+esc(close)+'<br><br>'+esc(sign)+'<br>'+esc(name);
+var hd=P.fin.hd||'full'; var html='<b>'+esc(name)+'</b>'+((contact&&hd==='full')?'<br>'+esc(contact):'')+'<br><br>'+esc(dateLine)+'<br><br>'+(hm?esc(hm)+'<br>':'')+(co?esc(co)+'<br>':'')+'<br>'+esc(sal)+'<br><br>'+esc(open)+'<br><br>'+(lead?esc(lead)+((tone==='classic'||tone==='pivot')?('<ul>'+bullets.map(function(b){return '<li>'+esc(b)+'</li>';}).join('')+'</ul>'):'')+'<br>':'')+esc(close)+'<br><br>'+esc(sign)+'<br>'+esc(name);
 var txt=[name,contact||'',dateLine,'',hm,co,'',sal,'',open,'',lead,'',close,'',sign,name].filter(function(l){return l!==''||l===0;}).join('\n').replace(/\n{3,}/g,'\n\n');
 return {html:html, txt:txt, cls:'ltr', meta:{who:name, target:co+' \u00b7 '+role}};
 }
@@ -171,7 +176,8 @@ function buildResume(){
 var R=resumeState(); if(!R) return null;
 var H=R.head||{};
 var contact=[H.loc,H.email,H.phone,H.links].map(function(x){return (x||'').trim();}).filter(function(x){return x;}).join(' \u00b7 ');
-var h='<div class="rn">'+esc(H.name||'Your Name')+'</div>'+((H.title)?'<div class="rt">'+esc(H.title)+'</div>':'')+((contact)?'<div class="rc">'+esc(contact)+'</div>':'');
+var hd=P.fin.hd||'full';
+var h='<div class="rn">'+esc(H.name||'Your Name')+'</div>'+((H.title&&hd!=='name')?'<div class="rt">'+esc(H.title)+'</div>':'')+((contact&&hd==='full')?'<div class="rc">'+esc(contact)+'</div>':'');
 if((R.summary||'').trim()) h+='<h3>summary</h3><div>'+esc(R.summary)+'</div>';
 if((R.skills||'').trim()) h+='<h3>skills</h3><div class="sk">'+esc(R.skills)+'</div>';
 var ex=(R.exp||[]).filter(function(x){ return (x.role||x.co||'').trim(); });
@@ -191,7 +197,9 @@ function applyOvTxt(s){ P.ov.forEach(function(o){ if(!o.f) return; s=s.split(o.f
 /* ---- finishing css ---- */
 function finCss(){
 var f=P.fin, g={'disc':'','dash':'\u2013','sq':'\u25aa','cir':'\u25c6'}[f.gly];
-var s='.paper{padding:'+f.m+'in!important;font-size:'+f.pt+'pt!important;line-height:'+f.lh+'!important}';
+var s='.paper{padding:'+f.m+'in!important;font-size:'+f.pt+'pt!important;line-height:'+f.lh+'!important}'
++'.paper h3{margin-top:'+f.gap+'px!important;margin-bottom:'+Math.round(f.gap*0.4)+'px!important}'
++'.paper .entry{margin:'+Math.round(f.gap*0.55)+'px 0!important}';
 if(f.gly!=='disc') s+='.paper ul{list-style:none;margin-left:6px}.paper li{position:relative;padding-left:14px}.paper li:before{content:"'+g+' ";position:absolute;left:0}';
 s+=f.widow?'.paper .entry,.paper h3{page-break-inside:avoid;break-inside:avoid}.paper h3{page-break-after:avoid}':'.paper .entry{page-break-inside:auto;break-inside:auto}';
 return s;
@@ -267,6 +275,10 @@ el(p[0]).value=P.fin[p[1]];
 el(p[0]).oninput=function(){ P.fin[p[1]]=p[2](this.value)||P.fin[p[1]]; save(); render(); }; });
 el('fGly').value=P.fin.gly;
 el('fGly').onchange=function(){ P.fin.gly=this.value; save(); render(); };
+el('fGap').value=P.fin.gap;
+el('fGap').oninput=function(){ P.fin.gap=+this.value; save(); render(); };
+el('fHd').value=P.fin.hd||'full';
+el('fHd').onchange=function(){ P.fin.hd=this.value; save(); render(); };
 el('fWid').onclick=function(){ P.fin.widow=!P.fin.widow; this.textContent='widow guard \u00b7 '+(P.fin.widow?'on':'off'); this.className=P.fin.widow?'on':''; save(); render(); };
 el('fWid').textContent='widow guard \u00b7 '+(P.fin.widow?'on':'off'); el('fWid').className=P.fin.widow?'on':'';
 el('stKind').value=P.stamp.kind; el('stTxt').value=P.stamp.txt||''; el('stPos').value=P.stamp.pos; el('stInk').value=P.stamp.ink;
@@ -280,7 +292,10 @@ el('stOp').oninput=function(){ P.stamp.op=+this.value; save(); render(); };
 /* ---- outputs ---- */
 function sheetOuter(){ var src=source(); if(!src) return '';
 return '<div class="sheet" style="border:none"><div class="paper '+src.cls+'" style="width:100%;max-width:none">'+applyOvHtml(src.html)+'</div>'+stampHtml()+'</div>'; }
-el('psPrint').onclick=function(){ el('psPrintRoot').innerHTML=sheetOuter(); window.print(); };
+el('psPrint').onclick=function(){ el('psPrintRoot').innerHTML=sheetOuter();
+var src=source(), oldT=document.title;
+document.title=(src&&src.meta.who)?(src.meta.who+' \u00b7 '+(P.side==='cover'?'cover letter':'resume')):'application sheet';
+window.print(); setTimeout(function(){ document.title=oldT; },1500); };
 function dl(name,blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400); }
 el('psHtml').onclick=function(){ var css=document.getElementById('paperCss').textContent+finCss();
 var doc='<!doctype html><html><head><meta charset="utf-8"><title>press sheet</title><style>'+css+'body{margin:0;background:#fff}.sheet{position:relative;max-width:8.5in;margin:0 auto;min-height:11in}.sheet .paper{border:none}@media print{.sheet{min-height:0}}@page{margin:0}</style></head><body>'+sheetOuter()+'</body></html>';
