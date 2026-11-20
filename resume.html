@@ -363,14 +363,17 @@ el('btCopy').onclick=function(){ var b=this, t=buildMd().replace(/[#*]/g,'');
 if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ flash(b,'copied \u2713'); },function(){ flash(b,'refused'); }); }
 else flash(b,'no clipboard'); };
 el('btJson').onclick=function(){ dl(fname()+'.resume', new Blob([JSON.stringify(S,null,1)],{type:'application/json'})); };
-el('btJsonIn').onclick=function(){ el('jsonFile').click(); };
+function jsonFlash(m){ var l=el('jsonLab'); if(!l) return; l.textContent=m; setTimeout(function(){ l.textContent='resume \u2191 in'; },1500); }
 el('jsonFile').onchange=function(){
 var f=this.files&&this.files[0]; if(!f) return;
 var r=new FileReader();
-r.onload=function(){ var o=null; try{ o=JSON.parse(r.result); }catch(e){ return; }
-if(!o||!o.head) return; S=o;
+r.onload=function(){ var o=null; try{ o=JSON.parse(r.result); }catch(e){ o=null; }
+if(!o||!o.head){ jsonFlash('not a resume'); return; }
+S=o;
+if(!S.head) S.head={name:'',title:'',loc:'',email:'',phone:'',links:''};
 if(!S.exp) S.exp=[]; if(!S.edu) S.edu=[]; if(!S.certs) S.certs=[]; if(!S.proj) S.proj=[];
-save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor(); };
+save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor(); jsonFlash('loaded \u2713'); };
+r.onerror=function(){ jsonFlash('read failed'); };
 r.readAsText(f); this.value=''; };
 paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor();
 })();
