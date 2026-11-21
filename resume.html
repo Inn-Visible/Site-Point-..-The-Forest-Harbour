@@ -219,7 +219,59 @@ el('resetDesk').onclick=function(){
 if(!confirm('reset the whole desk? head, summary, skills, every role and row \u00b7 the cover desk is untouched \u00b7 this cannot be undone.')) return;
 S={head:{name:'',title:'',loc:'',email:'',phone:'',links:''},summary:'',skills:'',exp:[],edu:[],certs:[],proj:[],extra:'',tpl:S.tpl||'classic',tight:false,iv:2};
 save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor(); };
-/* ---- experience ---- */
+
+  function pourText(t){
+var lines=String(t).split(/\r?\n/).map(function(s){return s.trim();}).filter(function(s){return s.length;});
+var R={head:{name:'',title:'',loc:'',email:'',phone:'',links:''},summary:'',skills:'',exp:[],edu:[],certs:[],proj:[],extra:''};
+var EMAIL=/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i;
+var PHONE=/\+?\d[\d\s\-\(\)\.]{7,}\d/;
+var DATER=/((19|20)\d{2})\s*[\-\u2013\u2014]+\s*((19|20)\d{2}|present|current)?/i;
+var HEADS={'summary':'sum','profile':'sum','objective':'sum','professional summary':'sum','skills':'skl','technical skills':'skl','core competencies':'skl','areas of expertise':'skl','experience':'exp','work experience':'exp','professional experience':'exp','work history':'exp','employment':'exp','employment history':'exp','education':'edu','certifications':'cert','certification':'cert','licenses':'cert','projects':'proj','personal projects':'proj','awards':'extra','honors':'extra','volunteer':'extra','volunteer experience':'extra','references':'extra','interests':'extra'};
+var sec='', cur=null;
+function headOf(l){ var k=l.toLowerCase().replace(/[:\u00b7|\-]+$/,'').trim(); return HEADS.hasOwnProperty(k)?HEADS[k]:null; }
+for(var i=0;i<lines.length;i++){
+ var l=lines[i], h=headOf(l);
+ if(h){ sec=h; cur=null; continue; }
+ if(!sec){
+  if(EMAIL.test(l)){ var em=l.match(EMAIL)[0]; R.head.email=em; var rest=l.split(em).join(' ');
+   var ph=rest.match(PHONE); if(ph){ R.head.phone=ph[0].trim(); rest=rest.split(ph[0]).join(' '); }
+   var lk=rest.match(/(linkedin|github|portfolio|https?:)[^\s|·,;]+/i); if(lk){ R.head.links=lk[0]; rest=rest.split(lk[0]).join(' '); }
+   var lc=rest.replace(/[\|·,;]+/g,' ').replace(/\s{2,}/g,' ').trim(); if(lc&&lc.length<44&&!R.head.loc) R.head.loc=lc;
+   continue; }
+  if(/^(linkedin|github|portfolio|https?:)/i.test(l)){ R.head.links=(R.head.links?R.head.links+' \u00b7 ':'')+l; continue; }
+  if(/^[\+\d][\d\s\-\(\)\.]{7,}$/.test(l)){ R.head.phone=l; continue; }
+  if(!R.head.name&&l.length<52){ R.head.name=l; continue; }
+  if(!R.head.title&&l.length<64){ R.head.title=l; continue; }
+  continue; }
+ if(sec==='sum'){ R.summary+=(R.summary?' ':'')+l; continue; }
+ if(sec==='skl'){ l.split(/[\|·;,]/).forEach(function(s){ s=s.trim(); if(s&&s.length<44) R.skills+=(R.skills?', ':'')+s; }); continue; }
+ if(sec==='exp'){
+  if(/^[\u2022\u25aa\u25cf\u25e6\*\-]\s*/.test(l)){ if(cur) cur.bl.push(l.replace(/^[\u2022\u25aa\u25cf\u25e6\*\-]\s*/,'')); continue; }
+  var dm=l.match(DATER);
+  if(dm&&l.length<110){ cur={role:l.split(dm[0]).join('').replace(/[\|·,;]+$/,'').trim(), co:'', dates:dm[0].replace(/\s+/g,' ').trim(), bl:[]}; R.exp.push(cur); continue; }
+  if(!cur){ cur={role:l, co:'', dates:'', bl:[]}; R.exp.push(cur); continue; }
+  if(!cur.co&&l.length<80){ cur.co=l; continue; }
+  cur.bl.push(l); continue; }
+ if(sec==='edu'||sec==='cert'){ var d2=l.match(DATER);
+  var row={t:(d2?l.split(d2[0]).join(''):l).replace(/[\|·,;]+$/,'').trim(), d:d2?d2[0].trim():'', c:''};
+  if(sec==='edu') R.edu.push(row); else R.certs.push(row); continue; }
+ if(sec==='proj'){ var d3=l.match(DATER);
+  R.proj.push({t:(d3?l.split(d3[0]).join(''):l).replace(/[\|·,;]+$/,'').trim(), d:d3?d3[0].trim():'', c:''}); continue; }
+ R.extra+=(R.extra?'\n':'')+l;
+}
+return R; }
+el('pourBtn').onclick=function(){ var b=el('pourBox'); b.style.display=b.style.display==='none'?'block':'none'; };
+el('pourX').onclick=function(){ el('pourBox').style.display='none'; };
+el('pourGo').onclick=function(){
+var t=el('pourTxt').value||''; if(!t.trim()){ el('pourMsg').textContent='paste the text first'; return; }
+var R2=pourText(t);
+if(!confirm('pour this text over the current desk? current rows are replaced \u00b7 the cover desk and any stone you exported stay safe.')) return;
+S.head=R2.head; S.summary=R2.summary; S.skills=R2.skills; S.exp=R2.exp; S.edu=R2.edu; S.certs=R2.certs; S.proj=R2.proj; S.extra=R2.extra;
+save(); paintHead(); paintExp(); paintLists(); renderPaper(); paintTailor();
+el('pourMsg').textContent='poured \u00b7 '+S.exp.length+' roles \u00b7 settle the details';
+el('pourBox').style.display='none'; el('pourTxt').value=''; };
+  
+  /* ---- experience ---- */
 function paintExp(){
 var box=el('expBox'); box.innerHTML='';
 S.exp.forEach(function(x,i){
