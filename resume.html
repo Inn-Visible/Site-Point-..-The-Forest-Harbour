@@ -103,8 +103,11 @@ if(!ok){ location.replace('index.html'); } else { localStorage.setItem(KEY,Strin
 <div class="row" style="margin-top:8px">
 <button id="pullCover" style="border-color:var(--gold);color:var(--gold)">pull from the cover desk</button>
 <button id="resetDesk" style="border-color:var(--red);color:var(--red)">reset desk</button>
-<span class="mini">pull fills only what is empty · reset burns the whole desk (cover desk untouched)</span>
+<button id="pourBtn" style="border-color:var(--frost);color:var(--frost)">pour a resume's text</button>
+<span class="mini">pull fills only what is empty · reset burns the desk · pour reads any copied resume text (pdfs are smoke, text is stone)</span>
 </div>
+<div id="pourBox" style="display:none;margin-top:8px"><textarea id="pourTxt" placeholder="paste the copied text of any resume \u00b7 from a pdf viewer, a doc, a page .." style="min-height:120px"></textarea>
+<div class="row" style="margin-top:6px"><button id="pourGo" style="border-color:var(--gold);color:var(--gold)">read it \u2713</button><button id="pourX">close</button><span class="mini" id="pourMsg"></span></div></div>
 </div>
 <div class="card">
 <div class="hd" style="font-size:12px">the summary & the skills</div>
