@@ -426,7 +426,7 @@ el('jsonFile').onchange=function(){
 var f=this.files&&this.files[0]; if(!f) return;
 var r=new FileReader();
 r.onload=function(){ var o=null; try{ o=JSON.parse(r.result); }catch(e){ o=null; }
-if(!o||!o.head){ jsonFlash('not a resume'); return; }
+if(!o||!o.head){ jsonFlash('smoke, not stone \u00b7 pour the text'); return; }
 S=o;
 if(!S.head) S.head={name:'',title:'',loc:'',email:'',phone:'',links:''};
 if(!S.exp) S.exp=[]; if(!S.edu) S.edu=[]; if(!S.certs) S.certs=[]; if(!S.proj) S.proj=[];
